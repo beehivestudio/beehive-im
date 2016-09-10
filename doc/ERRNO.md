@@ -2,17 +2,17 @@
 
 ##错误返回值格式
 >{
->  "errno" : "20502",
+>  "errno" : "20503",
 >  "errmsg" : "Need you follow uid."
 >}
 
 ## 错误码说明
 
-20502
+20503
 
 |服务级错误(1为系统级错误) | 服务模块代码 | 具体错误码 |
 |:------------------------:|:------------:|:----------:|
-| 2 | 05 | 02 |
+| 2 | 05 | 03 |
 
 ## 错误码对照表
 
@@ -103,7 +103,7 @@
 |:------:|:---------|:---------|
 | 20501 | Source_user or target_user does not exists | 参数source_user或者target_user的用户不存在 |
 | 20502 | Please input right target user id or screen_name | 必须输入目标用户id或者screen_name |
-| 20503 | Need you follow user_id | 参数user_id必须是你关注的用户 |
+| 20503 | Need you follow user id | 参数user_id必须是你关注的用户 |
 | 20504 | Can not follow yourself | 你不能关注自己 |
 | 20505 | Social graph updates out of rate limit | 加关注请求超过上限 |
 | 20506 | Already followed | 已经关注此用户 |
