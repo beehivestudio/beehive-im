@@ -1,9 +1,9 @@
 #错误码说明
 
 ##错误返回值格式
->{
->  "errno" : "20503",
->  "errmsg" : "Need you follow uid."
+>{<br>
+>  "errno" : "20503",<br>
+>  "errmsg" : "Need you follow uid."<br>
 >}
 
 ## 错误码说明
