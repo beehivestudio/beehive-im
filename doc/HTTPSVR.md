@@ -12,8 +12,8 @@
 **包体内容**: 下发的数据<br>
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###点推接口
@@ -28,8 +28,8 @@
 **包体内容**: 下发的数据
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ##配置接口
@@ -44,8 +44,8 @@
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###解除踢人接口
@@ -59,8 +59,8 @@
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###禁言接口
@@ -74,8 +74,8 @@
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###解除禁言接口
@@ -89,8 +89,8 @@
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###关闭聊天室接口
@@ -103,8 +103,8 @@
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###设置聊天室分组人数
@@ -117,10 +117,10 @@
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "rid":${rid},        // 聊天室ID(O)<br>
->>  "size":${size},      // 分组人数(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "rid":${rid},        // 聊天室ID(O)<br>
+>  "size":${size},      // 分组人数(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###查询聊天室分组人数
@@ -133,19 +133,77 @@
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "rid":${rid},        // 聊天室ID(O)<br>
->>  "size":${size},      // 分组人数(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "rid":${rid},        // 聊天室ID(O)<br>
+>  "size":${size},      // 分组人数(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
+
+###添加在线人数统计
+**功能描述**: 添加在线人数统计<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=user-statis-add&prec=${prec}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为user-statis-add.(M)<br>
+> prec: 时间精度(M).可以有:300s, 600s, 1800s, 3600s(1h), 86400(1d), etc<br>
 
 **返回结果**:<br>
 >{<br>
->>  "errno":${errno},    // 错误码(M)<br>
->>  "errmsg":"${errmsg}" // 错误描述(M)<br>
->}<br>
+>   "errno":${errno},   // 错误码(M)<br>
+>   "errmsg":"${errmsg}"// 错误描述(M)<br>
+>}
 
-##查询聊天室状态
+###删除在线人数统计
+**功能描述**: 删除在线人数统计<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=user-statis-del&prec=${prec}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为user-statis-del.(M)<br>
+> prec: 时间精度(M).可以有:300s, 600s, 1800s, 3600s(1h), 86400(1d), etc<br>
+
+**返回结果**:<br>
+>{<br>
+>   "errno":${errno},   // 错误码(M)<br>
+>   "errmsg":"${errmsg}"// 错误描述(M)<br>
+>}
+
+###在线人数统计列表
+**功能描述**: 在线人数统计列表<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=user-statis-list<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为user-statis-list.(M)<br>
+
+**返回结果**:<br>
+>{<br>
+>   "errno":${errno},   // 错误码(M)<br>
+>   "len":${len},       // 列表长度(M)<br>
+>   "list":[            // 精度列表(M)<br>
+>       {"prec":"{prec}"}, // ${prec}:精度值
+>       {"prec":"{prec}"}]
+>   "errmsg":"${errmsg}"// 错误描述(M)<br>
+>}
+
+###查询在线人数统计
+**功能描述**: 查询在线人数统计<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/query?opt=user-statis&prec=${prec}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为user-statis.(M)<br>
+> prec: 时间精度(M). 如:300s, 600s, 1800s, 3600s(1h), 86400(1d), 1m, 1y<br>
+
+**返回结果**:<br>
+>{<br>
+>   "errno":${errno},       // 错误码(M)<br>
+>   "prec":"${prec}",       // 时间精度(M)<br>
+>   "len":${len},           // 列表长度(M)<br>
+>   "list":[                // 走势列表(M)<br>
+>      {"time":"${time}", "max":${max}, "min":${min}}, // ${time}:时间戳 ${max}:峰值 ${min}:底值<br>
+>      {"time":"${time}", "max":${max}, "min":${min}},<br>
+>      {"time":"${time}", "max":${max}, "min":${min}}]<br>
+>   "errmsg":"${errmsg}"    // 错误描述(M)<br>
+>}
+
 ###聊天室TOP排行
 **功能描述**: 查询各聊天室TOP排行<br>
 **接口类型**: GET<br>
@@ -159,10 +217,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 排行列表(M)<br>
->>      {"rid":${rid}, "total":${total}}, // ${rid}:聊天室ID ${total}:聊天室人数<br>
->>      {"rid":${rid}, "total":${total}},<br>
->>      {"rid":${rid}, "total":${total}},<br>
->>      {"rid":${rid}, "total":${total}}],<br>
+>      {"rid":${rid}, "total":${total}}, // ${rid}:聊天室ID ${total}:聊天室人数<br>
+>      {"rid":${rid}, "total":${total}},<br>
+>      {"rid":${rid}, "total":${total}},<br>
+>      {"rid":${rid}, "total":${total}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -180,10 +238,10 @@
 >   "rid":${rid},           // 聊天室ID(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->>      {"gid":${gid}, "total":${total}}, // ${gid}:分组ID ${total}:组人数<br>
->>      {"gid":${gid}, "total":${total}},<br>
->>      {"gid":${gid}, "total":${total}},<br>
->>      {"gid":${gid}, "total":${total}}],<br>
+>      {"gid":${gid}, "total":${total}}, // ${gid}:分组ID ${total}:组人数<br>
+>      {"gid":${gid}, "total":${total}},<br>
+>      {"gid":${gid}, "total":${total}},<br>
+>      {"gid":${gid}, "total":${total}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -199,10 +257,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -219,8 +277,8 @@
 >   "uid":"${uid}",         // 用户ID(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 当前正登陆聊天室列表(M)<br>
->>      {"rid":${rid}},     // ${rid}:聊天室ID<br>
->>      {"rid":${rid}}],<br>
+>      {"rid":${rid}},     // ${rid}:聊天室ID<br>
+>      {"rid":${rid}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -237,12 +295,44 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
+
+###添加侦听层结点
+**功能描述**: 移除侦听层结点<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=listen-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为listen-add.(M)<br>
+> nid: 结点ID(M)<br>
+> ipaddr: 将被添加的侦听层结点IP地址.(M)<br>
+> port: 将被添加的侦听层结点端口.(M)<br>
+
+**返回结果**:<br>
+>{<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>}<br>
+
+###移除侦听层结点
+**功能描述**: 移除侦听层结点<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=listen-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为listen-del.(M)<br>
+> nid: 结点ID(M)<br>
+> ipaddr: 将被移除的侦听层结点IP地址.(M)<br>
+> port: 将被移除的侦听层结点端口.(M)<br>
+
+**返回结果**:<br>
+>{<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>}<br>
 
 ###查询转发层状态
 **功能描述**: 查询转发层状态<br>
@@ -256,9 +346,41 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
+
+###添加转发层结点
+**功能描述**: 添加转发层结点<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=frwder-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为frwder-add.(M)<br>
+> nid: 结点ID(M)<br>
+> ipaddr: 将被添加的转发层结点IP地址.(M)<br>
+> port: 将被添加的转发层结点端口.(M)<br>
+
+**返回结果**:<br>
+>{<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>}<br>
+
+###移除转发层结点
+**功能描述**: 移除转发层结点<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=frwder-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为frwder-del.(M)<br>
+> nid: 结点ID(M)<br>
+> ipaddr: 将被移除的转发层结点IP地址.(M)<br>
+> port: 将被移除的转发层结点端口.(M)<br>
+
+**返回结果**:<br>
+>{<br>
+>  "errno":${errno},    // 错误码(M)<br>
+>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>}<br>
