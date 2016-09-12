@@ -12,8 +12,8 @@
 **包体内容**: 下发的数据<br>
 **返回结果**:<br>
 >{<br>
->   "errno":${errno},    // 错误码(M)<br>
->   "errmsg":"${errmsg}" // 错误描述(M)<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###点推接口
@@ -28,8 +28,8 @@
 **包体内容**: 下发的数据
 **返回结果**:<br>
 >{<br>
->   "errno":${errno},    // 错误码(M)<br>
->   "errmsg":"${errmsg}" // 错误描述(M)<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ##配置接口
@@ -44,8 +44,8 @@
 
 **返回结果**:<br>
 >{<br>
->   "errno":${errno},    // 错误码(M)<br>
->   "errmsg":"${errmsg}" // 错误描述(M)<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###解除踢人接口
@@ -59,8 +59,8 @@
 
 **返回结果**:<br>
 >{<br>
->   "errno":${errno},    // 错误码(M)<br>
->   "errmsg":"${errmsg}" // 错误描述(M)<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###禁言接口
@@ -74,8 +74,8 @@
 
 **返回结果**:<br>
 >{<br>
->   "errno":${errno},    // 错误码(M)<br>
->   "errmsg":"${errmsg}" // 错误描述(M)<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###解除禁言接口
@@ -89,8 +89,8 @@
 
 **返回结果**:<br>
 >{<br>
->   "errno":${errno},    // 错误码(M)<br>
->   "errmsg":"${errmsg}" // 错误描述(M)<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ###关闭聊天室接口
@@ -103,8 +103,46 @@
 
 **返回结果**:<br>
 >{<br>
->   "errno":${errno},    // 错误码(M)<br>
->   "errmsg":"${errmsg}" // 错误描述(M)<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>}<br>
+
+###设置聊天室分组人数
+**功能描述**: 设置聊天室分组人数<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/config?opt=group-size&rid=${rid}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为group-size.(M)<br>
+> rid: 聊天室ID(O).当未制定${rid}时, 则是修改默认分组人数; 指明聊天室ID, 则是指明某聊天室的分组人数<br>
+
+**返回结果**:<br>
+>{<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "rid":${rid},        // 聊天室ID(O)<br>
+>>  "size":${size},      // 分组人数(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>}<br>
+
+###查询聊天室分组人数
+**功能描述**: 查询聊天室分组人数<br>
+**接口类型**: GET<br>
+**接口路径**: /chatroom/query?opt=group-size&rid=${rid}<br>
+**参数描述**:<br>
+> opt: 操作选项, 此时为group-size.(M)<br>
+> rid: 聊天室ID(O).当未制定${rid}时, 则是查询默认分组人数; 指明聊天室ID, 则是查询某聊天室的分组人数<br>
+
+**返回结果**:<br>
+>{<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "rid":${rid},        // 聊天室ID(O)<br>
+>>  "size":${size},      // 分组人数(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
+>}<br>
+
+**返回结果**:<br>
+>{<br>
+>>  "errno":${errno},    // 错误码(M)<br>
+>>  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
 ##查询聊天室状态
@@ -121,10 +159,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 排行列表(M)<br>
->       {"rid":${rid}, "total":${total}}, // ${rid}:聊天室ID ${total}:聊天室人数<br>
->       {"rid":${rid}, "total":${total}},<br>
->       {"rid":${rid}, "total":${total}},<br>
->       {"rid":${rid}, "total":${total}}],<br>
+>>      {"rid":${rid}, "total":${total}}, // ${rid}:聊天室ID ${total}:聊天室人数<br>
+>>      {"rid":${rid}, "total":${total}},<br>
+>>      {"rid":${rid}, "total":${total}},<br>
+>>      {"rid":${rid}, "total":${total}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -142,10 +180,10 @@
 >   "rid":${rid},           // 聊天室ID(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->       {"gid":${gid}, "total":${total}}, // ${gid}:分组ID ${total}:组人数<br>
->       {"gid":${gid}, "total":${total}},<br>
->       {"gid":${gid}, "total":${total}},<br>
->       {"gid":${gid}, "total":${total}}],<br>
+>>      {"gid":${gid}, "total":${total}}, // ${gid}:分组ID ${total}:组人数<br>
+>>      {"gid":${gid}, "total":${total}},<br>
+>>      {"gid":${gid}, "total":${total}},<br>
+>>      {"gid":${gid}, "total":${total}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -161,10 +199,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -181,8 +219,8 @@
 >   "uid":"${uid}",         // 用户ID(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 当前正登陆聊天室列表(M)<br>
->       {"rid":${rid}},     // ${rid}:聊天室ID<br>
->       {"rid":${rid}}],<br>
+>>      {"rid":${rid}},     // ${rid}:聊天室ID<br>
+>>      {"rid":${rid}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -199,10 +237,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -218,9 +256,9 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->       {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>>      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
