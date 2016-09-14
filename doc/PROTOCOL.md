@@ -230,7 +230,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0301<br>
-命令描述: 上线通知(ONLINE-NOTIFY)<br>
+命令描述: 上线通知(ONLINE-NTC)<br>
 协议格式: <br>
 >{<br>
 >   "uid":${uid}                // M|用户ID|数字|<br>
@@ -238,7 +238,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0302<br>
-命令描述: 下线通知(OFFLINE-NOTIFY)<br>
+命令描述: 下线通知(OFFLINE-NTC)<br>
 协议格式: <br>
 >{<br>
 >   "uid":${uid}                // M|用户ID|数字|<br>
@@ -246,7 +246,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0303<br>
-命令描述: 加入聊天室通知(JOIN-NOTIFY)<br>
+命令描述: 加入聊天室通知(JOIN-NTC)<br>
 协议格式: <br>
 >{<br>
 >   "uid":${uid}                // M|用户ID|数字|<br>
@@ -254,7 +254,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0304<br>
-命令描述: 退出聊天室通知(QUIT-NOTIFY)<br>
+命令描述: 退出聊天室通知(QUIT-NTC)<br>
 协议格式: <br>
 >{<br>
 >   "uid":${uid}                // M|用户ID|数字|<br>
@@ -262,7 +262,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0305<br>
-命令描述: 禁言通知(BAN-NOTIFY)<br>
+命令描述: 禁言通知(BAN-NTC)<br>
 协议格式: <br>
 >{<br>
 >   "uid":${uid}                // M|被禁言用户ID|数字|<br>
@@ -270,7 +270,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0306<br>
-命令描述: 踢人通知(KICK-NOTIFY)<br>
+命令描述: 踢人通知(KICK-NTC)<br>
 协议格式: <br>
 >{<br>
 >   "uid":${uid}                // M|被踢用户ID|数字|<br>
