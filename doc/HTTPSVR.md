@@ -1,7 +1,8 @@
 # HTTP接口列表
 
-##数据下发接口
-###广播接口
+##1. 推送接口
+###1.1 广播接口
+---
 **功能描述**: 用于向全员或某聊天室提交广播消息<br>
 **接口类型**: POST<br>
 **接口路径**: /chatroom/push?opt=broadcast&rid=${rid}<br>
@@ -16,7 +17,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###点推接口
+###1.2 单点推送接口
+---
 **功能描述**: 用于指定聊天室的某人下发消息<br>
 **接口类型**: POST<br>
 **接口路径**: /chatroom/push?opt=p2p&rid=${rid}&uid=${uid}<br>
@@ -32,8 +34,9 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-##配置接口
-###踢人接口
+##2. 配置接口
+###2.1 踢人接口
+---
 **功能描述**: 用于将某人踢出聊天室<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=kick&rid=${rid}&uid=${uid}<br>
@@ -48,7 +51,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###解除踢人接口
+###2.2 解除踢人接口
+---
 **功能描述**: 用于将某人踢出聊天室<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=unkick&rid=${rid}&uid=${uid}<br>
@@ -63,7 +67,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###禁言接口
+###2.3 禁言接口
+---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=ban&rid=${rid}&uid=${uid}<br>
@@ -78,7 +83,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###解除禁言接口
+###2.4 解除禁言接口
+---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=unban&rid=${rid}&uid=${uid}<br>
@@ -93,7 +99,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###关闭聊天室接口
+###2.5 关闭聊天室接口
+---
 **功能描述**: 关闭聊天室<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=close&rid=${rid}<br>
@@ -107,7 +114,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###设置聊天室分组人数
+###2.6 设置聊天室分组人数
+---
 **功能描述**: 设置聊天室分组人数<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=group-size&rid=${rid}<br>
@@ -123,7 +131,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###查询聊天室分组人数
+###2.7 查询聊天室分组人数
+---
 **功能描述**: 查询聊天室分组人数<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=group-size&rid=${rid}<br>
@@ -139,7 +148,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###添加在线人数统计
+###2.8 添加在线人数统计
+---
 **功能描述**: 添加在线人数统计<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=user-statis-add&prec=${prec}<br>
@@ -153,7 +163,8 @@
 >   "errmsg":"${errmsg}"// 错误描述(M)<br>
 >}
 
-###删除在线人数统计
+###2.9 删除在线人数统计
+---
 **功能描述**: 删除在线人数统计<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=user-statis-del&prec=${prec}<br>
@@ -167,7 +178,8 @@
 >   "errmsg":"${errmsg}"// 错误描述(M)<br>
 >}
 
-###在线人数统计列表
+###2.10 在线人数统计列表
+---
 **功能描述**: 在线人数统计列表<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=user-statis-list<br>
@@ -184,7 +196,8 @@
 >   "errmsg":"${errmsg}"// 错误描述(M)<br>
 >}
 
-###查询在线人数统计
+###2.11 查询在线人数统计
+---
 **功能描述**: 查询在线人数统计<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=user-statis&prec=${prec}<br>
@@ -204,7 +217,8 @@
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
-###聊天室TOP排行
+###2.12 聊天室TOP排行
+---
 **功能描述**: 查询各聊天室TOP排行<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=top-list&num=${num}<br>
@@ -224,7 +238,8 @@
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
-###查询某聊天室分组列表
+###2.13 查询某聊天室分组列表
+---
 **功能描述**: 查询某聊天室分组列表<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=group-list&rid=${rid}<br>
@@ -245,7 +260,8 @@
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
-###查询人数分布
+###2.14 查询人数分布
+---
 **功能描述**: 查询人数分布<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=user-dist<br>
@@ -264,7 +280,8 @@
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
-###某用户在线状态
+###2.15 某用户在线状态
+---
 **功能描述**: 查询某用户在线状态<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=user-online<br>
@@ -282,8 +299,9 @@
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
-##系统维护接口
-###查询侦听层状态
+##3. 系统维护接口
+###3.1 查询侦听层状态
+---
 **功能描述**: 查询侦听层状态<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=listen-list<br>
@@ -302,7 +320,8 @@
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
-###添加侦听层结点
+###3.2 添加侦听层结点
+---
 **功能描述**: 移除侦听层结点<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=listen-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
@@ -318,7 +337,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###移除侦听层结点
+###3.3 移除侦听层结点
+---
 **功能描述**: 移除侦听层结点<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=listen-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
@@ -334,7 +354,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###查询转发层状态
+###3.4 查询转发层状态
+---
 **功能描述**: 查询转发层状态<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=frwder-list<br>
@@ -353,7 +374,8 @@
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
-###添加转发层结点
+###3.5 添加转发层结点
+---
 **功能描述**: 添加转发层结点<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=frwder-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
@@ -369,7 +391,8 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###移除转发层结点
+###3.6 移除转发层结点
+---
 **功能描述**: 移除转发层结点<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=frwder-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
