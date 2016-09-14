@@ -2,7 +2,7 @@
 
 ##错误返回值格式
 >{<br>
->  "errno" : "20503",<br>
+>  "errno" : 20503,<br>
 >  "errmsg" : "Need you follow uid."<br>
 >}
 
