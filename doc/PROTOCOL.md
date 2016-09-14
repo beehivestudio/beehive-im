@@ -159,66 +159,37 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0116<br>
-命令描述: 添加好友(ADD-FRIEND)<br>
-协议格式:<br>
->{<br>
->   "mark":"${mark}"            // O|备注信息|字串|<br>
->}
+命令描述: 点到点消息(P2P-MSG)<br>
+功能描述: 可用于发送私聊消息、添加/删除好友等点到点的消息<br>
+协议格式: 自定义<br>
 
 ---
 命令ID: 0x0117<br>
-命令描述: 添加好友应答(ADD-FRIEND-ACK)<br>
+命令描述: 点到点消息应答(P2P-MSG-ACK)<br>
 协议格式: NONE<br>
-TODO: 协议头中的to为对方的用户ID(UID)
 
 ---
 命令ID: 0x0118<br>
-命令描述: 回复添加好友(REP-ADD-FRIEND)<br>
-协议格式:<br>
->{<br>
->   "errno":${errno},           // M|错误码|数字|(同意/拒绝)|<br>
->   "errmsg":"${errmsg}",       // M|错误描述|字串|<br>
->   "mark":"${mark}"            // O|备注信息|字串|<br>
->}
-
----
-命令ID: 0x0119<br>
-命令描述: 回复添加好友应答(REP-ADD-FRIEND-ACK)<br>
-协议格式: NONE<br>
-
----
-命令ID: 0x011A<br>
-命令描述: 删除好友(DEL-FRIEND)<br>
-协议格式: NONE<br>
-TODO: 协议头中的to为对方的用户ID(UID)
-
----
-命令ID: 0x011B<br>
-命令描述: 删除好友应答(UNSUB-ACK)<br>
-协议格式: NONE<br>
-
----
-命令ID: 0x011C<br>
 命令描述: 聊天室消息(ROOM-MSG-ACK)<br>
 协议格式: 透传<br>
 
 ---
-命令ID: 0x011D<br>
+命令ID: 0x0119<br>
 命令描述: 聊天室消息应答(ROOM-MSG-ACK)<br>
 协议格式: NONE<br>
 
 ---
-命令ID: 0x011E<br>
+命令ID: 0x011A<br>
 命令描述: 聊天室广播消息(ROOM-BC-ACK)<br>
 协议格式: 透传<br>
 
 ---
-命令ID: 0x0120<br>
+命令ID: 0x011B<br>
 命令描述: 聊天室广播消息应答(ROOM-BC-MSG-ACK)<br>
 协议格式: NONE<br>
 
 ---
-命令ID: 0x0121<br>
+命令ID: 0x011C<br>
 命令描述: 通用异常消息(UNUSUAL)<br>
 协议格式:<br>
 >{<br>
@@ -227,12 +198,12 @@ TODO: 协议头中的to为对方的用户ID(UID)
 >}
 
 ---
-命令ID: 0x0122<br>
+命令ID: 0x011D<br>
 命令描述: 通用异常消息应答(UNUSUAL-ACK)<br>
 协议格式: NONE<br>
 
 ---
-命令ID: 0x0123<br>
+命令ID: 0x011E<br>
 命令描述: 聊天室人数(ROOM-USR-NUM)<br>
 协议格式:<br>
 >{<br>
@@ -241,17 +212,17 @@ TODO: 协议头中的to为对方的用户ID(UID)
 >}
 
 ---
-命令ID: 0x0124<br>
+命令ID: 0x0120<br>
 命令描述: 聊天室人数应答(ROOM-USR-NUM-ACK)<br>
 协议格式: NONE<br>
 
 ---
-命令ID: 0x0125<br>
+命令ID: 0x0121<br>
 命令描述: 同步消息(SYNC-MSG)<br>
 协议格式: NONE<br>
 
 ---
-命令ID: 0x0126<br>
+命令ID: 0x0122<br>
 命令描述: 同步消息应答(SYNC-MSG-ACK)<br>
 协议格式: NONE<br>
 
