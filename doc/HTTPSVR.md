@@ -179,8 +179,8 @@
 >   "errno":${errno},   // 错误码(M)<br>
 >   "len":${len},       // 列表长度(M)<br>
 >   "list":[            // 精度列表(M)<br>
->       {"prec":"{prec}"}, // ${prec}:精度值
->       {"prec":"{prec}"}]
+>       {"idx":${idx}, "prec":"{prec}"}, // ${idx}:序号 ${prec}:精度值
+>       {"idx":${idx}, "prec":"{prec}"}],
 >   "errmsg":"${errmsg}"// 错误描述(M)<br>
 >}
 
@@ -198,9 +198,9 @@
 >   "prec":"${prec}",       // 时间精度(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 走势列表(M)<br>
->      {"time":"${time}", "max":${max}, "min":${min}}, // ${time}:时间戳 ${max}:峰值 ${min}:底值<br>
->      {"time":"${time}", "max":${max}, "min":${min}},<br>
->      {"time":"${time}", "max":${max}, "min":${min}}]<br>
+>      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}}, // ${time}:时间戳 ${max}:峰值 ${min}:底值<br>
+>      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}},<br>
+>      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -217,10 +217,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 排行列表(M)<br>
->      {"rid":${rid}, "total":${total}}, // ${rid}:聊天室ID ${total}:聊天室人数<br>
->      {"rid":${rid}, "total":${total}},<br>
->      {"rid":${rid}, "total":${total}},<br>
->      {"rid":${rid}, "total":${total}}],<br>
+>      {"idx":${idx}, "rid":${rid}, "total":${total}}, // ${rid}:聊天室ID ${total}:聊天室人数<br>
+>      {"idx":${idx}, "rid":${rid}, "total":${total}},<br>
+>      {"idx":${idx}, "rid":${rid}, "total":${total}},<br>
+>      {"idx":${idx}, "rid":${rid}, "total":${total}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -238,10 +238,10 @@
 >   "rid":${rid},           // 聊天室ID(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->      {"gid":${gid}, "total":${total}}, // ${gid}:分组ID ${total}:组人数<br>
->      {"gid":${gid}, "total":${total}},<br>
->      {"gid":${gid}, "total":${total}},<br>
->      {"gid":${gid}, "total":${total}}],<br>
+>      {"idx":${idx}, "gid":${gid}, "total":${total}}, // ${gid}:分组ID ${total}:组人数<br>
+>      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
+>      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
+>      {"idx":${idx}, "gid":${gid}, "total":${total}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -257,10 +257,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -277,8 +277,8 @@
 >   "uid":"${uid}",         // 用户ID(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 当前正登陆聊天室列表(M)<br>
->      {"rid":${rid}},     // ${rid}:聊天室ID<br>
->      {"rid":${rid}}],<br>
+>      {"idx":${idx}, "rid":${rid}},     // ${rid}:聊天室ID<br>
+>      {"idx":${idx}, "rid":${rid}}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -295,10 +295,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
@@ -346,10 +346,10 @@
 >   "errno":${errno},       // 错误码(M)<br>
 >   "len":${len},           // 列表长度(M)<br>
 >   "list":[                // 分组列表(M)<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
 >   "errmsg":"${errmsg}"    // 错误描述(M)<br>
 >}
 
