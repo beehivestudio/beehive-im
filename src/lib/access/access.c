@@ -4,17 +4,15 @@
 #include "lock.h"
 #include "redo.h"
 #include "search.h"
-#include "hash_alg.h"
 #include "acc_lsn.h"
 #include "acc_rsvr.h"
-#include "acc_worker.h"
+#include "hash_alg.h"
 
 static log_cycle_t *acc_init_log(char *fname);
 static int acc_comm_init(acc_cntx_t *ctx);
-static int acc_init_reg(acc_cntx_t *ctx);
-static int acc_creat_agents(acc_cntx_t *ctx);
+static int acc_creat_rsvr(acc_cntx_t *ctx);
 static int acc_rsvr_pool_destroy(acc_cntx_t *ctx);
-static int acc_creat_listens(acc_cntx_t *ctx);
+static int acc_creat_lsvr(acc_cntx_t *ctx);
 static int acc_creat_queue(acc_cntx_t *ctx);
 
 static int acc_sid_list_init(acc_cntx_t *ctx, acc_conf_t *conf);
@@ -46,12 +44,6 @@ acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log)
     ctx->conf = conf;
 
     do {
-        /* > 注册消息处理 */
-        if (acc_init_reg(ctx)) {
-            log_error(log, "Initialize register failed!");
-            break;
-        }
-
         /* > 设置进程打开文件数 */
         if (set_fd_limit(conf->connections.max)) {
             log_error(log, "errmsg:[%d] %s! max:%d",
@@ -66,13 +58,13 @@ acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log)
         }
 
         /* > 创建Agent线程池 */
-        if (acc_creat_agents(ctx)) {
+        if (acc_creat_rsvr(ctx)) {
             log_error(log, "Initialize agent thread pool failed!");
             break;
         }
 
         /* > 创建Listen线程池 */
-        if (acc_creat_listens(ctx)) {
+        if (acc_creat_lsvr(ctx)) {
             log_error(log, "Initialize agent thread pool failed!");
             break;
         }
@@ -129,27 +121,22 @@ int acc_launch(acc_cntx_t *ctx)
     int idx;
     acc_conf_t *conf = ctx->conf;
 
-    /* 1. 设置Worker线程回调 */
-    for (idx=0; idx<conf->worker_num; ++idx) {
-        thread_pool_add_worker(ctx->workers, acc_worker_routine, ctx);
-    }
-
-    /* 2. 设置Agent线程回调 */
-    for (idx=0; idx<conf->acc_num; ++idx) {
-        thread_pool_add_worker(ctx->agents, acc_rsvr_routine, ctx);
+    /* 1. 设置Agent线程回调 */
+    for (idx=0; idx<conf->rsvr_num; ++idx) {
+        thread_pool_add_worker(ctx->rsvr_pool, acc_rsvr_routine, ctx);
     }
     
-    /* 3. 设置Listen线程回调 */
-    for (idx=0; idx<conf->lsn_num; ++idx) {
-        thread_pool_add_worker(ctx->listens, acc_listen_routine, ctx);
+    /* 2. 设置Listen线程回调 */
+    for (idx=0; idx<conf->lsvr_num; ++idx) {
+        thread_pool_add_worker(ctx->lsvr_pool, acc_lsvr_routine, ctx);
     }
  
     return ACC_OK;
 }
 
 /******************************************************************************
- **函数名称: acc_creat_agents
- **功    能: 创建Agent线程池
+ **函数名称: acc_creat_rsvr
+ **功    能: 创建接收线程池
  **输入参数: 
  **     ctx: 全局信息
  **输出参数: NONE
@@ -158,36 +145,36 @@ int acc_launch(acc_cntx_t *ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2014.11.15 #
  ******************************************************************************/
-static int acc_creat_agents(acc_cntx_t *ctx)
+static int acc_creat_rsvr(acc_cntx_t *ctx)
 {
     int idx, num;
     acc_rsvr_t *agent;
     const acc_conf_t *conf = ctx->conf;
 
     /* > 新建Agent对象 */
-    agent = (acc_rsvr_t *)calloc(1, conf->acc_num*sizeof(acc_rsvr_t));
+    agent = (acc_rsvr_t *)calloc(1, conf->rsvr_num*sizeof(acc_rsvr_t));
     if (NULL == agent) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return ACC_ERR;
     }
 
     /* > 创建Worker线程池 */
-    ctx->agents = thread_pool_init(conf->acc_num, NULL, agent);
-    if (NULL == ctx->agents) {
+    ctx->rsvr_pool = thread_pool_init(conf->rsvr_num, NULL, agent);
+    if (NULL == ctx->rsvr_pool) {
         log_error(ctx->log, "Initialize thread pool failed!");
         free(agent);
         return ACC_ERR;
     }
 
     /* 3. 依次初始化Agent对象 */
-    for (idx=0; idx<conf->acc_num; ++idx) {
+    for (idx=0; idx<conf->rsvr_num; ++idx) {
         if (acc_rsvr_init(ctx, agent+idx, idx)) {
             log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
             break;
         }
     }
 
-    if (idx == conf->acc_num) {
+    if (idx == conf->rsvr_num) {
         return ACC_OK; /* 成功 */
     }
 
@@ -198,14 +185,14 @@ static int acc_creat_agents(acc_cntx_t *ctx)
     }
 
     FREE(agent);
-    thread_pool_destroy(ctx->agents);
+    thread_pool_destroy(ctx->rsvr_pool);
 
     return ACC_ERR;
 }
 
 /******************************************************************************
- **函数名称: acc_creat_listens
- **功    能: 创建Listen线程池
+ **函数名称: acc_creat_lsvr
+ **功    能: 创建帧听线程池
  **输入参数: 
  **     ctx: 全局信息
  **输出参数: NONE
@@ -214,7 +201,7 @@ static int acc_creat_agents(acc_cntx_t *ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-30 15:06:58 #
  ******************************************************************************/
-static int acc_creat_listens(acc_cntx_t *ctx)
+static int acc_creat_lsvr(acc_cntx_t *ctx)
 {
     int idx;
     acc_lsvr_t *lsvr;
@@ -231,7 +218,7 @@ static int acc_creat_listens(acc_cntx_t *ctx)
     spin_lock_init(&ctx->listen.accept_lock);
 
     /* > 创建LSN对象 */
-    ctx->listen.lsvr = (acc_lsvr_t *)calloc(1, conf->lsn_num*sizeof(acc_lsvr_t));
+    ctx->listen.lsvr = (acc_lsvr_t *)calloc(1, conf->lsvr_num*sizeof(acc_lsvr_t));
     if (NULL == ctx->listen.lsvr) {
         CLOSE(ctx->listen.lsn_sck_id);
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
@@ -239,10 +226,10 @@ static int acc_creat_listens(acc_cntx_t *ctx)
     }
 
     /* > 初始化侦听服务 */
-    for (idx=0; idx<conf->lsn_num; ++idx) {
+    for (idx=0; idx<conf->lsvr_num; ++idx) {
         lsvr = ctx->listen.lsvr + idx;
         lsvr->log = ctx->log;
-        if (acc_listen_init(ctx, lsvr, idx)) {
+        if (acc_lsvr_init(ctx, lsvr, idx)) {
             CLOSE(ctx->listen.lsn_sck_id);
             FREE(ctx->listen.lsvr);
             log_error(ctx->log, "Initialize listen-server failed!");
@@ -250,8 +237,8 @@ static int acc_creat_listens(acc_cntx_t *ctx)
         }
     }
 
-    ctx->listens = thread_pool_init(conf->lsn_num, NULL, ctx->listen.lsvr);
-    if (NULL == ctx->listens) {
+    ctx->lsvr_pool = thread_pool_init(conf->lsvr_num, NULL, ctx->listen.lsvr);
+    if (NULL == ctx->lsvr_pool) {
         CLOSE(ctx->listen.lsn_sck_id);
         FREE(ctx->listen.lsvr);
         log_error(ctx->log, "Initialize thread pool failed!");
@@ -280,20 +267,20 @@ static int acc_rsvr_pool_destroy(acc_cntx_t *ctx)
     const acc_conf_t *conf = ctx->conf;
 
     /* 1. 释放Agent对象 */
-    for (idx=0; idx<conf->acc_num; ++idx) {
-        agent = (acc_rsvr_t *)ctx->agents->data + idx;
+    for (idx=0; idx<conf->rsvr_num; ++idx) {
+        agent = (acc_rsvr_t *)ctx->rsvr_pool->data + idx;
 
         acc_rsvr_destroy(agent);
     }
 
     /* 2. 释放线程池对象 */
-    data = ctx->agents->data;
+    data = ctx->rsvr_pool->data;
 
-    thread_pool_destroy(ctx->agents);
+    thread_pool_destroy(ctx->rsvr_pool);
 
     free(data);
 
-    ctx->agents = NULL;
+    ctx->rsvr_pool = NULL;
 
     return ACC_ERR;
 }
@@ -319,70 +306,6 @@ static int acc_reg_def_hdl(unsigned int type, char *buff, size_t len, void *args
 }
 
 /******************************************************************************
- **函数名称: acc_init_reg
- **功    能: 初始化注册消息处理
- **输入参数:
- **     ctx: 全局信息
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述: 
- **注意事项: 
- **作    者: # Qifeng.zou # 2014.12.20 #
- ******************************************************************************/
-static int acc_init_reg(acc_cntx_t *ctx)
-{
-    unsigned int idx;
-    acc_reg_t *reg;
-
-    for (idx=0; idx<=ACC_MSG_TYPE_MAX; ++idx) {
-        reg = &ctx->reg[idx];
-
-        reg->type = idx;
-        reg->proc = acc_reg_def_hdl;
-        reg->args = ctx;
-        reg->flag = ACC_REG_FLAG_UNREG;
-    }
-
-    return ACC_OK;
-}
-
-/******************************************************************************
- **函数名称: acc_reg_add
- **功    能: 注册消息处理函数
- **输入参数:
- **     ctx: 全局信息
- **     type: 扩展消息类型. Range:(0 ~ ACC_MSG_TYPE_MAX)
- **     proc: 指定消息类型对应的处理函数
- **     args: 附加参数
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述: 
- **注意事项: 
- **     1. 只能用于注册处理扩展数据类型的处理
- **     2. 不允许重复注册 
- **作    者: # Qifeng.zou # 2014.12.20 #
- ******************************************************************************/
-int acc_reg_add(acc_cntx_t *ctx, unsigned int type, acc_reg_cb_t proc, void *args)
-{
-    acc_reg_t *reg;
-
-    if (type >= ACC_MSG_TYPE_MAX
-        || 0 != ctx->reg[type].flag)
-    {
-        log_error(ctx->log, "Type 0x%02X is invalid or repeat reg!", type);
-        return ACC_ERR;
-    }
-
-    reg = &ctx->reg[type];
-    reg->type = type;
-    reg->proc = proc;
-    reg->args = args;
-    reg->flag = 1;
-
-    return ACC_OK;
-}
-
-/******************************************************************************
  **函数名称: acc_creat_queue
  **功    能: 创建队列
  **输入参数:
@@ -399,13 +322,13 @@ static int acc_creat_queue(acc_cntx_t *ctx)
     const acc_conf_t *conf = ctx->conf;
 
     /* > 创建CONN队列(与Agent数一致) */
-    ctx->connq = (queue_t **)calloc(conf->acc_num, sizeof(queue_t*));
+    ctx->connq = (queue_t **)calloc(conf->rsvr_num, sizeof(queue_t*));
     if (NULL == ctx->connq) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return ACC_ERR;
     }
 
-    for (idx=0; idx<conf->acc_num; ++idx) {
+    for (idx=0; idx<conf->rsvr_num; ++idx) {
         ctx->connq[idx] = queue_creat(conf->connq.max, sizeof(acc_add_sck_t));
         if (NULL == ctx->connq[idx]) {
             log_error(ctx->log, "Create conn queue failed!");
@@ -414,13 +337,13 @@ static int acc_creat_queue(acc_cntx_t *ctx)
     }
 
     /* > 创建RECV队列(与Agent数一致) */
-    ctx->recvq = (ring_t **)calloc(conf->acc_num, sizeof(ring_t*));
+    ctx->recvq = (ring_t **)calloc(conf->rsvr_num, sizeof(ring_t*));
     if (NULL == ctx->recvq) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return ACC_ERR;
     }
 
-    for (idx=0; idx<conf->acc_num; ++idx) {
+    for (idx=0; idx<conf->rsvr_num; ++idx) {
         ctx->recvq[idx] = ring_creat(conf->recvq.max);
         if (NULL == ctx->recvq[idx]) {
             log_error(ctx->log, "Create recv queue failed!");
@@ -429,13 +352,13 @@ static int acc_creat_queue(acc_cntx_t *ctx)
     }
 
     /* > 创建SEND队列(与Agent数一致) */
-    ctx->sendq = (ring_t **)calloc(conf->acc_num, sizeof(ring_t *));
+    ctx->sendq = (ring_t **)calloc(conf->rsvr_num, sizeof(ring_t *));
     if (NULL == ctx->sendq) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return ACC_ERR;
     }
 
-    for (idx=0; idx<conf->acc_num; ++idx) {
+    for (idx=0; idx<conf->rsvr_num; ++idx) {
         ctx->sendq[idx] = ring_creat(conf->sendq.max);
         if (NULL == ctx->sendq[idx]) {
             log_error(ctx->log, "Create send queue failed!");
@@ -496,14 +419,14 @@ static int acc_sids_cmp_cb(const socket_t *sck1, const socket_t *sck2)
 static int acc_sid_list_init(acc_cntx_t *ctx, acc_conf_t *conf)
 {
     int idx;
-    acc_sid_list_t *list;
+    acc_cid_list_t *list;
 
-    ctx->connections = (acc_sid_list_t *)calloc(conf->acc_num, sizeof(acc_sid_list_t));
+    ctx->connections = (acc_cid_list_t *)calloc(conf->rsvr_num, sizeof(acc_cid_list_t));
     if (NULL == ctx->connections) {
         return -1;
     }
 
-    for (idx=0; idx<conf->acc_num; idx++) {
+    for (idx=0; idx<conf->rsvr_num; idx++) {
         list = &ctx->connections[idx];
 
         spin_lock_init(&list->lock);
@@ -531,9 +454,9 @@ static int acc_sid_list_init(acc_cntx_t *ctx, acc_conf_t *conf)
  ******************************************************************************/
 int acc_sid_item_add(acc_cntx_t *ctx, uint64_t sid, socket_t *sck)
 {
-    acc_sid_list_t *list;
+    acc_cid_list_t *list;
 
-    list = &ctx->connections[sid % ctx->conf->acc_num];
+    list = &ctx->connections[sid % ctx->conf->rsvr_num];
 
     spin_lock(&list->lock);
 
@@ -561,13 +484,13 @@ int acc_sid_item_add(acc_cntx_t *ctx, uint64_t sid, socket_t *sck)
 socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t sid)
 {
     socket_t *sck, key;
-    acc_sid_list_t *list;
+    acc_cid_list_t *list;
     acc_socket_extra_t extra;
 
     extra.sid = sid;
     key.extra = &extra;
 
-    list = &ctx->connections[sid % ctx->conf->acc_num];
+    list = &ctx->connections[sid % ctx->conf->rsvr_num];
 
     spin_lock(&list->lock);
 
@@ -581,17 +504,28 @@ socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t sid)
     return sck;
 }
 
+/******************************************************************************
+ **函数名称: acc_get_aid_by_sid
+ **功    能: 通过sid查找rsvr的序列号
+ **输入参数: 
+ **     ctx: 全局信息
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
+ ******************************************************************************/
 int acc_get_aid_by_sid(acc_cntx_t *ctx, uint64_t sid)
 {
     int aid;
     socket_t *sck, key;
     acc_socket_extra_t *extra, key_extra;
-    acc_sid_list_t *list;
+    acc_cid_list_t *list;
 
     key_extra.sid = sid;
     key.extra = &key_extra;
 
-    list = &ctx->connections[sid % ctx->conf->acc_num];
+    list = &ctx->connections[sid % ctx->conf->rsvr_num];
 
     spin_lock(&list->lock);
     sck = rbt_query(list->sids, &key);

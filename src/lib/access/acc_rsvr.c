@@ -249,12 +249,12 @@ static acc_rsvr_t *acc_rsvr_self(acc_cntx_t *ctx)
     int id;
     acc_rsvr_t *rsvr;
 
-    id = thread_pool_get_tidx(ctx->agents);
+    id = thread_pool_get_tidx(ctx->rsvr_pool);
     if (id < 0) {
         return NULL;
     }
 
-    rsvr = thread_pool_get_args(ctx->agents);
+    rsvr = thread_pool_get_args(ctx->rsvr_pool);
 
     return rsvr + id;
 }
@@ -444,11 +444,11 @@ static int acc_rsvr_timeout_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  ******************************************************************************/
 static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 {
-#define AGT_RSVR_CONN_POP_NUM   (1024)
+#define AGT_RSVR_CONN_POP_NUM (1024)
     int num, idx;
-    time_t ctm = time(NULL);
     socket_t *sck;
     struct epoll_event ev;
+    time_t ctm = time(NULL);
     acc_socket_extra_t *extra;
     acc_add_sck_t *add[AGT_RSVR_CONN_POP_NUM];
 
@@ -466,10 +466,9 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 
         for (idx=0; idx<num; ++idx) {
             /* > 申请SCK空间 */
-            sck = calloc(1, sizeof(socket_t));
+            sck = (socket_t *)calloc(1, sizeof(socket_t));
             if (NULL == sck) {
-                log_error(rsvr->log, "Alloc memory from slab failed! sid:%lu",
-                        add[idx]->sid);
+                log_error(rsvr->log, "Alloc memory failed! sid:%lu", add[idx]->sid);
                 CLOSE(add[idx]->fd);
                 queue_dealloc(ctx->connq[rsvr->id], add[idx]);
                 continue;
@@ -480,8 +479,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             /* > 创建SCK关联对象 */
             extra = calloc(1, sizeof(acc_socket_extra_t));
             if (NULL == extra) {
-                log_error(rsvr->log, "Alloc memory from slab failed! sid:%lu",
-                        add[idx]->sid);
+                log_error(rsvr->log, "Alloc memory failed! sid:%lu", add[idx]->sid);
                 CLOSE(add[idx]->fd);
                 FREE(sck);
                 queue_dealloc(ctx->connq[rsvr->id], add[idx]);
@@ -492,7 +490,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             extra->sid = add[idx]->sid;
             extra->send_list = list_creat(NULL);
             if (NULL == extra->send_list) {
-                log_error(rsvr->log, "Alloc memory from slab failed! sid:%lu",
+                log_error(rsvr->log, "Create send list failed! sid:%lu",
                           add[idx]->sid);
                 CLOSE(add[idx]->fd);
                 FREE(sck);
@@ -565,6 +563,10 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 
     /* > 释放套接字空间 */
     CLOSE(sck->fd);
+
+    ctx->callback(ctx, sck, ACC_CALLBACK_CLOSED, (void *)extra, (void *)NULL, 0);
+    ctx->callback(ctx, sck, ACC_CALLBACK_ASI_DESTROY, (void *)extra, (void *)NULL, 0);
+
     list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
     if (sck->recv.addr) {
         mem_ref_decr(sck->recv.addr);
@@ -721,34 +723,6 @@ static int acc_sys_msg_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 }
 
 /******************************************************************************
- **函数名称: acc_rsvr_cmd_proc_req
- **功    能: 发送处理请求
- **输入参数:
- **     ctx: 全局对象
- **     rsvr: 接收服务
- **     wid: 工作线程ID(与rqid一致)
- **输出参数: NONE
- **返    回: >0:成功 <=0:失败
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2015.06.26 10:33:12 #
- ******************************************************************************/
-static int acc_rsvr_cmd_proc_req(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int widx)
-{
-    cmd_data_t cmd;
-    char path[FILE_PATH_MAX_LEN];
-
-    memset(&cmd, 0, sizeof(cmd));
-
-    cmd.type = CMD_PROC_DATA;
-
-    acc_wsvr_cmd_usck_path(ctx->conf, widx, path, sizeof(path));
-
-    /* > 发送处理命令 */
-    return unix_udp_send(rsvr->cmd_sck.fd, path, &cmd, sizeof(cmd_data_t));
-}
-
-/******************************************************************************
  **函数名称: acc_recv_post_hdl
  **功    能: 数据接收完毕，进行数据处理
  **输入参数:
@@ -762,23 +736,15 @@ static int acc_rsvr_cmd_proc_req(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int widx)
  ******************************************************************************/
 static int acc_recv_post_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 {
-    acc_reg_t *reg;
     mesg_header_t *head;
     acc_socket_extra_t *extra = (acc_socket_extra_t *)sck->extra;
 
+    head = (mesg_header_t *)extra->head;
+
     /* > 自定义消息的处理 */
-    if (MSG_FLAG_USR == extra->head->flag) {
-        head = (mesg_header_t *)extra->head;
-
-        reg = &ctx->reg[head->type];
-
-        /* > 调用处理回调 */
-        reg->proc(head->type, (void *)(head + 1),
-                head->length + sizeof(mesg_header_t), reg->args);
-
-        /* 3. 释放内存空间 */
-        mem_ref_decr((void *)head);
-        return ACC_OK;
+    if (MSG_FLAG_USR == head->flag) {
+        return ctx->callback(ctx, sck, ACC_CALLBACK_RECEIVE,
+            (void *)extra, (void *)head, head->length + sizeof(mesg_header_t));
     }
 
     /* > 系统消息的处理 */
@@ -881,13 +847,13 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
             RECV_POST:
                 /* 将数据放入接收队列 */
                 ret = acc_recv_post_hdl(ctx, rsvr, sck);
-                if (ACC_OK == ret) {
-                        recv->phase = SOCK_PHASE_RECV_INIT;
-                        recv->addr = NULL;
-                        continue; /* 接收下一条数据 */
-                }
                 mem_ref_decr(recv->addr);
                 recv->addr = NULL;
+                if (ACC_OK == ret) {
+                    recv->phase = SOCK_PHASE_RECV_INIT;
+                    recv->addr = NULL;
+                    continue; /* 接收下一条数据 */
+                }
                 return ACC_ERR;
         }
     }
@@ -1058,7 +1024,7 @@ static socket_t *acc_push_into_send_list(
         acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t sid, void *addr)
 {
     socket_t *sck, key;
-    acc_sid_list_t *list;
+    acc_cid_list_t *list;
     acc_socket_extra_t *extra, key_extra;
 
     key_extra.sid = sid;

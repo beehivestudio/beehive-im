@@ -7,9 +7,9 @@
 #include "acc_rsvr.h"
 #include "acc_lsn.h"
 
-static int acc_listen_timeout_hdl(acc_cntx_t *ctx, acc_lsvr_t *lsvr);
-static int acc_listen_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr);
-static int acc_listen_send_add_sck_req(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx);
+static int acc_lsvr_timeout_hdl(acc_cntx_t *ctx, acc_lsvr_t *lsvr);
+static int acc_lsvr_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr);
+static int acc_lsvr_send_add_sck_req(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx);
 
 /******************************************************************************
  **函数名称: acc_lsvr_self
@@ -27,19 +27,19 @@ static acc_lsvr_t *acc_lsn_self(acc_cntx_t *ctx)
     int id;
     acc_lsvr_t *lsvr;
 
-    id = thread_pool_get_tidx(ctx->listens);
+    id = thread_pool_get_tidx(ctx->lsvr_pool);
     if (id < 0) {
         log_error(ctx->log, "Get self-thread failed!");
         return NULL;
     }
 
-    lsvr = thread_pool_get_args(ctx->listens);
+    lsvr = thread_pool_get_args(ctx->lsvr_pool);
 
     return lsvr + id;
 }
 
 /******************************************************************************
- **函数名称: acc_listen_routine
+ **函数名称: acc_lsvr_routine
  **功    能: 运行侦听线程
  **输入参数:
  **     _ctx: 全局信息
@@ -49,12 +49,12 @@ static acc_lsvr_t *acc_lsn_self(acc_cntx_t *ctx)
  **注意事项: 初始化过程在程序启动时已经完成 - 在子线程中初始化，一旦出现异常将不好处理!
  **作    者: # Qifeng.zou # 2014.11.18 #
  ******************************************************************************/
-void *acc_listen_routine(void *_ctx)
+void *acc_lsvr_routine(void *_ctx)
 {
     int ret, max;
     fd_set rdset;
-    struct timeval tv;
     acc_lsvr_t *lsvr;
+    struct timeval tv;
     acc_cntx_t *ctx = (acc_cntx_t *)_ctx;
 
     nice(-20);
@@ -85,20 +85,20 @@ void *acc_listen_routine(void *_ctx)
             continue;
         }
         else if (0 == ret) {
-            acc_listen_timeout_hdl(ctx, lsvr);
+            acc_lsvr_timeout_hdl(ctx, lsvr);
             continue;
         }
 
         /* > 接收网络连接 */
         if (FD_ISSET(ctx->listen.lsn_sck_id, &rdset)) {
-            acc_listen_accept(ctx, lsvr);
+            acc_lsvr_accept(ctx, lsvr);
         }
     }
     return (void *)0;
 }
 
 /******************************************************************************
- **函数名称: acc_listen_init
+ **函数名称: acc_lsvr_init
  **功    能: 初始化侦听线程
  **输入参数:
  **     ctx: 全局信息
@@ -110,7 +110,7 @@ void *acc_listen_routine(void *_ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2014.11.19 #
  ******************************************************************************/
-int acc_listen_init(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx)
+int acc_lsvr_init(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx)
 {
     char path[FILE_NAME_MAX_LEN];
     acc_conf_t *conf = ctx->conf;
@@ -129,7 +129,7 @@ int acc_listen_init(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx)
 }
 
 /******************************************************************************
- **函数名称: acc_listen_timeout_hdl
+ **函数名称: acc_lsvr_timeout_hdl
  **功    能: 超时处理
  **输入参数:
  **     ctx: 全局信息
@@ -140,13 +140,13 @@ int acc_listen_init(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-07-08 07:46:32 #
  ******************************************************************************/
-static int acc_listen_timeout_hdl(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
+static int acc_lsvr_timeout_hdl(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
 {
     int idx;
 
-    for (idx=0; idx<ctx->conf->acc_num; ++idx) {
+    for (idx=0; idx<ctx->conf->rsvr_num; ++idx) {
         if (queue_used(ctx->connq[idx])) {
-            acc_listen_send_add_sck_req(ctx, lsvr, idx);
+            acc_lsvr_send_add_sck_req(ctx, lsvr, idx);
         }
     }
 
@@ -154,7 +154,7 @@ static int acc_listen_timeout_hdl(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
 }
 
 /******************************************************************************
- **函数名称: acc_listen_accept
+ **函数名称: acc_lsvr_accept
  **功    能: 接收连接请求
  **输入参数:
  **     ctx: 全局信息
@@ -167,7 +167,7 @@ static int acc_listen_timeout_hdl(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
  **注意事项: 
  **作    者: # Qifeng.zou # 2014.11.20 #
  ******************************************************************************/
-static int acc_listen_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
+static int acc_lsvr_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
 {
     int fd, idx, sid;
     acc_add_sck_t *add;
@@ -190,7 +190,7 @@ static int acc_listen_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
     spin_unlock(&ctx->listen.accept_lock); /* 解锁 */
 
     /* > 将通信套接字放入队列 */
-    idx = sid % ctx->conf->acc_num;
+    idx = sid % ctx->conf->rsvr_num;
 
     add = queue_malloc(ctx->connq[idx], sizeof(acc_add_sck_t));
     if (NULL == add) {
@@ -209,13 +209,13 @@ static int acc_listen_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
     queue_push(ctx->connq[idx], add);
 
     /* > 发送ADD-SCK请求 */
-    acc_listen_send_add_sck_req(ctx, lsvr, idx);
+    acc_lsvr_send_add_sck_req(ctx, lsvr, idx);
 
     return ACC_OK;
 }
 
 /******************************************************************************
- **函数名称: acc_listen_send_add_sck_req
+ **函数名称: acc_lsvr_send_add_sck_req
  **功    能: 发送ADD-SCK请求
  **输入参数:
  **     ctx: 全局信息
@@ -227,7 +227,7 @@ static int acc_listen_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-22 21:47:52 #
  ******************************************************************************/
-static int acc_listen_send_add_sck_req(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx)
+static int acc_lsvr_send_add_sck_req(acc_cntx_t *ctx, acc_lsvr_t *lsvr, int idx)
 {
     cmd_data_t cmd;
     char path[FILE_NAME_MAX_LEN];
