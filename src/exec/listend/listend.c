@@ -22,6 +22,20 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log);
 static int lsnd_launch(lsnd_cntx_t *ctx);
 static int lsnd_set_reg(lsnd_cntx_t *ctx);
 
+static size_t lsnd_mesg_body_length(mesg_header_t *head)
+{
+    return ntohl(head->length);
+}
+
+/* 协议内容 */
+static acc_protocol_t g_acc_protocol =
+{
+    lsnd_acc_callback,
+    sizeof(mesg_header_t),
+    (acc_get_packet_body_size_cb_t)lsnd_mesg_body_length,
+    sizeof(lsnd_session_data_t),
+};
+
 /******************************************************************************
  **函数名称: main 
  **功    能: 代理服务
@@ -135,6 +149,12 @@ static int lsnd_proc_lock(lsnd_conf_t *conf)
     return 0;
 }
 
+/* 比较回调 */
+static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
+{
+    return reg1->type - reg2->type;
+}
+
 /******************************************************************************
  **函数名称: lsnd_init
  **功    能: 初始化进程
@@ -168,8 +188,15 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
     memcpy(&ctx->conf, conf, sizeof(lsnd_conf_t));  /* 拷贝配置信息 */
 
     do {
+        /* > 初始化回调注册表 */
+        ctx->reg = avl_creat(NULL, (cmp_cb_t)lsnd_acc_reg_cmp_cb);
+        if (NULL == ctx->reg) {
+            log_error(log, "Initialize register table failed!");
+            break;
+        }
+
         /* > 初始化帧听模块 */
-        ctx->access = acc_init(NULL, &conf->access, log);
+        ctx->access = acc_init(&g_acc_protocol, &conf->access, log);
         if (NULL == ctx->access) {
             log_error(log, "Initialize access failed!");
             break;
@@ -202,15 +229,14 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
  ******************************************************************************/
 static int lsnd_set_reg(lsnd_cntx_t *ctx)
 {
-#if 0
-#define LSND_AGT_REG_CB(ctx, type, proc, args) /* 注册代理数据回调 */\
-    if (agent_reg_add((ctx)->agent, type, (agent_reg_cb_t)proc, (void *)args)) { \
+#define LSND_ACC_REG_CB(ctx, type, proc, args) /* 注册代理数据回调 */\
+    if (lsnd_acc_reg_add(ctx, type, (lsnd_reg_cb_t)proc, (void *)args)) { \
         return LSND_ERR; \
     }
 
-    LSND_AGT_REG_CB(ctx, MSG_SEARCH_REQ, lsnd_search_req_hdl, ctx);
-    LSND_AGT_REG_CB(ctx, MSG_INSERT_WORD_REQ, lsnd_insert_word_req_hdl, ctx);
-#endif
+    LSND_ACC_REG_CB(ctx, MSG_SEARCH_REQ, lsnd_search_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, MSG_INSERT_WORD_REQ, lsnd_insert_word_req_hdl, ctx);
+
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
         log_error((lsnd)->log, "Register type [%d] failed!", type); \

@@ -132,3 +132,38 @@ int lsnd_insert_word_rsp_hdl(int type, int orig, char *data, size_t len, void *a
     /* > 放入发送队列 */
     return acc_async_send(ctx->access, type, hhead.sid, data, len);
 }
+
+/******************************************************************************
+ **函数名称: lsnd_acc_callback
+ **功    能: ACCESS处理回调
+ **输入参数:
+ **     acc: ACC上下文
+ **     sck: 套接字
+ **     reason: 回调的原因
+ **     user: 扩展数据
+ **     in: 接收数据
+ **     len: 接收数据长度
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.09.17 22:03:02 #
+ ******************************************************************************/
+int lsnd_acc_callback(acc_cntx_t *acc, socket_t *sck, int reason, void *user, void *in, int len)
+{
+    switch (reason) {
+        case ACC_CALLBACK_CREAT:
+        case ACC_CALLBACK_DESTROY:
+        case ACC_CALLBACK_RECEIVE:
+        case ACC_CALLBACK_WRITEABLE:
+        case ACC_CALLBACK_CLOSED:
+        case ACC_CALLBACK_ADD_POLL_FD:
+        case ACC_CALLBACK_DEL_POLL_FD:
+        case ACC_CALLBACK_CHANGE_MODE_POLL_FD:
+        case ACC_CALLBACK_LOCK_POLL:
+        case ACC_CALLBACK_UNLOCK_POLL:
+        default:
+            break;
+    }
+    return 0;
+}

@@ -92,3 +92,40 @@ log_cycle_t *lsnd_init_log(char *fname)
 
     return log_init(LOG_LEVEL_ERROR, path);
 }
+
+/******************************************************************************
+ **函数名称: lsnd_acc_reg_add
+ **功    能: 添加下游数据的处理注册回调
+ **输入参数:
+ **     ctx: 全局信息
+ **     type: 数据类型
+ **     proc: 处理回调
+ **     args: 附加参数
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.09.17 22:18:53 #
+ ******************************************************************************/
+int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args)
+{
+    lsnd_reg_t *reg;
+
+    reg = (lsnd_reg_t *)calloc(1, sizeof(lsnd_reg_t));
+    if (NULL == reg) {
+        return -1;
+    }
+
+    reg->type = type;
+    reg->proc = proc;
+    reg->args = args;
+
+    if (avl_insert(ctx->reg, reg)) {
+        free(reg);
+        return -1;
+    }
+
+    return 0;
+}
+
+

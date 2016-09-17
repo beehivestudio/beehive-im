@@ -26,18 +26,30 @@ typedef struct
     char *conf_path;                        /* 配置路径 */
 } lsnd_opt_t;
 
+/* 注册回调 */
+typedef int (*lsnd_reg_cb_t)(unsigned int type, void *data, size_t len, void *args);
+
+/* 注册项 */
+typedef struct
+{
+    int type;
+    lsnd_reg_cb_t proc;
+    void *args;
+} lsnd_reg_t;
+
 /* 全局对象 */
 typedef struct
 {
     lsnd_conf_t conf;                       /* 配置信息 */
     log_cycle_t *log;                       /* 日志对象 */
+    avl_tree_t *reg;                        /* 注册回调 */
 
-    //agent_cntx_t *agent;                    /* 代理服务 */
     acc_cntx_t *access;                     /* 帧听层模块 */
     rtmq_proxy_t *frwder;                   /* FRWDER服务 */
 } lsnd_cntx_t;
 
 int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt);
 int lsnd_usage(const char *exec);
+int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args);
 
 #endif /*__LISTEND_H__*/
