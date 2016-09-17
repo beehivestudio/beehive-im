@@ -92,9 +92,9 @@ typedef struct _acc_cntx_t
 /* 内部接口 */
 int acc_lsvr_init(acc_cntx_t *ctx, acc_lsvr_t *lsn, int idx);
 
-int acc_sid_item_add(acc_cntx_t *ctx, uint64_t cid, socket_t *sck);
-socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t cid);
-int acc_get_aid_by_sid(acc_cntx_t *ctx, uint64_t cid);
+int acc_cid_item_add(acc_cntx_t *ctx, uint64_t cid, socket_t *sck);
+socket_t *acc_cid_item_del(acc_cntx_t *ctx, uint64_t cid);
+int acc_get_rid_by_cid(acc_cntx_t *ctx, uint64_t cid);
 
 /* 外部接口 */
 acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log);

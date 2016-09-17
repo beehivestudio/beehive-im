@@ -13,7 +13,7 @@ static int acc_cmd_send_dist_req(acc_cntx_t *ctx, int idx);
  **输入参数:
  **     ctx: 全局对象
  **     type: 数据类型
- **     sid: 会话ID
+ **     cid: 连接ID(Connection ID)
  **     data: 数据内容(必须包含消息头: mesg_header_t)
  **     len: 数据长度
  **输出参数:
@@ -23,9 +23,9 @@ static int acc_cmd_send_dist_req(acc_cntx_t *ctx, int idx);
  **     > 发送内容data结构为: 消息头 + 消息体, 且消息头必须为"网络"字节序.
  **作    者: # Qifeng.zou # 2015-06-04 #
  ******************************************************************************/
-int acc_async_send(acc_cntx_t *ctx, int type, uint64_t sid, void *data, int len)
+int acc_async_send(acc_cntx_t *ctx, int type, uint64_t cid, void *data, int len)
 {
-    int aid; // aid: 代理服务ID
+    int rid; // rsvr id
     void *addr;
     ring_t *sendq;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -33,21 +33,21 @@ int acc_async_send(acc_cntx_t *ctx, int type, uint64_t sid, void *data, int len)
     /* > 合法性校验 */
     MESG_HEAD_NTOH(head, &hhead);
     if (!MESG_CHKSUM_ISVALID(&hhead)) {
-        log_error(ctx->log, "Data format is invalid! sid:%lu", sid);
+        log_error(ctx->log, "Data format is invalid! cid:%lu", cid);
         return ACC_ERR;
     }
 
     MESG_HEAD_PRINT(ctx->log, &hhead);
 
-    /* > 通过sid获取服务ID */
-    aid = acc_get_aid_by_sid(ctx, sid);
-    if (-1 == aid) {
-        log_error(ctx->log, "Get aid by sid failed! sid:%lu", sid);
+    /* > 通过cid获取服务ID */
+    rid = acc_get_rid_by_cid(ctx, cid);
+    if (-1 == rid) {
+        log_error(ctx->log, "Get rid by cid failed! cid:%lu", cid);
         return ACC_ERR;
     }
 
     /* > 放入指定发送队列 */
-    sendq = ctx->sendq[aid];
+    sendq = ctx->sendq[rid];
 
     addr = (void *)calloc(1, len);
     if (NULL == addr) {
@@ -63,7 +63,7 @@ int acc_async_send(acc_cntx_t *ctx, int type, uint64_t sid, void *data, int len)
         return ACC_ERR;
     }
 
-    acc_cmd_send_dist_req(ctx, aid); /* 发送分发命令 */
+    acc_cmd_send_dist_req(ctx, rid); /* 发送分发命令 */
 
     return ACC_OK;
 }

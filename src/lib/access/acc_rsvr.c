@@ -523,7 +523,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             queue_dealloc(ctx->connq[rsvr->id], add[idx]);      /* 释放连接队列空间 */
 
             /* > 插入红黑树中(以序列号为主键) */
-            if (acc_sid_item_add(ctx, extra->cid, sck)) {
+            if (acc_cid_item_add(ctx, extra->cid, sck)) {
                 log_error(rsvr->log, "Insert into avl failed! fd:%d cid:%lu",
                           sck->fd, extra->cid);
                 CLOSE(sck->fd);
@@ -569,8 +569,8 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 
     log_trace(rsvr->log, "fd:%d cid:%ld", sck->fd, extra->cid);
 
-    /* > 剔除SID对象 */
-    acc_sid_item_del(ctx, extra->cid);
+    /* > 剔除CID对象 */
+    acc_cid_item_del(ctx, extra->cid);
 
     /* > 释放套接字空间 */
     CLOSE(sck->fd);

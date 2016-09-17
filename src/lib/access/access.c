@@ -473,14 +473,15 @@ int acc_get_aid_by_sid(acc_cntx_t *ctx, uint64_t cid)
     key_extra.cid = cid;
     key.extra = &key_extra;
 
-    sck = hash_tab_query(ctx->connections, &key, WRLOCK);
-    if (NULL != sck) {
+    sck = hash_tab_query(ctx->connections, &key, RDLOCK);
+    if (NULL == sck) {
         return -1;
     }
 
     extra = (acc_socket_extra_t *)sck->extra;
     aid = extra->aid;
-    hash_tab_unlock(ctx->connections, &key, WRLOCK);
+
+    hash_tab_unlock(ctx->connections, &key, RDLOCK);
 
     return aid;
 }
