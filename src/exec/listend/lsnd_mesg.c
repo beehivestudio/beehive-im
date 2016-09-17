@@ -8,7 +8,7 @@
  ******************************************************************************/
 
 #include "mesg.h"
-#include "agent.h"
+#include "access.h"
 #include "listend.h"
 #include "lsnd_mesg.h"
 
@@ -67,7 +67,7 @@ int lsnd_search_rsp_hdl(int type, int orig, char *data, size_t len, void *args)
     MESG_HEAD_PRINT(ctx->log, &hhead)
     log_debug(ctx->log, "body:%s", head->body);
 
-    return agent_async_send(ctx->agent, type, hhead.sid, data, len);
+    return acc_async_send(ctx->access, type, hhead.sid, data, len);
 }
 
 /******************************************************************************
@@ -130,5 +130,5 @@ int lsnd_insert_word_rsp_hdl(int type, int orig, char *data, size_t len, void *a
     log_debug(ctx->log, "type:%d len:%d word:%s", type, len, rsp->word);
 
     /* > 放入发送队列 */
-    return agent_async_send(ctx->agent, type, hhead.sid, data, len);
+    return acc_async_send(ctx->access, type, hhead.sid, data, len);
 }

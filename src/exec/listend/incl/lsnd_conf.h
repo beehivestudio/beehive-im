@@ -2,7 +2,7 @@
 #define __LSND_CONF_H__
 
 #include "comm.h"
-#include "agent.h"
+#include "access.h"
 #include "rtmq_proxy.h"
 
 /* 侦听配置 */
@@ -16,7 +16,7 @@ typedef struct
         int max;                    /* 队列长度 */
         int size;                   /* 单元大小 */
     } distq;                        /* 分发队列 */
-    agent_conf_t agent;             /* 代理配置 */
+    acc_conf_t access;              /* 帧听配置 */
     rtmq_proxy_conf_t frwder;       /* FRWDER配置 */
 } lsnd_conf_t;
 

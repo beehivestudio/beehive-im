@@ -10,10 +10,8 @@
 #include "xml_tree.h" 
 #include "lsnd_conf.h"
 
-static int lsnd_conf_parse(xml_tree_t *xml, agent_conf_t *conf, log_cycle_t *log);
-
 static int lsnd_conf_load_comm(xml_tree_t *xml, lsnd_conf_t *conf, log_cycle_t *log);
-static int lsnd_conf_load_agent(xml_tree_t *xml, lsnd_conf_t *conf, log_cycle_t *log);
+static int lsnd_conf_load_access(xml_tree_t *xml, lsnd_conf_t *conf, log_cycle_t *log);
 static int lsnd_conf_load_frwder(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t *log);
 
 /******************************************************************************
@@ -57,9 +55,9 @@ int lsnd_load_conf(const char *path, lsnd_conf_t *conf, log_cycle_t *log)
             break;
         }
 
-        /* > 加载AGENT配置 */
-        if (lsnd_conf_load_agent(xml, conf, log)) {
-            log_error(log, "Load AGENT conf failed! path:%s", path);
+        /* > 加载ACCESS配置 */
+        if (lsnd_conf_load_access(xml, conf, log)) {
+            log_error(log, "Load access conf failed! path:%s", path);
             break;
         }
 
@@ -165,13 +163,13 @@ static int lsnd_conf_load_comm(xml_tree_t *xml, lsnd_conf_t *conf, log_cycle_t *
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-25 22:43:12 #
  ******************************************************************************/
-static int lsnd_conf_parse_agent_connections(
-        xml_tree_t *xml, agent_conf_t *conf, log_cycle_t *log)
+static int lsnd_conf_parse_access_connections(
+        xml_tree_t *xml, acc_conf_t *conf, log_cycle_t *log)
 {
     xml_node_t *fix, *node;
 
     /* > 定位并发配置 */
-    fix = xml_query(xml, ".LISTEND.AGENT.CONNECTIONS");
+    fix = xml_query(xml, ".LISTEND.ACCESS.CONNECTIONS");
     if (NULL == fix) {
         log_error(log, "Didn't configure connections!");
         return -1;
@@ -206,7 +204,7 @@ static int lsnd_conf_parse_agent_connections(
 }
 
 /******************************************************************************
- **函数名称: lsnd_conf_parse_agent_queue
+ **函数名称: lsnd_conf_parse_access_queue
  **功    能: 解析代理各队列配置
  **输入参数: 
  **     path: 配置文件路径
@@ -218,7 +216,7 @@ static int lsnd_conf_parse_agent_connections(
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-25 22:43:12 #
  ******************************************************************************/
-static int lsnd_conf_parse_agent_queue(xml_tree_t *xml, agent_conf_t *conf, log_cycle_t *log)
+static int lsnd_conf_parse_access_queue(xml_tree_t *xml, acc_conf_t *conf, log_cycle_t *log)
 {
     xml_node_t *node, *fix;
 
@@ -246,7 +244,7 @@ static int lsnd_conf_parse_agent_queue(xml_tree_t *xml, agent_conf_t *conf, log_
     }
 
     /* > 定位队列标签 */
-    fix = xml_query(xml, ".LISTEND.AGENT.QUEUE");
+    fix = xml_query(xml, ".LISTEND.ACCESS.QUEUE");
     if (NULL == fix) {
         log_error(log, "Get queue configuration failed!");
         return -1;
@@ -261,8 +259,8 @@ static int lsnd_conf_parse_agent_queue(xml_tree_t *xml, agent_conf_t *conf, log_
 }
 
 /******************************************************************************
- **函数名称: lsnd_conf_load_agent
- **功    能: 加载AGENT配置
+ **函数名称: lsnd_conf_load_access
+ **功    能: 加载ACCESS配置
  **输入参数: 
  **     path: 配置文件路径
  **     log: 日志对象
@@ -273,54 +271,45 @@ static int lsnd_conf_parse_agent_queue(xml_tree_t *xml, agent_conf_t *conf, log_
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-25 22:43:12 #
  ******************************************************************************/
-static int lsnd_conf_load_agent(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t *log)
+static int lsnd_conf_load_access(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t *log)
 {
     xml_node_t *node;
-    agent_conf_t *conf = &lcf->agent;
+    acc_conf_t *conf = &lcf->access;
 
-    snprintf(conf->path, sizeof(conf->path), "%s/agent/", lcf->wdir); /* 工作路径 */
+    snprintf(conf->path, sizeof(conf->path), "%s/access/", lcf->wdir); /* 工作路径 */
 
     /* > 加载结点ID */
     conf->nid = lcf->nid;
 
     /* > 加载连接配置 */
-    if (lsnd_conf_parse_agent_connections(xml, conf, log)) {
-        log_error(log, "Parse connections of AGENTe configuration failed!");
+    if (lsnd_conf_parse_access_connections(xml, conf, log)) {
+        log_error(log, "Parse connections of access configuration failed!");
         return -1;
     }
 
     /* > 加载队列配置 */
-    if (lsnd_conf_parse_agent_queue(xml, conf, log)) {
-        log_error(log, "Parse queue of AGENTe configuration failed!");
+    if (lsnd_conf_parse_access_queue(xml, conf, log)) {
+        log_error(log, "Parse queue of access configuration failed!");
         return -1;
     }
 
-    /* > 获取WORKER线程数 */
-    node = xml_query(xml, ".LISTEND.AGENT.THREAD-POOL.WORKER");
+    /* > 获取ACCESS线程数 */
+    node = xml_query(xml, ".LISTEND.ACCESS.THREAD-POOL.RSVR");
     if (NULL == node) {
-        log_error(log, "Didn't configure number of worker!");
+        log_error(log, "Didn't configure number of access!");
         return -1;
     }
 
-    conf->worker_num = str_to_num(node->value.str);
-
-    /* > 获取AGENT线程数 */
-    node = xml_query(xml, ".LISTEND.AGENT.THREAD-POOL.AGENT");
-    if (NULL == node) {
-        log_error(log, "Didn't configure number of agent!");
-        return -1;
-    }
-
-    conf->agent_num = str_to_num(node->value.str);
+    conf->rsvr_num = str_to_num(node->value.str);
 
     /* > 获取Listen线程数 */
-    node = xml_query(xml, ".LISTEND.AGENT.THREAD-POOL.LSN");
+    node = xml_query(xml, ".LISTEND.ACCESS.THREAD-POOL.LSVR");
     if (NULL == node) {
         log_error(log, "Didn't configure number of listen!");
         return -1;
     }
 
-    conf->lsn_num = str_to_num(node->value.str);
+    conf->lsvr_num = str_to_num(node->value.str);
 
 
     return 0;

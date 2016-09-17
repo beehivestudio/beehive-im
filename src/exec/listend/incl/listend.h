@@ -3,6 +3,7 @@
 
 #include "log.h"
 #include "comm.h"
+#include "access.h"
 #include "listend.h"
 #include "lsnd_conf.h"
 
@@ -31,7 +32,8 @@ typedef struct
     lsnd_conf_t conf;                       /* 配置信息 */
     log_cycle_t *log;                       /* 日志对象 */
 
-    agent_cntx_t *agent;                    /* 代理服务 */
+    //agent_cntx_t *agent;                    /* 代理服务 */
+    acc_cntx_t *access;                     /* 帧听层模块 */
     rtmq_proxy_t *frwder;                   /* FRWDER服务 */
 } lsnd_cntx_t;
 

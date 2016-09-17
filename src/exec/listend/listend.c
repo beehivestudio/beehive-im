@@ -12,7 +12,7 @@
 #include "lock.h"
 #include "mesg.h"
 #include "redo.h"
-#include "agent.h"
+#include "access.h"
 #include "listend.h"
 #include "mem_ref.h"
 #include "hash_alg.h"
@@ -168,10 +168,10 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
     memcpy(&ctx->conf, conf, sizeof(lsnd_conf_t));  /* 拷贝配置信息 */
 
     do {
-        /* > 初始化代理信息 */
-        ctx->agent = agent_init(&conf->agent, log);
-        if (NULL == ctx->agent) {
-            log_error(log, "Initialize agent failed!");
+        /* > 初始化帧听模块 */
+        ctx->access = acc_init(NULL, &conf->access, log);
+        if (NULL == ctx->access) {
+            log_error(log, "Initialize access failed!");
             break;
         }
 
@@ -202,6 +202,7 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
  ******************************************************************************/
 static int lsnd_set_reg(lsnd_cntx_t *ctx)
 {
+#if 0
 #define LSND_AGT_REG_CB(ctx, type, proc, args) /* 注册代理数据回调 */\
     if (agent_reg_add((ctx)->agent, type, (agent_reg_cb_t)proc, (void *)args)) { \
         return LSND_ERR; \
@@ -209,7 +210,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
 
     LSND_AGT_REG_CB(ctx, MSG_SEARCH_REQ, lsnd_search_req_hdl, ctx);
     LSND_AGT_REG_CB(ctx, MSG_INSERT_WORD_REQ, lsnd_insert_word_req_hdl, ctx);
-
+#endif
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
         log_error((lsnd)->log, "Register type [%d] failed!", type); \
@@ -236,7 +237,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
 static int lsnd_launch(lsnd_cntx_t *ctx)
 {
     /* > 启动代理服务 */
-    if (agent_launch(ctx->agent)) {
+    if (acc_launch(ctx->access)) {
         log_error(ctx->log, "Startup agent failed!");
         return LSND_ERR;
     }
