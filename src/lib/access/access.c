@@ -454,7 +454,7 @@ socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t cid)
 }
 
 /******************************************************************************
- **函数名称: acc_get_aid_by_sid
+ **函数名称: acc_get_rid_by_sid
  **功    能: 通过sid查找rsvr的序列号
  **输入参数: 
  **     ctx: 全局信息
@@ -464,7 +464,7 @@ socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t cid)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
  ******************************************************************************/
-int acc_get_aid_by_sid(acc_cntx_t *ctx, uint64_t cid)
+int acc_get_rid_by_sid(acc_cntx_t *ctx, uint64_t cid)
 {
     int aid;
     socket_t *sck, key;
