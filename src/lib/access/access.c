@@ -16,7 +16,7 @@ static int acc_creat_lsvr(acc_cntx_t *ctx);
 static int acc_creat_queue(acc_cntx_t *ctx);
 
 /* CID比较回调 */
-static int acc_cid_cmp_cb(const socket_t *sck1, const socket_t *sck2)
+static int acc_conn_cid_cmp_cb(const socket_t *sck1, const socket_t *sck2)
 {
     acc_socket_extra_t *extra1, *extra2;
 
@@ -27,7 +27,7 @@ static int acc_cid_cmp_cb(const socket_t *sck1, const socket_t *sck2)
 }
 
 /* CID哈希回调 */
-static int acc_cid_hash_cb(const socket_t *sck)
+static int acc_conn_cid_hash_cb(const socket_t *sck)
 {
     acc_socket_extra_t *extra;
 
@@ -40,7 +40,8 @@ static int acc_cid_hash_cb(const socket_t *sck)
  **函数名称: acc_init
  **功    能: 初始化全局信息
  **输入参数: 
- **     conf_path: 配置路径
+ **     protocol: 协议
+ **     conf: 配置路径
  **     log: 日志对象
  **输出参数: NONE
  **返    回: 全局对象
@@ -48,7 +49,7 @@ static int acc_cid_hash_cb(const socket_t *sck)
  **注意事项: 
  **作    者: # Qifeng.zou # 2014.11.15 #
  ******************************************************************************/
-acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log)
+acc_cntx_t *acc_init(acc_protocol_t *protocol, acc_conf_t *conf, log_cycle_t *log)
 {
     acc_cntx_t *ctx;
 
@@ -61,6 +62,7 @@ acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log)
 
     ctx->log = log;
     ctx->conf = conf;
+    memcpy(&ctx->protocol, protocol, sizeof(acc_protocol_t));
 
     do {
         /* > 设置进程打开文件数 */
@@ -89,9 +91,9 @@ acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log)
         }
 
         /* > 创建连接管理 */
-        ctx->connections = hash_tab_creat(conf->rsvr_num,
-            (hash_cb_t)acc_cid_hash_cb, (cmp_cb_t)acc_cid_cmp_cb, NULL);
-        if (NULL == ctx->connections) {
+        ctx->conn_cid_tab = (hash_tab_t *)hash_tab_creat(conf->rsvr_num,
+            (hash_cb_t)acc_conn_cid_hash_cb, (cmp_cb_t)acc_conn_cid_cmp_cb, NULL);
+        if (NULL == ctx->conn_cid_tab) {
             log_error(ctx->log, "Init sid list failed!");
             break;
         }
@@ -416,8 +418,8 @@ static int acc_comm_init(acc_cntx_t *ctx)
 }
 
 /******************************************************************************
- **函数名称: acc_sid_item_add
- **功    能: 新增SID列表
+ **函数名称: acc_conn_cid_tab_add
+ **功    能: 新增CID列表
  **输入参数: 
  **     ctx: 全局信息
  **输出参数: NONE
@@ -426,14 +428,14 @@ static int acc_comm_init(acc_cntx_t *ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
  ******************************************************************************/
-int acc_sid_item_add(acc_cntx_t *ctx, uint64_t sid, socket_t *sck)
+int acc_conn_cid_tab_add(acc_cntx_t *ctx, socket_t *sck)
 {
-    return hash_tab_insert(ctx->connections, sck, WRLOCK);
+    return hash_tab_insert(ctx->conn_cid_tab, sck, WRLOCK);
 }
 
 /******************************************************************************
- **函数名称: acc_sid_item_del
- **功    能: 删除SID列表
+ **函数名称: acc_conn_cid_tab_del
+ **功    能: 删除CID列表
  **输入参数: 
  **     ctx: 全局信息
  **输出参数: NONE
@@ -442,7 +444,7 @@ int acc_sid_item_add(acc_cntx_t *ctx, uint64_t sid, socket_t *sck)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
  ******************************************************************************/
-socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t cid)
+socket_t *acc_conn_cid_tab_del(acc_cntx_t *ctx, uint64_t cid)
 {
     socket_t key;
     acc_socket_extra_t extra;
@@ -450,38 +452,38 @@ socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t cid)
     extra.cid = cid;
     key.extra = &extra;
 
-    return hash_tab_delete(ctx->connections, &key, WRLOCK);
+    return hash_tab_delete(ctx->conn_cid_tab, &key, WRLOCK);
 }
 
 /******************************************************************************
- **函数名称: acc_get_rid_by_sid
- **功    能: 通过sid查找rsvr的序列号
+ **函数名称: acc_get_rid_by_cid
+ **功    能: 通过cid查找rsvr的序列号
  **输入参数: 
  **     ctx: 全局信息
  **输出参数: NONE
- **返    回: 0:成功 !0:失败
+ **返    回: RSVR的序列号
  **实现描述:
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
  ******************************************************************************/
-int acc_get_rid_by_sid(acc_cntx_t *ctx, uint64_t cid)
+int acc_get_rid_by_cid(acc_cntx_t *ctx, uint64_t cid)
 {
-    int aid;
+    int rid;
     socket_t *sck, key;
     acc_socket_extra_t *extra, key_extra;
 
     key_extra.cid = cid;
     key.extra = &key_extra;
 
-    sck = hash_tab_query(ctx->connections, &key, RDLOCK);
+    sck = hash_tab_query(ctx->conn_cid_tab, &key, RDLOCK);
     if (NULL == sck) {
         return -1;
     }
 
     extra = (acc_socket_extra_t *)sck->extra;
-    aid = extra->aid;
+    rid = extra->rid;
 
-    hash_tab_unlock(ctx->connections, &key, RDLOCK);
+    hash_tab_unlock(ctx->conn_cid_tab, &key, RDLOCK);
 
-    return aid;
+    return rid;
 }

@@ -29,8 +29,7 @@
     snprintf(path, size, "%s"ACC_RSVR_CMD_PATH, (conf)->path, rid)
 
 /* 配置信息 */
-typedef struct
-{
+typedef struct {
     int nid;                        /* 结点ID */
     char path[FILE_NAME_MAX_LEN];   /* 工作路径 */
 
@@ -49,8 +48,7 @@ typedef struct
 } acc_conf_t;
 
 typedef struct _acc_cntx_t acc_cntx_t;
-typedef int (*acc_callback_t)(acc_cntx_t *ctx,
-        socket_t *asi, int reason, void *user, void *in, int len);
+typedef int (*acc_callback_t)(acc_cntx_t *ctx, socket_t *asi, int reason, void *user, void *in, int len);
 
 /* 帧听协议 */
 typedef struct {
@@ -62,8 +60,7 @@ typedef struct {
 } acc_protocol_t;
 
 /* 代理对象 */
-typedef struct _acc_cntx_t
-{
+typedef struct _acc_cntx_t {
     acc_conf_t *conf;               /* 配置信息 */
     log_cycle_t *log;               /* 日志对象 */
     int cmd_sck_id;                 /* 命令套接字 */
@@ -81,7 +78,8 @@ typedef struct _acc_cntx_t
     thread_pool_t *rsvr_pool;       /* 接收线程池 */
     thread_pool_t *lsvr_pool;       /* 帧听线程池 */
 
-    hash_tab_t *connections;        /* CID集合(注:数组长度与Agent相等) */
+    hash_tab_t *conn_cid_tab;       /* CID集合(注:数组长度与Agent相等) */
+
     queue_t **connq;                /* 连接队列(注:数组长度与Agent相等) */
     ring_t **recvq;                 /* 接收队列(注:数组长度与Agent相等) */
     ring_t **sendq;                 /* 发送队列(注:数组长度与Agent相等) */
@@ -92,12 +90,12 @@ typedef struct _acc_cntx_t
 /* 内部接口 */
 int acc_lsvr_init(acc_cntx_t *ctx, acc_lsvr_t *lsn, int idx);
 
-int acc_cid_item_add(acc_cntx_t *ctx, uint64_t cid, socket_t *sck);
-socket_t *acc_cid_item_del(acc_cntx_t *ctx, uint64_t cid);
+int acc_conn_cid_tab_add(acc_cntx_t *ctx, socket_t *sck);
+socket_t *acc_conn_cid_tab_del(acc_cntx_t *ctx, uint64_t cid);
 int acc_get_rid_by_cid(acc_cntx_t *ctx, uint64_t cid);
 
 /* 外部接口 */
-acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log);
+acc_cntx_t *acc_init(acc_protocol_t *protocol, acc_conf_t *conf, log_cycle_t *log);
 int acc_launch(acc_cntx_t *ctx);
 void acc_destroy(acc_cntx_t *ctx);
 

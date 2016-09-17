@@ -355,32 +355,17 @@ static int acc_rsvr_get_timeout_conn_list(socket_t *sck, acc_conn_timeout_list_t
  ******************************************************************************/
 static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 {
-    void *pool;
     socket_t *sck, key;
-    list_opt_t opt;
     acc_socket_extra_t extra;
     acc_conn_timeout_list_t timeout;
 
     memset(&timeout, 0, sizeof(timeout));
 
-    /* > 创建内存池 */
-    pool = mem_pool_creat(1 * KB);
-    if (NULL == pool) {
-        log_error(rsvr->log, "Create memory pool failed!");
-        return ACC_ERR;
-    }
-
     timeout.ctm = rsvr->ctm;
 
     do {
         /* > 创建链表 */
-        memset(&opt, 0, sizeof(opt));
-
-        opt.pool = pool;
-        opt.alloc = (mem_alloc_cb_t)mem_pool_alloc;
-        opt.dealloc = (mem_dealloc_cb_t)mem_pool_dealloc;
-
-        timeout.list = list_creat(&opt);
+        timeout.list = list_creat(LIST_DEF_OPT);
         if (NULL == timeout.list) {
             log_error(rsvr->log, "Create list failed!");
             break;
@@ -389,7 +374,7 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
         /* > 获取超时连接 */
         extra.cid = rsvr->id;
         key.extra = &extra;
-        hash_tab_trav_by_key(ctx->connections, &key,
+        hash_tab_trav_by_key(ctx->conn_cid_tab, &key,
                 (trav_cb_t)acc_rsvr_get_timeout_conn_list, &timeout, RDLOCK);
 
         log_debug(rsvr->log, "Timeout connections: %d!", timeout.list->num);
@@ -400,13 +385,12 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             if (NULL == sck) {
                 break;
             }
-
             acc_rsvr_del_conn(ctx, rsvr, sck);
         }
     } while(0);
 
     /* > 释放内存空间 */
-    mem_pool_destroy(pool);
+    list_destroy(timeout.list, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
 
     return ACC_OK;
 }
@@ -476,7 +460,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             memset(sck, 0, sizeof(socket_t));
 
             /* > 创建SCK关联对象 */
-            extra = calloc(1, sizeof(acc_socket_extra_t));
+            extra = (acc_socket_extra_t *)calloc(1, sizeof(acc_socket_extra_t));
             if (NULL == extra) {
                 log_error(rsvr->log, "Alloc memory failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
@@ -495,16 +479,15 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
                 continue;
             }
 
-            extra->aid = rsvr->id;
+            extra->rid = rsvr->id;
             extra->cid = add[idx]->cid;
-            extra->send_list = list_creat(NULL);
+            extra->send_list = list_creat(LIST_DEF_OPT);
             if (NULL == extra->send_list) {
-                log_error(rsvr->log, "Create send list failed! cid:%lu",
-                          add[idx]->cid);
+                log_error(rsvr->log, "Create send list failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
-                FREE(sck);
                 FREE(extra->user);
                 FREE(extra);
+                FREE(sck);
                 queue_dealloc(ctx->connq[rsvr->id], add[idx]);
                 continue;
             }
@@ -523,7 +506,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             queue_dealloc(ctx->connq[rsvr->id], add[idx]);      /* 释放连接队列空间 */
 
             /* > 插入红黑树中(以序列号为主键) */
-            if (acc_cid_item_add(ctx, extra->cid, sck)) {
+            if (acc_conn_cid_tab_add(ctx, sck)) {
                 log_error(rsvr->log, "Insert into avl failed! fd:%d cid:%lu",
                           sck->fd, extra->cid);
                 CLOSE(sck->fd);
@@ -570,7 +553,7 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     log_trace(rsvr->log, "fd:%d cid:%ld", sck->fd, extra->cid);
 
     /* > 剔除CID对象 */
-    acc_cid_item_del(ctx, extra->cid);
+    acc_conn_cid_tab_del(ctx, extra->cid);
 
     /* > 释放套接字空间 */
     CLOSE(sck->fd);
@@ -582,7 +565,8 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     if (sck->recv.addr) {
         mem_ref_decr(sck->recv.addr);
     }
-    FREE(sck->extra);
+    FREE(extra->user);
+    FREE(extra);
     FREE(sck);
 
     --rsvr->conn_total;
@@ -987,7 +971,7 @@ static socket_t *acc_push_into_send_list(
     key.extra = &key_extra;
 
     /* > 查询会话对象 */
-    sck = hash_tab_query(ctx->connections, &key, WRLOCK);
+    sck = hash_tab_query(ctx->conn_cid_tab, &key, WRLOCK);
     if (NULL == sck) {
         return NULL;
     }
@@ -996,11 +980,11 @@ static socket_t *acc_push_into_send_list(
 
     /* > 放入发送列表 */
     if (list_rpush(extra->send_list, addr)) {
-        hash_tab_unlock(ctx->connections, &key, WRLOCK);
+        hash_tab_unlock(ctx->conn_cid_tab, &key, WRLOCK);
         return NULL;
     }
 
-    hash_tab_unlock(ctx->connections, &key, WRLOCK);
+    hash_tab_unlock(ctx->conn_cid_tab, &key, WRLOCK);
 
     return sck;
 }

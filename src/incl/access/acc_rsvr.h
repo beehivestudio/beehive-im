@@ -34,7 +34,7 @@ typedef struct
 typedef struct
 {
     uint64_t cid;                   /* SCK序列号(主键) */
-    int aid;                        /* 接收服务ID */
+    int rid;                        /* 接收服务ID */
     bool is_cmd_sck;                /* 是否是命令套接字(false:否 true:是) */
 
     void *head;                     /* 报头[注:也是接收数据的起始地址] */

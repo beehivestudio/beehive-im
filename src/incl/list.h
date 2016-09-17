@@ -3,6 +3,8 @@
 
 #include "comm.h"
 
+#define LIST_DEF_OPT (NULL)
+
 /* 选项 */
 typedef struct
 {

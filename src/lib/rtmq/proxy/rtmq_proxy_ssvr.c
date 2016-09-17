@@ -66,7 +66,7 @@ int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int idx)
     }
 
     /* > 创建发送链表 */
-    sck->mesg_list = list_creat(NULL);
+    sck->mesg_list = list_creat(LIST_DEF_OPT);
     if (NULL == sck->mesg_list) {
         log_error(ssvr->log, "Create list failed!");
         return RTMQ_ERR;
