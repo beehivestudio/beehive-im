@@ -10,8 +10,7 @@ include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
 			-I$(PROJ)/src/incl \
-			-I$(PROJ)/src/incl/rtmq \
-			-I$(PROJ)/src/incl/agent
+			-I$(PROJ)/src/incl/rtmq
 INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib
 LIBS = -lpthread -lcore -lrtmq
