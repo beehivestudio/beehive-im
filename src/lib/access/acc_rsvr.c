@@ -22,12 +22,12 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck);
 static int acc_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck);
 
 static int acc_rsvr_dist_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr);
-static socket_t *acc_push_into_send_list(acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t sid, void *addr);
+static socket_t *acc_push_into_send_list(acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t cid, void *addr);
 
 static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr);
 static int acc_rsvr_timeout_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr);
 
-static int acc_rsvr_connection_cmp(const int *sid, const socket_t *sck);
+static int acc_rsvr_connection_cmp(const int *cid, const socket_t *sck);
 
 /******************************************************************************
  **函数名称: acc_rsvr_routine
@@ -38,7 +38,7 @@ static int acc_rsvr_connection_cmp(const int *sid, const socket_t *sck);
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.11.18 #
+ **作    者: # Qifeng.zou # 2016.11.18 #
  ******************************************************************************/
 void *acc_rsvr_routine(void *_ctx)
 {
@@ -127,7 +127,7 @@ static int agt_rsvr_recv_cmd_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sc
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.11.28 #
+ **作    者: # Qifeng.zou # 2016.11.28 #
  ******************************************************************************/
 int acc_rsvr_init(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int idx)
 {
@@ -222,7 +222,7 @@ static int acc_rsvr_sck_dealloc(void *pool, socket_t *sck)
  **返    回: 0:成功 !0:失败
  **实现描述: 依次释放所有内存空间
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.11.18 #
+ **作    者: # Qifeng.zou # 2016.11.18 #
  ******************************************************************************/
 int acc_rsvr_destroy(acc_rsvr_t *rsvr)
 {
@@ -242,7 +242,7 @@ int acc_rsvr_destroy(acc_rsvr_t *rsvr)
  **返    回: 代理对象
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.11.26 #
+ **作    者: # Qifeng.zou # 2016.11.26 #
  ******************************************************************************/
 static acc_rsvr_t *acc_rsvr_self(acc_cntx_t *ctx)
 {
@@ -269,7 +269,7 @@ static acc_rsvr_t *acc_rsvr_self(acc_cntx_t *ctx)
  **返    回: 代理对象
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.11.28 #
+ **作    者: # Qifeng.zou # 2016.11.28 #
  ******************************************************************************/
 static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 {
@@ -325,7 +325,7 @@ static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **返    回: 代理对象
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.12.24 #
+ **作    者: # Qifeng.zou # 2016.12.24 #
  ******************************************************************************/
 static int acc_rsvr_get_timeout_conn_list(socket_t *sck, acc_conn_timeout_list_t *timeout)
 {
@@ -356,8 +356,9 @@ static int acc_rsvr_get_timeout_conn_list(socket_t *sck, acc_conn_timeout_list_t
 static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 {
     void *pool;
-    socket_t *sck;
+    socket_t *sck, key;
     list_opt_t opt;
+    acc_socket_extra_t extra;
     acc_conn_timeout_list_t timeout;
 
     memset(&timeout, 0, sizeof(timeout));
@@ -386,12 +387,10 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
         }
 
         /* > 获取超时连接 */
-        spin_lock(&ctx->connections[rsvr->id].lock);
-
-        rbt_trav(ctx->connections[rsvr->id].sids,
-             (trav_cb_t)acc_rsvr_get_timeout_conn_list, (void *)&timeout);
-
-        spin_unlock(&ctx->connections[rsvr->id].lock);
+        extra.cid = rsvr->id;
+        key.extra = &extra;
+        hash_tab_trav_by_key(ctx->connections, &key,
+                (trav_cb_t)acc_rsvr_get_timeout_conn_list, &timeout, RDLOCK);
 
         log_debug(rsvr->log, "Timeout connections: %d!", timeout.list->num);
 
@@ -422,7 +421,7 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **实现描述: 
  **注意事项: 
  **     不必依次释放超时链表各结点的空间，只需一次性释放内存池便可释放所有空间.
- **作    者: # Qifeng.zou # 2014.11.28 #
+ **作    者: # Qifeng.zou # 2016.11.28 #
  ******************************************************************************/
 static int acc_rsvr_timeout_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 {
@@ -440,7 +439,7 @@ static int acc_rsvr_timeout_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.11.29 #
+ **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
 static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 {
@@ -468,7 +467,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             /* > 申请SCK空间 */
             sck = (socket_t *)calloc(1, sizeof(socket_t));
             if (NULL == sck) {
-                log_error(rsvr->log, "Alloc memory failed! sid:%lu", add[idx]->sid);
+                log_error(rsvr->log, "Alloc memory failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
                 queue_dealloc(ctx->connq[rsvr->id], add[idx]);
                 continue;
@@ -479,21 +478,32 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             /* > 创建SCK关联对象 */
             extra = calloc(1, sizeof(acc_socket_extra_t));
             if (NULL == extra) {
-                log_error(rsvr->log, "Alloc memory failed! sid:%lu", add[idx]->sid);
+                log_error(rsvr->log, "Alloc memory failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
                 FREE(sck);
                 queue_dealloc(ctx->connq[rsvr->id], add[idx]);
                 continue;
             }
 
-            extra->aid = rsvr->id;
-            extra->sid = add[idx]->sid;
-            extra->send_list = list_creat(NULL);
-            if (NULL == extra->send_list) {
-                log_error(rsvr->log, "Create send list failed! sid:%lu",
-                          add[idx]->sid);
+            extra->user = (void *)calloc(1, ctx->protocol.per_session_data_size);
+            if (NULL == extra->user) {
+                log_error(rsvr->log, "Alloc memory failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
                 FREE(sck);
+                FREE(extra);
+                queue_dealloc(ctx->connq[rsvr->id], add[idx]);
+                continue;
+            }
+
+            extra->aid = rsvr->id;
+            extra->cid = add[idx]->cid;
+            extra->send_list = list_creat(NULL);
+            if (NULL == extra->send_list) {
+                log_error(rsvr->log, "Create send list failed! cid:%lu",
+                          add[idx]->cid);
+                CLOSE(add[idx]->fd);
+                FREE(sck);
+                FREE(extra->user);
                 FREE(extra);
                 queue_dealloc(ctx->connq[rsvr->id], add[idx]);
                 continue;
@@ -513,18 +523,19 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             queue_dealloc(ctx->connq[rsvr->id], add[idx]);      /* 释放连接队列空间 */
 
             /* > 插入红黑树中(以序列号为主键) */
-            if (acc_sid_item_add(ctx, extra->sid, sck)) {
-                log_error(rsvr->log, "Insert into avl failed! fd:%d sid:%lu",
-                          sck->fd, extra->sid);
+            if (acc_sid_item_add(ctx, extra->cid, sck)) {
+                log_error(rsvr->log, "Insert into avl failed! fd:%d cid:%lu",
+                          sck->fd, extra->cid);
                 CLOSE(sck->fd);
                 list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+                FREE(extra->user);
                 FREE(sck->extra);
                 FREE(sck);
                 return ACC_ERR;
             }
 
-            log_debug(rsvr->log, "Insert into avl success! fd:%d sid:%lu",
-                      sck->fd, extra->sid);
+            log_debug(rsvr->log, "Insert into avl success! fd:%d cid:%lu",
+                      sck->fd, extra->cid);
 
             /* > 加入epoll监听(首先是接收客户端搜索请求, 所以设置EPOLLIN) */
             memset(&ev, 0, sizeof(ev));
@@ -550,22 +561,22 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **返    回: 0:成功 !0:失败
  **实现描述: 依次释放套接字对象各成员的空间
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.12.06 #
+ **作    者: # Qifeng.zou # 2016.12.06 #
  ******************************************************************************/
 static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 {
     acc_socket_extra_t *extra = sck->extra;
 
-    log_trace(rsvr->log, "fd:%d sid:%ld", sck->fd, extra->sid);
+    log_trace(rsvr->log, "fd:%d cid:%ld", sck->fd, extra->cid);
 
     /* > 剔除SID对象 */
-    acc_sid_item_del(ctx, extra->sid);
+    acc_sid_item_del(ctx, extra->cid);
 
     /* > 释放套接字空间 */
     CLOSE(sck->fd);
 
-    ctx->callback(ctx, sck, ACC_CALLBACK_CLOSED, (void *)extra, (void *)NULL, 0);
-    ctx->callback(ctx, sck, ACC_CALLBACK_ASI_DESTROY, (void *)extra, (void *)NULL, 0);
+    ctx->protocol.callback(ctx, sck, ACC_CALLBACK_CLOSED, (void *)extra, (void *)NULL, 0);
+    ctx->protocol.callback(ctx, sck, ACC_CALLBACK_ASI_DESTROY, (void *)extra, (void *)NULL, 0);
 
     list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
     if (sck->recv.addr) {
@@ -585,24 +596,25 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **     ctx: 全局对象
  **     rsvr: 接收服务
  **     sck: SCK对象
+ **     per_packet_head_size: 报头的大小
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.12.01 #
+ **作    者: # Qifeng.zou # 2016.12.01 #
  ******************************************************************************/
-static int acc_recv_head(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
+static int acc_recv_head(acc_cntx_t *ctx,
+        acc_rsvr_t *rsvr, socket_t *sck, size_t per_packet_head_size)
 {
     void *addr;
     int n, left;
-    mesg_header_t *head;
     socket_snap_t *recv = &sck->recv;
 
     addr = recv->addr;
 
     while (1) {
         /* 1. 计算剩余字节 */
-        left = sizeof(mesg_header_t) - recv->off;
+        left = per_packet_head_size - recv->off;
 
         /* 2. 接收报头数据 */
         n = read(sck->fd, addr + recv->off, left);
@@ -628,21 +640,6 @@ static int acc_recv_head(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
         log_error(rsvr->log, "errmsg:[%d] %s. fd:[%d]", errno, strerror(errno), sck->fd);
         return ACC_ERR;
     }
-
-    /* 3. 校验报头数据 */
-    head = (mesg_header_t *)addr;
-    MESG_HEAD_NTOH(head, head);
-    head->nid = ACC_GET_NODE_ID(ctx);
-
-    if (!MESG_CHKSUM_ISVALID(head)) {
-        log_error(rsvr->log, "Check head failed! type:%d len:%d flag:%d chksum:[0x%X/0x%X]",
-            head->type, head->length, head->flag, head->chksum, MSG_CHKSUM_VAL);
-        return ACC_ERR;
-    }
-
-    log_trace(rsvr->log, "Recv head success! type:%d len:%d flag:%d chksum:[0x%X/0x%X]",
-            head->type, head->length, head->flag, head->chksum, MSG_CHKSUM_VAL);
-
     return ACC_OK;
 }
 
@@ -656,15 +653,12 @@ static int acc_recv_head(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.12.02 #
+ **作    者: # Qifeng.zou # 2016.12.02 #
  ******************************************************************************/
 static int acc_recv_body(acc_rsvr_t *rsvr, socket_t *sck)
 {
     int n, left;
-    mesg_header_t *head;
     socket_snap_t *recv = &sck->recv;
-
-    head  = (mesg_header_t *)recv->addr;
 
     /* 1. 接收报体 */
     while (1) {
@@ -692,33 +686,9 @@ static int acc_recv_body(acc_rsvr_t *rsvr, socket_t *sck)
             continue;
         }
 
-        log_error(rsvr->log, "errmsg:[%d] %s! fd:%d type:%d length:%d n:%d total:%d offset:%d addr:%p",
-                errno, strerror(errno), head->type,
-                sck->fd, head->length, n, recv->total, recv->off, recv->addr);
         return ACC_ERR;
     }
 
-    log_trace(rsvr->log, "Recv body success! fd:%d type:%d length:%d total:%d off:%d",
-            sck->fd, head->type, head->length, recv->total, recv->off);
-
-    return ACC_OK;
-}
-
-/******************************************************************************
- **函数名称: acc_sys_msg_hdl
- **功    能: 系统消息的处理
- **输入参数:
- **     ctx: 全局对象
- **     rsvr: 接收服务
- **     sck: SCK对象
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述: 
- **注意事项: 
- **作    者: # Qifeng.zou # 2015.05.28 #
- ******************************************************************************/
-static int acc_sys_msg_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
-{
     return ACC_OK;
 }
 
@@ -726,29 +696,23 @@ static int acc_sys_msg_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **函数名称: acc_recv_post_hdl
  **功    能: 数据接收完毕，进行数据处理
  **输入参数:
+ **     ctx: 全局变量
  **     rsvr: 接收服务
  **     sck: SCK对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项:
- **作    者: # Qifeng.zou # 2014.12.21 #
+ **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
 static int acc_recv_post_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 {
-    mesg_header_t *head;
+    acc_protocol_t *protocol = &ctx->protocol;
     acc_socket_extra_t *extra = (acc_socket_extra_t *)sck->extra;
 
-    head = (mesg_header_t *)extra->head;
-
-    /* > 自定义消息的处理 */
-    if (MSG_FLAG_USR == head->flag) {
-        return ctx->callback(ctx, sck, ACC_CALLBACK_RECEIVE,
-            (void *)extra, (void *)head, head->length + sizeof(mesg_header_t));
-    }
-
-    /* > 系统消息的处理 */
-    return acc_sys_msg_hdl(ctx, rsvr, sck);
+    return protocol->callback(ctx, sck,
+            ACC_CALLBACK_RECEIVE, (void *)extra, (void *)extra->head,
+            protocol->get_packet_body_size(extra->head) + protocol->per_packet_head_size);
 }
 
 /******************************************************************************
@@ -761,14 +725,14 @@ static int acc_recv_post_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: TODO: 此处理流程可进一步进行优化
- **作    者: # Qifeng.zou # 2014.11.29 #
+ **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
 static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 {
     int ret;
-    mesg_header_t *head;
     socket_snap_t *recv = &sck->recv;
     queue_conf_t *conf = &ctx->conf->recvq;
+    acc_protocol_t *protocol = &ctx->protocol;
     acc_socket_extra_t *extra = (acc_socket_extra_t *)sck->extra;
 
     for (;;) {
@@ -783,10 +747,10 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 
                 log_info(rsvr->log, "Alloc memory from queue success!");
 
-                extra->head = (mesg_header_t *)recv->addr;
-                extra->body = (void *)(extra->head + 1);
+                extra->head = (void *)recv->addr;
+                extra->body = (void *)(recv->addr + protocol->per_packet_head_size);
                 recv->off = 0;
-                recv->total = sizeof(mesg_header_t);
+                recv->total = protocol->per_packet_head_size;
 
                 /* 设置下步 */
                 recv->phase = SOCK_PHASE_RECV_HEAD;
@@ -794,17 +758,10 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                 goto RECV_HEAD;
             case SOCK_PHASE_RECV_HEAD: /* 2. 接收报头 */
             RECV_HEAD:
-                ret = acc_recv_head(ctx, rsvr, sck);
+                ret = acc_recv_head(ctx, rsvr, sck, protocol->per_packet_head_size);
                 switch (ret) {
                     case ACC_OK:
-                        head = (mesg_header_t *)recv->addr;
-                        head->sid = extra->sid;
-                        head->serial = tlz_gen_serail( /* 获取流水号 */
-                                ctx->conf->nid, rsvr->id, ++rsvr->recv_seq);
-
-                        log_info(rsvr->log, "serial:%lu", head->serial);
-
-                        if (head->length) {
+                        if (protocol->get_packet_body_size(recv->addr)) {
                             recv->phase = SOCK_PHASE_READY_BODY; /* 设置下步 */
                         }
                         else {
@@ -822,7 +779,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                 goto READY_BODY;
             case SOCK_PHASE_READY_BODY: /* 3. 准备接收报体 */
             READY_BODY:
-                recv->total += extra->head->length;
+                recv->total += protocol->get_packet_body_size(recv->addr);
 
                 /* 设置下步 */
                 recv->phase = SOCK_PHASE_RECV_BODY;
@@ -845,7 +802,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                 goto RECV_POST;
             case SOCK_PHASE_RECV_POST: /* 5. 接收完毕: 数据处理 */
             RECV_POST:
-                /* 将数据放入接收队列 */
+                /* 对接收到的数据进行处理 */
                 ret = acc_recv_post_hdl(ctx, rsvr, sck);
                 mem_ref_decr(recv->addr);
                 recv->addr = NULL;
@@ -871,7 +828,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2014.11.29 #
+ **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
 static int acc_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 {
@@ -1012,7 +969,7 @@ static int acc_rsvr_dist_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **输入参数:
  **     ctx: 全局对象
  **     rsvr: 接收服务
- **     sid: 会话ID
+ **     cid: 会话ID
  **     addr: 需要发送的数据
  **输出参数: NONE
  **返    回: 连接对象
@@ -1021,23 +978,17 @@ static int acc_rsvr_dist_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **作    者: # Qifeng.zou # 2016-07-24 22:49:02 #
  ******************************************************************************/
 static socket_t *acc_push_into_send_list(
-        acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t sid, void *addr)
+        acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t cid, void *addr)
 {
     socket_t *sck, key;
-    acc_cid_list_t *list;
     acc_socket_extra_t *extra, key_extra;
 
-    key_extra.sid = sid;
+    key_extra.cid = cid;
     key.extra = &key_extra;
 
-    list = &ctx->connections[rsvr->id];
-
     /* > 查询会话对象 */
-    spin_lock(&list->lock);
-
-    sck = rbt_query(list->sids, &key);
+    sck = hash_tab_query(ctx->connections, &key, WRLOCK);
     if (NULL == sck) {
-        spin_unlock(&list->lock);
         return NULL;
     }
 
@@ -1045,11 +996,11 @@ static socket_t *acc_push_into_send_list(
 
     /* > 放入发送列表 */
     if (list_rpush(extra->send_list, addr)) {
-        spin_unlock(&list->lock);
+        hash_tab_unlock(ctx->connections, &key, WRLOCK);
         return NULL;
     }
 
-    spin_unlock(&list->lock);
+    hash_tab_unlock(ctx->connections, &key, WRLOCK);
 
     return sck;
 }

@@ -15,7 +15,26 @@ static int acc_rsvr_pool_destroy(acc_cntx_t *ctx);
 static int acc_creat_lsvr(acc_cntx_t *ctx);
 static int acc_creat_queue(acc_cntx_t *ctx);
 
-static int acc_sid_list_init(acc_cntx_t *ctx, acc_conf_t *conf);
+/* CID比较回调 */
+static int acc_cid_cmp_cb(const socket_t *sck1, const socket_t *sck2)
+{
+    acc_socket_extra_t *extra1, *extra2;
+
+    extra1 = sck1->extra;
+    extra2 = sck2->extra;
+
+    return (extra1->cid - extra2->cid);
+}
+
+/* CID哈希回调 */
+static int acc_cid_hash_cb(const socket_t *sck)
+{
+    acc_socket_extra_t *extra;
+
+    extra = sck->extra;
+
+    return extra->cid;
+}
 
 /******************************************************************************
  **函数名称: acc_init
@@ -70,7 +89,9 @@ acc_cntx_t *acc_init(acc_conf_t *conf, log_cycle_t *log)
         }
 
         /* > 创建连接管理 */
-        if (acc_sid_list_init(ctx, conf)) {
+        ctx->connections = hash_tab_creat(conf->rsvr_num,
+            (hash_cb_t)acc_cid_hash_cb, (cmp_cb_t)acc_cid_cmp_cb, NULL);
+        if (NULL == ctx->connections) {
             log_error(ctx->log, "Init sid list failed!");
             break;
         }
@@ -395,53 +416,6 @@ static int acc_comm_init(acc_cntx_t *ctx)
 }
 
 /******************************************************************************
- **函数名称: acc_sid_list_init
- **功    能: 初始化连接池
- **输入参数: 
- **     ctx: 全局信息
- **     conf: 配置信息
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项: 
- **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
- ******************************************************************************/
-static int acc_sids_cmp_cb(const socket_t *sck1, const socket_t *sck2)
-{
-    acc_socket_extra_t *extra1, *extra2;
-
-    extra1 = sck1->extra;
-    extra2 = sck2->extra;
-
-    return (extra1->sid - extra2->sid);
-}
-
-static int acc_sid_list_init(acc_cntx_t *ctx, acc_conf_t *conf)
-{
-    int idx;
-    acc_cid_list_t *list;
-
-    ctx->connections = (acc_cid_list_t *)calloc(conf->rsvr_num, sizeof(acc_cid_list_t));
-    if (NULL == ctx->connections) {
-        return -1;
-    }
-
-    for (idx=0; idx<conf->rsvr_num; idx++) {
-        list = &ctx->connections[idx];
-
-        spin_lock_init(&list->lock);
-
-        list->sids = rbt_creat(NULL, (cmp_cb_t)acc_sids_cmp_cb);
-        if (NULL == list->sids) {
-            FREE(ctx->connections);
-            return ACC_ERR;
-        }
-    }
-
-    return ACC_OK;
-}
-
-/******************************************************************************
  **函数名称: acc_sid_item_add
  **功    能: 新增SID列表
  **输入参数: 
@@ -454,20 +428,7 @@ static int acc_sid_list_init(acc_cntx_t *ctx, acc_conf_t *conf)
  ******************************************************************************/
 int acc_sid_item_add(acc_cntx_t *ctx, uint64_t sid, socket_t *sck)
 {
-    acc_cid_list_t *list;
-
-    list = &ctx->connections[sid % ctx->conf->rsvr_num];
-
-    spin_lock(&list->lock);
-
-    if (rbt_insert(list->sids, sck)) {
-        spin_unlock(&list->lock);
-        return ACC_ERR;
-    }
-
-    spin_unlock(&list->lock);
-
-    return ACC_OK;
+    return hash_tab_insert(ctx->connections, sck, WRLOCK);
 }
 
 /******************************************************************************
@@ -481,27 +442,15 @@ int acc_sid_item_add(acc_cntx_t *ctx, uint64_t sid, socket_t *sck)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
  ******************************************************************************/
-socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t sid)
+socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t cid)
 {
-    socket_t *sck, key;
-    acc_cid_list_t *list;
+    socket_t key;
     acc_socket_extra_t extra;
 
-    extra.sid = sid;
+    extra.cid = cid;
     key.extra = &extra;
 
-    list = &ctx->connections[sid % ctx->conf->rsvr_num];
-
-    spin_lock(&list->lock);
-
-    if (rbt_delete(list->sids, &key, (void *)&sck)) {
-        spin_unlock(&list->lock);
-        return sck;
-    }
-
-    spin_unlock(&list->lock);
-
-    return sck;
+    return hash_tab_delete(ctx->connections, &key, WRLOCK);
 }
 
 /******************************************************************************
@@ -515,27 +464,23 @@ socket_t *acc_sid_item_del(acc_cntx_t *ctx, uint64_t sid)
  **注意事项: 
  **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
  ******************************************************************************/
-int acc_get_aid_by_sid(acc_cntx_t *ctx, uint64_t sid)
+int acc_get_aid_by_sid(acc_cntx_t *ctx, uint64_t cid)
 {
     int aid;
     socket_t *sck, key;
     acc_socket_extra_t *extra, key_extra;
-    acc_cid_list_t *list;
 
-    key_extra.sid = sid;
+    key_extra.cid = cid;
     key.extra = &key_extra;
 
-    list = &ctx->connections[sid % ctx->conf->rsvr_num];
-
-    spin_lock(&list->lock);
-    sck = rbt_query(list->sids, &key);
-    if (NULL == sck) {
-        spin_unlock(&list->lock);
+    sck = hash_tab_query(ctx->connections, &key, WRLOCK);
+    if (NULL != sck) {
         return -1;
     }
+
     extra = (acc_socket_extra_t *)sck->extra;
     aid = extra->aid;
-    spin_unlock(&list->lock);
+    hash_tab_unlock(ctx->connections, &key, WRLOCK);
 
     return aid;
 }

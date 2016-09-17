@@ -33,6 +33,7 @@ DIR += "$(LIB_DIR)/redis"
 
 DIR += "$(LIB_DIR)/agent"
 DIR += "$(LIB_DIR)/invert"
+DIR += "$(LIB_DIR)/access"
 
 EXEC_DIR = "src/exec"
 DIR += "$(EXEC_DIR)/frwder"

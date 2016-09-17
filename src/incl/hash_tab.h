@@ -38,6 +38,7 @@ void *hash_tab_query(hash_tab_t *htab, void *key, lock_e lock);
 void hash_tab_unlock(hash_tab_t *htab, void *key, lock_e lock);
 void *hash_tab_delete(hash_tab_t *htab, void *key, lock_e lock);
 int hash_tab_trav(hash_tab_t *htab, trav_cb_t proc, void *args, lock_e lock);
+int hash_tab_trav_by_key(hash_tab_t *htab, void *key, trav_cb_t proc, void *args, lock_e lock);
 int hash_tab_destroy(hash_tab_t *htab, mem_dealloc_cb_t dealloc, void *args);
 
 #define hash_tab_total(htab) ((htab)->total)

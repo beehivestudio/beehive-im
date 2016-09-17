@@ -33,13 +33,14 @@ typedef struct
 /* 套接字信息 */
 typedef struct
 {
-    uint64_t sid;                   /* SCK序列号(主键) */
+    uint64_t cid;                   /* SCK序列号(主键) */
     int aid;                        /* 接收服务ID */
     bool is_cmd_sck;                /* 是否是命令套接字(false:否 true:是) */
 
-    mesg_header_t *head;            /* 报头起始地址 */
-    void *body;                     /* Body */
+    void *head;                     /* 报头[注:也是接收数据的起始地址] */
+    void *body;                     /* 报体 */
     list_t *send_list;              /* 发送链表 */
+    void *user;                     /* 用户自定义数据 */
 } acc_socket_extra_t;
 
 void *acc_rsvr_routine(void *_ctx);

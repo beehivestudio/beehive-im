@@ -279,3 +279,32 @@ int hash_tab_trav(hash_tab_t *htab, trav_cb_t proc, void *args, lock_e lock)
 
     return 0;
 }
+
+/******************************************************************************
+ **函数名称: hash_tab_trav_by_key
+ **功    能: 遍历哈希数组
+ **输入参数:
+ **     htab: 哈希数组
+ **     key: 主键
+ **     proc: 回调函数
+ **     args: 附加参数
+ **     lock: 加锁方式
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2014.12.24 #
+ ******************************************************************************/
+int hash_tab_trav_by_key(hash_tab_t *htab,
+        void *key, trav_cb_t proc, void *args, lock_e lock)
+{
+    int idx;
+
+    idx = htab->hash(key) % htab->len;
+
+    _hash_tab_lock(htab, idx, lock);
+    rbt_trav(htab->tree[idx], proc, args);
+    _hash_tab_unlock(htab, idx, lock);
+
+    return 0;
+}

@@ -169,7 +169,7 @@ static int acc_lsvr_timeout_hdl(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
  ******************************************************************************/
 static int acc_lsvr_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
 {
-    int fd, idx, sid;
+    int fd, idx, cid;
     acc_add_sck_t *add;
     struct sockaddr_in cliaddr;
 
@@ -185,12 +185,12 @@ static int acc_lsvr_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
         return ACC_OK;
     }
 
-    sid = atomic64_inc(&ctx->listen.sid); /* 计数 */
+    cid = atomic64_inc(&ctx->listen.cid); /* 计数 */
 
     spin_unlock(&ctx->listen.accept_lock); /* 解锁 */
 
     /* > 将通信套接字放入队列 */
-    idx = sid % ctx->conf->rsvr_num;
+    idx = cid % ctx->conf->rsvr_num;
 
     add = queue_malloc(ctx->connq[idx], sizeof(acc_add_sck_t));
     if (NULL == add) {
@@ -201,10 +201,10 @@ static int acc_lsvr_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
     }
 
     add->fd = fd;
-    add->sid = sid;
+    add->cid = cid;
     ftime(&add->crtm);
 
-    log_debug(lsvr->log, "Push data! fd:%d addr:%p sid:%u idx:%d", fd, add, sid, idx);
+    log_debug(lsvr->log, "Push data! fd:%d addr:%p cid:%u idx:%d", fd, add, cid, idx);
 
     queue_push(ctx->connq[idx], add);
 
