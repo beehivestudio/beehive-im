@@ -20,8 +20,8 @@ typedef enum
 /* 处罚回调的原因 */
 typedef enum
 {
-    ACC_CALLBACK_ASI_CREAT      /* 创建ASI对象 */
-    , ACC_CALLBACK_ASI_DESTROY  /* 销毁ASI对象 */
+    ACC_CALLBACK_CREAT          /* 创建SCK对象 */
+    , ACC_CALLBACK_DESTROY      /* 销毁SCK对象 */
 
     , ACC_CALLBACK_RECEIVE      /* 收到数据 */
     , ACC_CALLBACK_WRITEABLE    /* 可写事件 */

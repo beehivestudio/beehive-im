@@ -559,7 +559,7 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     CLOSE(sck->fd);
 
     ctx->protocol.callback(ctx, sck, ACC_CALLBACK_CLOSED, (void *)extra, (void *)NULL, 0);
-    ctx->protocol.callback(ctx, sck, ACC_CALLBACK_ASI_DESTROY, (void *)extra, (void *)NULL, 0);
+    ctx->protocol.callback(ctx, sck, ACC_CALLBACK_DESTROY, (void *)extra, (void *)NULL, 0);
 
     list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
     if (sck->recv.addr) {

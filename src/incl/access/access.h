@@ -49,13 +49,13 @@ typedef struct {
 
 typedef struct _acc_cntx_t acc_cntx_t;
 typedef int (*acc_callback_t)(acc_cntx_t *ctx, socket_t *asi, int reason, void *user, void *in, int len);
+typedef size_t (*acc_get_packet_body_size_cb_t)(void *head);
 
 /* 帧听协议 */
 typedef struct {
-    const char *name;               /* 业务名称 */
     acc_callback_t callback;        /* 处理回调 */
     size_t per_packet_head_size;    /* 每个包的报头长度 */
-    size_t (*get_packet_body_size)(void *head); /* 每个包的报体长度 */
+    acc_get_packet_body_size_cb_t get_packet_body_size; /* 每个包的报体长度 */
     size_t per_session_data_size;   /* 每个会话的自定义数据大小 */
 } acc_protocol_t;
 
