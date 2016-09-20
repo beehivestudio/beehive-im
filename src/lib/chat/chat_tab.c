@@ -166,9 +166,6 @@ chat_room_t *chat_add_room(chat_tab_t *chat, uint64_t rid)
 
         room->rid = rid;
         room->create_tm = tm;
-        room->update_tm = tm;
-        room->delay_tm = CHAT_TMOUT_DELAY_SEC;
-        room->timeout_tm = room->delay_tm + CHAT_TMOUT_MAX_SEC;
 
         /* > 创建分组列表 */
         room->group_tab = avl_creat(NULL, (cmp_cb_t)chat_group_cmp_cb);

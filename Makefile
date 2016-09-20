@@ -31,7 +31,7 @@ DIR += "$(LIB_DIR)/utils"
 DIR += "$(LIB_DIR)/rtmq"
 DIR += "$(LIB_DIR)/redis"
 
-DIR += "$(LIB_DIR)/agent"
+DIR += "$(LIB_DIR)/chat"
 DIR += "$(LIB_DIR)/invert"
 DIR += "$(LIB_DIR)/access"
 

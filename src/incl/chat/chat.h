@@ -49,9 +49,6 @@ typedef struct
     uint16_t grp_idx;           /* 下一个可分配的组ID(只增不减) */
 
     time_t create_tm;           /* 创建时间 */
-    time_t update_tm;           /* 更新时间 */
-    time_t timeout_tm;          /* 过期时间 */
-    time_t delay_tm;            /* 递延时间 */
 
     avl_tree_t *group_tab;      /* 聊天室分组管理表(以gid为组建 存储chat_group_t数据) */
 } chat_room_t;
