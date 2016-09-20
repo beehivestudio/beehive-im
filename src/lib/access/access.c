@@ -8,7 +8,6 @@
 #include "acc_rsvr.h"
 #include "hash_alg.h"
 
-static log_cycle_t *acc_init_log(char *fname);
 static int acc_comm_init(acc_cntx_t *ctx);
 static int acc_creat_rsvr(acc_cntx_t *ctx);
 static int acc_rsvr_pool_destroy(acc_cntx_t *ctx);
@@ -20,8 +19,8 @@ static int acc_conn_cid_cmp_cb(const socket_t *sck1, const socket_t *sck2)
 {
     acc_socket_extra_t *extra1, *extra2;
 
-    extra1 = sck1->extra;
-    extra2 = sck2->extra;
+    extra1 = (acc_socket_extra_t *)sck1->extra;
+    extra2 = (acc_socket_extra_t *)sck2->extra;
 
     return (extra1->cid - extra2->cid);
 }
@@ -29,11 +28,7 @@ static int acc_conn_cid_cmp_cb(const socket_t *sck1, const socket_t *sck2)
 /* CID哈希回调 */
 static int acc_conn_cid_hash_cb(const socket_t *sck)
 {
-    acc_socket_extra_t *extra;
-
-    extra = sck->extra;
-
-    return extra->cid;
+    return ((acc_socket_extra_t *)sck->extra)->cid;
 }
 
 /******************************************************************************
@@ -62,7 +57,7 @@ acc_cntx_t *acc_init(acc_protocol_t *protocol, acc_conf_t *conf, log_cycle_t *lo
 
     ctx->log = log;
     ctx->conf = conf;
-    memcpy(&ctx->protocol, protocol, sizeof(acc_protocol_t));
+    ctx->protocol = protocol;
 
     do {
         /* > 设置进程打开文件数 */

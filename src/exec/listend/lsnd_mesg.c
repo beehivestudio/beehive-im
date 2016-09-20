@@ -12,6 +12,10 @@
 #include "listend.h"
 #include "lsnd_mesg.h"
 
+static int lsnd_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user);
+static int lsnd_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user);
+static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user, void *in, int len);
+
 /******************************************************************************
  **函数名称: lsnd_search_req_hdl
  **功    能: 搜索请求的处理函数
@@ -149,12 +153,18 @@ int lsnd_insert_word_rsp_hdl(int type, int orig, char *data, size_t len, void *a
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.17 22:03:02 #
  ******************************************************************************/
-int lsnd_acc_callback(acc_cntx_t *acc, socket_t *sck, int reason, void *user, void *in, int len)
+int lsnd_acc_callback(acc_cntx_t *acc,
+        socket_t *sck, int reason, void *user, void *in, int len, void *args)
 {
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+
     switch (reason) {
         case ACC_CALLBACK_CREAT:
+            return lsnd_callback_creat_hdl(lsnd, sck, (lsnd_conn_user_data_t *)user);
         case ACC_CALLBACK_DESTROY:
+            return lsnd_callback_destroy_hdl(lsnd, sck, user);
         case ACC_CALLBACK_RECEIVE:
+            return lsnd_callback_recv_hdl(lsnd, sck, user, in, len);
         case ACC_CALLBACK_WRITEABLE:
         case ACC_CALLBACK_CLOSED:
         case ACC_CALLBACK_ADD_POLL_FD:
@@ -165,5 +175,97 @@ int lsnd_acc_callback(acc_cntx_t *acc, socket_t *sck, int reason, void *user, vo
         default:
             break;
     }
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_callback_creat_hdl
+ **功    能: 连接创建的处理
+ **输入参数:
+ **     lsnd: 全局对象
+ **     sck: 套接字
+ **     user: 扩展数据
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 将新建连接放入CONN_CID_TAB维护起来, 待分配了SID后再转移到CONN_SID_TAB中.
+ **作    者: # Qifeng.zou # 2016.09.20 21:30:53 #
+ ******************************************************************************/
+static int lsnd_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user)
+{
+    /* 初始化设置 */
+    user->sid = 0;
+    user->cid = lsnd_gen_cid(lsnd);
+    user->tsi = sck;
+    user->create_time = time(NULL);
+    user->loc = LSND_DATA_LOC_UNKNOWN;
+    user->stat = LSND_CONN_STAT_ESTABLIST;
+
+    /* 加入CID管理表 */
+    if (hash_tab_insert(lsnd->conn_cid_tab, (void *)user, WRLOCK)) {
+        return -1;
+    }
+
+    user->loc = LSND_DATA_LOC_CID_TAB;
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_callback_destroy_hdl
+ **功    能: 连接销毁的处理
+ **输入参数:
+ **     lsnd: 全局对象
+ **     sck: 套接字
+ **     user: 扩展数据
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 释放user对象内存的所有空间, 但是请勿释放user对象本身.
+ **作    者: # Qifeng.zou # 2016.09.20 21:43:13 #
+ ******************************************************************************/
+static int lsnd_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user)
+{
+    lsnd_conn_user_data_t key, *item;
+
+    user->stat = LSND_CONN_STAT_CLOSED;
+
+    switch (user->loc) {
+        case LSND_DATA_LOC_CID_TAB:
+            key.cid = user->cid;
+            item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
+            if (item != user) {
+                assert(0);
+            }
+        case LSND_DATA_LOC_SID_TAB:
+            key.sid = user->sid;
+            item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
+            if (item != user) {
+                assert(0);
+            }
+        default:
+            assert(0);
+    }
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_callback_recv_hdl
+ **功    能: 接收数据的处理
+ **输入参数:
+ **     lsnd: 全局对象
+ **     sck: 套接字
+ **     user: 扩展数据
+ **     in: 收到的数据
+ **     len: 收到数据的长度
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 本函数收到的数据是一条完整的数据, 且其内容网络字节序.
+ **作    者: # Qifeng.zou # 2016.09.20 21:44:40 #
+ ******************************************************************************/
+static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user, void *in, int len)
+{
     return 0;
 }

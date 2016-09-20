@@ -128,4 +128,24 @@ int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args)
     return 0;
 }
 
+/******************************************************************************
+ **函数名称: lsnd_gen_cid
+ **功    能: 生成CID序列号
+ **输入参数:
+ **     ctx: 全局信息
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 使用原子加产生
+ **注意事项: CID不能为0.
+ **作    者: # Qifeng.zou # 2016.09.20 21:24:14 #
+ ******************************************************************************/
+uint64_t lsnd_gen_cid(lsnd_cntx_t *ctx)
+{
+    uint64_t ret;
 
+    do {
+        ret = atomic64_inc(&ctx->cid);
+    } while (0 == ret);
+
+    return ret;
+}

@@ -48,15 +48,17 @@ typedef struct {
 } acc_conf_t;
 
 typedef struct _acc_cntx_t acc_cntx_t;
-typedef int (*acc_callback_t)(acc_cntx_t *ctx, socket_t *asi, int reason, void *user, void *in, int len);
+typedef int (*acc_callback_t)(acc_cntx_t *ctx, socket_t *asi, int reason, void *user, void *in, int len, void *args);
 typedef size_t (*acc_get_packet_body_size_cb_t)(void *head);
 
 /* 帧听协议 */
-typedef struct {
+typedef struct
+{
     acc_callback_t callback;        /* 处理回调 */
     size_t per_packet_head_size;    /* 每个包的报头长度 */
     acc_get_packet_body_size_cb_t get_packet_body_size; /* 每个包的报体长度 */
     size_t per_session_data_size;   /* 每个会话的自定义数据大小 */
+    void *args;                     /* 附加参数 */
 } acc_protocol_t;
 
 /* 代理对象 */
@@ -65,7 +67,7 @@ typedef struct _acc_cntx_t {
     log_cycle_t *log;               /* 日志对象 */
     int cmd_sck_id;                 /* 命令套接字 */
     avl_tree_t *reg;                /* 函数注册表 */
-    acc_protocol_t protocol;        /* 处理协议 */
+    acc_protocol_t *protocol;       /* 处理协议 */
 
     /* 侦听信息 */
     struct {

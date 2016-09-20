@@ -27,25 +27,16 @@ static size_t lsnd_mesg_body_length(mesg_header_t *head)
     return ntohl(head->length);
 }
 
-/* 协议内容 */
-static acc_protocol_t g_acc_protocol =
-{
-    lsnd_acc_callback,
-    sizeof(mesg_header_t),
-    (acc_get_packet_body_size_cb_t)lsnd_mesg_body_length,
-    sizeof(lsnd_session_data_t),
-};
-
 /******************************************************************************
- **函数名称: main 
+ **函数名称: main
  **功    能: 代理服务
- **输入参数: 
+ **输入参数:
  **     argc: 参数个数
  **     argv: 参数列表
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 加载配置，再通过配置启动各模块
- **注意事项: 
+ **注意事项:
  **作    者: # Qifeng.zou # 2014.11.15 #
  ******************************************************************************/
 int main(int argc, char *argv[])
@@ -149,10 +140,34 @@ static int lsnd_proc_lock(lsnd_conf_t *conf)
     return 0;
 }
 
-/* 比较回调 */
+/* 注册比较回调 */
 static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
 {
     return reg1->type - reg2->type;
+}
+
+/* CID哈希回调 */
+static uint64_t lsnd_conn_cid_tab_hash_cb(lsnd_conn_user_data_t *data)
+{
+    return data->cid;
+}
+
+/* CID比较回调 */
+static uint64_t lsnd_conn_cid_tab_cmp_cb(lsnd_conn_user_data_t *d1, lsnd_conn_user_data_t *d2)
+{
+    return d1->cid - d2->cid;
+}
+
+/* SID哈希回调 */
+static uint64_t lsnd_conn_sid_tab_hash_cb(lsnd_conn_user_data_t *data)
+{
+    return data->sid;
+}
+
+/* SID比较回调 */
+static uint64_t lsnd_conn_sid_tab_cmp_cb(lsnd_conn_user_data_t *d1, lsnd_conn_user_data_t *d2)
+{
+    return d1->sid - d2->sid;
 }
 
 /******************************************************************************
@@ -170,6 +185,12 @@ static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
 static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
 {
     lsnd_cntx_t *ctx;
+    static acc_protocol_t protocol = {
+        lsnd_acc_callback,
+        sizeof(mesg_header_t),
+        (acc_get_packet_body_size_cb_t)lsnd_mesg_body_length,
+        sizeof(lsnd_conn_user_data_t),
+    };
 
     /* > 加进程锁 */
     if (lsnd_proc_lock(conf)) {
@@ -195,8 +216,27 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
             break;
         }
 
+        /* > 初始化CID管理表 */
+        ctx->conn_cid_tab = hash_tab_creat(999,
+                (hash_cb_t)lsnd_conn_cid_tab_hash_cb,
+                (cmp_cb_t)lsnd_conn_cid_tab_cmp_cb, NULL);
+        if (NULL == ctx->conn_cid_tab) {
+            log_error(log, "Initialize conn cid table failed!");
+            break;
+        }
+
+        /* > 初始化SID管理表 */
+        ctx->conn_sid_tab = hash_tab_creat(999,
+                (hash_cb_t)lsnd_conn_sid_tab_hash_cb,
+                (cmp_cb_t)lsnd_conn_sid_tab_cmp_cb, NULL);
+        if (NULL == ctx->conn_cid_tab) {
+            log_error(log, "Initialize conn sid table failed!");
+            break;
+        }
+
         /* > 初始化帧听模块 */
-        ctx->access = acc_init(&g_acc_protocol, &conf->access, log);
+        protocol.args = (void *)ctx;
+        ctx->access = acc_init(&protocol, &conf->access, log);
         if (NULL == ctx->access) {
             log_error(log, "Initialize access failed!");
             break;
@@ -223,8 +263,8 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
  **     ctx: 全局信息
  **输出参数:
  **返    回: VOID
- **实现描述: 
- **注意事项: 
+ **实现描述:
+ **注意事项:
  **作    者: # Qifeng.zou # 2015.05.28 23:11:54 #
  ******************************************************************************/
 static int lsnd_set_reg(lsnd_cntx_t *ctx)
@@ -256,8 +296,8 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
  **     ctx: 侦听对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述: 
- **注意事项: 
+ **实现描述:
+ **注意事项:
  **作    者: # Qifeng.zou # 2015.06.20 22:58:16 #
  ******************************************************************************/
 static int lsnd_launch(lsnd_cntx_t *ctx)

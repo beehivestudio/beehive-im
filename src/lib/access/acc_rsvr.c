@@ -469,7 +469,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
                 continue;
             }
 
-            extra->user = (void *)calloc(1, ctx->protocol.per_session_data_size);
+            extra->user = (void *)calloc(1, ctx->protocol->per_session_data_size);
             if (NULL == extra->user) {
                 log_error(rsvr->log, "Alloc memory failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
@@ -520,6 +520,9 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             log_debug(rsvr->log, "Insert into avl success! fd:%d cid:%lu",
                       sck->fd, extra->cid);
 
+            ctx->protocol->callback(ctx, sck, ACC_CALLBACK_CREAT,
+                    (void *)extra->user, (void *)NULL, 0, (void *)ctx->protocol->args);
+
             /* > 加入epoll监听(首先是接收客户端搜索请求, 所以设置EPOLLIN) */
             memset(&ev, 0, sizeof(ev));
 
@@ -558,8 +561,10 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     /* > 释放套接字空间 */
     CLOSE(sck->fd);
 
-    ctx->protocol.callback(ctx, sck, ACC_CALLBACK_CLOSED, (void *)extra, (void *)NULL, 0);
-    ctx->protocol.callback(ctx, sck, ACC_CALLBACK_DESTROY, (void *)extra, (void *)NULL, 0);
+    ctx->protocol->callback(ctx, sck, ACC_CALLBACK_CLOSED,
+            (void *)extra->user, (void *)NULL, 0, (void *)ctx->protocol->args);
+    ctx->protocol->callback(ctx, sck, ACC_CALLBACK_DESTROY,
+            (void *)extra->user, (void *)NULL, 0, (void *)ctx->protocol->args);
 
     list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
     if (sck->recv.addr) {
@@ -691,12 +696,13 @@ static int acc_recv_body(acc_rsvr_t *rsvr, socket_t *sck)
  ******************************************************************************/
 static int acc_recv_post_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 {
-    acc_protocol_t *protocol = &ctx->protocol;
+    acc_protocol_t *protocol = ctx->protocol;
     acc_socket_extra_t *extra = (acc_socket_extra_t *)sck->extra;
 
-    return protocol->callback(ctx, sck,
-            ACC_CALLBACK_RECEIVE, (void *)extra, (void *)extra->head,
-            protocol->get_packet_body_size(extra->head) + protocol->per_packet_head_size);
+    return protocol->callback(ctx, sck, ACC_CALLBACK_RECEIVE,
+            (void *)extra->user, (void *)extra->head,
+            protocol->get_packet_body_size(extra->head) + protocol->per_packet_head_size,
+            (void *)ctx->protocol->args);
 }
 
 /******************************************************************************
@@ -716,7 +722,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     int ret;
     socket_snap_t *recv = &sck->recv;
     queue_conf_t *conf = &ctx->conf->recvq;
-    acc_protocol_t *protocol = &ctx->protocol;
+    acc_protocol_t *protocol = ctx->protocol;
     acc_socket_extra_t *extra = (acc_socket_extra_t *)sck->extra;
 
     for (;;) {

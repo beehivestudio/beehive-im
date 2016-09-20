@@ -12,7 +12,7 @@ INCLUDE = -I./incl \
 			-I$(PROJ)/src/incl \
 			-I$(PROJ)/src/incl/sdtp \
 			-I$(PROJ)/src/incl/rtmq \
-			-I$(PROJ)/src/incl/agent \
+			-I$(PROJ)/src/incl/chat \
 			-I$(PROJ)/src/incl/access
 INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib
