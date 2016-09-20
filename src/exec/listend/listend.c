@@ -3,9 +3,9 @@
  **
  ** 文件名: listend.c
  ** 版本号: 1.0
- ** 描  述: 代理服务
- **         负责接受外界请求，并将处理结果返回给外界
- ** 作  者: # Qifeng.zou # 2014.11.15 #
+ ** 描  述: 帧听层服务
+ **         负责接收外界请求，并将处理结果返回给外界
+ ** 作  者: # Qifeng.zou # 2016.09.20 #
  ******************************************************************************/
 
 #include "sck.h"
@@ -147,25 +147,25 @@ static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
 }
 
 /* CID哈希回调 */
-static uint64_t lsnd_conn_cid_tab_hash_cb(lsnd_conn_user_data_t *data)
+static uint64_t lsnd_conn_cid_tab_hash_cb(chat_conn_user_data_t *data)
 {
     return data->cid;
 }
 
 /* CID比较回调 */
-static uint64_t lsnd_conn_cid_tab_cmp_cb(lsnd_conn_user_data_t *d1, lsnd_conn_user_data_t *d2)
+static uint64_t lsnd_conn_cid_tab_cmp_cb(chat_conn_user_data_t *d1, chat_conn_user_data_t *d2)
 {
     return d1->cid - d2->cid;
 }
 
 /* SID哈希回调 */
-static uint64_t lsnd_conn_sid_tab_hash_cb(lsnd_conn_user_data_t *data)
+static uint64_t lsnd_conn_sid_tab_hash_cb(chat_conn_user_data_t *data)
 {
     return data->sid;
 }
 
 /* SID比较回调 */
-static uint64_t lsnd_conn_sid_tab_cmp_cb(lsnd_conn_user_data_t *d1, lsnd_conn_user_data_t *d2)
+static uint64_t lsnd_conn_sid_tab_cmp_cb(chat_conn_user_data_t *d1, chat_conn_user_data_t *d2)
 {
     return d1->sid - d2->sid;
 }
@@ -186,10 +186,10 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
 {
     lsnd_cntx_t *ctx;
     static acc_protocol_t protocol = {
-        lsnd_acc_callback,
+        chat_callback,
         sizeof(mesg_header_t),
         (acc_get_packet_body_size_cb_t)lsnd_mesg_body_length,
-        sizeof(lsnd_conn_user_data_t),
+        sizeof(chat_conn_user_data_t),
     };
 
     /* > 加进程锁 */
@@ -274,8 +274,8 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, lsnd_join_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, MSG_INSERT_WORD_REQ, lsnd_insert_word_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, chat_online_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_join_req_hdl, ctx);
 
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
@@ -283,8 +283,8 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_RTQ_REG_CB(ctx, MSG_SEARCH_RSP, lsnd_search_rsp_hdl, ctx);
-    LSND_RTQ_REG_CB(ctx, MSG_INSERT_WORD_RSP, lsnd_insert_word_rsp_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, chat_online_ack_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, chat_join_ack_hdl, ctx);
 
     return LSND_OK;
 }

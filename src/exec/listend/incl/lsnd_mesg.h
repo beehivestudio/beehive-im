@@ -32,16 +32,16 @@ typedef struct
     time_t create_time;             /* 创建时间 */
 
     socket_t *tsi;                  /* TCP连接实例 */
-} lsnd_conn_user_data_t;
+} chat_conn_user_data_t;
 
-int lsnd_acc_callback(acc_cntx_t *ctx, socket_t *sck, int reason, void *user, void *in, int len, void *args);
+int chat_callback(acc_cntx_t *ctx, socket_t *sck, int reason, void *user, void *in, int len, void *args);
 
-int lsnd_mesg_def_hdl(unsigned int type, void *data, int length, void *args);
+int lsnd_mesg_def_hdl(int type, void *data, int length, void *args);
 
-int lsnd_join_req_hdl(unsigned int type, void *data, int length, void *args);
-int lsnd_search_rsp_hdl(int type, int orig, char *data, size_t len, void *args);
+int chat_online_req_hdl(int type, void *data, int length, void *args);
+int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args);
 
-int lsnd_insert_word_req_hdl(unsigned int type, void *data, int length, void *args);
-int lsnd_insert_word_rsp_hdl(int type, int orig, char *data, size_t len, void *args);
+int chat_join_req_hdl(int type, void *data, int length, void *args);
+int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args);
 
 #endif /*__LSND_MESG_H__*/

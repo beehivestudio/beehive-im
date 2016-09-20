@@ -51,7 +51,8 @@ typedef struct
     acc_cntx_t *access;                     /* 帧听层模块 */
     rtmq_proxy_t *frwder;                   /* FRWDER服务 */
 
-    chat_tab_t *chat_tab;                   /* 聊天组织表 */
+    hash_tab_t *uid_tab;                    /* 用户ID管理表 */
+    chat_tab_t *chat_tab;                   /* 聊天室组织表 */
     hash_tab_t *conn_sid_tab;               /* 连接管理表(以SID为主键) */
     hash_tab_t *conn_cid_tab;               /* 连接管理表(以CID为主键) */
 } lsnd_cntx_t;
