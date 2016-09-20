@@ -7,10 +7,10 @@
 #include "rb_tree.h"
 #include "avl_tree.h"
 
-#define CHAT_USR_DEF_NUM        (1250)              /* 聊天室用户默认数 */
-#define CHAT_TMOUT_MAX_SEC      (7200)              /* 聊天室最大超时时间 */
-#define CHAT_TMOUT_DELAY_SEC    (300)               /* 当超过最大超时时间后,
-                                                       这个时间内仍然有消息, 则以此时间递延 */
+#define CHAT_USR_DEF_NUM        (1250)  /* 聊天室用户默认数 */
+#define CHAT_TMOUT_MAX_SEC      (7200)  /* 聊天室最大超时时间 */
+#define CHAT_TMOUT_DELAY_SEC    (300)   /* 当超过最大超时时间后,
+                                           这个时间内仍然有消息, 则以此时间递延 */
 /* 订阅项 */
 typedef struct
 {
