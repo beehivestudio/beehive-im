@@ -262,10 +262,23 @@ static int lsnd_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
- **注意事项: 本函数收到的数据是一条完整的数据, 且其内容网络字节序.
+ **注意事项:
+ **     1. 暂无需加锁. 原因: 注册表在程序启动时, 就已固定不变.
+ **     2. 本函数收到的数据是一条完整的数据, 且其内容网络字节序.
  **作    者: # Qifeng.zou # 2016.09.20 21:44:40 #
  ******************************************************************************/
 static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user, void *in, int len)
 {
-    return 0;
+    lsnd_reg_t *reg, key;
+    mesg_header_t *head = (mesg_header_t *)in;
+
+    key.type = ntohl(head->type);
+
+    reg = avl_query(lsnd->reg, &key);
+    if (NULL == reg) {
+        log_error(lsnd->log, "Recv unknown data! type:0x%X", key.type);
+        return 0;
+    }
+
+    return reg->proc(reg->type, in, len, reg->args);
 }
