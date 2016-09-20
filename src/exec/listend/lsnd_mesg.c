@@ -17,8 +17,8 @@ static int lsnd_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn
 static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_user_data_t *user, void *in, int len);
 
 /******************************************************************************
- **函数名称: lsnd_search_req_hdl
- **功    能: 搜索请求的处理函数
+ **函数名称: lsnd_mesg_def_hdl
+ **功    能: 消息默认处理
  **输入参数:
  **     type: 全局对象
  **     data: 数据内容
@@ -28,21 +28,52 @@ static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_us
  **返    回: 0:成功 !0:失败
  **实现描述: 请求数据的内存结构: 流水信息 + 消息头 + 消息体
  **注意事项: 需要将协议头转换为网络字节序
- **作    者: # Qifeng.zou # 2015.05.28 23:11:54 #
+ **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int lsnd_search_req_hdl(unsigned int type, void *data, int length, void *args)
+int lsnd_mesg_def_hdl(unsigned int type, void *data, int length, void *args)
 {
-    lsnd_cntx_t *ctx = (lsnd_cntx_t *)args;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
-    log_debug(ctx->log, "sid:%lu serial:%lu length:%d body:%s!",
+    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
+            head->sid, head->serial, length, head->body);
+
+    /* > 转换字节序 */
+    MESG_HEAD_HTON(head, head);
+
+    /* > 转发数据 */
+    return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+}
+
+
+
+/******************************************************************************
+ **函数名称: lsnd_join_req_hdl
+ **功    能: 加入聊天室的请求
+ **输入参数:
+ **     type: 全局对象
+ **     data: 数据内容
+ **     length: 数据长度(报头 + 报体)
+ **     args: 附加参数
+ **输出参数:
+ **返    回: 0:成功 !0:失败
+ **实现描述: 请求数据的内存结构: 流水信息 + 消息头 + 消息体
+ **注意事项: 需要将协议头转换为网络字节序
+ **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
+ ******************************************************************************/
+int lsnd_join_req_hdl(unsigned int type, void *data, int length, void *args)
+{
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
+
+    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
             head->sid, head->serial, length, head->body);
 
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, head);
 
     /* > 转发搜索请求 */
-    return rtmq_proxy_async_send(ctx->frwder, type, data, length);
+    return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
 }
 
 /******************************************************************************
@@ -276,8 +307,8 @@ static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_us
 
     reg = avl_query(lsnd->reg, &key);
     if (NULL == reg) {
-        log_error(lsnd->log, "Recv unknown data! type:0x%X", key.type);
-        return 0;
+        log_warn(lsnd->log, "Recv unknown data! type:0x%X", key.type);
+        return lsnd_mesg_def_hdl(key.type, in, len, (void *)lsnd);
     }
 
     return reg->proc(reg->type, in, len, reg->args);

@@ -36,7 +36,9 @@ typedef struct
 
 int lsnd_acc_callback(acc_cntx_t *ctx, socket_t *sck, int reason, void *user, void *in, int len, void *args);
 
-int lsnd_search_req_hdl(unsigned int type, void *data, int length, void *args);
+int lsnd_mesg_def_hdl(unsigned int type, void *data, int length, void *args);
+
+int lsnd_join_req_hdl(unsigned int type, void *data, int length, void *args);
 int lsnd_search_rsp_hdl(int type, int orig, char *data, size_t len, void *args);
 
 int lsnd_insert_word_req_hdl(unsigned int type, void *data, int length, void *args);

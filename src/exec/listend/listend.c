@@ -274,7 +274,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_ACC_REG_CB(ctx, MSG_SEARCH_REQ, lsnd_search_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, lsnd_join_req_hdl, ctx);
     LSND_ACC_REG_CB(ctx, MSG_INSERT_WORD_REQ, lsnd_insert_word_req_hdl, ctx);
 
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
