@@ -162,10 +162,10 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 }
 
 /******************************************************************************
- **函数名称: lsnd_acc_callback
- **功    能: ACCESS处理回调
+ **函数名称: chat_callback
+ **功    能: CHAT处理回调
  **输入参数:
- **     acc: ACC上下文
+ **     acc: Access
  **     sck: 套接字
  **     reason: 回调的原因
  **     user: 扩展数据
