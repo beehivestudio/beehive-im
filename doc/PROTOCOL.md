@@ -53,6 +53,7 @@
 协议格式:<br>
 >{<br>
 >   "uid":${uid},               // M|用户ID|数字| <br>
+>   "roomid":${roomid},         // M|聊天室ID|数字|<br>
 >   "token":"${token}",         // M|鉴权TOKEN|字串|<br>
 >   "app":"${app}",             // M|APP名|字串|<br>
 >   "version":"${version}",     // M|APP版本|字串|<br>
