@@ -91,3 +91,21 @@ static int acc_cmd_send_dist_req(acc_cntx_t *ctx, int idx)
 
     return unix_udp_send(ctx->cmd_sck_id, path, (void *)&cmd, sizeof(cmd));
 }
+
+/******************************************************************************
+ **函数名称: acc_sck_get_cid
+ **功    能: 获取套接字CID.
+ **输入参数:
+ **     sck: 套接字对象
+ **输出参数:
+ **返    回: CID对象
+ **实现描述: 
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2019.06.24 12:01:59 #
+ ******************************************************************************/
+uint64_t acc_sck_get_cid(socket_t *sck)
+{
+    acc_socket_extra_t *extra = sck->extra;
+
+    return extra->cid;
+}

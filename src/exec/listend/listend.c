@@ -147,27 +147,39 @@ static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
 }
 
 /* CID哈希回调 */
-static uint64_t lsnd_conn_cid_tab_hash_cb(chat_conn_user_data_t *data)
+static uint64_t lsnd_conn_cid_hash_cb(chat_conn_extra_t *extra)
 {
-    return data->cid;
+    return extra->cid;
 }
 
 /* CID比较回调 */
-static uint64_t lsnd_conn_cid_tab_cmp_cb(chat_conn_user_data_t *d1, chat_conn_user_data_t *d2)
+static int lsnd_conn_cid_cmp_cb(chat_conn_extra_t *extra1, chat_conn_extra_t *extra2)
 {
-    return d1->cid - d2->cid;
+    return (int)(extra1->cid - extra2->cid);
 }
 
 /* SID哈希回调 */
-static uint64_t lsnd_conn_sid_tab_hash_cb(chat_conn_user_data_t *data)
+static uint64_t lsnd_conn_sid_hash_cb(chat_conn_extra_t *extra)
 {
-    return data->sid;
+    return extra->sid;
 }
 
 /* SID比较回调 */
-static uint64_t lsnd_conn_sid_tab_cmp_cb(chat_conn_user_data_t *d1, chat_conn_user_data_t *d2)
+static int lsnd_conn_sid_cmp_cb(chat_conn_extra_t *extra1, chat_conn_extra_t *extra2)
 {
-    return d1->sid - d2->sid;
+    return (int)(extra1->sid - extra2->sid);
+}
+
+/* KICK哈希回调 */
+static uint64_t lsnd_conn_kick_hash_cb(chat_conn_extra_t *extra)
+{
+    return (uint64_t)extra->sck;
+}
+
+/* KICK比较回调 */
+static int lsnd_conn_kick_cmp_cb(chat_conn_extra_t *extra1, chat_conn_extra_t *extra2)
+{
+    return (int)(extra1->sck - extra2->sck);
 }
 
 /******************************************************************************
@@ -189,7 +201,7 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         chat_callback,
         sizeof(mesg_header_t),
         (acc_get_packet_body_size_cb_t)lsnd_mesg_body_length,
-        sizeof(chat_conn_user_data_t),
+        sizeof(chat_conn_extra_t)
     };
 
     /* > 加进程锁 */
@@ -217,22 +229,33 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         }
 
         /* > 初始化CID管理表 */
-        ctx->conn_cid_tab = hash_tab_creat(999,
-                (hash_cb_t)lsnd_conn_cid_tab_hash_cb,
-                (cmp_cb_t)lsnd_conn_cid_tab_cmp_cb, NULL);
+        ctx->conn_cid_tab = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
+                (hash_cb_t)lsnd_conn_cid_hash_cb,
+                (cmp_cb_t)lsnd_conn_cid_cmp_cb, NULL);
         if (NULL == ctx->conn_cid_tab) {
             log_error(log, "Initialize conn cid table failed!");
             break;
         }
 
         /* > 初始化SID管理表 */
-        ctx->conn_sid_tab = hash_tab_creat(999,
-                (hash_cb_t)lsnd_conn_sid_tab_hash_cb,
-                (cmp_cb_t)lsnd_conn_sid_tab_cmp_cb, NULL);
+        ctx->conn_sid_tab = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
+                (hash_cb_t)lsnd_conn_sid_hash_cb,
+                (cmp_cb_t)lsnd_conn_sid_cmp_cb, NULL);
         if (NULL == ctx->conn_cid_tab) {
             log_error(log, "Initialize conn sid table failed!");
             break;
         }
+
+        /* > 初始化KICK管理表 */
+        ctx->conn_kick_tab = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
+                (hash_cb_t)lsnd_conn_kick_hash_cb,
+                (cmp_cb_t)lsnd_conn_kick_cmp_cb, NULL);
+        if (NULL == ctx->conn_kick_tab) {
+            log_error(log, "Initialize conn kick table failed!");
+            break;
+        }
+
+
 
         /* > 初始化帧听模块 */
         protocol.args = (void *)ctx;

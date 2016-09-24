@@ -4,35 +4,39 @@
 /* 会话数据由哪个表维护 */
 typedef enum
 {
-    LSND_DATA_LOC_UNKNOWN           /* 未知 */
-    , LSND_DATA_LOC_CID_TAB         /* CID表 */
-    , LSND_DATA_LOC_SID_TAB         /* SID表 */
-    , LSND_DATA_LOC_KICK_TAB        /* KICK表 */
-} lsnd_user_loc_tab_e;
+    CHAT_EXTRA_LOC_UNKNOWN          /* 未知 */
+    , CHAT_EXTRA_LOC_CID_TAB        /* CID表 */
+    , CHAT_EXTRA_LOC_SID_TAB        /* SID表 */
+    , CHAT_EXTRA_LOC_KICK_TAB       /* KICK表 */
+} chat_extra_loc_tab_e;
 
 /* 连接状态 */
 typedef enum
 {
-    LSND_CONN_STAT_UNKNOWN          /* 未知 */
-    , LSND_CONN_STAT_ESTABLIST      /* 创建 */
-    , LSND_CONN_STAT_LOGIN          /* 登录 */
-    , LSND_CONN_STAT_KICK           /* 被踢 */
-    , LSND_CONN_STAT_READY_CLOSE    /* 待关闭 */
-    , LSND_CONN_STAT_CLOSED         /* 已关闭 */
-} lsnd_conn_stat_e;
+    CHAT_CONN_STAT_UNKNOWN          /* 未知 */
+    , CHAT_CONN_STAT_ESTABLISH      /* 创建 */
+    , CHAT_CONN_STAT_ONLINE         /* 上线 */
+    , CHAT_CONN_STAT_KICK           /* 被踢 */
+    , CHAT_CONN_STAT_OFFLINE        /* 下线 */
+    , CHAT_CONN_STAT_CLOSEING       /* 正在关闭... */
+    , CHAT_CONN_STAT_CLOSED         /* 已关闭 */
+} chat_conn_stat_e;
 
-/* 会话数据 */
+/* 会话扩展数据 */
 typedef struct
 {
     uint64_t sid;                   /* 会话ID */
     uint64_t cid;                   /* 连接ID */
-    lsnd_conn_stat_e stat;          /* 连接状态 */
-    lsnd_user_loc_tab_e  loc;       /* 用户数据由哪个表维护 */
+    chat_conn_stat_e stat;          /* 连接状态 */
+    chat_extra_loc_tab_e  loc;      /* 用户数据由哪个表维护 */
 
     time_t create_time;             /* 创建时间 */
+    time_t recv_time;               /* 最近接收数据时间 */
+    time_t send_time;               /* 最近发送数据时间 */
+    time_t keepalive_time;          /* 保活时间 */
 
-    socket_t *tsi;                  /* TCP连接实例 */
-} chat_conn_user_data_t;
+    socket_t *sck;                  /* TCP连接实例 */
+} chat_conn_extra_t;
 
 int chat_callback(acc_cntx_t *ctx, socket_t *sck, int reason, void *user, void *in, int len, void *args);
 

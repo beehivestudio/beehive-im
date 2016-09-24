@@ -520,7 +520,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             log_debug(rsvr->log, "Insert into avl success! fd:%d cid:%lu",
                       sck->fd, extra->cid);
 
-            ctx->protocol->callback(ctx, sck, ACC_CALLBACK_CREAT,
+            ctx->protocol->callback(ctx, sck, ACC_CALLBACK_SCK_CREAT,
                     (void *)extra->user, (void *)NULL, 0, (void *)ctx->protocol->args);
 
             /* > 加入epoll监听(首先是接收客户端搜索请求, 所以设置EPOLLIN) */
@@ -561,9 +561,9 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     /* > 释放套接字空间 */
     CLOSE(sck->fd);
 
-    ctx->protocol->callback(ctx, sck, ACC_CALLBACK_CLOSED,
+    ctx->protocol->callback(ctx, sck, ACC_CALLBACK_SCK_CLOSED,
             (void *)extra->user, (void *)NULL, 0, (void *)ctx->protocol->args);
-    ctx->protocol->callback(ctx, sck, ACC_CALLBACK_DESTROY,
+    ctx->protocol->callback(ctx, sck, ACC_CALLBACK_SCK_DESTROY,
             (void *)extra->user, (void *)NULL, 0, (void *)ctx->protocol->args);
 
     list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);

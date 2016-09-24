@@ -20,12 +20,12 @@ typedef enum
 /* 处罚回调的原因 */
 typedef enum
 {
-    ACC_CALLBACK_CREAT          /* 创建SCK对象 */
-    , ACC_CALLBACK_DESTROY      /* 销毁SCK对象 */
+    ACC_CALLBACK_SCK_CREAT      /* 创建SCK对象 */
+    , ACC_CALLBACK_SCK_CLOSED   /* 连接关闭 */
+    , ACC_CALLBACK_SCK_DESTROY  /* 销毁SCK对象 */
 
     , ACC_CALLBACK_RECEIVE      /* 收到数据 */
     , ACC_CALLBACK_WRITEABLE    /* 可写事件 */
-    , ACC_CALLBACK_CLOSED       /* 连接关闭 */
 
     , ACC_CALLBACK_ADD_POLL_FD  /* 将套接字加入事件监听 */
     , ACC_CALLBACK_DEL_POLL_FD  /* 将套接字移除事件监听 */

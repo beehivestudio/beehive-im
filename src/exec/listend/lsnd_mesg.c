@@ -12,9 +12,9 @@
 #include "listend.h"
 #include "lsnd_mesg.h"
 
-static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_user_data_t *user);
-static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_user_data_t *user);
-static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_user_data_t *user, void *in, int len);
+static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
+static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
+static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra, void *in, int len);
 
 /******************************************************************************
  **函数名称: chat_mesg_def_hdl
@@ -87,10 +87,14 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
  **注意事项:
+ **     1. 当为ONLINE-ACK时, 序列号表示的就是CID.
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
  ******************************************************************************/
 int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
+    int ret;
+    uint64_t cid;
+    chat_conn_extra_t *extra, key;
     lsnd_cntx_t *ctx = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
@@ -100,7 +104,46 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     MESG_HEAD_PRINT(ctx->log, &hhead)
     log_debug(ctx->log, "body:%s", head->body);
 
-    return acc_async_send(ctx->access, type, hhead.sid, data, len);
+    cid = hhead.serial;
+
+    /* > 查找扩展数据 */
+    key.cid = cid;
+
+    extra = hash_tab_delete(ctx->conn_cid_tab, &key, WRLOCK);
+    if (NULL == extra) {
+        log_error(ctx->log, "Didn't find socket from cid table! cid:%lu", cid);
+        return 0;
+    }
+    else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
+        log_error(ctx->log, "Connection status isn't establish! cid:%lu", cid);
+        return 0;
+    }
+    else if (0 == hhead.sid) { /* SID分配失败 */
+        extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
+        hash_tab_insert(ctx->conn_kick_tab, extra, WRLOCK);
+        log_error(ctx->log, "Alloc sid failed! kick this connection! cid:%lu", cid);
+        return 0;
+    }
+
+    extra->sid = hhead.sid;
+    extra->loc = CHAT_EXTRA_LOC_SID_TAB;
+    extra->stat = CHAT_CONN_STAT_ONLINE;
+
+    /* 插入SID管理表 */
+    ret = hash_tab_insert(ctx->conn_sid_tab, extra, WRLOCK);
+    if (0 != ret) {
+        if (RBT_NODE_EXIST != ret) {
+            log_error(ctx->log, "Insert into kick table! cid:%lu sid:%lu", cid, hhead.sid);
+            extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
+            hash_tab_insert(ctx->conn_kick_tab, extra, WRLOCK);
+            return 0;
+        }
+        assert(0);
+        return 0;
+    }
+
+    /* 下发应答请求 */
+    return acc_async_send(ctx->access, type, cid, data, len);
 }
 
 /******************************************************************************
@@ -178,19 +221,21 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.20 22:03:02 #
  ******************************************************************************/
-int chat_callback(acc_cntx_t *acc, socket_t *sck, int reason, void *user, void *in, int len, void *args)
+int chat_callback(acc_cntx_t *acc,
+        socket_t *sck, int reason, void *user, void *in, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    chat_conn_extra_t *extra = (chat_conn_extra_t *)user;
 
     switch (reason) {
-        case ACC_CALLBACK_CREAT:
-            return chat_callback_creat_hdl(lsnd, sck, (chat_conn_user_data_t *)user);
-        case ACC_CALLBACK_DESTROY:
-            return chat_callback_destroy_hdl(lsnd, sck, user);
+        case ACC_CALLBACK_SCK_CREAT:
+            return chat_callback_creat_hdl(lsnd, sck, extra);
+        case ACC_CALLBACK_SCK_CLOSED:
+        case ACC_CALLBACK_SCK_DESTROY:
+            return chat_callback_destroy_hdl(lsnd, sck, extra);
         case ACC_CALLBACK_RECEIVE:
-            return chat_callback_recv_hdl(lsnd, sck, user, in, len);
+            return chat_callback_recv_hdl(lsnd, sck, extra, in, len);
         case ACC_CALLBACK_WRITEABLE:
-        case ACC_CALLBACK_CLOSED:
         default:
             break;
     }
@@ -203,29 +248,35 @@ int chat_callback(acc_cntx_t *acc, socket_t *sck, int reason, void *user, void *
  **输入参数:
  **     lsnd: 全局对象
  **     sck: 套接字
- **     user: 扩展数据
+ **     extra: 扩展数据
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项: 将新建连接放入CONN_CID_TAB维护起来, 待分配了SID后再转移到CONN_SID_TAB中.
  **作    者: # Qifeng.zou # 2016.09.20 21:30:53 #
  ******************************************************************************/
-static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_user_data_t *user)
+static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra)
 {
+    time_t ctm = time(NULL);
+
     /* 初始化设置 */
-    user->sid = 0;
-    user->cid = lsnd_gen_cid(lsnd);
-    user->tsi = sck;
-    user->create_time = time(NULL);
-    user->loc = LSND_DATA_LOC_UNKNOWN;
-    user->stat = LSND_CONN_STAT_ESTABLIST;
+    extra->sid = 0;
+    extra->cid = acc_sck_get_cid(sck);
+    extra->sck = sck;
+    extra->create_time = ctm;
+    extra->recv_time = ctm;
+    extra->send_time = ctm;
+    extra->keepalive_time = ctm;
+    extra->loc = CHAT_EXTRA_LOC_UNKNOWN;
+    extra->stat = CHAT_CONN_STAT_ESTABLISH;
 
     /* 加入CID管理表 */
-    if (hash_tab_insert(lsnd->conn_cid_tab, (void *)user, WRLOCK)) {
+    if (hash_tab_insert(lsnd->conn_cid_tab, (void *)extra, WRLOCK)) {
+        log_error(lsnd->log, "Insert cid table failed!");
         return -1;
     }
 
-    user->loc = LSND_DATA_LOC_CID_TAB;
+    extra->loc = CHAT_EXTRA_LOC_CID_TAB;
 
     return 0;
 }
@@ -243,23 +294,29 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_u
  **注意事项: 释放user对象内存的所有空间, 但是请勿释放user对象本身.
  **作    者: # Qifeng.zou # 2016.09.20 21:43:13 #
  ******************************************************************************/
-static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_user_data_t *user)
+static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra)
 {
-    chat_conn_user_data_t key, *item;
+    chat_conn_extra_t key, *item;
 
-    user->stat = LSND_CONN_STAT_CLOSED;
+    extra->stat = CHAT_CONN_STAT_CLOSED;
 
-    switch (user->loc) {
-        case LSND_DATA_LOC_CID_TAB:
-            key.cid = user->cid;
+    switch (extra->loc) {
+        case CHAT_EXTRA_LOC_CID_TAB:
+            key.cid = extra->cid;
             item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
-            if (item != user) {
+            if (item != extra) {
                 assert(0);
             }
-        case LSND_DATA_LOC_SID_TAB:
-            key.sid = user->sid;
+        case CHAT_EXTRA_LOC_SID_TAB:
+            key.sid = extra->sid;
             item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
-            if (item != user) {
+            if (item != extra) {
+                assert(0);
+            }
+        case CHAT_EXTRA_LOC_KICK_TAB:
+            key.sck = sck;
+            item = hash_tab_delete(lsnd->conn_kick_tab, &key, WRLOCK);
+            if (item != extra) {
                 assert(0);
             }
         default:
@@ -275,7 +332,7 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
  **输入参数:
  **     lsnd: 全局对象
  **     sck: 套接字
- **     user: 扩展数据
+ **     extra: 扩展数据
  **     in: 收到的数据
  **     len: 收到数据的长度
  **输出参数: NONE
@@ -286,7 +343,8 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
  **     2. 本函数收到的数据是一条完整的数据, 且其内容网络字节序.
  **作    者: # Qifeng.zou # 2016.09.20 21:44:40 #
  ******************************************************************************/
-static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_user_data_t *user, void *in, int len)
+static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd,
+    socket_t *sck, chat_conn_extra_t *extra, void *in, int len)
 {
     lsnd_reg_t *reg, key;
     mesg_header_t *head = (mesg_header_t *)in;
@@ -295,7 +353,7 @@ static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_us
 
     reg = avl_query(lsnd->reg, &key);
     if (NULL == reg) {
-        if (LSND_CONN_STAT_LOGIN != user->stat) {
+        if (CHAT_CONN_STAT_ONLINE != extra->stat) {
             log_warn(lsnd->log, "Drop unknown data! type:0x%X", key.type);
             return 0;
         }
