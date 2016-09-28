@@ -27,7 +27,7 @@ static bool _chat_has_sub(chat_session_t *ssn, uint16_t cmd);
  **     2. 尽量进少使用写锁的次数, 尽量降低写锁的粒度.
  **作    者: # Qifeng.zou # 2016.09.20 10:53:18 #
  ******************************************************************************/
-int chat_add_session(chat_tab_t *chat, uint64_t rid, uint64_t sid, uint32_t gid)
+int chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
 {
     chat_room_t *room, room_key;
     chat_group_t *grp = NULL, grp_key;
