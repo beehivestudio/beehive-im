@@ -33,6 +33,10 @@
 命令描述: 上线请求应答(ONLINE-ACK)<br>
 协议格式:<br>
 >{<br>
+>   "uid":${uid},               // M|用户ID|数字| <br>
+>   "app":"${app}",             // M|APP名|字串|<br>
+>   "version":"${version}",     // M|APP版本|字串|<br>
+>   "terminal":${terminal}      // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
 >   "errno":${errno},           // M|错误码|数字|<br>
 >   "errmsg":"${errmsg}"        // M|错误描述|字串|<br>
 >}
@@ -40,7 +44,12 @@
 ---
 命令ID: 0x0103<br>
 命令描述: 下线请求(OFFLINE)<br>
-协议格式: NONE<br>
+协议格式:
+>{<br>
+>   "uid":${uid},               // M|用户ID|数字| <br>
+>   "errno":${errno},           // M|错误码|数字|<br>
+>   "errmsg":"${errmsg}"        // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x0104<br>
@@ -55,9 +64,6 @@
 >   "uid":${uid},               // M|用户ID|数字| <br>
 >   "roomid":${roomid},         // M|聊天室ID|数字|<br>
 >   "token":"${token}",         // M|鉴权TOKEN|字串|<br>
->   "app":"${app}",             // M|APP名|字串|<br>
->   "version":"${version}",     // M|APP版本|字串|<br>
->   "terminal":${terminal}      // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
 >}
 
 ---
@@ -65,6 +71,9 @@
 命令描述: 加入聊天室应答(JOIN-ACK)<br>
 协议格式:<br>
 >{<br>
+>   "uid":${uid},               // M|用户ID|数字| <br>
+>   "roomid":${roomid},         // M|聊天室ID|数字|<br>
+>   "groupid":${groupid},       // M|分组ID|数字|<br>
 >   "errno":${errno},           // M|错误码|数字|<br>
 >   "errmsg":"${errmsg}"        // M|错误描述|字串|<br>
 >}
