@@ -7,15 +7,12 @@
  ** 作  者: # Qifeng.zou # Thu 16 Jul 2015 01:08:20 AM CST #
  ******************************************************************************/
 
+#include "chat.h"
 #include "mesg.h"
 #include "access.h"
 #include "listend.h"
 #include "lsnd_mesg.h"
 #include "cjson/cJSON.h"
-
-#define CHAT_APP_NAME_LEN   (64)    // APP名长度
-#define CHAT_APP_VERS_LEN   (32)    // APP版本长度
-#define CHAT_JSON_STR_LEN   (1024)  // JSON字符长度
 
 static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
 static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
@@ -72,10 +69,10 @@ int chat_mesg_def_hdl(unsigned int type, void *data, int length, void *args)
  ******************************************************************************/
 typedef struct
 {
-    uint64_t uid; // 用户ID
-    char app[CHAT_APP_NAME_LEN]; // 应用名
-    char version[CHAT_APP_VERS_LEN]; // 版本号
-    int terminal; // 终端类型
+    uint64_t uid;                       // 用户ID
+    char app[CHAT_APP_NAME_LEN];        // 应用名
+    char version[CHAT_APP_VERS_LEN];    // 版本号
+    chat_terminal_type_e terminal;      // 终端类型
 } chat_online_req_t;
 
 static int chat_online_parse_hdl(lsnd_cntx_t *ctx,
@@ -147,7 +144,7 @@ static int chat_online_parse_hdl(lsnd_cntx_t *ctx,
  **     args: 附加参数
  **输出参数:
  **返    回: 0:成功 !0:失败
- **实现描述: 在线服务收到该请求收, 将为该连接分配一个SID.
+ **实现描述: 无需提取任何信息, 直接转发给上游服务.
  **协议格式:
  **     {
  **        "uid":${uid},               // M|用户ID|数字|
@@ -184,7 +181,6 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
  **协议格式:
  **     {
  **        "uid":${uid},               // M|用户ID|数字|
- **        "roomid":${roomid},         // M|聊天室ID|数字|
  **        "app":"${app}",             // M|APP名|字串|
  **        "version":"${version}",     // M|APP版本|字串|
  **        "terminal":${terminal}      // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
@@ -196,22 +192,19 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
  ******************************************************************************/
 typedef struct
 {
-    uint64_t uid; // 用户ID
-    uint64_t rid; // 聊天室ID
-    uint64_t gid; // 分组ID
-    char app[CHAT_APP_NAME_LEN]; // 应用名
-    char version[CHAT_APP_VERS_LEN]; // 版本号
-    int terminal; // 终端类型
-    int _errno;    // 错误码
-    char errmsg[ERR_MSG_MAX_LEN]; // 错误描述
+    uint64_t uid;                       // 用户ID
+    char app[CHAT_APP_NAME_LEN];        // 应用名
+    char version[CHAT_APP_VERS_LEN];    // 版本号
+    chat_terminal_type_e terminal;      // 终端类型
+    int errcode;                        // 错误码
+    char errmsg[ERR_MSG_MAX_LEN];       // 错误描述
 } chat_online_ack_t;
 
 static int chat_online_ack_parse_hdl(lsnd_cntx_t *ctx,
         const char *body, uint64_t len, chat_online_ack_t *ack)
 {
     char ack_str[CHAT_JSON_STR_LEN];
-    cJSON *json, *uid, *rid, *gid, *app,
-          *version, *terminal, *_errno, *errmsg;
+    cJSON *json, *uid, *app, *version, *terminal, *errcode, *errmsg;
 
     if (len >= sizeof(ack_str)) {
         log_error(ctx->log, "Body is too long! len:%d", len);
@@ -235,16 +228,6 @@ static int chat_online_ack_parse_hdl(lsnd_cntx_t *ctx,
             break;
         }
 
-        rid = cJSON_GetObjectItem(json, "rid");
-        if (NULL == rid || 0 == rid->valueint) {
-            break;
-        }
-
-        gid = cJSON_GetObjectItem(json, "groupid");
-        if (NULL == gid || 0 == gid->valueint) {
-            break;
-        }
-
         app = cJSON_GetObjectItem(json, "app");
         if (NULL == app) {
             break;
@@ -260,8 +243,8 @@ static int chat_online_ack_parse_hdl(lsnd_cntx_t *ctx,
             break;
         }
 
-        _errno = cJSON_GetObjectItem(json, "errno");
-        if (NULL == _errno || 0 != _errno->valueint) {
+        errcode = cJSON_GetObjectItem(json, "errno");
+        if (NULL == errcode || 0 != errcode->valueint) {
             break;
         }
 
@@ -272,12 +255,10 @@ static int chat_online_ack_parse_hdl(lsnd_cntx_t *ctx,
 
         /* 提取有效信息 */
         ack->uid = uid->valueint;
-        ack->rid = rid->valueint;
-        ack->gid = rid->valueint;
         snprintf(ack->app, sizeof(ack->app), "%s", app->valuestring);
         snprintf(ack->version, sizeof(ack->version), "%s", version->valuestring);
         ack->terminal = terminal->valueint;
-        ack->_errno = _errno->valueint;
+        ack->errcode = errcode->valueint;
         snprintf(ack->errmsg, sizeof(ack->errmsg), "%s", errmsg->valuestring);
 
         /* 释放内存空间 */
@@ -352,6 +333,10 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
+    snprintf(extra->app_name, sizeof(extra->app_name), "%s", ack.app);
+    snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack.version);
+    extra->terminal = ack.terminal;
+
     /* 插入SID管理表 */
     ret = hash_tab_insert(ctx->conn_sid_tab, extra, WRLOCK);
     if (0 != ret) {
@@ -421,7 +406,7 @@ typedef struct
     uint64_t uid;                 // 用户ID
     uint64_t rid;                 // 聊天室ID
     uint64_t gid;                 // 分组ID
-    int _errno;                   // 错误码
+    int errcode;                   // 错误码
     char errmsg[ERR_MSG_MAX_LEN]; // 错误描述
 } chat_join_ack_t;
 
@@ -429,7 +414,7 @@ static int chat_join_ack_parse_hdl(lsnd_cntx_t *ctx,
         const char *body, uint64_t len, chat_join_ack_t *ack)
 {
     char json_str[CHAT_JSON_STR_LEN];
-    cJSON *json, *uid, *rid, *gid, *_errno, *errmsg;
+    cJSON *json, *uid, *rid, *gid, *errcode, *errmsg;
 
     if (len >= sizeof(json_str)) {
         log_error(ctx->log, "Body is too long! len:%d", len);
@@ -459,12 +444,12 @@ static int chat_join_ack_parse_hdl(lsnd_cntx_t *ctx,
         }
 
         gid = cJSON_GetObjectItem(json, "groupid");
-        if (NULL == gid || 0 == gid->valueint) {
+        if (NULL == gid) {
             break;
         }
 
-        _errno = cJSON_GetObjectItem(json, "errno");
-        if (NULL == _errno || 0 != _errno->valueint) {
+        errcode = cJSON_GetObjectItem(json, "errno");
+        if (NULL == errcode || 0 != errcode->valueint) {
             break;
         }
 
@@ -477,7 +462,7 @@ static int chat_join_ack_parse_hdl(lsnd_cntx_t *ctx,
         ack->uid = uid->valueint;
         ack->rid = rid->valueint;
         ack->gid = rid->valueint;
-        ack->_errno = _errno->valueint;
+        ack->errcode = errcode->valueint;
         snprintf(ack->errmsg, sizeof(ack->errmsg), "%s", errmsg->valuestring);
 
         /* 释放内存空间 */
@@ -507,7 +492,6 @@ static int chat_join_ack_parse_hdl(lsnd_cntx_t *ctx,
  ******************************************************************************/
 int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
-    int ret;
     uint64_t cid;
     chat_join_ack_t ack;
     chat_conn_extra_t *extra, key;
@@ -542,27 +526,64 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 
     cid = extra->cid;
 
-    extra->sid = hhead.sid;
+    /* > 更新扩展数据 */
     extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
-    /* 插入SID管理表 */
-    ret = hash_tab_insert(ctx->conn_sid_tab, extra, WRLOCK);
-    if (0 != ret) {
-        if (RBT_NODE_EXIST != ret) {
-            log_error(ctx->log, "Insert into kick table! sid:%lu", hhead.sid);
-            extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
-            hash_tab_insert(ctx->conn_kick_tab, extra, WRLOCK);
-            hash_tab_unlock(ctx->conn_sid_tab, &key, WRLOCK); // 解锁
-            return 0;
-        }
-        assert(0);
-        return 0;
-    }
+    hash_tab_insert(extra->rid_list, (void *)ack.rid, WRLOCK);
+    chat_add_session(ctx->chat_tab, ack.rid, ack.gid, extra->sid);
+
     hash_tab_unlock(ctx->conn_sid_tab, &key, WRLOCK); // 解锁
 
     /* 下发应答请求 */
     return acc_async_send(ctx->access, type, cid, data, len);
+}
+
+/******************************************************************************
+ **函数名称: chat_room_mesg_trav_send_hdl
+ **功    能: 依次针对各SESSION下发聊天室消息
+ **输入参数:
+ **     ssn: 会话对象 
+ **     ctx: 上下文对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: TODO: 待完善
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.09.28 14:44:05 #
+ ******************************************************************************/
+static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *ctx)
+{
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: chat_room_mesg_hdl
+ **功    能: 下发聊天室消息
+ **输入参数:
+ **     type: 数据类型
+ **     orig: 源结点ID
+ **     data: 需要转发的数据
+ **     len: 数据长度
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
+ **作    者: # Qifeng.zou # 2016.09.25 01:24:45 #
+ ******************************************************************************/
+int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
+{
+    lsnd_cntx_t *ctx = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
+
+    /* > 转化字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    MESG_HEAD_PRINT(ctx->log, &hhead)
+    log_debug(ctx->log, "body:%s", head->body);
+
+    return chat_room_trav(ctx->chat_tab,
+            hhead.sid, 0, (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)ctx);
 }
 
 /******************************************************************************
@@ -603,6 +624,18 @@ int chat_callback(acc_cntx_t *acc,
     return 0;
 }
 
+/* 聊天室ID哈希回调 */
+static uint64_t chat_rid_list_hash_cb(uint64_t *rid)
+{
+    return (uint64_t)rid;
+}
+
+/* 聊天室ID比较回调 */
+static int chat_rid_list_cmp_cb(uint64_t *rid1, uint64_t *rid2)
+{
+    return (int)((uint64_t)rid1 - (uint64_t)rid2);
+}
+
 /******************************************************************************
  **函数名称: chat_callback_creat_hdl
  **功    能: 连接创建的处理
@@ -630,10 +663,19 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
     extra->keepalive_time = ctm;
     extra->loc = CHAT_EXTRA_LOC_UNKNOWN;
     extra->stat = CHAT_CONN_STAT_ESTABLISH;
+    extra->rid_list = hash_tab_creat(5,
+            (hash_cb_t)chat_rid_list_hash_cb,
+            (cmp_cb_t)chat_rid_list_cmp_cb, NULL);
+    if (NULL == extra->rid_list) {
+        log_error(lsnd->log, "Create rid list failed!");
+        return -1;
+    }
 
     /* 加入CID管理表 */
     if (hash_tab_insert(lsnd->conn_cid_tab, (void *)extra, WRLOCK)) {
         log_error(lsnd->log, "Insert cid table failed!");
+        hash_tab_destroy(extra->rid_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+        extra->rid_list = NULL;
         return -1;
     }
 
@@ -652,7 +694,9 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
- **注意事项: 释放user对象内存的所有空间, 但是请勿释放user对象本身.
+ **注意事项:
+ **     1. 释放extra对象内存的所有空间, 但是请勿释放extra对象本身.
+ **     2. 释放extra前, 必须将该对象从其他各表中删除, 否则存在多线程同时操作一块的风险.
  **作    者: # Qifeng.zou # 2016.09.20 21:43:13 #
  ******************************************************************************/
 static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra)
@@ -660,6 +704,9 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
     chat_conn_extra_t key, *item;
 
     extra->stat = CHAT_CONN_STAT_CLOSED;
+    if (NULL != extra->rid_list) {
+        hash_tab_destroy(extra->rid_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+    }
 
     switch (extra->loc) {
         case CHAT_EXTRA_LOC_CID_TAB:
