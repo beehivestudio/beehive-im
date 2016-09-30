@@ -26,14 +26,7 @@ export GCC_LOG = ${PROJ_LOG}/gcc.log
 
 # 编译目录(注：编译按顺序执行　注意库之间的依赖关系)
 LIB_DIR = "src/lib"
-DIR += "$(LIB_DIR)/core"
-DIR += "$(LIB_DIR)/utils"
-DIR += "$(LIB_DIR)/rtmq"
-DIR += "$(LIB_DIR)/redis"
-
 DIR += "$(LIB_DIR)/chat"
-DIR += "$(LIB_DIR)/invert"
-DIR += "$(LIB_DIR)/access"
 
 EXEC_DIR = "src/exec"
 DIR += "$(EXEC_DIR)/frwder"

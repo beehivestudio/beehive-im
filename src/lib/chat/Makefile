@@ -11,8 +11,8 @@ include $(PROJ)/make/build.mak
 INCLUDE = -I. \
 		  -I$(PROJ)/src/incl \
 		  -I$(PROJ)/src/incl/chat \
-		  -I$(PROJ)/../c-ctrl/src/incl
-LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../c-ctrl/lib
+		  -I$(PROJ)/../clang/src/incl
+LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../clang/lib
 LIBS = -lcore
 
 SRC_LIST = chat.c \
