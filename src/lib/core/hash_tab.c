@@ -63,9 +63,6 @@ void hash_tab_unlock(hash_tab_t *htab, void *key, lock_e lock)
  **输出参数: NONE
  **返    回: 哈希数组地址
  **实现描述:
- **     1. 创建哈希对象
- **     2. 创建内存池
- **     3. 创建数组空间
  **注意事项:
  **作    者: # Qifeng.zou # 2014.10.22 #
  ******************************************************************************/
@@ -96,6 +93,9 @@ hash_tab_t *hash_tab_creat(int len, hash_cb_t hash, cmp_cb_t cmp, hash_tab_opt_t
     htab->len = len;
     htab->cmp = cmp;
     htab->hash = hash;
+    htab->pool = (void *)opt->pool;
+    htab->alloc = (mem_alloc_cb_t)opt->alloc;
+    htab->dealloc = (mem_dealloc_cb_t)opt->dealloc;
 
     htab->tree = (void **)opt->alloc(opt->pool, len*sizeof(void *));
     if (NULL == htab->tree) {
@@ -172,6 +172,8 @@ int hash_tab_insert(hash_tab_t *htab, void *data, lock_e lock)
  **返    回: 查询的数据
  **实现描述:
  **注意事项:
+ **     1. 当lock为NONLOCK时, 用完查询的数据后, 无需调用hash_tab_unlock()释放锁.
+ **     2. 当lock为WRLOCK/RDLOCK时, 用完查询的数据后, 需要调用hash_tab_unlock()释放锁.
  **作    者: # Qifeng.zou # 2014.10.22 #
  ******************************************************************************/
 void *hash_tab_query(hash_tab_t *htab, void *key, lock_e lock)
@@ -276,35 +278,6 @@ int hash_tab_trav(hash_tab_t *htab, trav_cb_t proc, void *args, lock_e lock)
         rbt_trav(htab->tree[idx], proc, args);
         _hash_tab_unlock(htab, idx, lock);
     }
-
-    return 0;
-}
-
-/******************************************************************************
- **函数名称: hash_tab_trav_by_key
- **功    能: 遍历哈希数组
- **输入参数:
- **     htab: 哈希数组
- **     key: 主键
- **     proc: 回调函数
- **     args: 附加参数
- **     lock: 加锁方式
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2014.12.24 #
- ******************************************************************************/
-int hash_tab_trav_by_key(hash_tab_t *htab,
-        void *key, trav_cb_t proc, void *args, lock_e lock)
-{
-    int idx;
-
-    idx = htab->hash(key) % htab->len;
-
-    _hash_tab_lock(htab, idx, lock);
-    rbt_trav(htab->tree[idx], proc, args);
-    _hash_tab_unlock(htab, idx, lock);
 
     return 0;
 }
