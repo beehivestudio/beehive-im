@@ -10,8 +10,9 @@ include $(PROJ)/make/build.mak
 
 INCLUDE = -I. \
 		  -I$(PROJ)/src/incl \
-		  -I$(PROJ)/src/incl/chat
-LIBS_PATH = -L$(PROJ)/lib
+		  -I$(PROJ)/src/incl/chat \
+		  -I$(PROJ)/../c-ctrl/src/incl
+LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../c-ctrl/lib
 LIBS = -lcore
 
 SRC_LIST = chat.c \

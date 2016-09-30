@@ -15,6 +15,7 @@
 #include "access.h"
 #include "listend.h"
 #include "mem_ref.h"
+#include "chat_cmd.h"
 #include "hash_alg.h"
 #include "lsnd_mesg.h"
 

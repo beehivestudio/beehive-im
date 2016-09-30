@@ -10,11 +10,11 @@ include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
 			-I$(PROJ)/src/incl \
-			-I$(PROJ)/src/../c-ctrl/incl \
-			-I$(PROJ)/src/../c-ctrl/incl/sdtp \
-			-I$(PROJ)/src/../c-ctrl/incl/rtmq \
-			-I$(PROJ)/src/../c-ctrl/incl/chat \
-			-I$(PROJ)/src/../c-ctrl/incl/access
+			-I$(PROJ)/src/incl/chat \
+			-I$(PROJ)/../c-ctrl/src/incl \
+			-I$(PROJ)/../c-ctrl/src/incl/sdtp \
+			-I$(PROJ)/../c-ctrl/src/incl/rtmq \
+			-I$(PROJ)/../c-ctrl/src/incl/access
 INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../c-ctrl/lib
 
