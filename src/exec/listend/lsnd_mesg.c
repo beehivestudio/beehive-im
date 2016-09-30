@@ -613,6 +613,7 @@ int chat_callback(acc_cntx_t *acc,
         case ACC_CALLBACK_SCK_CREAT:
             return chat_callback_creat_hdl(lsnd, sck, extra);
         case ACC_CALLBACK_SCK_CLOSED:
+            return 0;
         case ACC_CALLBACK_SCK_DESTROY:
             return chat_callback_destroy_hdl(lsnd, sck, extra);
         case ACC_CALLBACK_RECEIVE:
