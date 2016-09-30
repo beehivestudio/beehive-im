@@ -715,18 +715,21 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
             if (item != extra) {
                 assert(0);
             }
+            break;
         case CHAT_EXTRA_LOC_SID_TAB:
             key.sid = extra->sid;
             item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
             if (item != extra) {
                 assert(0);
             }
+            break;
         case CHAT_EXTRA_LOC_KICK_TAB:
             key.sck = sck;
             item = hash_tab_delete(lsnd->conn_kick_tab, &key, WRLOCK);
             if (item != extra) {
                 assert(0);
             }
+            break;
         default:
             assert(0);
     }

@@ -281,3 +281,31 @@ int hash_tab_trav(hash_tab_t *htab, trav_cb_t proc, void *args, lock_e lock)
 
     return 0;
 }
+
+/******************************************************************************
+ **函数名称: hash_tab_trav_slot
+ **功    能: 遍历哈希数组某槽的所有元素
+ **输入参数:
+ **     htab: 哈希数组
+ **     key: 主键(遍历该主键对应的槽)
+ **     proc: 回调函数
+ **     args: 附加参数
+ **     lock: 加锁方式
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项: 加锁 + 遍历红黑树
+ **作    者: # Qifeng.zou # 2016.09.30 12:09:52 #
+ ******************************************************************************/
+int hash_tab_trav_slot(hash_tab_t *htab, const void *key, trav_cb_t proc, void *args, lock_e lock)
+{
+    int idx;
+
+    idx = htab->hash(key) % htab->len;
+
+    _hash_tab_lock(htab, idx, lock);
+    rbt_trav(htab->tree[idx], proc, args);
+    _hash_tab_unlock(htab, idx, lock);
+
+    return 0;
+}

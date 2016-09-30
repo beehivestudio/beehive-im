@@ -169,7 +169,7 @@ static int frwd_conf_parse_backend(xml_tree_t *xml, const char *path, frwd_conf_
         return -1;
     }
 
-    conf->auth = list_creat(LIST_DEF_OPT);
+    conf->auth = list_creat(NULL);
     if (NULL == conf) {
         fprintf(stderr, "errmsg:[%d] %s\n", errno, strerror(errno));
         return -1;
@@ -379,7 +379,7 @@ static int frwd_conf_parse_forward(xml_tree_t *xml, const char *path, frwd_conf_
         return -1;
     }
 
-    conf->auth = list_creat(LIST_DEF_OPT);
+    conf->auth = list_creat(NULL);
     if (NULL == conf) {
         fprintf(stderr, "errmsg:[%d] %s\n", errno, strerror(errno));
         return -1;

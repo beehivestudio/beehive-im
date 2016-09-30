@@ -1623,7 +1623,7 @@ static int rtmq_rsvr_dist_data(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
 
             /* > 查找发送连接 */
             cl.nid = head->nid;
-            cl.list = list_creat(LIST_DEF_OPT);
+            cl.list = list_creat(NULL);
             if (NULL == cl.list) {
                 mem_ref_decr(data[idx]);
                 log_error(rsvr->log, "Create list failed!");

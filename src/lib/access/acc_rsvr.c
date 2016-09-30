@@ -365,7 +365,7 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 
     do {
         /* > 创建链表 */
-        timeout.list = list_creat(LIST_DEF_OPT);
+        timeout.list = list_creat(NULL);
         if (NULL == timeout.list) {
             log_error(rsvr->log, "Create list failed!");
             break;
@@ -374,7 +374,7 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
         /* > 获取超时连接 */
         extra.cid = rsvr->id;
         key.extra = &extra;
-        hash_tab_trav_by_key(ctx->conn_cid_tab, &key,
+        hash_tab_trav_slot(ctx->conn_cid_tab, &key,
                 (trav_cb_t)acc_rsvr_get_timeout_conn_list, &timeout, RDLOCK);
 
         log_debug(rsvr->log, "Timeout connections: %d!", timeout.list->num);
@@ -481,7 +481,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 
             extra->rid = rsvr->id;
             extra->cid = add[idx]->cid;
-            extra->send_list = list_creat(LIST_DEF_OPT);
+            extra->send_list = list_creat(NULL);
             if (NULL == extra->send_list) {
                 log_error(rsvr->log, "Create send list failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
