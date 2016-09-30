@@ -39,9 +39,6 @@ EXEC_DIR = "src/exec"
 DIR += "$(EXEC_DIR)/frwder"
 DIR += "$(EXEC_DIR)/listend"
 
-DEMO_DIR = "src/demo"
-#DIR += "$(DEMO_DIR)/rtmq"
-
 # 获取系统配置
 CPU_CORES = $(call func_cpu_cores)
 
