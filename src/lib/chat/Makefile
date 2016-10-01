@@ -13,7 +13,11 @@ INCLUDE = -I. \
 		  -I$(PROJ)/src/incl/chat \
 		  -I$(PROJ)/../clang/src/incl
 LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../clang/lib
-LIBS = -lcore
+# 静态链接库
+STATIC_LIB_LIST = libcore.a
+LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
+LIBS += -lpthread -lm -dl
+LIBS += $(SHARED_LIB)
 
 SRC_LIST = chat.c \
 		   chat_tab.c
