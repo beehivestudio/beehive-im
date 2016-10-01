@@ -75,14 +75,14 @@ typedef struct
     chat_terminal_type_e terminal;      // 终端类型
 } chat_online_req_t;
 
-static int chat_online_parse_hdl(lsnd_cntx_t *ctx,
+static int chat_online_parse_hdl(lsnd_cntx_t *lsnd,
         const char *body, uint64_t len, chat_online_req_t *req)
 {
     char json_str[CHAT_JSON_STR_LEN];
     cJSON *json, *uid, *app, *version, *terminal;
 
     if (len >= sizeof(json_str)) {
-        log_error(ctx->log, "Body is too long! len:%d", len);
+        log_error(lsnd->log, "Body is too long! len:%d", len);
         return -1;
     }
 
@@ -92,7 +92,7 @@ static int chat_online_parse_hdl(lsnd_cntx_t *ctx,
     /* 解析JSON */
     json = cJSON_Parse(json_str);
     if (NULL == json) {
-        log_error(ctx->log, "Parse join ack failed!");
+        log_error(lsnd->log, "Parse join ack failed!");
         return -1;
     }
 
@@ -200,14 +200,14 @@ typedef struct
     char errmsg[ERR_MSG_MAX_LEN];       // 错误描述
 } chat_online_ack_t;
 
-static int chat_online_ack_parse_hdl(lsnd_cntx_t *ctx,
+static int chat_online_ack_parse_hdl(lsnd_cntx_t *lsnd,
         const char *body, uint64_t len, chat_online_ack_t *ack)
 {
     char ack_str[CHAT_JSON_STR_LEN];
     cJSON *json, *uid, *app, *version, *terminal, *errcode, *errmsg;
 
     if (len >= sizeof(ack_str)) {
-        log_error(ctx->log, "Body is too long! len:%d", len);
+        log_error(lsnd->log, "Body is too long! len:%d", len);
         return -1;
     }
 
@@ -217,7 +217,7 @@ static int chat_online_ack_parse_hdl(lsnd_cntx_t *ctx,
     /* 解析JSON */
     json = cJSON_Parse(ack_str);
     if (NULL == json) {
-        log_error(ctx->log, "Parse join ack failed!");
+        log_error(lsnd->log, "Parse join ack failed!");
         return -1;
     }
 
@@ -293,18 +293,18 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     uint64_t cid;
     chat_online_ack_t ack;
     chat_conn_extra_t *extra, key;
-    lsnd_cntx_t *ctx = (lsnd_cntx_t *)args;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
 
-    MESG_HEAD_PRINT(ctx->log, &hhead)
-    log_debug(ctx->log, "body:%s", head->body);
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+    log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取有效信息 */
-    if (chat_online_ack_parse_hdl(ctx, head->body, hhead.length, &ack)) {
-        log_error(ctx->log, "Parse online ack failed! body:%s", head->body);
+    if (chat_online_ack_parse_hdl(lsnd, head->body, hhead.length, &ack)) {
+        log_error(lsnd->log, "Parse online ack failed! body:%s", head->body);
         return -1;
     }
 
@@ -313,19 +313,19 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     /* > 查找扩展数据 */
     key.cid = cid;
 
-    extra = hash_tab_delete(ctx->conn_cid_tab, &key, WRLOCK);
+    extra = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
     if (NULL == extra) {
-        log_error(ctx->log, "Didn't find socket from cid table! cid:%lu", cid);
+        log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", cid);
         return 0;
     }
     else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
-        log_error(ctx->log, "Connection status isn't establish! cid:%lu", cid);
+        log_error(lsnd->log, "Connection status isn't establish! cid:%lu", cid);
         return 0;
     }
     else if (0 == hhead.sid) { /* SID分配失败 */
         extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
-        hash_tab_insert(ctx->conn_kick_tab, extra, WRLOCK);
-        log_error(ctx->log, "Alloc sid failed! kick this connection! cid:%lu", cid);
+        hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
+        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", cid);
         return 0;
     }
 
@@ -338,12 +338,12 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->terminal = ack.terminal;
 
     /* 插入SID管理表 */
-    ret = hash_tab_insert(ctx->conn_sid_tab, extra, WRLOCK);
+    ret = hash_tab_insert(lsnd->conn_sid_tab, extra, WRLOCK);
     if (0 != ret) {
         if (RBT_NODE_EXIST != ret) {
-            log_error(ctx->log, "Insert into kick table! cid:%lu sid:%lu", cid, hhead.sid);
+            log_error(lsnd->log, "Insert into kick table! cid:%lu sid:%lu", cid, hhead.sid);
             extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
-            hash_tab_insert(ctx->conn_kick_tab, extra, WRLOCK);
+            hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
             return 0;
         }
         assert(0);
@@ -351,7 +351,52 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     }
 
     /* 下发应答请求 */
-    return acc_async_send(ctx->access, type, cid, data, len);
+    return acc_async_send(lsnd->access, type, cid, data, len);
+}
+
+/******************************************************************************
+ **函数名称: chat_offline_req_hdl
+ **功    能: 下线请求处理
+ **输入参数:
+ **     type: 全局对象
+ **     data: 数据内容
+ **     length: 数据长度(报头 + 报体)
+ **     args: 附加参数
+ **输出参数:
+ **返    回: 0:成功 !0:失败(注: 该函数始终返回-1)
+ **实现描述: 修改连接状态 + 并释放相关资源.
+ **注意事项: 需要将协议头转换为网络字节序
+ **作    者: # Qifeng.zou # 2016.10.01 09:15:01 #
+ ******************************************************************************/
+int chat_offline_req_hdl(int type, void *data, int length, void *args)
+{
+    chat_conn_extra_t *extra, key;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
+
+    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
+            head->sid, head->serial, length, head->body);
+
+    /* > 查找扩展数据 */
+    key.sid = head->sid;
+
+    extra = hash_tab_query(lsnd->conn_sid_tab, &key, WRLOCK); // 加写锁
+    if (NULL == extra) {
+        log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", head->sid);
+        return -1;
+    }
+
+    extra->stat = CHAT_CONN_STAT_OFFLINE;
+
+    hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+
+    /* > 转换字节序 */
+    MESG_HEAD_HTON(head, head);
+
+    /* > 转发下线请求 */
+    rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+
+    return -1; /* 强制下线 */
 }
 
 /******************************************************************************
@@ -410,14 +455,14 @@ typedef struct
     char errmsg[ERR_MSG_MAX_LEN]; // 错误描述
 } chat_join_ack_t;
 
-static int chat_join_ack_parse_hdl(lsnd_cntx_t *ctx,
+static int chat_join_ack_parse_hdl(lsnd_cntx_t *lsnd,
         const char *body, uint64_t len, chat_join_ack_t *ack)
 {
     char json_str[CHAT_JSON_STR_LEN];
     cJSON *json, *uid, *rid, *gid, *errcode, *errmsg;
 
     if (len >= sizeof(json_str)) {
-        log_error(ctx->log, "Body is too long! len:%d", len);
+        log_error(lsnd->log, "Body is too long! len:%d", len);
         return -1;
     }
 
@@ -427,7 +472,7 @@ static int chat_join_ack_parse_hdl(lsnd_cntx_t *ctx,
     /* 解析JSON */
     json = cJSON_Parse(json_str);
     if (NULL == json) {
-        log_error(ctx->log, "Parse join ack failed!");
+        log_error(lsnd->log, "Parse join ack failed!");
         return -1;
     }
 
@@ -495,32 +540,32 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     uint64_t cid;
     chat_join_ack_t ack;
     chat_conn_extra_t *extra, key;
-    lsnd_cntx_t *ctx = (lsnd_cntx_t *)args;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
 
-    MESG_HEAD_PRINT(ctx->log, &hhead)
-    log_debug(ctx->log, "body:%s", head->body);
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+    log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取应答信息 */
-    if (chat_join_ack_parse_hdl(ctx, head->body, head->length, &ack)) {
-        log_error(ctx->log, "Json join ack body failed! body:%s", (char *)head->body);
+    if (chat_join_ack_parse_hdl(lsnd, head->body, head->length, &ack)) {
+        log_error(lsnd->log, "Json join ack body failed! body:%s", (char *)head->body);
         return 0;
     }
 
     /* > 查找扩展数据 */
     key.sid = hhead.sid;
 
-    extra = hash_tab_query(ctx->conn_sid_tab, &key, WRLOCK); // 加写锁
+    extra = hash_tab_query(lsnd->conn_sid_tab, &key, WRLOCK); // 加写锁
     if (NULL == extra) {
-        log_error(ctx->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
+        log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
         return 0;
     }
     else if (CHAT_CONN_STAT_ONLINE != extra->stat) {
-        hash_tab_unlock(ctx->conn_sid_tab, &key, WRLOCK); // 解锁
-        log_error(ctx->log, "Connection status isn't online! sid:%lu", hhead.sid);
+        hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+        log_error(lsnd->log, "Connection status isn't online! sid:%lu", hhead.sid);
         return 0;
     }
 
@@ -531,12 +576,12 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
     hash_tab_insert(extra->rid_list, (void *)ack.rid, WRLOCK);
-    chat_add_session(ctx->chat_tab, ack.rid, ack.gid, extra->sid);
+    chat_add_session(lsnd->chat_tab, ack.rid, ack.gid, extra->sid);
 
-    hash_tab_unlock(ctx->conn_sid_tab, &key, WRLOCK); // 解锁
+    hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
 
     /* 下发应答请求 */
-    return acc_async_send(ctx->access, type, cid, data, len);
+    return acc_async_send(lsnd->access, type, cid, data, len);
 }
 
 /******************************************************************************
@@ -544,14 +589,14 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
  **功    能: 依次针对各SESSION下发聊天室消息
  **输入参数:
  **     ssn: 会话对象 
- **     ctx: 上下文对象
+ **     lsnd: 上下文对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 待完善
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.09.28 14:44:05 #
  ******************************************************************************/
-static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *ctx)
+static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *lsnd)
 {
     return 0;
 }
@@ -573,17 +618,17 @@ static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *ctx)
  ******************************************************************************/
 int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
 {
-    lsnd_cntx_t *ctx = (lsnd_cntx_t *)args;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
 
-    MESG_HEAD_PRINT(ctx->log, &hhead)
-    log_debug(ctx->log, "body:%s", head->body);
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+    log_debug(lsnd->log, "body:%s", head->body);
 
-    return chat_room_trav(ctx->chat_tab,
-            hhead.sid, 0, (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)ctx);
+    return chat_room_trav(lsnd->chat_tab,
+            hhead.sid, 0, (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)lsnd);
 }
 
 /******************************************************************************

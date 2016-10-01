@@ -68,6 +68,9 @@ int lsnd_mesg_def_hdl(int type, void *data, int length, void *args);
 int chat_online_req_hdl(int type, void *data, int length, void *args);
 int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args);
 
+int chat_offline_req_hdl(int type, void *data, int length, void *args);
+int chat_offline_ack_hdl(int type, int orig, char *data, size_t len, void *args);
+
 int chat_join_req_hdl(int type, void *data, int length, void *args);
 int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args);
 
