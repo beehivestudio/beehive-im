@@ -334,7 +334,9 @@ TODO: 协议头中的to为用户ID(UID)
 >   optional uint16 len = 1;    // M|结点ID|数字|<br>
 >   optional string list = 3;   // M|IP地址|字串|<br>
 >}
-LIST格式:
+
+协议说明:
+list:<br>
 >[<br>
 >       {"ipaddr":"${ipaddr}", "port":${port}}, // M|IP+端口|<br>
 >       {"ipaddr":"${ipaddr}", "port":${port}}, // M|IP+端口|<br>
