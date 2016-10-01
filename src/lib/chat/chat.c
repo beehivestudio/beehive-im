@@ -291,6 +291,8 @@ static bool _chat_has_sub(chat_session_t *ssn, uint16_t cmd)
  **返    回: 
  **实现描述:
  **注意事项:
+ **     加入链表的是RID, 而不是room对象. 否则可能出现程序CRASH的现象.
+ **     原因: 加入链表后, 其他线程可能释放room空间.
  **作    者: # Qifeng.zou # 2016.09.20 15:48:28 #
  ******************************************************************************/
 static int chat_room_get_clean_list(chat_room_t *room, void *args)
@@ -305,7 +307,7 @@ static int chat_room_get_clean_list(chat_room_t *room, void *args)
 }
 
 /******************************************************************************
- **函数名称: chat_timeout_hdl
+ **函数名称: chat_timeout_clean_hdl
  **功    能: 清理超时的数据
  **输入参数:
  **     chat: CHAT对象
@@ -315,7 +317,7 @@ static int chat_room_get_clean_list(chat_room_t *room, void *args)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.20 15:48:28 #
  ******************************************************************************/
-int chat_timeout_hdl(chat_tab_t *chat)
+int chat_timeout_clean_hdl(chat_tab_t *chat)
 {
     uint64_t *rid;
     list_t *clean_list;

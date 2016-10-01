@@ -76,5 +76,6 @@ int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 
 int chat_room_trav(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc, void *args); // OK
+int chat_timeout_clean_hdl(chat_tab_t *chat);
 
 #endif /*__CHAT_H__*/

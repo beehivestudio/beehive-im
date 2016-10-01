@@ -11,7 +11,7 @@ include $(PROJ)/make/build.mak
 INCLUDE = -I./incl \
 			-I$(PROJ)/src/incl \
 			-I$(PROJ)/src/incl/chat \
-			-I$(PROJ)/src/incl/proto \
+			-I$(PROJ)/src/incl/mesg \
 			-I$(PROJ)/../clang/src/incl \
 			-I$(PROJ)/../clang/src/incl/rtmq \
 			-I$(PROJ)/../clang/src/incl/access

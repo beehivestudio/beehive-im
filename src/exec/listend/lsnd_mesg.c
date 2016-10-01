@@ -282,6 +282,7 @@ int chat_join_req_hdl(int type, void *data, int length, void *args)
  ******************************************************************************/
 int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
+    uint32_t gid;
     uint64_t cid;
     MesgJoinAck *ack;
     chat_conn_extra_t *extra, key;
@@ -307,10 +308,12 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra = hash_tab_query(lsnd->conn_sid_tab, &key, WRLOCK); // 加写锁
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
+        mesg_join_ack__free_unpacked(ack, NULL);
         return 0;
     }
     else if (CHAT_CONN_STAT_ONLINE != extra->stat) {
         hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+        mesg_join_ack__free_unpacked(ack, NULL);
         log_error(lsnd->log, "Connection status isn't online! sid:%lu", hhead.sid);
         return 0;
     }
@@ -321,10 +324,21 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
+    /* 记录聊天室列表 */
     hash_tab_insert(extra->rid_list, (void *)ack->rid, WRLOCK);
-    chat_add_session(lsnd->chat_tab, ack->rid, ack->gid, extra->sid);
+
+    /* 将SID加入聊天室 */
+    gid = chat_add_session(lsnd->chat_tab, ack->rid, ack->gid, extra->sid);
+    if ((uint32_t)-1 == gid) {
+        log_error(lsnd->log, "Add into chat room failed! sid:%lu rid:%lu gid:%u",
+                hhead.sid, ack->rid, ack->gid);
+        hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+        mesg_join_ack__free_unpacked(ack, NULL);
+        return -1;
+    }
 
     hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+    mesg_join_ack__free_unpacked(ack, NULL);
 
     /* 下发应答请求 */
     return acc_async_send(lsnd->access, type, cid, data, len);
@@ -468,9 +482,11 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
     time_t ctm = time(NULL);
 
     /* 初始化设置 */
+    extra->ctx = lsnd;
+    extra->sck = sck;
+
     extra->sid = 0;
     extra->cid = acc_sck_get_cid(sck);
-    extra->sck = sck;
     extra->create_time = ctm;
     extra->recv_time = ctm;
     extra->send_time = ctm;
@@ -498,6 +514,11 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
     return 0;
 }
 
+static int chat_room_trav_remove_sid(uint64_t *rid, chat_conn_extra_t *extra)
+{
+    return 0;
+}
+
 /******************************************************************************
  **函数名称: chat_callback_destroy_hdl
  **功    能: 连接销毁的处理
@@ -519,8 +540,10 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
 
     extra->stat = CHAT_CONN_STAT_CLOSED;
     if (NULL != extra->rid_list) {
-        hash_tab_destroy(extra->rid_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+        hash_tab_destroy(extra->rid_list, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
     }
+
+    chat_del_session(lsnd->chat_tab, extra->sid);
 
     switch (extra->loc) {
         case CHAT_EXTRA_LOC_CID_TAB:

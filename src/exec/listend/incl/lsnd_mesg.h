@@ -43,6 +43,7 @@ typedef enum
 typedef struct
 {
     socket_t *sck;                  /* 所属TCP连接 */
+    lsnd_cntx_t *ctx;               /* 全局上下文 */
 
     uint64_t sid;                   /* 会话ID */
     uint64_t cid;                   /* 连接ID */
