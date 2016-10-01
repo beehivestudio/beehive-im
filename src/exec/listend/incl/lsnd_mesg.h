@@ -47,6 +47,7 @@ typedef struct
 
     uint64_t sid;                   /* 会话ID */
     uint64_t cid;                   /* 连接ID */
+    uint64_t uid;                   /* 用户ID */
     chat_conn_stat_e stat;          /* 连接状态 */
     chat_extra_loc_tab_e  loc;      /* 用户数据由哪个表维护 */
 
@@ -72,5 +73,7 @@ int chat_offline_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 
 int chat_join_req_hdl(int type, void *data, int length, void *args);
 int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args);
+
+int chat_unjoin_req_hdl(int type, void *data, int length, void *args);
 
 #endif /*__LSND_MESG_H__*/

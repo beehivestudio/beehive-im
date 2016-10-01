@@ -84,8 +84,60 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, head);
 
-    /* > 转发搜索请求 */
+    /* > 转发ONLINE请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+}
+
+/******************************************************************************
+ **函数名称: chat_online_ack_logic_hdl
+ **功    能: ONLINE应答逻辑处理
+ **输入参数:
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.01 21:06:07 #
+ ******************************************************************************/
+static int chat_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t sid)
+{
+    chat_conn_extra_t *extra, key;
+
+    /* > 查找扩展数据 */
+    key.cid = ack->cid;
+
+    extra = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
+    if (NULL == extra) {
+        log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", ack->cid);
+        return -1;
+    }
+    else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
+        log_error(lsnd->log, "Connection status isn't establish! cid:%lu", ack->cid);
+        return -1;
+    }
+    else if (0 == sid) { /* SID分配失败 */
+        extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
+        hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
+        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", ack->cid);
+        acc_async_kick(lsnd->access, ack->cid);
+        return -1;
+    }
+
+    extra->sid = sid;
+    extra->loc = CHAT_EXTRA_LOC_SID_TAB;
+    extra->stat = CHAT_CONN_STAT_ONLINE;
+
+    snprintf(extra->app_name, sizeof(extra->app_name), "%s", ack->app);
+    snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
+    extra->terminal = ack->terminal;
+
+    /* 插入SID管理表 */
+    if (hash_tab_insert(lsnd->conn_sid_tab, extra, WRLOCK)) {
+        log_error(lsnd->log, "Connection is in sid table!");
+        assert(0);
+        return -1;
+    }
+
+    return 0;
 }
 
 /******************************************************************************
@@ -101,21 +153,20 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
  ** {
- **     optional uint64 uid = 1;        // M|用户ID|数字|<br>
- **     optional string app = 3;        // M|APP名|字串|<br>
- **     optional string version = 4;    // M|APP版本|字串|<br>
- **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
- **     optional uint32 errnum = 6;     // M|错误码|数字|<br>
- **     optional string errmsg = 7;     // M|错误描述|字串|<br>
+ **     optional uint64 uid = 1;        // M|用户ID|数字|
+ **     optional uint64 cid = 2;        // M|CID|数字|
+ **     optional string app = 3;        // M|APP名|字串|
+ **     optional string version = 4;    // M|APP版本|字串|
+ **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+ **     optional uint32 errnum = 6;     // M|错误码|数字|
+ **     optional string errmsg = 7;     // M|错误描述|字串|
  ** }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
  ******************************************************************************/
 int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
-    int ret;
     MesgOnlineAck *ack;
-    chat_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
@@ -137,52 +188,10 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
         return -1;
     }
 
-    /* > 查找扩展数据 */
-    key.cid = ack->cid;
-
-    extra = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
-    if (NULL == extra) {
-        log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", ack->cid);
+    if (chat_online_ack_logic_hdl(lsnd, ack, hhead.sid)) {
         mesg_online_ack__free_unpacked(ack, NULL);
-        return 0;
-    }
-    else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
-        log_error(lsnd->log, "Connection status isn't establish! cid:%lu", ack->cid);
-        mesg_online_ack__free_unpacked(ack, NULL);
-        return 0;
-    }
-    else if (0 == hhead.sid) { /* SID分配失败 */
-        extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
-        hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
-        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", ack->cid);
-        acc_async_kick(lsnd->access, ack->cid);
-        mesg_online_ack__free_unpacked(ack, NULL);
-        return 0;
-    }
-
-    extra->sid = hhead.sid;
-    extra->loc = CHAT_EXTRA_LOC_SID_TAB;
-    extra->stat = CHAT_CONN_STAT_ONLINE;
-
-    snprintf(extra->app_name, sizeof(extra->app_name), "%s", ack->app);
-    snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
-    extra->terminal = ack->terminal;
-
-    /* 插入SID管理表 */
-    ret = hash_tab_insert(lsnd->conn_sid_tab, extra, WRLOCK);
-    if (0 != ret) {
-        if (RBT_NODE_EXIST != ret) {
-            log_error(lsnd->log, "Insert into kick table! cid:%lu sid:%lu",
-                    ack->cid, hhead.sid);
-            extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
-            hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
-            acc_async_kick(lsnd->access, ack->cid);
-            mesg_online_ack__free_unpacked(ack, NULL);
-            return 0;
-        }
-        mesg_online_ack__free_unpacked(ack, NULL);
-        assert(0);
-        return 0;
+        log_error(lsnd->log, "Miss required field!");
+        return -1;
     }
 
     /* 下发应答请求 */
@@ -263,7 +272,7 @@ int chat_join_req_hdl(int type, void *data, int length, void *args)
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, head);
 
-    /* > 转发搜索请求 */
+    /* > 转发JOIN请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
 }
 
@@ -341,6 +350,42 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 
     /* 下发应答请求 */
     return acc_async_send(lsnd->access, type, cid, data, len);
+}
+
+/******************************************************************************
+ **函数名称: chat_unjoin_req_hdl
+ **功    能: UNJOIN请求处理(退出聊天室)
+ **输入参数:
+ **     type: 全局对象
+ **     data: 数据内容
+ **     length: 数据长度(报头 + 报体)
+ **     args: 附加参数
+ **输出参数:
+ **返    回: 0:成功 !0:失败
+ **实现描述: 请求数据的内存结构: 流水信息 + 消息头 + 消息体
+ **  {
+ **     optional uint64 uid = 1;    // M|用户ID|数字|
+ **     optional uint64 rid = 2;    // M|聊天室ID|数字|
+ **  }
+ **注意事项: 需要将协议头转换为网络字节序
+ **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
+ ******************************************************************************/
+int chat_unjoin_req_hdl(int type, void *data, int length, void *args)
+{
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t hhead, *head = (mesg_header_t *)data; /* 消息头 */
+
+    /* > 转换字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
+            head->sid, head->serial, length, head->body);
+
+    /* > 从聊天室中删除此会话 */
+    chat_del_session(lsnd->chat_tab, hhead.sid);
+
+    /* > 转发UNJOIN请求 */
+    return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
 }
 
 /******************************************************************************

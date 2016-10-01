@@ -8,7 +8,7 @@
 PROTOBUF_C_BEGIN_DECLS
 
 
-typedef struct _MesgOnline MesgOnline;
+typedef struct _MesgOnlineReq MesgOnlineReq;
 
 
 /* --- enums --- */
@@ -16,7 +16,7 @@ typedef struct _MesgOnline MesgOnline;
 
 /* --- messages --- */
 
-struct  _MesgOnline
+struct  _MesgOnlineReq
 {
   ProtobufCMessage base;
   protobuf_c_boolean has_uid;
@@ -27,34 +27,34 @@ struct  _MesgOnline
   protobuf_c_boolean has_terminal;
   uint32_t terminal;
 };
-#define MESG_ONLINE__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_online__descriptor) \
+#define MESG_ONLINE_REQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_online_req__descriptor) \
     , 0,0, NULL, NULL, NULL, 0,0 }
 
 
-/* MesgOnline methods */
-void   mesg_online__init
-                     (MesgOnline         *message);
-size_t mesg_online__get_packed_size
-                     (const MesgOnline   *message);
-size_t mesg_online__pack
-                     (const MesgOnline   *message,
+/* MesgOnlineReq methods */
+void   mesg_online_req__init
+                     (MesgOnlineReq         *message);
+size_t mesg_online_req__get_packed_size
+                     (const MesgOnlineReq   *message);
+size_t mesg_online_req__pack
+                     (const MesgOnlineReq   *message,
                       uint8_t             *out);
-size_t mesg_online__pack_to_buffer
-                     (const MesgOnline   *message,
+size_t mesg_online_req__pack_to_buffer
+                     (const MesgOnlineReq   *message,
                       ProtobufCBuffer     *buffer);
-MesgOnline *
-       mesg_online__unpack
+MesgOnlineReq *
+       mesg_online_req__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_online__free_unpacked
-                     (MesgOnline *message,
+void   mesg_online_req__free_unpacked
+                     (MesgOnlineReq *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
-typedef void (*MesgOnline_Closure)
-                 (const MesgOnline *message,
+typedef void (*MesgOnlineReq_Closure)
+                 (const MesgOnlineReq *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -62,7 +62,7 @@ typedef void (*MesgOnline_Closure)
 
 /* --- descriptors --- */
 
-extern const ProtobufCMessageDescriptor mesg_online__descriptor;
+extern const ProtobufCMessageDescriptor mesg_online_req__descriptor;
 
 PROTOBUF_C_END_DECLS
 
