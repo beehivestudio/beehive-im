@@ -13,6 +13,7 @@
 #include "listend.h"
 #include "lsnd_mesg.h"
 #include "cjson/cJSON.h"
+#include "chat_room_mesg.pb-c.h"
 
 static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
 static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
@@ -618,6 +619,7 @@ static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *lsnd)
  ******************************************************************************/
 int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
 {
+    ChatRoomMesg *mesg;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
@@ -627,8 +629,21 @@ int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
     MESG_HEAD_PRINT(lsnd->log, &hhead)
     log_debug(lsnd->log, "body:%s", head->body);
 
-    return chat_room_trav(lsnd->chat_tab,
-            hhead.sid, 0, (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)lsnd);
+    /* > 解压PROTO-BUF */
+    mesg = chat_room_mesg__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == mesg) {
+        log_error(lsnd->log, "Unpack chat room message failed!");
+        return -1;
+    }
+
+    /* > 给制定聊天室和分组发送消息 */
+    chat_room_trav(lsnd->chat_tab, mesg->rid, mesg->gid,
+            (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)lsnd);
+
+    /* > 释放PROTO-BUF空间 */
+    chat_room_mesg__free_unpacked(mesg, NULL);
+
+    return 0;
 }
 
 /******************************************************************************

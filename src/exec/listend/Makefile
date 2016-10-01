@@ -9,6 +9,7 @@
 include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
+			-I./proto \
 			-I$(PROJ)/src/incl \
 			-I$(PROJ)/src/incl/chat \
 			-I$(PROJ)/../clang/src/incl \
@@ -18,21 +19,17 @@ INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../clang/lib
 
 # 静态链接库
-STATIC_LIB_LIST = libev.a \
-				  libcjson.a \
-				  librtmq.a \
-				  libaccess.a \
-				  libchat.a \
-				  libutils.a \
-				  libcore.a
+STATIC_LIB_LIST = libev.a libcjson.a librtmq.a \
+				libaccess.a libchat.a libutils.a libcore.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
-LIBS += -lpthread -lm -dl
+LIBS += -lpthread -lm -dl -lprotobuf-c
 LIBS += $(SHARED_LIB)
 
 SRC_LIST = listend.c \
 			lsnd_comm.c \
 			lsnd_mesg.c \
-			lsnd_conf.c
+			lsnd_conf.c \
+			./proto/chat_room_mesg.pb-c.c
 
 OBJS = $(subst .c,.o, $(SRC_LIST))
 HEADS = $(call func_get_dep_head_list, $(SRC_LIST))
