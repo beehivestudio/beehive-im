@@ -14,9 +14,13 @@ INCLUDE = -I./incl \
 			-I$(PROJ)/../clang/src/incl/rtmq
 INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../clang/lib
-LIBS = -lpthread -lcore -lrtmq
+
+# 静态链接库
+STATIC_LIB_LIST = libev.a libcjson.a librtmq.a \
+				libaccess.a libchat.a libutils.a libcore.a
+LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
+LIBS += -lpthread -lm -dl
 LIBS += $(SHARED_LIB)
-LIBS_A = $(PROJ_LIB)/libcore.a $(PROJ_LIB)/librtmq.a
 
 SRC_LIST = frwder.c \
 			frwd_comm.c \
