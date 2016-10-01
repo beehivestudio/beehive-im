@@ -47,8 +47,6 @@
 协议格式:
 >{<br>
 >   "uid":${uid},               // M|用户ID|数字| <br>
->   "errno":${errno},           // M|错误码|数字|<br>
->   "errmsg":"${errmsg}"        // M|错误描述|字串|<br>
 >}
 
 ---
