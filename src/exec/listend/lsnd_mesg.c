@@ -347,16 +347,44 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
  **函数名称: chat_room_mesg_trav_send_hdl
  **功    能: 依次针对各SESSION下发聊天室消息
  **输入参数:
- **     ssn: 会话对象 
- **     lsnd: 上下文对象
+ **     sid: 会话ID
+ **     param: 附加参数
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 待完善
  **注意事项: 
- **作    者: # Qifeng.zou # 2016.09.28 14:44:05 #
+ **作    者: # Qifeng.zou # 2016.10.01 20:25:42 #
  ******************************************************************************/
-static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *lsnd)
+typedef struct
 {
+    void *data;                 // 被发送数据
+    size_t length;              // 被发数据长度
+    lsnd_cntx_t *lsnd;          // 帧听层对象
+    mesg_header_t *hhead;       // 主机套接字
+} chat_room_mesg_param_t;
+
+static int chat_room_mesg_trav_send_hdl(uint64_t *sid, chat_room_mesg_param_t *param)
+{
+    uint64_t cid;
+    chat_conn_extra_t *extra, key;
+    lsnd_cntx_t *lsnd = param->lsnd;
+    mesg_header_t *head = param->hhead;
+
+    /* > 查找扩展数据 */
+    key.sid = (uint64_t)sid;
+
+    extra = hash_tab_query(lsnd->conn_sid_tab, &key, RDLOCK);
+    if (NULL == extra) {
+        return 0;
+    }
+
+    cid = extra->cid;
+
+    hash_tab_unlock(lsnd->conn_sid_tab, &key, RDLOCK);
+
+    /* > 下发数据给指定连接 */
+    acc_async_send(lsnd->access, head->type, cid, param->data, param->length);
+
     return 0;
 }
 
@@ -375,10 +403,11 @@ static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *lsnd)
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.25 01:24:45 #
  ******************************************************************************/
-int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
+int chat_room_mesg_hdl(int type, int orig, void *data, size_t len, void *args)
 {
     uint32_t gid;
     MesgRoom *mesg;
+    chat_room_mesg_param_t param;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
@@ -403,8 +432,13 @@ int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
     gid = mesg->has_gid? mesg->gid : 0;
 
     /* > 给制定聊天室和分组发送消息 */
+    param.lsnd = lsnd;
+    param.data = data;
+    param.length = len;
+    param.hhead = &hhead;
+
     chat_room_trav(lsnd->chat_tab, mesg->rid, gid,
-            (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)lsnd);
+            (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
     mesg_room__free_unpacked(mesg, NULL);
@@ -536,7 +570,7 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
             break;
         case CHAT_EXTRA_LOC_SID_TAB:
             key.sid = extra->sid;
-            item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
+            item = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
             if (item != extra) {
                 assert(0);
             }
