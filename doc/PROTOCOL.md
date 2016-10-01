@@ -80,12 +80,16 @@
 
 ---
 命令ID: 0x0107<br>
-命令描述: 退出聊天室(QUIT)<br>
+命令描述: 退出聊天室(UNJOIN)<br>
 协议格式: NONE
+>{<br>
+>   optional uint64 uid = 1;    // M|用户ID|数字|<br>
+>   optional uint64 rid = 2;    // M|聊天室ID|数字|<br>
+>}
 
 ---
 命令ID: 0x0108<br>
-命令描述: 退出聊天室应答(QUIT-ACK)<br>
+命令描述: 退出聊天室应答(UNJOIN-ACK)<br>
 协议格式: NONE
 
 ---
@@ -271,7 +275,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0304<br>
-命令描述: 退出聊天室通知(QUIT-NTC)<br>
+命令描述: 退出聊天室通知(UNJOIN-NTC)<br>
 协议格式: <br>
 >{<br>
 >   optional uint64 uid = 1;    // M|用户ID|数字|<br>
