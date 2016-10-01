@@ -12,7 +12,6 @@
 #include "access.h"
 #include "listend.h"
 #include "lsnd_mesg.h"
-#include "cjson/cJSON.h"
 
 #include "mesg_room.pb-c.h"
 #include "mesg_online.pb-c.h"
