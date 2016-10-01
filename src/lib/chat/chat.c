@@ -18,92 +18,48 @@ static bool _chat_has_sub(chat_session_t *ssn, uint16_t cmd);
  **返    回: 分组ID
  **实现描述:
  **     1. 如果此SID存在, 则验证数据合法性
- **     2. 如果此SID不存在
- **         > 判断是否添加聊天室
- **         > 判断是否添加聊天分组
- **注意事项: TODO: 单个SID可以加入多个聊天室.
+ **     2. 如果此SID不存在, 加入聊天室
+ **注意事项: 
  **     1. 在此处不删除人数为0的聊天室和其下的分组, 删除操作由定时任务统一处理.
  **        理由: 降低程序的复杂度.
  **     2. 尽量进少使用写锁的次数, 尽量降低写锁的粒度.
+ **     3. 防止锁出现交错的情况, 从而造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.20 10:53:18 #
  ******************************************************************************/
-int chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
+uint32_t chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
 {
-    chat_room_t *room, room_key;
-    chat_group_t *grp = NULL, grp_key;
-    chat_session_t *ssn, ssn_key;
+    chat_session_t *ssn, key;
 
     /* > 判断该SID是否已经存在 */
-    ssn_key.sid = sid;
+    key.sid = sid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->session_tab, (void *)&ssn_key, RDLOCK);
+    ssn = (chat_session_t *)hash_tab_query(chat->session_tab, (void *)&key, RDLOCK);
     if (NULL != ssn) {
         if (ssn->rid == rid) {
             gid = ssn->gid;
-            hash_tab_unlock(chat->session_tab, (void *)&ssn_key, RDLOCK);
+            hash_tab_unlock(chat->session_tab, (void *)&key, RDLOCK);
             return gid; /* 已存在 */
         }
-        hash_tab_unlock(chat->session_tab, (void *)&ssn_key, RDLOCK);
+        hash_tab_unlock(chat->session_tab, (void *)&key, RDLOCK);
         return -1; /* 失败: SID所在聊天室与申请的聊天室冲突 */
     }
 
-    /* > 判断聊天室是否存在
-     * 注: 不存在就创建, 知道创建成功. */
-QUERY_ROOM:
-    room_key.rid = rid;
-
-    room = (chat_room_t *)hash_tab_query(chat->room_tab, (void *)&room_key, RDLOCK);
-    if (NULL == room) {
-        chat_add_room(chat, rid);
-        goto QUERY_ROOM;
+    /* > 将会话加入聊天室 */
+    if (chat_room_add_session(chat, rid, gid, sid)) {
+        log_error(chat->log, "Chat room add sid failed. rid:%lu gid:%u sid:%lu",
+                rid, gid, sid);
+        return -1;
     }
 
-    do {
-        /* > 查找指定分组 */
-    QUERY_ROOM_GROUP:
-        grp_key.gid = gid;
+    /* > 构建SID索引表 */
+    if (chat_session_tab_add(chat, rid, gid, sid)) {
+        chat_room_del_session(chat, rid, gid, sid);
+        log_error(chat->log, "Add sid into session table failed. rid:%lu gid:%u sid:%lu",
+                rid, gid, sid);
+        return -1;
+    }
 
-        grp = (chat_group_t *)hash_tab_query(room->group_tab, &grp_key, RDLOCK);
-        if (NULL == grp) {
-            chat_group_add_by_gid(chat, room, gid);
-            goto QUERY_ROOM_GROUP;
-        }
-
-        /* > 将此SID加入分组列表 */
-    ADD_SESSION:
-        chat_group_add_session(chat, room, grp, sid); 
-
-        /* > 判断该SID是否已经存在 */
-        ssn_key.sid = sid;
-
-        ssn = (chat_session_t *)hash_tab_query(grp->sid_set, (void *)&ssn_key, RDLOCK);
-        if (NULL == ssn) {
-            goto ADD_SESSION;
-        }
-        else if (ssn->rid != rid) {
-            break; /* 失败: SID所在聊天室与申请的聊天室冲突 */
-        }
-
-        /* > 构建SID索引表 */
-        if (chat_session_ref(chat, ssn)) {
-            hash_tab_unlock(grp->sid_set, (void *)&ssn_key, RDLOCK);
-            chat_group_del_session(chat, room, grp, sid);
-            hash_tab_unlock(room->group_tab, (void *)&grp_key, RDLOCK);
-            hash_tab_unlock(chat->room_tab, (void *)&room_key, RDLOCK);
-            return -1;
-        }
-        gid = ssn->gid;
-
-        hash_tab_unlock(grp->sid_set, (void *)&ssn_key, RDLOCK);
-        hash_tab_unlock(room->group_tab, (void *)&grp_key, RDLOCK);
-        hash_tab_unlock(chat->room_tab, (void *)&room_key, RDLOCK);
-        return gid;
-    } while(0);
-
-    hash_tab_unlock(grp->sid_set, (void *)&ssn_key, RDLOCK);
-    hash_tab_unlock(room->group_tab, (void *)&grp_key, RDLOCK);
-    hash_tab_unlock(chat->room_tab, (void *)&room_key, RDLOCK);
-    return -1;
+    return 0;
 }
 
 /******************************************************************************
@@ -121,33 +77,23 @@ QUERY_ROOM:
  ******************************************************************************/
 int chat_del_session(chat_tab_t *chat, uint64_t sid)
 {
-    chat_room_t *room, room_key;
-    chat_session_t *ssn, ssn_key;
+    chat_session_t *ssn, key;
 
     /* > 删除SID索引 */
-    ssn_key.sid = sid;
+    key.sid = sid;
 
-    ssn = hash_tab_delete(chat->session_tab, (void *)&ssn_key, WRLOCK);
+    ssn = hash_tab_delete(chat->session_tab, (void *)&key, WRLOCK);
     if (NULL == ssn) {
         log_error(chat->log, "Didn't find sid[%u]. ptr:%p", sid, ssn);
-        return 0; /* 此SID已删除 */
+        return 0; /* Didn't find */
     }
 
-    /* > 查找对应的聊天室 */
-    room_key.rid = ssn->rid;
+    /* > 从聊天室剔除 */
+    chat_room_del_session(chat, ssn->rid, ssn->gid, sid);
 
-    room = hash_tab_query(chat->room_tab, (void *)&room_key, RDLOCK);
-    if (NULL == room) {
-        log_error(chat->log, "Didn't find room! sid:%u rid:%u.\n", sid, ssn->rid);
-        return 0;
-    }
-
-    /* > 从对应的分组中删除会话 */
-    chat_del_session_from_group(chat, room, ssn->gid, ssn->sid);
-
-    hash_tab_unlock(chat->room_tab, (void *)&room_key, WRLOCK);
-
-    // FREE(ssn); /* 内存已经被chat_group_del_session释放 */
+    /* > 释放会话对象 */
+    hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
+    FREE(ssn);
     return 0;
 }
 
@@ -170,35 +116,19 @@ int chat_del_session(chat_tab_t *chat, uint64_t sid)
  ******************************************************************************/
 int chat_room_trav(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc, void *args)
 {
-    chat_group_t *grp, grp_key;
-    chat_room_t *room, room_key;
+    chat_room_t *room, key;
 
-    room_key.rid = rid;
+    key.rid = rid;
 
-    room = (chat_room_t *)hash_tab_query(chat->room_tab, (void *)&room_key, RDLOCK);
+    room = (chat_room_t *)hash_tab_query(chat->room_tab, (void *)&key, RDLOCK);
     if (NULL == room) {
-        return 0; // 聊天室不存在
+        return 0; /* Didn't find */
     }
 
-    if (0 == gid) { // 遍历聊天室所有成员
-        chat_room_trav_all_group(chat, room, proc, args, RDLOCK);
-        hash_tab_unlock(chat->room_tab, (void *)&room_key, RDLOCK);
-        return 0;
-    }
+    chat_group_trav(chat, room, gid, proc, args);
 
-    // 只发给同一聊天室分组的成员
-    grp_key.gid = gid;
+    hash_tab_unlock(chat->room_tab, (void *)&key, RDLOCK);
 
-    grp = (chat_group_t *)hash_tab_query(room->group_tab, &grp_key, RDLOCK);
-    if (NULL == grp) {
-        hash_tab_unlock(chat->room_tab, (void *)&room_key, RDLOCK);
-        return 0;
-    }
-
-    hash_tab_trav(grp->sid_set, (trav_cb_t)proc, args, RDLOCK);
-
-    hash_tab_unlock(room->group_tab, (void *)&grp_key, RDLOCK);
-    hash_tab_unlock(chat->room_tab, (void *)&room_key, RDLOCK);
     return 0;
 }
 

@@ -9,6 +9,9 @@ static void chat_group_del_item(chat_group_t *grp);
 static void chat_group_loop_del_item(void *pool, chat_group_t *grp);
 static int chat_room_del_all_group(chat_tab_t *chat, chat_room_t *room);
 
+static int chat_group_add_session(chat_tab_t *chat, chat_room_t *room, uint32_t gid, uint64_t sid);
+static int chat_group_del_session(chat_tab_t *chat, chat_room_t *room, uint32_t gid, uint64_t sid);
+
 /* 聊天室ID哈希回调 */
 static uint64_t chat_room_hash_cb(chat_room_t *r)
 {
@@ -108,7 +111,7 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.21 21:27:00 #
  ******************************************************************************/
-int chat_add_room(chat_tab_t *chat, uint64_t rid)
+static int chat_add_room(chat_tab_t *chat, uint64_t rid)
 {
     chat_room_t *room;
 
@@ -337,7 +340,7 @@ static int chat_room_del_all_group(chat_tab_t *chat, chat_room_t *room)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.21 11:08:27 #
  ******************************************************************************/
-int chat_group_add_by_gid(chat_tab_t *chat, chat_room_t *room, uint32_t gid)
+static int chat_group_add_by_gid(chat_tab_t *chat, chat_room_t *room, uint32_t gid)
 {
     chat_group_t *grp;
 
@@ -382,7 +385,7 @@ static int chat_sub_cmp_cb(chat_sub_item_t *item1, chat_sub_item_t *item2)
 }
 
 /******************************************************************************
- **函数名称: chat_group_add_session
+ **函数名称: _chat_group_add_session
  **功    能: 在分组中添加一个SID
  **输入参数: 
  **     chat: CHAT对象
@@ -395,42 +398,24 @@ static int chat_sub_cmp_cb(chat_sub_item_t *item1, chat_sub_item_t *item2)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.21 17:13:19 #
  ******************************************************************************/
-chat_session_t *chat_group_add_session(chat_tab_t *chat,
+static int _chat_group_add_session(chat_tab_t *chat,
         chat_room_t *room, chat_group_t *grp, uint64_t sid)
 {
-    chat_session_t *ssn;
+    int ret;
 
-    ssn = (chat_session_t *)calloc(1, sizeof(chat_session_t));
-    if (NULL == ssn) {
-        return NULL;
-    }
-
-    ssn->sid = sid;
-    ssn->gid = grp->gid;
-    ssn->rid = room->rid;
-
-    ssn->sub = hash_tab_creat(1,
-            (hash_cb_t)chat_sub_hash_cb,
-            (cmp_cb_t)chat_sub_cmp_cb, NULL);
-    if (NULL == ssn->sub) {
-        FREE(ssn);
-        return NULL;
-    }
-
-    if (hash_tab_insert(grp->sid_set, (void *)ssn, WRLOCK)) {
-        hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
-        free(ssn);
-        return NULL;
+    ret = hash_tab_insert(grp->sid_set, (void *)sid, WRLOCK); 
+    if (RBT_OK != ret) {
+        return (RBT_NODE_EXIST == ret)? 0 : -1;
     }
 
     atomic64_inc(&grp->sid_num);
     atomic64_inc(&room->sid_num);
 
-    return ssn;
+    return 0;
 }
 
 /******************************************************************************
- **函数名称: chat_group_del_session
+ **函数名称: _chat_group_del_session
  **功    能: 删除分组中指定SID
  **输入参数: 
  **     chat: CHAT对象
@@ -443,23 +428,16 @@ chat_session_t *chat_group_add_session(chat_tab_t *chat,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.21 17:28:42 #
  ******************************************************************************/
-int chat_group_del_session(chat_tab_t *chat,
+static int _chat_group_del_session(chat_tab_t *chat,
         chat_room_t *room, chat_group_t *grp, uint64_t sid)
 {
-    chat_session_t *ssn, key;
+    uint64_t loc_sid;
 
     /* > 删除会话信息 */
-    key.sid = sid;
-
-    ssn = hash_tab_delete(grp->sid_set, (void *)&key, WRLOCK);
-    if (NULL == ssn) {
-        return 0;
+    loc_sid = *(uint64_t *)hash_tab_delete(grp->sid_set, (void *)sid, WRLOCK);
+    if (0 == loc_sid) {
+        return 0; /* Didn't find */
     }
-
-    if (NULL != ssn->sub) {
-        hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
-    }
-    FREE(ssn);
 
     atomic64_dec(&grp->sid_num);
     atomic64_dec(&room->sid_num);
@@ -468,20 +446,49 @@ int chat_group_del_session(chat_tab_t *chat,
 }
 
 /******************************************************************************
- **函数名称: chat_session_ref
+ **函数名称: chat_session_tab_add
  **功    能: 给聊天室添加一个用户
  **输入参数: 
  **     chat: CHAT对象
- **     ssn: 会话对象
+ **     rid: 聊天室ID
+ **     gid: 分组ID
+ **     sid: 会话ID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项: ssn此时已在grp表中被引用, 切记!
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.09.21 19:59:38 #
  ******************************************************************************/
-int chat_session_ref(chat_tab_t *chat, chat_session_t *ssn)
+int chat_session_tab_add(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
 {
-    return hash_tab_insert(chat->session_tab, (void *)ssn, WRLOCK);
+    chat_session_t *ssn;
+
+    ssn = (chat_session_t *)calloc(1, sizeof(chat_session_t));
+    if (NULL == ssn) {
+        return -1;
+    }
+
+    /* > 初始化设置 */
+    ssn->sid = sid;
+    ssn->gid = gid;
+    ssn->rid = rid;
+
+    ssn->sub = hash_tab_creat(5,
+            (hash_cb_t)chat_sub_hash_cb,
+            (cmp_cb_t)chat_sub_cmp_cb, NULL);
+    if (NULL == ssn->sub) {
+        FREE(ssn);
+        return -1;
+    }
+
+    /* > 插入会话表 */
+    if (hash_tab_insert(chat->session_tab, (void *)ssn, WRLOCK)) {
+        hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
+        FREE(ssn);
+        return -1;
+    }
+
+    return 0;
 }
 
 /******************************************************************************
@@ -528,7 +535,7 @@ static int _chat_room_trav_all_group(chat_group_t *grp, chat_trav_group_args_t *
  **     > 当gid不为0时, 表示遍历聊天室GID分组所有成员
  **作    者: # Qifeng.zou # 2016.09.21 23:19:08 #
  ******************************************************************************/
-int chat_room_trav_all_group(chat_tab_t *chat,
+static int chat_room_trav_all_group(chat_tab_t *chat,
         chat_room_t *room, trav_cb_t proc, void *args, lock_e lock)
 {
     chat_trav_group_args_t trav;
@@ -544,7 +551,116 @@ int chat_room_trav_all_group(chat_tab_t *chat,
 }
 
 /******************************************************************************
- **函数名称: chat_del_session_from_group
+ **函数名称: chat_room_add_session
+ **功    能: 聊天室添加会话
+ **输入参数: 
+ **     chat: CHAT对象
+ **     rid: 聊天室ID
+ **     gid: 分组ID
+ **     sid: 会话ID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.01 16:19:49 #
+ ******************************************************************************/
+int chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
+{
+    int ret;
+    chat_room_t *room, key;
+
+    /* > 判断聊天室是否存在
+     * 注: 不存在就创建, 知道创建成功. */
+QUERY_ROOM:
+    key.rid = rid;
+
+    room = (chat_room_t *)hash_tab_query(chat->room_tab, (void *)&key, RDLOCK);
+    if (NULL == room) {
+        chat_add_room(chat, rid);
+        goto QUERY_ROOM;
+    }
+
+    ret = chat_group_add_session(chat, room, gid, sid);
+
+    hash_tab_unlock(chat->room_tab, (void *)&key, RDLOCK);
+
+    return ret;
+}
+
+/******************************************************************************
+ **函数名称: chat_group_add_session
+ **功    能: 在分组中添加一个SID
+ **输入参数: 
+ **     chat: CHAT对象
+ **     room: ROOM对象
+ **     gid: 分组ID
+ **     sid: SID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.01 16:25:20 #
+ ******************************************************************************/
+static int chat_group_add_session(chat_tab_t *chat,
+        chat_room_t *room, uint32_t gid, uint64_t sid)
+{
+    int ret;
+    chat_group_t *grp, key;
+
+    /* > 查找指定分组 */
+QUERY_GROUP:
+    key.gid = gid;
+
+    grp = (chat_group_t *)hash_tab_query(room->group_tab, &key, RDLOCK);
+    if (NULL == grp) {
+        chat_group_add_by_gid(chat, room, gid);
+        goto QUERY_GROUP;
+    }
+
+    /* > 将此SID加入分组列表 */
+    ret = _chat_group_add_session(chat, room, grp, sid);
+
+    hash_tab_unlock(room->group_tab, (void *)&key, RDLOCK);
+    return ret;
+}
+
+/******************************************************************************
+ **函数名称: chat_room_del_session
+ **功    能: 从聊天室中删除某会话
+ **输入参数: 
+ **     chat: CHAT对象
+ **     rid: 聊天室ID
+ **     gid: 分组ID
+ **     sid: 会话ID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.01 16:10:10 #
+ ******************************************************************************/
+int chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
+{
+    chat_room_t *room, key;
+
+    /* > 查找对应的聊天室 */
+    key.rid = rid;
+
+    room = hash_tab_query(chat->room_tab, (void *)&key, RDLOCK);
+    if (NULL == room) {
+        log_error(chat->log, "Didn't find room! sid:%u rid:%lu", sid, rid);
+        return 0; /* Didn't find */
+    }
+
+    /* > 从对应的分组中删除会话 */
+    chat_group_del_session(chat, room, gid, sid);
+
+    hash_tab_unlock(chat->room_tab, (void *)&key, RDLOCK);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: chat_group_del_session
  **功    能: 从组中删除会话
  **输入参数: 
  **     chat: CHAT对象
@@ -559,14 +675,15 @@ int chat_room_trav_all_group(chat_tab_t *chat,
  **     > 当gid不为0时, 表示遍历聊天室GID分组所有成员
  **作    者: # Qifeng.zou # 2016.09.21 23:19:08 #
  ******************************************************************************/
-int chat_del_session_from_group(chat_tab_t *chat, chat_room_t *room, int gid, uint64_t sid)
+static int chat_group_del_session(chat_tab_t *chat,
+        chat_room_t *room, uint32_t gid, uint64_t sid)
 {
-    chat_group_t *grp, grp_key;
+    chat_group_t *grp, key;
 
     /* > 查收聊天分组 */
-    grp_key.gid = gid;
+    key.gid = gid;
 
-    grp = hash_tab_query(room->group_tab, &grp_key, RDLOCK);
+    grp = hash_tab_query(room->group_tab, &key, RDLOCK);
     if (NULL == grp) {
         log_error(chat->log, "Didn't find group! sid:%lu rid:%u gid:%u.",
                 sid, room->rid, gid);
@@ -574,9 +691,50 @@ int chat_del_session_from_group(chat_tab_t *chat, chat_room_t *room, int gid, ui
     }
 
     /* > 从分组中删除SID */
-    chat_group_del_session(chat, room, grp, sid);
+    _chat_group_del_session(chat, room, grp, sid);
 
-    hash_tab_unlock(room->group_tab, &grp_key, RDLOCK);
+    hash_tab_unlock(room->group_tab, &key, RDLOCK);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: chat_group_trav
+ **功    能: 遍历某个分组所有SID
+ **输入参数: 
+ **     chat: CHAT对象
+ **     room: ROOM对象
+ **     gid: 分组ID
+ **     proc: 遍历处理回调
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **     > 当gid为0时, 表示遍历所有聊天室成员
+ **     > 当gid不为0时, 表示遍历聊天室GID分组所有成员
+ **作    者: # Qifeng.zou # 2016.09.21 23:19:08 #
+ ******************************************************************************/
+int chat_group_trav(chat_tab_t *chat,
+        chat_room_t *room, uint16_t gid, trav_cb_t proc, void *args)
+{
+    chat_group_t *grp, key;
+
+    if (0 == gid) { /* 遍历聊天室所有成员 */
+        return chat_room_trav_all_group(chat, room, proc, args, RDLOCK);
+    }
+
+    /* 只发给同一聊天室分组的成员 */
+    key.gid = gid;
+
+    grp = (chat_group_t *)hash_tab_query(room->group_tab, &key, RDLOCK);
+    if (NULL == grp) {
+        return 0; /* Didn't find */
+    }
+
+    hash_tab_trav(grp->sid_set, (trav_cb_t)proc, args, RDLOCK);
+
+    hash_tab_unlock(room->group_tab, (void *)&key, RDLOCK);
 
     return 0;
 }
