@@ -155,6 +155,7 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
         extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
         hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
         log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", ack->cid);
+        acc_async_kick(lsnd->access, ack->cid);
         mesg_online_ack__free_unpacked(ack, NULL);
         return 0;
     }
@@ -175,6 +176,7 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
                     ack->cid, hhead.sid);
             extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
             hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
+            acc_async_kick(lsnd->access, ack->cid);
             mesg_online_ack__free_unpacked(ack, NULL);
             return 0;
         }
