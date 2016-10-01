@@ -59,11 +59,12 @@ typedef struct
     rtmq_proxy_t *frwder;           /* FRWDER服务 */
 
     chat_tab_t *chat_tab;           /* 聊天室组织表 */
+    hash_tab_t *uid_sid_tab;        /* 用户ID管理表(以UID为主键, 数据:chat_uid_item_t) */
 
-    hash_tab_t *conn_uid_tab;       /* 用户ID管理表(以UID为主键) */
-    hash_tab_t *conn_sid_tab;       /* 连接管理表(以SID为主键) */
-    hash_tab_t *conn_cid_tab;       /* 连接管理表(以CID为主键) */
-    hash_tab_t *conn_kick_tab;      /* 被踢管理表(以SCK为主键) */
+    /* 注意: 以下三个表互斥, 共同个管理类为chat_conn_extra_t的数据  */
+    hash_tab_t *conn_sid_tab;       /* 连接管理表(以SID为主键, 数据:chat_conn_extra_t) */
+    hash_tab_t *conn_cid_tab;       /* 连接管理表(以CID为主键, 数据:chat_conn_extra_t) */
+    hash_tab_t *conn_kick_tab;      /* 被踢管理表(以SCK为主键, 数据:chat_conn_extra_t) */
 } lsnd_cntx_t;
 
 int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt);
