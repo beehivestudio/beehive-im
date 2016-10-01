@@ -335,7 +335,7 @@ TODO: 协议头中的to为用户ID(UID)
 >   optional string list = 3;   // M|IP地址|字串|<br>
 >}
 
-协议说明:
+协议说明:<br>
 list:<br>
 >[<br>
 >       {"ipaddr":"${ipaddr}", "port":${port}}, // M|IP+端口|<br>
