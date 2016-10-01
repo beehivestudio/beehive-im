@@ -325,7 +325,7 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
     /* 将SID加入聊天室 */
-    gid = chat_add_session(lsnd->chat_tab, ack->rid, ack->gid, extra->sid);
+    gid = chat_room_add_session(lsnd->chat_tab, ack->rid, ack->gid, extra->sid);
     if ((uint32_t)-1 == gid) {
         log_error(lsnd->log, "Add into chat room failed! sid:%lu rid:%lu gid:%u",
                 hhead.sid, ack->rid, ack->gid);

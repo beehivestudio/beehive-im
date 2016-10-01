@@ -82,7 +82,7 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
 }
 
 /******************************************************************************
- **函数名称: chat_add_session
+ **函数名称: chat_room_add_session
  **功    能: 给聊天室添加一个用户
  **输入参数: 
  **     chat: CHAT对象
@@ -101,7 +101,7 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
  **     3. 防止锁出现交错的情况, 从而造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.20 10:53:18 #
  ******************************************************************************/
-uint32_t chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
+uint32_t chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
 {
     chat_session_t *ssn, key;
 
