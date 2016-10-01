@@ -5,9 +5,9 @@
 #include "chat_priv.h"
 
 /* 静态函数 */
-static void chat_group_del_item(chat_group_t *grp);
-static void chat_group_loop_del_item(void *pool, chat_group_t *grp);
-static int chat_room_del_all_group(chat_tab_t *chat, chat_room_t *room);
+static void chat_group_destroy(chat_group_t *grp);
+static void _chat_group_destroy(void *pool, chat_group_t *grp);
+static int chat_room_destroy(chat_tab_t *chat, chat_room_t *room);
 
 static int chat_group_add_session(chat_tab_t *chat, chat_room_t *room, uint32_t gid, uint64_t sid);
 static int chat_group_del_session(chat_tab_t *chat, chat_room_t *room, uint32_t gid, uint64_t sid);
@@ -143,42 +143,6 @@ static int chat_add_room(chat_tab_t *chat, uint64_t rid)
 }
 
 /******************************************************************************
- **函数名称: chat_del_room_by_rid
- **功    能: 删除指定聊天室
- **输入参数: 
- **     chat: 全局对象
- **     rid: 聊天室ID
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.09.21 22:47:11 #
- ******************************************************************************/
-static int chat_del_room_by_rid(chat_tab_t *chat, uint64_t rid)
-{
-    chat_room_t *room, key;
-
-    /* > 查找聊天室对象 */
-    key.rid = rid;
-
-    room = hash_tab_query(chat->room_tab, (void *)&key, RDLOCK);
-    if (NULL == room) {
-        return 0; /* 无此聊天室 */
-    }
-    else if (0 != room->sid_num) {
-        hash_tab_unlock(chat->room_tab, (void *)&key, RDLOCK);
-        return 0; /* 聊天室还有人, 不能删除 */
-    }
-
-    room = hash_tab_delete(chat->room_tab, (void *)&key, WRLOCK);
-
-    /* > 删除分组信息 */
-    chat_room_del_all_group(chat, room);
-    FREE(room);
-    return 0;
-}
-
-/******************************************************************************
  **函数名称: chat_del_room
  **功    能: 删除指定聊天室
  **输入参数: 
@@ -213,12 +177,8 @@ int chat_del_room(chat_tab_t *chat, uint64_t rid)
 
     hash_tab_unlock(chat->room_tab, (void *)&key, WRLOCK);
 
-    /* > 清理分组信息 */
-    chat_room_del_all_group(chat, room);
-
-    FREE(room);
-
-    return 0;
+    /* > 销毁聊天室 */
+    return chat_room_destroy(chat, room);
 }
 
 /******************************************************************************
@@ -248,7 +208,7 @@ int chat_del_group(chat_tab_t *chat, chat_room_t *room, chat_group_t *grp)
 
     item = hash_tab_delete(room->group_tab, &key, WRLOCK);
     assert(grp == item);
-    chat_group_del_item(grp);
+    chat_group_destroy(grp);
 
     --room->grp_num; /* 分组数减1 */
 
@@ -256,27 +216,26 @@ int chat_del_group(chat_tab_t *chat, chat_room_t *room, chat_group_t *grp)
 }
 
 /******************************************************************************
- **函数名称: chat_group_del_sid_item
- **功    能: 删除分组中的SESSION列表项
+ **函数名称: chat_group_del_sid
+ **功    能: 删除分组中的SID列表项
  **输入参数: 
  **     pool: 内存池
  **     sid: 会话ID
  **输出参数: NONE
  **返    回: VOID
- **实现描述: 释放各SESSION内存空间
+ **实现描述:
  **注意事项: 
+ **     由于分组中的sid list挂的是只是SID, 因此无空间需要释放.
  **作    者: # Qifeng.zou # 2016.09.21 12:53:28 #
  ******************************************************************************/
-static void chat_group_del_sid_item(void *pool, chat_session_t *ssn)
+static void chat_group_del_sid(void *pool, uint64_t *sid)
 {
-    fprintf(stderr, "sid:%lu gid:%u rid:%lu\n", ssn->sid, ssn->gid, ssn->rid);
-    hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
-    FREE(ssn);
+    return;
 }
 
 /******************************************************************************
- **函数名称: chat_group_del_item
- **功    能: 删除聊天室中的分组
+ **函数名称: chat_group_destroy
+ **功    能: 销毁聊天室分组
  **输入参数: 
  **     grp: 聊天室分组
  **输出参数: NONE
@@ -285,45 +244,48 @@ static void chat_group_del_sid_item(void *pool, chat_session_t *ssn)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.21 22:47:11 #
  ******************************************************************************/
-static void chat_group_del_item(chat_group_t *grp)
+static void chat_group_destroy(chat_group_t *grp)
 {
     /* > 销毁SID列表 */
-    hash_tab_destroy(grp->sid_set, (mem_dealloc_cb_t)chat_group_del_sid_item, NULL);
+    hash_tab_destroy(grp->sid_set, (mem_dealloc_cb_t)chat_group_del_sid, NULL);
     FREE(grp);
 }
 
 /******************************************************************************
- **函数名称: chat_group_loop_del_item
- **功    能: 删除聊天室中的分组
+ **函数名称: _chat_group_destroy
+ **功    能: 销毁聊天室中的分组
  **输入参数: 
  **     grp: 聊天室分组
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述: 复用函数chat_group_del_item()
+ **实现描述: 复用函数chat_group_destroy()
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.21 22:47:11 #
  ******************************************************************************/
-static void chat_group_loop_del_item(void *pool, chat_group_t *grp)
+static void _chat_group_destroy(void *pool, chat_group_t *grp)
 {
-    chat_group_del_item(grp);
+    chat_group_destroy(grp);
 }
 
 /******************************************************************************
- **函数名称: chat_room_del_all_group
- **功    能: 删除聊天室中的分组
+ **函数名称: chat_room_destroy
+ **功    能: 删除聊天室
  **输入参数: 
  **     chat: CHAT对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述: 依次删除SESSION对应的连接和内存
+ **实现描述: 依次删除各组和各SESSION内存
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.21 22:47:11 #
  ******************************************************************************/
-static int chat_room_del_all_group(chat_tab_t *chat, chat_room_t *room)
+static int chat_room_destroy(chat_tab_t *chat, chat_room_t *room)
 {
     room->grp_num = 0;
     room->sid_num = 0;
-    hash_tab_destroy(room->group_tab, (mem_dealloc_cb_t)chat_group_loop_del_item, NULL);
+
+    hash_tab_destroy(room->group_tab, (mem_dealloc_cb_t)_chat_group_destroy, NULL);
+
+    FREE(room);
     return 0;
 }
 
@@ -551,7 +513,7 @@ static int chat_room_trav_all_group(chat_tab_t *chat,
 }
 
 /******************************************************************************
- **函数名称: chat_room_add_session
+ **函数名称: _chat_room_add_session
  **功    能: 聊天室添加会话
  **输入参数: 
  **     chat: CHAT对象
@@ -564,7 +526,7 @@ static int chat_room_trav_all_group(chat_tab_t *chat,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.01 16:19:49 #
  ******************************************************************************/
-int chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
+int _chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
 {
     int ret;
     chat_room_t *room, key;
@@ -625,7 +587,7 @@ QUERY_GROUP:
 }
 
 /******************************************************************************
- **函数名称: chat_room_del_session
+ **函数名称: _chat_room_del_session
  **功    能: 从聊天室中删除某会话
  **输入参数: 
  **     chat: CHAT对象
@@ -638,7 +600,7 @@ QUERY_GROUP:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.01 16:10:10 #
  ******************************************************************************/
-int chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
+int _chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
 {
     chat_room_t *room, key;
 

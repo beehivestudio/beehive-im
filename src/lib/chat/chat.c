@@ -45,7 +45,7 @@ uint32_t chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t
     }
 
     /* > 将会话加入聊天室 */
-    if (chat_room_add_session(chat, rid, gid, sid)) {
+    if (_chat_room_add_session(chat, rid, gid, sid)) {
         log_error(chat->log, "Chat room add sid failed. rid:%lu gid:%u sid:%lu",
                 rid, gid, sid);
         return -1;
@@ -53,7 +53,7 @@ uint32_t chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t
 
     /* > 构建SID索引表 */
     if (chat_session_tab_add(chat, rid, gid, sid)) {
-        chat_room_del_session(chat, rid, gid, sid);
+        _chat_room_del_session(chat, rid, gid, sid);
         log_error(chat->log, "Add sid into session table failed. rid:%lu gid:%u sid:%lu",
                 rid, gid, sid);
         return -1;
@@ -89,7 +89,7 @@ int chat_del_session(chat_tab_t *chat, uint64_t sid)
     }
 
     /* > 从聊天室剔除 */
-    chat_room_del_session(chat, ssn->rid, ssn->gid, sid);
+    _chat_room_del_session(chat, ssn->rid, ssn->gid, sid);
 
     /* > 释放会话对象 */
     hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
