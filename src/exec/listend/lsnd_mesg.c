@@ -619,6 +619,7 @@ static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *lsnd)
  ******************************************************************************/
 int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
 {
+    uint32_t gid;
     ChatRoomMesg *mesg;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -635,9 +636,16 @@ int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
         log_error(lsnd->log, "Unpack chat room message failed!");
         return -1;
     }
+    else if (false == mesg->has_rid) {
+        chat_room_mesg__free_unpacked(mesg, NULL);
+        log_error(lsnd->log, "Get room id failed!");
+        return -1;
+    }
+
+    gid = mesg->has_gid? mesg->gid : 0;
 
     /* > 给制定聊天室和分组发送消息 */
-    chat_room_trav(lsnd->chat_tab, mesg->rid, mesg->gid,
+    chat_room_trav(lsnd->chat_tab, mesg->rid, gid,
             (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)lsnd);
 
     /* > 释放PROTO-BUF空间 */

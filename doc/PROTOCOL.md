@@ -178,8 +178,15 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0118<br>
-命令描述: 聊天室消息(ROOM-MSG-ACK)<br>
-协议格式: 透传<br>
+命令描述: 聊天室消息(ROOM-MSG)<br>
+协议格式: <br>
+>message ChatRoomMesg<br>
+>{<br>
+>   optional uint64 rid = 1;            // M|聊天室ID<br>
+>   optional uint32 gid = 2;            // M|分组ID<br>
+>   optional uint32 level = 3;     // O|消息级别<br>
+>   optional bytes data = 4;            // M|透传数据<br>
+>}<br>
 
 ---
 命令ID: 0x0119<br>

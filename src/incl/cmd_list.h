@@ -1,13 +1,13 @@
 /******************************************************************************
  ** Copyright(C) 2014-2024 Qiware technology Co., Ltd
  **
- ** 文件名: mesg.h
+ ** 文件名: cmd_list.h
  ** 版本号: 1.0
  ** 描  述: 消息类型的定义
  ** 作  者: # Qifeng.zou # Fri 08 May 2015 10:43:30 PM CST #
  ******************************************************************************/
-#if !defined(__CHAT_CMD_H__)
-#define __CHAT_CMD_H__
+#if !defined(__CMD_LIST_H__)
+#define __CMD_LIST_H__
 
 /* 消息类型 */
 typedef enum
@@ -110,4 +110,4 @@ typedef enum
     , MSG_TYPE_TOTAL                    /* 消息类型总数 */
 } mesg_type_e;
 
-#endif /*__CHAT_CMD_H__*/
+#endif /*__CMD_LIST_H__*/

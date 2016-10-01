@@ -9,7 +9,7 @@
 #include "frwd.h"
 #include "mesg.h"
 #include "vector.h"
-#include "command.h"
+#include "cmd_list.h"
 
 /* 静态函数 */
 static int frwd_mesg_from_fw_def_hdl(int type, int orig, char *data, size_t len, void *args);
