@@ -12,30 +12,6 @@ static int chat_room_destroy(chat_tab_t *chat, chat_room_t *room);
 static int chat_group_add_session(chat_tab_t *chat, chat_room_t *room, uint32_t gid, uint64_t sid);
 static int chat_group_del_session(chat_tab_t *chat, chat_room_t *room, uint32_t gid, uint64_t sid);
 
-/* 聊天室ID哈希回调 */
-static uint64_t chat_room_hash_cb(chat_room_t *r)
-{
-    return r->rid;
-}
-
-/* 聊天室ID比较回调 */
-static int chat_room_cmp_cb(chat_room_t *r1, chat_room_t *r2)
-{
-    return (int)(r1->rid - r2->rid);
-}
-
-/* 会话ID哈希回调 */
-static uint64_t chat_session_hash_cb(chat_session_t *s)
-{
-    return s->sid;
-}
-
-/* 会话ID比较回调 */
-static int chat_session_cmp_cb(chat_session_t *s1, chat_session_t *s2)
-{
-    return (int)(s1->sid - s2->sid);
-}
-
 /* 分组ID哈希回调 */
 static uint64_t chat_group_hash_cb(chat_group_t *g)
 {
@@ -48,56 +24,7 @@ static int chat_group_cmp_cb(chat_group_t *g1, chat_group_t *g2)
     return (g1->gid - g2->gid);
 }
 
-/******************************************************************************
- **函数名称: chat_tab_init
- **功    能: 初始化上下文
- **输入参数:
- **     len: 槽的长度
- **     log: 日志对象
- **输出参数: NONE
- **返    回: CHAT对象
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.09.21 10:38:44 #
- ******************************************************************************/
-chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
-{
-    chat_tab_t *chat;
 
-    /* > 创建全局对象 */
-    chat = (chat_tab_t *)calloc(1, sizeof(chat_tab_t));
-    if (NULL == chat) {
-        return NULL;
-    }
-
-    chat->log = log;
-
-    do {
-        /* > 初始化聊天室表 */
-        chat->room_tab = hash_tab_creat(len,
-                (hash_cb_t)chat_room_hash_cb,
-                (cmp_cb_t)chat_room_cmp_cb, NULL);
-        if (NULL == chat->room_tab) {
-            break;
-        }
-
-        /* > 初始化SESSION表 */
-        chat->session_tab = hash_tab_creat(len,
-                (hash_cb_t)chat_session_hash_cb,
-                (cmp_cb_t)chat_session_cmp_cb, NULL);
-        if (NULL == chat->session_tab) {
-            break;
-        }
-        return chat;
-    } while(0);
-
-    /* > 释放内存 */
-    hash_tab_destroy(chat->room_tab, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
-    hash_tab_destroy(chat->session_tab, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
-    FREE(chat);
-
-    return NULL;
-}
 
 /******************************************************************************
  **函数名称: chat_add_room
@@ -289,6 +216,18 @@ static int chat_room_destroy(chat_tab_t *chat, chat_room_t *room)
     return 0;
 }
 
+/* 会话ID哈希回调 */
+static uint64_t chat_sid_hash_cb(uint64_t *sid)
+{
+    return (uint64_t)sid;
+}
+
+/* 会话ID比较回调 */
+static int chat_sid_cmp_cb(uint64_t *s1, uint64_t *s2)
+{
+    return (int)((uint64_t)s1 - (uint64_t)s2);
+}
+
 /******************************************************************************
  **函数名称: chat_group_add_by_gid
  **功    能: 通过GID创建分组
@@ -313,8 +252,8 @@ static int chat_group_add_by_gid(chat_tab_t *chat, chat_room_t *room, uint32_t g
     }
 
     grp->sid_set = hash_tab_creat(999,
-            (hash_cb_t)chat_session_hash_cb,
-            (cmp_cb_t)chat_session_cmp_cb, NULL);
+            (hash_cb_t)chat_sid_hash_cb,
+            (cmp_cb_t)chat_sid_cmp_cb, NULL);
     if (NULL == grp->sid_set) {
         FREE(grp);
         return -1;

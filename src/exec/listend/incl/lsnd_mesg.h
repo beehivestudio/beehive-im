@@ -58,8 +58,6 @@ typedef struct
     char app_name[CHAT_APP_NAME_LEN]; /* 应用名 */
     char app_vers[CHAT_APP_VERS_LEN]; /* 应用版本 */
     chat_terminal_type_e terminal;  /* 终端类型 */
-
-    hash_tab_t *rid_list;           /* 聊天室列表(以RID为主键) */
 } chat_conn_extra_t;
 
 int chat_callback(acc_cntx_t *ctx, socket_t *sck, int reason, void *user, void *in, int len, void *args);

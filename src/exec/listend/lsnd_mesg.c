@@ -324,9 +324,6 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
-    /* 记录聊天室列表 */
-    hash_tab_insert(extra->rid_list, (void *)ack->rid, WRLOCK);
-
     /* 将SID加入聊天室 */
     gid = chat_add_session(lsnd->chat_tab, ack->rid, ack->gid, extra->sid);
     if ((uint32_t)-1 == gid) {
@@ -493,29 +490,15 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
     extra->keepalive_time = ctm;
     extra->loc = CHAT_EXTRA_LOC_UNKNOWN;
     extra->stat = CHAT_CONN_STAT_ESTABLISH;
-    extra->rid_list = hash_tab_creat(5,
-            (hash_cb_t)chat_rid_list_hash_cb,
-            (cmp_cb_t)chat_rid_list_cmp_cb, NULL);
-    if (NULL == extra->rid_list) {
-        log_error(lsnd->log, "Create rid list failed!");
-        return -1;
-    }
 
     /* 加入CID管理表 */
     if (hash_tab_insert(lsnd->conn_cid_tab, (void *)extra, WRLOCK)) {
         log_error(lsnd->log, "Insert cid table failed!");
-        hash_tab_destroy(extra->rid_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
-        extra->rid_list = NULL;
         return -1;
     }
 
     extra->loc = CHAT_EXTRA_LOC_CID_TAB;
 
-    return 0;
-}
-
-static int chat_room_trav_remove_sid(uint64_t *rid, chat_conn_extra_t *extra)
-{
     return 0;
 }
 
@@ -539,10 +522,6 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
     chat_conn_extra_t key, *item;
 
     extra->stat = CHAT_CONN_STAT_CLOSED;
-    if (NULL != extra->rid_list) {
-        hash_tab_destroy(extra->rid_list, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
-    }
-
     chat_del_session(lsnd->chat_tab, extra->sid);
 
     switch (extra->loc) {

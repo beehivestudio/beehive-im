@@ -67,7 +67,7 @@ typedef struct
 
 chat_tab_t *chat_tab_init(int len, log_cycle_t *log); // OK
 
-uint32_t chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid);
+uint32_t chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid); // OK
 int chat_del_session(chat_tab_t *chat, uint64_t sid); // OK
 int chat_timeout_hdl(chat_tab_t *chat);
 

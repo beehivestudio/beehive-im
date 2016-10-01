@@ -6,6 +6,81 @@
 
 static bool _chat_has_sub(chat_session_t *ssn, uint16_t cmd);
 
+/* 聊天室ID哈希回调 */
+static uint64_t chat_room_hash_cb(chat_room_t *r)
+{
+    return r->rid;
+}
+
+/* 聊天室ID比较回调 */
+static int chat_room_cmp_cb(chat_room_t *r1, chat_room_t *r2)
+{
+    return (int)(r1->rid - r2->rid);
+}
+
+/* 会话ID哈希回调 */
+static uint64_t chat_session_hash_cb(chat_session_t *s)
+{
+    return s->sid;
+}
+
+/* 会话ID比较回调 */
+static int chat_session_cmp_cb(chat_session_t *s1, chat_session_t *s2)
+{
+    return (int)(s1->sid - s2->sid);
+}
+
+/******************************************************************************
+ **函数名称: chat_tab_init
+ **功    能: 初始化上下文
+ **输入参数:
+ **     len: 槽的长度
+ **     log: 日志对象
+ **输出参数: NONE
+ **返    回: CHAT对象
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.09.21 10:38:44 #
+ ******************************************************************************/
+chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
+{
+    chat_tab_t *chat;
+
+    /* > 创建全局对象 */
+    chat = (chat_tab_t *)calloc(1, sizeof(chat_tab_t));
+    if (NULL == chat) {
+        return NULL;
+    }
+
+    chat->log = log;
+
+    do {
+        /* > 初始化聊天室表 */
+        chat->room_tab = hash_tab_creat(len,
+                (hash_cb_t)chat_room_hash_cb,
+                (cmp_cb_t)chat_room_cmp_cb, NULL);
+        if (NULL == chat->room_tab) {
+            break;
+        }
+
+        /* > 初始化SESSION表 */
+        chat->session_tab = hash_tab_creat(len,
+                (hash_cb_t)chat_session_hash_cb,
+                (cmp_cb_t)chat_session_cmp_cb, NULL);
+        if (NULL == chat->session_tab) {
+            break;
+        }
+        return chat;
+    } while(0);
+
+    /* > 释放内存 */
+    hash_tab_destroy(chat->room_tab, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
+    hash_tab_destroy(chat->session_tab, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
+    FREE(chat);
+
+    return NULL;
+}
+
 /******************************************************************************
  **函数名称: chat_add_session
  **功    能: 给聊天室添加一个用户
