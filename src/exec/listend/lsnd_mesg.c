@@ -13,7 +13,11 @@
 #include "listend.h"
 #include "lsnd_mesg.h"
 #include "cjson/cJSON.h"
+
 #include "chat_room_mesg.pb-c.h"
+#include "chat_online_mesg.pb-c.h"
+#include "chat_online_ack_mesg.pb-c.h"
+#include "chat_join_ack_mesg.pb-c.h"
 
 static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
 static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
@@ -49,93 +53,6 @@ int chat_mesg_def_hdl(unsigned int type, void *data, int length, void *args)
 }
 
 /******************************************************************************
- **函数名称: chat_online_parse_hdl
- **功    能: ONLINE应答处理
- **输入参数:
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述: 
- **协议格式:
- **     {
- **        "uid":${uid},               // M|用户ID|数字|
- **        "roomid":${roomid},         // M|聊天室ID|数字|
- **        "app":"${app}",             // M|APP名|字串|
- **        "version":"${version}",     // M|APP版本|字串|
- **        "terminal":${terminal}      // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
- **        "errno":${errno},           // M|错误码|数字|
- **        "errmsg":"${errmsg}"        // M|错误描述|字串|
- **     }
- **注意事项:
- **作    者: # Qifeng.zou # 2016.09.24 13:01:31 #
- ******************************************************************************/
-typedef struct
-{
-    uint64_t uid;                       // 用户ID
-    char app[CHAT_APP_NAME_LEN];        // 应用名
-    char version[CHAT_APP_VERS_LEN];    // 版本号
-    chat_terminal_type_e terminal;      // 终端类型
-} chat_online_req_t;
-
-static int chat_online_parse_hdl(lsnd_cntx_t *lsnd,
-        const char *body, uint64_t len, chat_online_req_t *req)
-{
-    char json_str[CHAT_JSON_STR_LEN];
-    cJSON *json, *uid, *app, *version, *terminal;
-
-    if (len >= sizeof(json_str)) {
-        log_error(lsnd->log, "Body is too long! len:%d", len);
-        return -1;
-    }
-
-    memcpy(json_str, (const void *)body, len);
-    json_str[len] = '\0';
-
-    /* 解析JSON */
-    json = cJSON_Parse(json_str);
-    if (NULL == json) {
-        log_error(lsnd->log, "Parse join ack failed!");
-        return -1;
-    }
-
-    do {
-        /* 定位各结点 */
-        uid = cJSON_GetObjectItem(json, "uid");
-        if (NULL == uid || 0 == uid->valueint) {
-            break;
-        }
-
-        app = cJSON_GetObjectItem(json, "app");
-        if (NULL == app) {
-            break;
-        }
-
-        version = cJSON_GetObjectItem(json, "version");
-        if (NULL == version) {
-            break;
-        }
-
-        terminal = cJSON_GetObjectItem(json, "terminal");
-        if (NULL == terminal) {
-            break;
-        }
-
-        /* 提取有效信息 */
-        req->uid = uid->valueint;
-        snprintf(req->app, sizeof(req->app), "%s", app->valuestring);
-        snprintf(req->version, sizeof(req->version), "%s", version->valuestring);
-        req->terminal = terminal->valueint;
-
-        /* 释放内存空间 */
-        cJSON_Delete(json);
-
-        return 0;
-    } while(0);
-
-    cJSON_Delete(json);
-    return -1;
-}
-
-/******************************************************************************
  **函数名称: chat_online_req_hdl
  **功    能: ONLINE请求处理
  **输入参数:
@@ -148,11 +65,11 @@ static int chat_online_parse_hdl(lsnd_cntx_t *lsnd,
  **实现描述: 无需提取任何信息, 直接转发给上游服务.
  **协议格式:
  **     {
- **        "uid":${uid},               // M|用户ID|数字|
- **        "roomid":${roomid},         // M|聊天室ID|数字|
- **        "app":"${app}",             // M|APP名|字串|
- **        "version":"${version}",     // M|APP版本|字串|
- **        "terminal":${terminal}      // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+ **        optional uint64 uid = 1;         // M|用户ID|数字|
+ **        optional string token = 2;       // M|鉴权TOKEN|字串|
+ **        optional string app = 3;         // M|APP名|字串|
+ **        optional string version = 4;     // M|APP版本|字串|
+ **        optional uint32 terminal = 5;    // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
  **     }
  **注意事项: 需要将协议头转换为网络字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
@@ -173,106 +90,6 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
 }
 
 /******************************************************************************
- **函数名称: chat_online_ack_parse_hdl
- **功    能: ONLINE应答处理
- **输入参数:
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述: 
- **协议格式:
- **     {
- **        "uid":${uid},               // M|用户ID|数字|
- **        "app":"${app}",             // M|APP名|字串|
- **        "version":"${version}",     // M|APP版本|字串|
- **        "terminal":${terminal}      // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
- **        "errno":${errno},           // M|错误码|数字|
- **        "errmsg":"${errmsg}"        // M|错误描述|字串|
- **     }
- **注意事项:
- **作    者: # Qifeng.zou # 2016.09.24 13:01:31 #
- ******************************************************************************/
-typedef struct
-{
-    uint64_t uid;                       // 用户ID
-    char app[CHAT_APP_NAME_LEN];        // 应用名
-    char version[CHAT_APP_VERS_LEN];    // 版本号
-    chat_terminal_type_e terminal;      // 终端类型
-    int errcode;                        // 错误码
-    char errmsg[ERR_MSG_MAX_LEN];       // 错误描述
-} chat_online_ack_t;
-
-static int chat_online_ack_parse_hdl(lsnd_cntx_t *lsnd,
-        const char *body, uint64_t len, chat_online_ack_t *ack)
-{
-    char ack_str[CHAT_JSON_STR_LEN];
-    cJSON *json, *uid, *app, *version, *terminal, *errcode, *errmsg;
-
-    if (len >= sizeof(ack_str)) {
-        log_error(lsnd->log, "Body is too long! len:%d", len);
-        return -1;
-    }
-
-    memcpy(ack_str, (const void *)body, len);
-    ack_str[len] = '\0';
-
-    /* 解析JSON */
-    json = cJSON_Parse(ack_str);
-    if (NULL == json) {
-        log_error(lsnd->log, "Parse join ack failed!");
-        return -1;
-    }
-
-    do {
-        /* 定位各结点 */
-        uid = cJSON_GetObjectItem(json, "uid");
-        if (NULL == uid || 0 == uid->valueint) {
-            break;
-        }
-
-        app = cJSON_GetObjectItem(json, "app");
-        if (NULL == app) {
-            break;
-        }
-
-        version = cJSON_GetObjectItem(json, "version");
-        if (NULL == version) {
-            break;
-        }
-
-        terminal = cJSON_GetObjectItem(json, "terminal");
-        if (NULL == terminal) {
-            break;
-        }
-
-        errcode = cJSON_GetObjectItem(json, "errno");
-        if (NULL == errcode || 0 != errcode->valueint) {
-            break;
-        }
-
-        errmsg = cJSON_GetObjectItem(json, "errmsg");
-        if (NULL == errmsg) {
-            break;
-        }
-
-        /* 提取有效信息 */
-        ack->uid = uid->valueint;
-        snprintf(ack->app, sizeof(ack->app), "%s", app->valuestring);
-        snprintf(ack->version, sizeof(ack->version), "%s", version->valuestring);
-        ack->terminal = terminal->valueint;
-        ack->errcode = errcode->valueint;
-        snprintf(ack->errmsg, sizeof(ack->errmsg), "%s", errmsg->valuestring);
-
-        /* 释放内存空间 */
-        cJSON_Delete(json);
-
-        return 0;
-    } while(0);
-
-    cJSON_Delete(json);
-    return -1;
-}
-
-/******************************************************************************
  **函数名称: chat_online_ack_hdl
  **功    能: ONLINE应答处理
  **输入参数:
@@ -284,15 +101,21 @@ static int chat_online_ack_parse_hdl(lsnd_cntx_t *lsnd,
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
+ ** {
+ **     optional uint64 uid = 1;        // M|用户ID|数字|<br>
+ **     optional string app = 3;        // M|APP名|字串|<br>
+ **     optional string version = 4;    // M|APP版本|字串|<br>
+ **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
+ **     optional uint32 errnum = 6;     // M|错误码|数字|<br>
+ **     optional string errmsg = 7;     // M|错误描述|字串|<br>
+ ** }
  **注意事项:
- **     1. 当为ONLINE-ACK时, 序列号表示的就是CID.
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
  ******************************************************************************/
 int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     int ret;
-    uint64_t cid;
-    chat_online_ack_t ack;
+    ChatOnlineAckMesg *ack;
     chat_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -304,29 +127,36 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取有效信息 */
-    if (chat_online_ack_parse_hdl(lsnd, head->body, hhead.length, &ack)) {
-        log_error(lsnd->log, "Parse online ack failed! body:%s", head->body);
+    ack = chat_online_ack_mesg__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == ack) {
+        log_error(lsnd->log, "Unpack online ack failed! body:%s", head->body);
+        return -1;
+    }
+    else if (false == ack->has_cid) {
+        chat_online_ack_mesg__free_unpacked(ack, NULL);
+        log_error(lsnd->log, "Miss required field!");
         return -1;
     }
 
-    cid = hhead.serial;
-
     /* > 查找扩展数据 */
-    key.cid = cid;
+    key.cid = ack->cid;
 
     extra = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
     if (NULL == extra) {
-        log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", cid);
+        log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", ack->cid);
+        chat_online_ack_mesg__free_unpacked(ack, NULL);
         return 0;
     }
     else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
-        log_error(lsnd->log, "Connection status isn't establish! cid:%lu", cid);
+        log_error(lsnd->log, "Connection status isn't establish! cid:%lu", ack->cid);
+        chat_online_ack_mesg__free_unpacked(ack, NULL);
         return 0;
     }
     else if (0 == hhead.sid) { /* SID分配失败 */
         extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
         hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
-        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", cid);
+        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", ack->cid);
+        chat_online_ack_mesg__free_unpacked(ack, NULL);
         return 0;
     }
 
@@ -334,25 +164,32 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
-    snprintf(extra->app_name, sizeof(extra->app_name), "%s", ack.app);
-    snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack.version);
-    extra->terminal = ack.terminal;
+    snprintf(extra->app_name, sizeof(extra->app_name), "%s", ack->app);
+    snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
+    extra->terminal = ack->terminal;
 
     /* 插入SID管理表 */
     ret = hash_tab_insert(lsnd->conn_sid_tab, extra, WRLOCK);
     if (0 != ret) {
         if (RBT_NODE_EXIST != ret) {
-            log_error(lsnd->log, "Insert into kick table! cid:%lu sid:%lu", cid, hhead.sid);
+            log_error(lsnd->log, "Insert into kick table! cid:%lu sid:%lu",
+                    ack->cid, hhead.sid);
             extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
             hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
+            chat_online_ack_mesg__free_unpacked(ack, NULL);
             return 0;
         }
+        chat_online_ack_mesg__free_unpacked(ack, NULL);
         assert(0);
         return 0;
     }
 
     /* 下发应答请求 */
-    return acc_async_send(lsnd->access, type, cid, data, len);
+    acc_async_send(lsnd->access, type, ack->cid, data, len);
+
+    chat_online_ack_mesg__free_unpacked(ack, NULL);
+
+    return 0;
 }
 
 /******************************************************************************
@@ -430,98 +267,6 @@ int chat_join_req_hdl(int type, void *data, int length, void *args)
 }
 
 /******************************************************************************
- **函数名称: chat_join_ack_parse_hdl
- **功    能: JOIN应答处理
- **输入参数:
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述: 
- **协议格式:
- **     {
- **        "uid":${uid},               // M|用户ID|数字|
- **        "roomid":${roomid},         // M|聊天室ID|数字|
- **        "groupid":${groupid},       // M|分组ID|数字|
- **        "errno":${errno},           // M|错误码|数字|
- **        "errmsg":"${errmsg}"        // M|错误描述|字串|
- **     }
- **注意事项:
- **作    者: # Qifeng.zou # 2016.09.24 13:01:31 #
- ******************************************************************************/
-typedef struct
-{
-    uint64_t uid;                 // 用户ID
-    uint64_t rid;                 // 聊天室ID
-    uint64_t gid;                 // 分组ID
-    int errcode;                   // 错误码
-    char errmsg[ERR_MSG_MAX_LEN]; // 错误描述
-} chat_join_ack_t;
-
-static int chat_join_ack_parse_hdl(lsnd_cntx_t *lsnd,
-        const char *body, uint64_t len, chat_join_ack_t *ack)
-{
-    char json_str[CHAT_JSON_STR_LEN];
-    cJSON *json, *uid, *rid, *gid, *errcode, *errmsg;
-
-    if (len >= sizeof(json_str)) {
-        log_error(lsnd->log, "Body is too long! len:%d", len);
-        return -1;
-    }
-
-    memcpy(json_str, (const void *)body, len);
-    json_str[len] = '\0';
-
-    /* 解析JSON */
-    json = cJSON_Parse(json_str);
-    if (NULL == json) {
-        log_error(lsnd->log, "Parse join ack failed!");
-        return -1;
-    }
-
-    do {
-        /* 定位各结点 */
-        uid = cJSON_GetObjectItem(json, "uid");
-        if (NULL == uid || 0 == uid->valueint) {
-            break;
-        }
-
-        rid = cJSON_GetObjectItem(json, "rid");
-        if (NULL == rid || 0 == rid->valueint) {
-            break;
-        }
-
-        gid = cJSON_GetObjectItem(json, "groupid");
-        if (NULL == gid) {
-            break;
-        }
-
-        errcode = cJSON_GetObjectItem(json, "errno");
-        if (NULL == errcode || 0 != errcode->valueint) {
-            break;
-        }
-
-        errmsg = cJSON_GetObjectItem(json, "errmsg");
-        if (NULL == errmsg) {
-            break;
-        }
-
-        /* 提取有效信息 */
-        ack->uid = uid->valueint;
-        ack->rid = rid->valueint;
-        ack->gid = rid->valueint;
-        ack->errcode = errcode->valueint;
-        snprintf(ack->errmsg, sizeof(ack->errmsg), "%s", errmsg->valuestring);
-
-        /* 释放内存空间 */
-        cJSON_Delete(json);
-
-        return 0;
-    } while(0);
-
-    cJSON_Delete(json);
-    return -1;
-}
-
-/******************************************************************************
  **函数名称: chat_join_ack_hdl
  **功    能: JOIN应答处理
  **输入参数:
@@ -539,7 +284,7 @@ static int chat_join_ack_parse_hdl(lsnd_cntx_t *lsnd,
 int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     uint64_t cid;
-    chat_join_ack_t ack;
+    ChatJoinAckMesg *ack;
     chat_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -551,8 +296,9 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取应答信息 */
-    if (chat_join_ack_parse_hdl(lsnd, head->body, head->length, &ack)) {
-        log_error(lsnd->log, "Json join ack body failed! body:%s", (char *)head->body);
+    ack = chat_join_ack_mesg__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == ack) {
+        log_error(lsnd->log, "Unpack join ack body failed!");
         return 0;
     }
 
@@ -576,8 +322,8 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
-    hash_tab_insert(extra->rid_list, (void *)ack.rid, WRLOCK);
-    chat_add_session(lsnd->chat_tab, ack.rid, ack.gid, extra->sid);
+    hash_tab_insert(extra->rid_list, (void *)ack->rid, WRLOCK);
+    chat_add_session(lsnd->chat_tab, ack->rid, ack->gid, extra->sid);
 
     hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
 
