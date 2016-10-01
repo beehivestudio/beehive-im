@@ -14,15 +14,20 @@ typedef struct
     uint16_t cmd;               /* 命令类型 */
 } chat_sub_item_t;
 
+typedef struct
+{
+    uint64_t rid;               /* 聊天室ID */
+    uint32_t gid;               /* 分组ID */
+} chat_session_room_info_t;
+
 /* 聊天室会话信息 */
 typedef struct
 {
     uint64_t sid;               /* 会话ID(主键) */
 
-    uint64_t rid;               /* 会话所属ROOM ID */
-    uint16_t gid;               /* 会话所属聊天室分组ID */
+    uint64_t rid;               /* 聊天室ID */
+    uint32_t gid;               /* 分组ID */
 
-    uint32_t flags;             /* 属性标签(暂时未使用) */
     hash_tab_t *sub;            /* 订阅消息列表 */
 } chat_session_t;
 
@@ -62,7 +67,7 @@ typedef struct
 
 chat_tab_t *chat_tab_init(int len, log_cycle_t *log); // OK
 
-int chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid);
+uint32_t chat_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid);
 int chat_del_session(chat_tab_t *chat, uint64_t sid); // OK
 int chat_timeout_hdl(chat_tab_t *chat);
 
