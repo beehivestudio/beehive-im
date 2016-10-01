@@ -5,59 +5,59 @@
 #define PROTOBUF_C_NO_DEPRECATED
 #endif
 
-#include "chat_join_ack_mesg.pb-c.h"
-void   chat_join_ack_mesg__init
-                     (ChatJoinAckMesg         *message)
+#include "mesg_join_ack.pb-c.h"
+void   mesg_join_ack__init
+                     (MesgJoinAck         *message)
 {
-  static ChatJoinAckMesg init_value = CHAT_JOIN_ACK_MESG__INIT;
+  static MesgJoinAck init_value = MESG_JOIN_ACK__INIT;
   *message = init_value;
 }
-size_t chat_join_ack_mesg__get_packed_size
-                     (const ChatJoinAckMesg *message)
+size_t mesg_join_ack__get_packed_size
+                     (const MesgJoinAck *message)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_join_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_join_ack__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t chat_join_ack_mesg__pack
-                     (const ChatJoinAckMesg *message,
+size_t mesg_join_ack__pack
+                     (const MesgJoinAck *message,
                       uint8_t       *out)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_join_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_join_ack__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t chat_join_ack_mesg__pack_to_buffer
-                     (const ChatJoinAckMesg *message,
+size_t mesg_join_ack__pack_to_buffer
+                     (const MesgJoinAck *message,
                       ProtobufCBuffer *buffer)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_join_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_join_ack__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-ChatJoinAckMesg *
-       chat_join_ack_mesg__unpack
+MesgJoinAck *
+       mesg_join_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (ChatJoinAckMesg *)
-     protobuf_c_message_unpack (&chat_join_ack_mesg__descriptor,
+  return (MesgJoinAck *)
+     protobuf_c_message_unpack (&mesg_join_ack__descriptor,
                                 allocator, len, data);
 }
-void   chat_join_ack_mesg__free_unpacked
-                     (ChatJoinAckMesg *message,
+void   mesg_join_ack__free_unpacked
+                     (MesgJoinAck *message,
                       ProtobufCAllocator *allocator)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_join_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_join_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor chat_join_ack_mesg__field_descriptors[5] =
+static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
 {
   {
     "uid",
     1,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, has_uid),
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, uid),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, has_uid),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, uid),
     NULL,
     NULL,
     0,            /* packed */
@@ -68,8 +68,8 @@ static const ProtobufCFieldDescriptor chat_join_ack_mesg__field_descriptors[5] =
     2,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, has_rid),
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, rid),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, has_rid),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, rid),
     NULL,
     NULL,
     0,            /* packed */
@@ -80,8 +80,8 @@ static const ProtobufCFieldDescriptor chat_join_ack_mesg__field_descriptors[5] =
     3,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, has_gid),
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, gid),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, has_gid),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, gid),
     NULL,
     NULL,
     0,            /* packed */
@@ -92,8 +92,8 @@ static const ProtobufCFieldDescriptor chat_join_ack_mesg__field_descriptors[5] =
     4,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, has_errnum),
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, errnum),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, has_errnum),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, errnum),
     NULL,
     NULL,
     0,            /* packed */
@@ -105,37 +105,37 @@ static const ProtobufCFieldDescriptor chat_join_ack_mesg__field_descriptors[5] =
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    PROTOBUF_C_OFFSETOF(ChatJoinAckMesg, errmsg),
+    PROTOBUF_C_OFFSETOF(MesgJoinAck, errmsg),
     NULL,
     NULL,
     0,            /* packed */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned chat_join_ack_mesg__field_indices_by_name[] = {
+static const unsigned mesg_join_ack__field_indices_by_name[] = {
   4,   /* field[4] = errmsg */
   3,   /* field[3] = errnum */
   2,   /* field[2] = gid */
   1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange chat_join_ack_mesg__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_join_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 5 }
 };
-const ProtobufCMessageDescriptor chat_join_ack_mesg__descriptor =
+const ProtobufCMessageDescriptor mesg_join_ack__descriptor =
 {
   PROTOBUF_C_MESSAGE_DESCRIPTOR_MAGIC,
-  "chat_join_ack_mesg",
-  "ChatJoinAckMesg",
-  "ChatJoinAckMesg",
+  "mesg_join_ack",
+  "MesgJoinAck",
+  "MesgJoinAck",
   "",
-  sizeof(ChatJoinAckMesg),
+  sizeof(MesgJoinAck),
   5,
-  chat_join_ack_mesg__field_descriptors,
-  chat_join_ack_mesg__field_indices_by_name,
-  1,  chat_join_ack_mesg__number_ranges,
-  (ProtobufCMessageInit) chat_join_ack_mesg__init,
+  mesg_join_ack__field_descriptors,
+  mesg_join_ack__field_indices_by_name,
+  1,  mesg_join_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_join_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

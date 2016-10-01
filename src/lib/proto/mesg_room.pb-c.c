@@ -5,59 +5,59 @@
 #define PROTOBUF_C_NO_DEPRECATED
 #endif
 
-#include "chat_room_mesg.pb-c.h"
-void   chat_room_mesg__init
-                     (ChatRoomMesg         *message)
+#include "mesg_room.pb-c.h"
+void   mesg_room__init
+                     (MesgRoom         *message)
 {
-  static ChatRoomMesg init_value = CHAT_ROOM_MESG__INIT;
+  static MesgRoom init_value = MESG_ROOM__INIT;
   *message = init_value;
 }
-size_t chat_room_mesg__get_packed_size
-                     (const ChatRoomMesg *message)
+size_t mesg_room__get_packed_size
+                     (const MesgRoom *message)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_room_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_room__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t chat_room_mesg__pack
-                     (const ChatRoomMesg *message,
+size_t mesg_room__pack
+                     (const MesgRoom *message,
                       uint8_t       *out)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_room_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_room__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t chat_room_mesg__pack_to_buffer
-                     (const ChatRoomMesg *message,
+size_t mesg_room__pack_to_buffer
+                     (const MesgRoom *message,
                       ProtobufCBuffer *buffer)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_room_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_room__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-ChatRoomMesg *
-       chat_room_mesg__unpack
+MesgRoom *
+       mesg_room__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (ChatRoomMesg *)
-     protobuf_c_message_unpack (&chat_room_mesg__descriptor,
+  return (MesgRoom *)
+     protobuf_c_message_unpack (&mesg_room__descriptor,
                                 allocator, len, data);
 }
-void   chat_room_mesg__free_unpacked
-                     (ChatRoomMesg *message,
+void   mesg_room__free_unpacked
+                     (MesgRoom *message,
                       ProtobufCAllocator *allocator)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_room_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_room__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor chat_room_mesg__field_descriptors[4] =
+static const ProtobufCFieldDescriptor mesg_room__field_descriptors[4] =
 {
   {
     "rid",
     1,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, has_rid),
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, rid),
+    PROTOBUF_C_OFFSETOF(MesgRoom, has_rid),
+    PROTOBUF_C_OFFSETOF(MesgRoom, rid),
     NULL,
     NULL,
     0,            /* packed */
@@ -68,8 +68,8 @@ static const ProtobufCFieldDescriptor chat_room_mesg__field_descriptors[4] =
     2,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, has_gid),
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, gid),
+    PROTOBUF_C_OFFSETOF(MesgRoom, has_gid),
+    PROTOBUF_C_OFFSETOF(MesgRoom, gid),
     NULL,
     NULL,
     0,            /* packed */
@@ -80,8 +80,8 @@ static const ProtobufCFieldDescriptor chat_room_mesg__field_descriptors[4] =
     3,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, has_mesg_level),
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, mesg_level),
+    PROTOBUF_C_OFFSETOF(MesgRoom, has_mesg_level),
+    PROTOBUF_C_OFFSETOF(MesgRoom, mesg_level),
     NULL,
     NULL,
     0,            /* packed */
@@ -92,37 +92,37 @@ static const ProtobufCFieldDescriptor chat_room_mesg__field_descriptors[4] =
     4,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BYTES,
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, has_data),
-    PROTOBUF_C_OFFSETOF(ChatRoomMesg, data),
+    PROTOBUF_C_OFFSETOF(MesgRoom, has_data),
+    PROTOBUF_C_OFFSETOF(MesgRoom, data),
     NULL,
     NULL,
     0,            /* packed */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned chat_room_mesg__field_indices_by_name[] = {
+static const unsigned mesg_room__field_indices_by_name[] = {
   3,   /* field[3] = data */
   1,   /* field[1] = gid */
   2,   /* field[2] = mesg_level */
   0,   /* field[0] = rid */
 };
-static const ProtobufCIntRange chat_room_mesg__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_room__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 4 }
 };
-const ProtobufCMessageDescriptor chat_room_mesg__descriptor =
+const ProtobufCMessageDescriptor mesg_room__descriptor =
 {
   PROTOBUF_C_MESSAGE_DESCRIPTOR_MAGIC,
-  "chat_room_mesg",
-  "ChatRoomMesg",
-  "ChatRoomMesg",
+  "mesg_room",
+  "MesgRoom",
+  "MesgRoom",
   "",
-  sizeof(ChatRoomMesg),
+  sizeof(MesgRoom),
   4,
-  chat_room_mesg__field_descriptors,
-  chat_room_mesg__field_indices_by_name,
-  1,  chat_room_mesg__number_ranges,
-  (ProtobufCMessageInit) chat_room_mesg__init,
+  mesg_room__field_descriptors,
+  mesg_room__field_indices_by_name,
+  1,  mesg_room__number_ranges,
+  (ProtobufCMessageInit) mesg_room__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

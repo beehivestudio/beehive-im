@@ -5,59 +5,59 @@
 #define PROTOBUF_C_NO_DEPRECATED
 #endif
 
-#include "chat_online_ack_mesg.pb-c.h"
-void   chat_online_ack_mesg__init
-                     (ChatOnlineAckMesg         *message)
+#include "mesg_online_ack.pb-c.h"
+void   mesg_online_ack__init
+                     (MesgOnlineAck         *message)
 {
-  static ChatOnlineAckMesg init_value = CHAT_ONLINE_ACK_MESG__INIT;
+  static MesgOnlineAck init_value = MESG_ONLINE_ACK__INIT;
   *message = init_value;
 }
-size_t chat_online_ack_mesg__get_packed_size
-                     (const ChatOnlineAckMesg *message)
+size_t mesg_online_ack__get_packed_size
+                     (const MesgOnlineAck *message)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_online_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_online_ack__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t chat_online_ack_mesg__pack
-                     (const ChatOnlineAckMesg *message,
+size_t mesg_online_ack__pack
+                     (const MesgOnlineAck *message,
                       uint8_t       *out)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_online_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_online_ack__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t chat_online_ack_mesg__pack_to_buffer
-                     (const ChatOnlineAckMesg *message,
+size_t mesg_online_ack__pack_to_buffer
+                     (const MesgOnlineAck *message,
                       ProtobufCBuffer *buffer)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_online_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_online_ack__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-ChatOnlineAckMesg *
-       chat_online_ack_mesg__unpack
+MesgOnlineAck *
+       mesg_online_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (ChatOnlineAckMesg *)
-     protobuf_c_message_unpack (&chat_online_ack_mesg__descriptor,
+  return (MesgOnlineAck *)
+     protobuf_c_message_unpack (&mesg_online_ack__descriptor,
                                 allocator, len, data);
 }
-void   chat_online_ack_mesg__free_unpacked
-                     (ChatOnlineAckMesg *message,
+void   mesg_online_ack__free_unpacked
+                     (MesgOnlineAck *message,
                       ProtobufCAllocator *allocator)
 {
-  PROTOBUF_C_ASSERT (message->base.descriptor == &chat_online_ack_mesg__descriptor);
+  PROTOBUF_C_ASSERT (message->base.descriptor == &mesg_online_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor chat_online_ack_mesg__field_descriptors[7] =
+static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
 {
   {
     "uid",
     1,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, has_uid),
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, uid),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_uid),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, uid),
     NULL,
     NULL,
     0,            /* packed */
@@ -68,8 +68,8 @@ static const ProtobufCFieldDescriptor chat_online_ack_mesg__field_descriptors[7]
     2,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, has_cid),
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, cid),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_cid),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, cid),
     NULL,
     NULL,
     0,            /* packed */
@@ -81,7 +81,7 @@ static const ProtobufCFieldDescriptor chat_online_ack_mesg__field_descriptors[7]
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, app),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, app),
     NULL,
     NULL,
     0,            /* packed */
@@ -93,7 +93,7 @@ static const ProtobufCFieldDescriptor chat_online_ack_mesg__field_descriptors[7]
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, version),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, version),
     NULL,
     NULL,
     0,            /* packed */
@@ -104,8 +104,8 @@ static const ProtobufCFieldDescriptor chat_online_ack_mesg__field_descriptors[7]
     5,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, has_terminal),
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, terminal),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_terminal),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, terminal),
     NULL,
     NULL,
     0,            /* packed */
@@ -116,8 +116,8 @@ static const ProtobufCFieldDescriptor chat_online_ack_mesg__field_descriptors[7]
     6,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, has_errnum),
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, errnum),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_errnum),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, errnum),
     NULL,
     NULL,
     0,            /* packed */
@@ -129,14 +129,14 @@ static const ProtobufCFieldDescriptor chat_online_ack_mesg__field_descriptors[7]
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    PROTOBUF_C_OFFSETOF(ChatOnlineAckMesg, errmsg),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, errmsg),
     NULL,
     NULL,
     0,            /* packed */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned chat_online_ack_mesg__field_indices_by_name[] = {
+static const unsigned mesg_online_ack__field_indices_by_name[] = {
   2,   /* field[2] = app */
   1,   /* field[1] = cid */
   6,   /* field[6] = errmsg */
@@ -145,23 +145,23 @@ static const unsigned chat_online_ack_mesg__field_indices_by_name[] = {
   0,   /* field[0] = uid */
   3,   /* field[3] = version */
 };
-static const ProtobufCIntRange chat_online_ack_mesg__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_online_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 7 }
 };
-const ProtobufCMessageDescriptor chat_online_ack_mesg__descriptor =
+const ProtobufCMessageDescriptor mesg_online_ack__descriptor =
 {
   PROTOBUF_C_MESSAGE_DESCRIPTOR_MAGIC,
-  "chat_online_ack_mesg",
-  "ChatOnlineAckMesg",
-  "ChatOnlineAckMesg",
+  "mesg_online_ack",
+  "MesgOnlineAck",
+  "MesgOnlineAck",
   "",
-  sizeof(ChatOnlineAckMesg),
+  sizeof(MesgOnlineAck),
   7,
-  chat_online_ack_mesg__field_descriptors,
-  chat_online_ack_mesg__field_indices_by_name,
-  1,  chat_online_ack_mesg__number_ranges,
-  (ProtobufCMessageInit) chat_online_ack_mesg__init,
+  mesg_online_ack__field_descriptors,
+  mesg_online_ack__field_indices_by_name,
+  1,  mesg_online_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_online_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

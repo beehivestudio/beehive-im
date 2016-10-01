@@ -1,4 +1,4 @@
-message chat_online_ack_mesg
+message mesg_online_ack
 {
    optional uint64 uid = 1;        // M|用户ID|数字|<br>
    optional uint64 cid = 2;        // M|连接ID|数字|内部使用<br>

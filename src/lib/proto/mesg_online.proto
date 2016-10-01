@@ -1,4 +1,4 @@
-message chat_online_mesg
+message mesg_online
 {
     optional uint64 uid = 1;        // M|用户ID|数字|
     optional string token = 2;      // M|鉴权TOKEN|字串|

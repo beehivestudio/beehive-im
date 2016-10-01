@@ -14,10 +14,10 @@
 #include "lsnd_mesg.h"
 #include "cjson/cJSON.h"
 
-#include "chat_room_mesg.pb-c.h"
-#include "chat_online_mesg.pb-c.h"
-#include "chat_online_ack_mesg.pb-c.h"
-#include "chat_join_ack_mesg.pb-c.h"
+#include "mesg_room.pb-c.h"
+#include "mesg_online.pb-c.h"
+#include "mesg_online_ack.pb-c.h"
+#include "mesg_join_ack.pb-c.h"
 
 static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
 static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
@@ -115,7 +115,7 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
 int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     int ret;
-    ChatOnlineAckMesg *ack;
+    MesgOnlineAck *ack;
     chat_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -127,13 +127,13 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取有效信息 */
-    ack = chat_online_ack_mesg__unpack(NULL, hhead.length, (void *)(head + 1));
+    ack = mesg_online_ack__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == ack) {
         log_error(lsnd->log, "Unpack online ack failed! body:%s", head->body);
         return -1;
     }
     else if (false == ack->has_cid) {
-        chat_online_ack_mesg__free_unpacked(ack, NULL);
+        mesg_online_ack__free_unpacked(ack, NULL);
         log_error(lsnd->log, "Miss required field!");
         return -1;
     }
@@ -144,19 +144,19 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     extra = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", ack->cid);
-        chat_online_ack_mesg__free_unpacked(ack, NULL);
+        mesg_online_ack__free_unpacked(ack, NULL);
         return 0;
     }
     else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
         log_error(lsnd->log, "Connection status isn't establish! cid:%lu", ack->cid);
-        chat_online_ack_mesg__free_unpacked(ack, NULL);
+        mesg_online_ack__free_unpacked(ack, NULL);
         return 0;
     }
     else if (0 == hhead.sid) { /* SID分配失败 */
         extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
         hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
         log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", ack->cid);
-        chat_online_ack_mesg__free_unpacked(ack, NULL);
+        mesg_online_ack__free_unpacked(ack, NULL);
         return 0;
     }
 
@@ -176,10 +176,10 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
                     ack->cid, hhead.sid);
             extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
             hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
-            chat_online_ack_mesg__free_unpacked(ack, NULL);
+            mesg_online_ack__free_unpacked(ack, NULL);
             return 0;
         }
-        chat_online_ack_mesg__free_unpacked(ack, NULL);
+        mesg_online_ack__free_unpacked(ack, NULL);
         assert(0);
         return 0;
     }
@@ -187,7 +187,7 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     /* 下发应答请求 */
     acc_async_send(lsnd->access, type, ack->cid, data, len);
 
-    chat_online_ack_mesg__free_unpacked(ack, NULL);
+    mesg_online_ack__free_unpacked(ack, NULL);
 
     return 0;
 }
@@ -284,7 +284,7 @@ int chat_join_req_hdl(int type, void *data, int length, void *args)
 int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     uint64_t cid;
-    ChatJoinAckMesg *ack;
+    MesgJoinAck *ack;
     chat_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -296,7 +296,7 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
     log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取应答信息 */
-    ack = chat_join_ack_mesg__unpack(NULL, hhead.length, (void *)(head + 1));
+    ack = mesg_join_ack__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == ack) {
         log_error(lsnd->log, "Unpack join ack body failed!");
         return 0;
@@ -366,7 +366,7 @@ static int chat_room_mesg_trav_send_hdl(chat_session_t *ssn, lsnd_cntx_t *lsnd)
 int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     uint32_t gid;
-    ChatRoomMesg *mesg;
+    MesgRoom *mesg;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
@@ -377,13 +377,13 @@ int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
     log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 解压PROTO-BUF */
-    mesg = chat_room_mesg__unpack(NULL, hhead.length, (void *)(head + 1));
+    mesg = mesg_room__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
         log_error(lsnd->log, "Unpack chat room message failed!");
         return -1;
     }
     else if (false == mesg->has_rid) {
-        chat_room_mesg__free_unpacked(mesg, NULL);
+        mesg_room__free_unpacked(mesg, NULL);
         log_error(lsnd->log, "Get room id failed!");
         return -1;
     }
@@ -395,7 +395,7 @@ int chat_room_mesg_hdl(int type, int orig, char *data, size_t len, void *args)
             (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)lsnd);
 
     /* > 释放PROTO-BUF空间 */
-    chat_room_mesg__free_unpacked(mesg, NULL);
+    mesg_room__free_unpacked(mesg, NULL);
 
     return 0;
 }

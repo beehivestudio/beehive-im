@@ -1,4 +1,4 @@
-message chat_room_mesg
+message mesg_room
 {
     optional uint64 rid = 1;            // 聊天室ID
     optional uint32 gid = 2;            // 分组ID

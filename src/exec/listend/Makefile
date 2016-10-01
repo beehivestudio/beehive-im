@@ -20,8 +20,7 @@ LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../clang/lib
 
 # 静态链接库
 STATIC_LIB_LIST = libev.a libcjson.a librtmq.a \
-				libaccess.a libchat.a libutils.a libcore.a \
-				libchat_mesg_proto.a
+				libaccess.a libchat.a libutils.a libcore.a libmesg.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
 LIBS += -lpthread -lm -dl -lprotobuf-c
 LIBS += $(SHARED_LIB)

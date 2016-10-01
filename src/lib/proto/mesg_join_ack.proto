@@ -1,4 +1,4 @@
-message chat_join_ack_mesg
+message mesg_join_ack
 {
     optional uint64 uid = 1;    // M|用户ID|数字|
     optional uint64 rid = 2;    // M|聊天室ID|数字|
