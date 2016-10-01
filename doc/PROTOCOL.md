@@ -62,7 +62,7 @@
 协议格式:<br>
 >{<br>
 >   optional uint64 uid = 1;    // M|用户ID|数字|<br>
->   optional uint64 roomid = 2; // M|聊天室ID|数字|<br>
+>   optional uint64 rid = 2;    // M|聊天室ID|数字|<br>
 >   optional string token = 3;  // M|鉴权TOKEN|字串|<br>
 >}
 
@@ -72,7 +72,7 @@
 协议格式:<br>
 >{<br>
 >   optional uint64 uid = 1;    // M|用户ID|数字|<br>
->   optional uint64 roomid = 2; // M|聊天室ID|数字|<br>
+>   optional uint64 rid = 2;    // M|聊天室ID|数字|<br>
 >   optional uint32 gid = 3;    // M|分组ID|数字|<br>
 >   optional uint32 errnum = 4; // M|错误码|数字|<br>
 >   optional string errmsg = 5; // M|错误描述|字串|<br>
