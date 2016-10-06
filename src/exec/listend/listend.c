@@ -298,10 +298,10 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, chat_online_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, chat_offline_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_join_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_unjoin_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, chat_mesg_online_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, chat_mesg_offline_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_mesg_join_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_mesg_unjoin_req_hdl, ctx);
 
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
@@ -309,8 +309,9 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, chat_online_ack_hdl, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, chat_join_ack_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, chat_mesg_online_ack_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, chat_mesg_join_ack_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, chat_mesg_room_mesg_hdl, ctx);
 
     return LSND_OK;
 }

@@ -28,7 +28,7 @@ static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_ex
  **输入参数:
  **     type: 全局对象
  **     data: 数据内容
- **     length: 数据长度(报头 + 报体)
+ **     len: 数据长度(报头 + 报体)
  **     args: 附加参数
  **输出参数:
  **返    回: 0:成功 !0:失败
@@ -36,28 +36,28 @@ static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_ex
  **注意事项: 需要将协议头转换为网络字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_mesg_def_hdl(unsigned int type, void *data, int length, void *args)
+int chat_mesg_def_hdl(unsigned int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
-            head->sid, head->serial, length, head->body);
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            head->sid, head->serial, len, head->body);
 
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, head);
 
     /* > 转发数据 */
-    return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+    return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
 }
 
 /******************************************************************************
- **函数名称: chat_online_req_hdl
+ **函数名称: chat_mesg_online_req_hdl
  **功    能: ONLINE请求处理
  **输入参数:
  **     type: 全局对象
  **     data: 数据内容
- **     length: 数据长度(报头 + 报体)
+ **     len: 数据长度(报头 + 报体)
  **     args: 附加参数
  **输出参数:
  **返    回: 0:成功 !0:失败
@@ -73,23 +73,23 @@ int chat_mesg_def_hdl(unsigned int type, void *data, int length, void *args)
  **注意事项: 需要将协议头转换为网络字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_online_req_hdl(int type, void *data, int length, void *args)
+int chat_mesg_online_req_hdl(int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
-            head->sid, head->serial, length, head->body);
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            head->sid, head->serial, len, head->body);
 
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, head);
 
     /* > 转发ONLINE请求 */
-    return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+    return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
 }
 
 /******************************************************************************
- **函数名称: chat_online_ack_logic_hdl
+ **函数名称: chat_mesg_online_ack_logic_hdl
  **功    能: ONLINE应答逻辑处理
  **输入参数:
  **输出参数: NONE
@@ -98,7 +98,7 @@ int chat_online_req_hdl(int type, void *data, int length, void *args)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.01 21:06:07 #
  ******************************************************************************/
-static int chat_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t sid)
+static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t sid)
 {
     chat_conn_extra_t *extra, key;
 
@@ -141,7 +141,7 @@ static int chat_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint
 }
 
 /******************************************************************************
- **函数名称: chat_online_ack_hdl
+ **函数名称: chat_mesg_online_ack_hdl
  **功    能: ONLINE应答处理
  **输入参数:
  **     type: 数据类型
@@ -164,7 +164,7 @@ static int chat_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
  ******************************************************************************/
-int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
+int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     MesgOnlineAck *ack;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
@@ -188,7 +188,7 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
         return -1;
     }
 
-    if (chat_online_ack_logic_hdl(lsnd, ack, hhead.sid)) {
+    if (chat_mesg_online_ack_logic_hdl(lsnd, ack, hhead.sid)) {
         mesg_online_ack__free_unpacked(ack, NULL);
         log_error(lsnd->log, "Miss required field!");
         return -1;
@@ -203,12 +203,12 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 }
 
 /******************************************************************************
- **函数名称: chat_offline_req_hdl
+ **函数名称: chat_mesg_offline_req_hdl
  **功    能: 下线请求处理
  **输入参数:
  **     type: 全局对象
  **     data: 数据内容
- **     length: 数据长度(报头 + 报体)
+ **     len: 数据长度(报头 + 报体)
  **     args: 附加参数
  **输出参数:
  **返    回: 0:成功 !0:失败(注: 该函数始终返回-1)
@@ -216,14 +216,14 @@ int chat_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
  **注意事项: 需要将协议头转换为网络字节序
  **作    者: # Qifeng.zou # 2016.10.01 09:15:01 #
  ******************************************************************************/
-int chat_offline_req_hdl(int type, void *data, int length, void *args)
+int chat_mesg_offline_req_hdl(int type, void *data, int len, void *args)
 {
     chat_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
-            head->sid, head->serial, length, head->body);
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            head->sid, head->serial, len, head->body);
 
     /* > 查找扩展数据 */
     key.sid = head->sid;
@@ -242,18 +242,18 @@ int chat_offline_req_hdl(int type, void *data, int length, void *args)
     MESG_HEAD_HTON(head, head);
 
     /* > 转发下线请求 */
-    rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+    rtmq_proxy_async_send(lsnd->frwder, type, data, len);
 
     return -1; /* 强制下线 */
 }
 
 /******************************************************************************
- **函数名称: chat_join_req_hdl
+ **函数名称: chat_mesg_join_req_hdl
  **功    能: JOIN请求处理
  **输入参数:
  **     type: 全局对象
  **     data: 数据内容
- **     length: 数据长度(报头 + 报体)
+ **     len: 数据长度(报头 + 报体)
  **     args: 附加参数
  **输出参数:
  **返    回: 0:成功 !0:失败
@@ -261,23 +261,23 @@ int chat_offline_req_hdl(int type, void *data, int length, void *args)
  **注意事项: 需要将协议头转换为网络字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_join_req_hdl(int type, void *data, int length, void *args)
+int chat_mesg_join_req_hdl(int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
-            head->sid, head->serial, length, head->body);
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            head->sid, head->serial, len, head->body);
 
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, head);
 
     /* > 转发JOIN请求 */
-    return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+    return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
 }
 
 /******************************************************************************
- **函数名称: chat_join_ack_hdl
+ **函数名称: chat_mesg_join_ack_hdl
  **功    能: JOIN应答处理
  **输入参数:
  **     type: 数据类型
@@ -291,7 +291,7 @@ int chat_join_req_hdl(int type, void *data, int length, void *args)
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.20 23:40:12 #
  ******************************************************************************/
-int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
+int chat_mesg_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     uint32_t gid;
     uint64_t cid;
@@ -353,12 +353,12 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 }
 
 /******************************************************************************
- **函数名称: chat_unjoin_req_hdl
+ **函数名称: chat_mesg_unjoin_req_hdl
  **功    能: UNJOIN请求处理(退出聊天室)
  **输入参数:
  **     type: 全局对象
  **     data: 数据内容
- **     length: 数据长度(报头 + 报体)
+ **     len: 数据长度(报头 + 报体)
  **     args: 附加参数
  **输出参数:
  **返    回: 0:成功 !0:失败
@@ -370,7 +370,7 @@ int chat_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
  **注意事项: 需要将协议头转换为网络字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_unjoin_req_hdl(int type, void *data, int length, void *args)
+int chat_mesg_unjoin_req_hdl(int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t hhead, *head = (mesg_header_t *)data; /* 消息头 */
@@ -378,14 +378,14 @@ int chat_unjoin_req_hdl(int type, void *data, int length, void *args)
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, &hhead);
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu length:%d body:%s!",
-            head->sid, head->serial, length, head->body);
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            head->sid, head->serial, len, head->body);
 
     /* > 从聊天室中删除此会话 */
     chat_del_session(lsnd->chat_tab, hhead.sid);
 
     /* > 转发UNJOIN请求 */
-    return rtmq_proxy_async_send(lsnd->frwder, type, data, length);
+    return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
 }
 
 /******************************************************************************
@@ -434,7 +434,7 @@ static int chat_room_mesg_trav_send_hdl(uint64_t *sid, chat_room_mesg_param_t *p
 }
 
 /******************************************************************************
- **函数名称: chat_room_mesg_hdl
+ **函数名称: chat_mesg_room_mesg_hdl
  **功    能: 下发聊天室消息
  **输入参数:
  **     type: 数据类型
@@ -448,7 +448,7 @@ static int chat_room_mesg_trav_send_hdl(uint64_t *sid, chat_room_mesg_param_t *p
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.25 01:24:45 #
  ******************************************************************************/
-int chat_room_mesg_hdl(int type, int orig, void *data, size_t len, void *args)
+int chat_mesg_room_mesg_hdl(int type, int orig, void *data, size_t len, void *args)
 {
     uint32_t gid;
     MesgRoom *mesg;
