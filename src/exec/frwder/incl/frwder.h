@@ -1,5 +1,5 @@
-#if !defined(__FRWD_H__)
-#define __FRWD_H__
+#if !defined(__FRWDER_H__)
+#define __FRWDER_H__
 
 #include "mesg.h"
 #include "vector.h"
@@ -43,4 +43,4 @@ frwd_cntx_t *frwd_init(const frwd_conf_t *conf, log_cycle_t *log);
 int frwd_launch(frwd_cntx_t *frwd);
 int frwd_set_reg(frwd_cntx_t *frwd);
 
-#endif /*__FRWD_H__*/
+#endif /*__FRWDER_H__*/
