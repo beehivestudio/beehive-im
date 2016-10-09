@@ -10,10 +10,10 @@ include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
 			-I$(PROJ)/src/incl \
-			-I$(PROJ)/../clang/src/incl \
-			-I$(PROJ)/../clang/src/incl/rtmq
+			-I$(PROJ)/../cctrl/src/incl \
+			-I$(PROJ)/../cctrl/src/incl/rtmq
 INCLUDE += $(GLOBAL_INCLUDE)
-LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../clang/lib
+LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../cctrl/lib
 
 # 静态链接库
 STATIC_LIB_LIST = libev.a libcjson.a librtmq.a \

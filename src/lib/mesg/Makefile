@@ -11,7 +11,7 @@ include $(PROJ)/make/build.mak
 INCLUDE = -I. \
 		  -I$(PROJ)/src/incl \
 		  -I$(PROJ)/src/incl/proto
-LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../clang/lib
+LIBS_PATH = -L$(PROJ)/lib
 LIBS = -lpthread -lm -dl -lprotobuf-c
 LIBS += $(SHARED_LIB)
 
