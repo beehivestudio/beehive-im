@@ -13,11 +13,9 @@ INCLUDE = -I./incl \
 			-I$(PROJ)/../cctrl/src/incl \
 			-I$(PROJ)/../cctrl/src/incl/rtmq
 INCLUDE += $(GLOBAL_INCLUDE)
-LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../cctrl/lib
 
 # 静态链接库
-STATIC_LIB_LIST = libev.a libcjson.a librtmq.a \
-				libaccess.a libchat.a libutils.a libcore.a
+STATIC_LIB_LIST = libev.a librtmq.a libagent.a libutils.a libcjson.a libaccess.a libcore.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
 LIBS += -lpthread -lm -dl
 LIBS += $(SHARED_LIB)
