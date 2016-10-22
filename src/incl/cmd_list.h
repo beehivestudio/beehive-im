@@ -68,8 +68,10 @@ typedef enum
     , CMD_OFFLINE_NTC           = 0x0302    /* 下线通知 */
     , CMD_JOIN_NTC              = 0x0303    /* 加入聊天室通知 */
     , CMD_QUIT_NTC              = 0x0304    /* 退出聊天室通知 */
-    , CMD_BAN_NTC               = 0x0305    /* 禁言通知 */
-    , CMD_KICK_NTC              = 0x0306    /* 踢人通知 */
+    , CMD_BAN_ADD_NTC           = 0x0305    /* 禁言通知 */
+    , CMD_BAN_DEL_NTC           = 0x0306    /* 移除禁言通知 */
+    , CMD_BLACKLIST_ADD_NTC     = 0x0307    /* 加入黑名单通知 */
+    , CMD_BLACKLIST_DEL_NTC     = 0x0308    /* 移除黑名单通知 */
 
     /* 系统内部消息 */
     , CMD_HB                    = 0x0401    /* 内部心跳 */
