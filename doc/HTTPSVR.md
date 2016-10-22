@@ -19,12 +19,11 @@
 
 ###1.2 单点推送接口
 ---
-**功能描述**: 用于指定聊天室的某人下发消息<br>
+**功能描述**: 用于指定给某人下发消息<br>
 **接口类型**: POST<br>
-**接口路径**: /chatroom/push?opt=p2p&rid=${rid}&uid=${uid}<br>
+**接口路径**: /chatroom/push?opt=p2p&uid=${uid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为broadcast.(M)<br>
-> rid: 聊天室ID # 当未指定rid时, 则为全员广播消息(O)<br>
+> opt: 操作选项, 此时为p2p.(M)<br>
 > uid: 用户ID(M)<br>
 
 **包体内容**: 下发的数据
@@ -35,13 +34,13 @@
 >}<br>
 
 ##2. 配置接口
-###2.1 踢人接口
+###2.1 加入聊天室黑名单接口
 ---
-**功能描述**: 用于将某人踢出聊天室<br>
+**功能描述**: 用于将某人加入聊天室黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /chatroom/config?opt=kick&rid=${rid}&uid=${uid}<br>
+**接口路径**: /chatroom/config?opt=blacklist-add&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为kick.(M)<br>
+> opt: 操作选项, 此时为blacklist-add.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -51,13 +50,13 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###2.2 解除踢人接口
+###2.2 移除聊天室黑名单接口
 ---
-**功能描述**: 用于将某人踢出聊天室<br>
+**功能描述**: 用于将某人移除聊天室黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /chatroom/config?opt=unkick&rid=${rid}&uid=${uid}<br>
+**接口路径**: /chatroom/config?opt=blacklist-del&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为unkick.(M)<br>
+> opt: 操作选项, 此时为blacklist-del.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -71,9 +70,9 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /chatroom/config?opt=ban&rid=${rid}&uid=${uid}<br>
+**接口路径**: /chatroom/config?opt=ban-add&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为ban.(M)<br>
+> opt: 操作选项, 此时为ban-add.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID. # 当无uid或uid为0时, 全员禁言; 否则是禁止某人发言.<br>
 
@@ -87,9 +86,9 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /chatroom/config?opt=unban&rid=${rid}&uid=${uid}<br>
+**接口路径**: /chatroom/config?opt=ban-del&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为unban.(M)<br>
+> opt: 操作选项, 此时为ban-del.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -114,9 +113,9 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###2.6 设置聊天室分组人数
+###2.6 设置聊天室分组大小
 ---
-**功能描述**: 设置聊天室分组人数<br>
+**功能描述**: 设置聊天室分组大小<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/config?opt=group-size&rid=${rid}<br>
 **参数描述**:<br>
@@ -131,9 +130,9 @@
 >  "errmsg":"${errmsg}" // 错误描述(M)<br>
 >}<br>
 
-###2.7 查询聊天室分组人数
+###2.7 查询聊天室分组大小
 ---
-**功能描述**: 查询聊天室分组人数<br>
+**功能描述**: 查询聊天室分组大小<br>
 **接口类型**: GET<br>
 **接口路径**: /chatroom/query?opt=group-size&rid=${rid}<br>
 **参数描述**:<br>
@@ -191,8 +190,8 @@
 >   "errno":${errno},   // 错误码(M)<br>
 >   "len":${len},       // 列表长度(M)<br>
 >   "list":[            // 精度列表(M)<br>
->       {"idx":${idx}, "prec":"{prec}"}, // ${idx}:序号 ${prec}:精度值
->       {"idx":${idx}, "prec":"{prec}"}],
+>       {"idx":${idx}, "prec":"{prec}"}, // ${idx}:序号 ${prec}:精度值<br>
+>       {"idx":${idx}, "prec":"{prec}"}],<br>
 >   "errmsg":"${errmsg}"// 错误描述(M)<br>
 >}
 
