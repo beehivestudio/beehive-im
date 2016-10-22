@@ -283,7 +283,7 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0305<br>
-命令描述: 禁言通知(BAN-NTC)<br>
+命令描述: 禁言通知(BAN-ADD-NTC)<br>
 协议格式: <br>
 >{<br>
 >   optional uint64 uid = 1;    // M|用户ID|数字|<br>
@@ -291,7 +291,23 @@ TODO: 协议头中的to为用户ID(UID)
 
 ---
 命令ID: 0x0306<br>
-命令描述: 踢人通知(KICK-NTC)<br>
+命令描述: 解除禁言通知(BAN-DEL-NTC)<br>
+协议格式: <br>
+>{<br>
+>   optional uint64 uid = 1;    // M|用户ID|数字|<br>
+>}
+
+---
+命令ID: 0x0307<br>
+命令描述: 加入黑名单通知(BLACKLIST-ADD-NTC)<br>
+协议格式: <br>
+>{<br>
+>   optional uint64 uid = 1;    // M|用户ID|数字|<br>
+>}
+
+---
+命令ID: 0x0308<br>
+命令描述: 移除黑名单通知(BLACKLIST-DEL-NTC)<br>
 协议格式: <br>
 >{<br>
 >   optional uint64 uid = 1;    // M|用户ID|数字|<br>
