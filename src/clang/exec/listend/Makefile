@@ -3,39 +3,43 @@
 ##
 ## 文件名: Makefile
 ## 版本号: 1.0
-## 描  述: 倒排服务模块
-## 作  者: # Qifeng.zou # 2015.03.06 #
+## 描  述: 探针服务模块
+## 作  者: # Qifeng.zou # 2014.11.15 #
 ###############################################################################
 include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
-			-I$(PROJ)/src/incl \
+			-I$(PROJ)/src/clang//incl \
+			-I$(PROJ)/src/clang//incl/chat \
+			-I$(PROJ)/src/clang//incl/mesg \
 			-I$(PROJ)/../cctrl/src/incl \
-			-I$(PROJ)/../cctrl/src/incl/rtmq
+			-I$(PROJ)/../cctrl/src/incl/rtmq \
+			-I$(PROJ)/../cctrl/src/incl/access
 INCLUDE += $(GLOBAL_INCLUDE)
+LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../cctrl/lib
 
 # 静态链接库
-STATIC_LIB_LIST = libev.a librtmq.a libagent.a libutils.a libcjson.a libaccess.a libcore.a
+STATIC_LIB_LIST = libev.a librtmq.a libaccess.a \
+				  libchat.a libutils.a libcore.a libmesg.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
-LIBS += -lpthread -lm -dl
+LIBS += -lpthread -lm -dl -lprotobuf-c
 LIBS += $(SHARED_LIB)
 
-SRC_LIST = frwder.c \
-			frwd_comm.c \
-			frwd_mesg.c \
-			frwd_conf.c
+SRC_LIST = listend.c \
+			lsnd_comm.c \
+			lsnd_mesg.c \
+			lsnd_conf.c
 
 OBJS = $(subst .c,.o, $(SRC_LIST))
 HEADS = $(call func_get_dep_head_list, $(SRC_LIST))
 
-TARGET = frwder
+TARGET = listend
 
 .PHONY: all clean
 
 all: $(TARGET)
 $(TARGET): $(OBJS)
 	@$(CC) $(CFLAGS) -o $@ $(OBJS) $(INCLUDE) $(LIBS_PATH) $(LIBS)
-	@echo "CC $@"
 	@mv $@ $(PROJ_BIN)/$@-$(VERSION)
 	@rm -f $(PROJ_BIN)/$@
 	@ln -s $(PROJ_BIN)/$@-$(VERSION) $(PROJ_BIN)/$@

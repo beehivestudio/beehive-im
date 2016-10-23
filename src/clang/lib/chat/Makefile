@@ -9,21 +9,23 @@
 include $(PROJ)/make/build.mak
 
 INCLUDE = -I. \
-		  -I$(PROJ)/src/incl \
-		  -I$(PROJ)/src/incl/proto
-LIBS_PATH = -L$(PROJ)/lib
-LIBS = -lpthread -lm -dl -lprotobuf-c
+		  -I$(PROJ)/src/clang/incl \
+		  -I$(PROJ)/src/clang/incl/chat \
+		  -I$(PROJ)/../cctrl/src/incl
+LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../cctrl/lib
+# 静态链接库
+STATIC_LIB_LIST = libcore.a
+LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
+LIBS += -lpthread -lm -dl
 LIBS += $(SHARED_LIB)
 
-SRC_LIST = mesg_room.pb-c.c \
-			mesg_online.pb-c.c \
-			mesg_online_ack.pb-c.c \
-			mesg_join_ack.pb-c.c
+SRC_LIST = chat.c \
+		   chat_tab.c
 
 OBJS = $(subst .c,.o, $(SRC_LIST))
 HEADS = $(call func_get_dep_head_list, $(SRC_LIST))
 
-TARGET = libmesg.a
+TARGET = libchat.a
 
 .PHONY: all clean
 
