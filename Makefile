@@ -25,13 +25,17 @@ export PROJ_CONF = ${PROJ}/conf
 export GCC_LOG = ${PROJ_LOG}/gcc.log
 
 # 编译目录(注：编译按顺序执行　注意库之间的依赖关系)
-LIB_DIR = "src/clang/lib"
-DIR += "$(LIB_DIR)/chat"
-DIR += "$(LIB_DIR)/proto"
+CLANG_LIB_DIR = "src/clang/lib"
+DIR += "$(CLANG_LIB_DIR)/chat"
+DIR += "$(CLANG_LIB_DIR)/mesg"
 
-EXEC_DIR = "src/clang/exec"
-DIR += "$(EXEC_DIR)/frwder"
-DIR += "$(EXEC_DIR)/listend"
+CLANG_EXEC_DIR = "src/clang/exec"
+DIR += "$(CLANG_EXEC_DIR)/frwder"
+DIR += "$(CLANG_EXEC_DIR)/listend"
+
+GOLANG_EXEC_DIR = "src/golang/exec"
+DIR += "$(GOLANG_EXEC_DIR)/cross"
+DIR += "$(GOLANG_EXEC_DIR)/olsvr"
 
 # 获取系统配置
 CPU_CORES = $(call func_cpu_cores)
@@ -43,11 +47,30 @@ all:
 	$(call func_mkdir)
 	@for ITEM in ${DIR}; \
 	do \
-		if [ -e $${ITEM}/Makefile ]; then \
-			cd $${ITEM}; \
-			#make -j$(CPU_CORES) 2>&1 | tee -a ${GCC_LOG}; \
-			make -j$(CPU_CORES) 2>&1 || exit; \
-			cd ${PROJ}; \
+		echo $${ITEM}; \
+		clang=`echo $${ITEM} | grep 'clang' | wc -l`; \
+		golang=`echo $${ITEM} | grep 'golang' | wc -l`; \
+		echo "clang:$${clang} golang:$${golang} item:$${ITEM}"; \
+		if [ $${clang} -eq 1 ]; then \
+			if [ -e $${ITEM}/Makefile ]; then \
+				cd $${ITEM}; \
+				#make -j$(CPU_CORES) 2>&1 | tee -a ${GCC_LOG}; \
+				make -j$(CPU_CORES) 2>&1 || exit; \
+				cd ${PROJ}; \
+			else \
+				echo "File [$${ITEM}/Makefile] isn't exist!"; exit; \
+			fi \
+		elif [ $${golang} -eq 1 ]; then \
+			if [ -e $${ITEM} ]; then \
+				echo "cd $${ITEM}"; \
+				cd $${ITEM}; \
+				go build; \
+				EXEC=`basename \`pwd\``; \
+				mv $${EXEC} $${PROJ_BIN}/$${EXEC}.${VERSION}; \
+				cd ${PROJ}; \
+			else \
+				echo "Path [$${ITEM}] isn't exist!"; exit; \
+			fi \
 		fi \
 	done
 

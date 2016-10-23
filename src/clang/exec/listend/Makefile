@@ -40,9 +40,9 @@ TARGET = listend
 all: $(TARGET)
 $(TARGET): $(OBJS)
 	@$(CC) $(CFLAGS) -o $@ $(OBJS) $(INCLUDE) $(LIBS_PATH) $(LIBS)
-	@mv $@ $(PROJ_BIN)/$@-$(VERSION)
+	@mv $@ $(PROJ_BIN)/$@.$(VERSION)
 	@rm -f $(PROJ_BIN)/$@
-	@ln -s $(PROJ_BIN)/$@-$(VERSION) $(PROJ_BIN)/$@
+	@ln -s $(PROJ_BIN)/$@.$(VERSION) $(PROJ_BIN)/$@
 	@echo "$@ is OK!"
 
 $(OBJS): %.o : %.c $(HEADS)

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"runtime"
 
-	"chat-go/src/exec/olsvr/ctrl"
+	"chat/src/golang/exec/olsvr/ctrl"
 )
 
 func main() {
