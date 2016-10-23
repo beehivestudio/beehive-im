@@ -25,11 +25,11 @@ export PROJ_CONF = ${PROJ}/conf
 export GCC_LOG = ${PROJ_LOG}/gcc.log
 
 # 编译目录(注：编译按顺序执行　注意库之间的依赖关系)
-LIB_DIR = "src/lib"
+LIB_DIR = "src/clang/lib"
 DIR += "$(LIB_DIR)/chat"
 DIR += "$(LIB_DIR)/proto"
 
-EXEC_DIR = "src/exec"
+EXEC_DIR = "src/clang/exec"
 DIR += "$(EXEC_DIR)/frwder"
 DIR += "$(EXEC_DIR)/listend"
 
