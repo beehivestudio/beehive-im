@@ -1,8 +1,9 @@
 package ctrl
 
 import (
-	"encoding/json"
+	"encoding/xml"
 	"errors"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -23,21 +24,28 @@ type OlSvrConf struct {
 	rtmq_proxy  *rtmq.RtmqProxyConf // RTMQ配置
 }
 
+type OlSvrXmlNode struct {
+	NodeName    xml.Name `xml:OlSvr`       // 根结点名
+	FrwderAddr  string   `xml:FrwderAddr`  // 转发层(IP+PROT)
+	SendChanLen uint32   `xml:SendChanLen` // 发送队列长度
+	RecvChanLen uint32   `xml:RecvChanLen` // 接收队列长度
+	WorkerNum   uint16   `xml:WorkerNum`   // 协程数
+	RedisAddr   string   `xml:RedisAddr`   // Redis地址(IP+PORT)
+	LogPath     string   `xml:LogPath`     // 日志路径
+}
+
 /* 加载配置信息 */
 func (conf *OlSvrConf) LoadConf() (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "olsvr.conf")
+	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "olsvr.xml")
 
 	return conf.conf_parse()
 }
 
 /* 解析配置信息 */
 func (conf *OlSvrConf) conf_parse() (err error) {
-	var ok bool
-	var key map[string]interface{}
-
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)
 	if nil != err {
@@ -46,49 +54,52 @@ func (conf *OlSvrConf) conf_parse() (err error) {
 
 	defer file.Close()
 
-	data := make([]byte, 10240)
-
-	n, err := file.Read(data)
+	data, err := ioutil.ReadAll(file)
 	if nil != err {
 		return err
 	}
 
-	err = json.Unmarshal(data[:n], &key)
+	v := OlSvrXmlNode{}
+
+	err = xml.Unmarshal(data, &v)
 	if nil != err {
 		return err
 	}
 
 	/* > 解析配置文件 */
 	/* 转发层(IP+PROT) */
-	if conf.FrwderAddr, ok = key["FrwderAddr"].(string); !ok {
+	conf.FrwderAddr = v.FrwderAddr
+	if 0 == len(conf.FrwderAddr) {
 		return errors.New("Get frwder addr failed!")
 	}
 
 	/* 发送队列长度 */
-	if digit, ok := key["SendChanLen"].(float64); !ok {
-		conf.SendChanLen = uint32(digit)
+	conf.SendChanLen = v.SendChanLen
+	if 0 == conf.SendChanLen {
 		return errors.New("Get send channel length failed!")
 	}
 
 	/* 接收队列长度 */
-	if digit, ok := key["RecvChanLen"].(float64); !ok {
-		conf.RecvChanLen = uint32(digit)
+	conf.RecvChanLen = v.RecvChanLen
+	if 0 == conf.RecvChanLen {
 		return errors.New("Get recv channel length failed!")
 	}
 
 	/* 协程数 */
-	if digit, ok := key["WorkerNum"].(float64); !ok {
-		conf.WorkerNum = uint16(digit)
+	conf.WorkerNum = v.WorkerNum
+	if 0 == conf.WorkerNum {
 		return errors.New("Get worker number failed!")
 	}
 
 	/* Redis地址(IP+PORT) */
-	if conf.RedisAddr, ok = key["RedisAddr"].(string); !ok {
+	conf.RedisAddr = v.RedisAddr
+	if 0 == len(conf.RedisAddr) {
 		return errors.New("Get redis addr failed!")
 	}
 
 	/* 日志路径 */
-	if conf.LogPath, ok = key["LogPath"].(string); !ok {
+	conf.LogPath = v.LogPath
+	if 0 == len(conf.LogPath) {
 		return errors.New("Get log path failed!")
 	}
 

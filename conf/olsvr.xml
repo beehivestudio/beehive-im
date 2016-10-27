@@ -1,0 +1,8 @@
+<OlSvr>
+  <WorkerNum>1</WorkerNum>
+  <SendChanLen>20000</SendChanLen>
+  <RecvChanLen>20000</RecvChanLen>
+  <LogPath>../log</LogPath>
+  <RedisAddr>127.0.0.1:19000</RedisAddr>
+  <FrwderAddr>127.0.0.1:28000</FrwderAddr>
+</OlSvr>

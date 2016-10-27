@@ -63,7 +63,7 @@ all:
 			if [ -e $${ITEM} ]; then \
 				echo "cd $${ITEM}"; \
 				cd $${ITEM}; \
-				go build; \
+				go build -gcflags "-N -l"; \
 				EXEC=`basename \`pwd\``; \
 				mv $${EXEC} $${PROJ_BIN}/$${EXEC}.${VERSION}; \
 				cd ${PROJ}; \
