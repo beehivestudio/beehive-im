@@ -5,19 +5,23 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+
+	"chat/src/golang/lib/rtmq"
 )
 
 type OlSvrConf struct {
-	WorkPath     string // 工作路径(自动获取)
-	AppPath      string // 程序路径(自动获取)
-	ConfPath     string // 配置路径(自动获取)
-	FrwderAddr   string // 转发层(IP+PROT)
-	SendQueueLen uint32 // 发送队列长度
-	RecvQueueLen uint32 // 接收队列长度
-	WorkerNum    uint16 // 协程数
-	RedisAddr    string // Redis地址(IP+PORT)
-	LogPath      string // 日志路径
-	SecretKey    string // 密钥
+	NodeId       uint32              // 结点ID
+	WorkPath     string              // 工作路径(自动获取)
+	AppPath      string              // 程序路径(自动获取)
+	ConfPath     string              // 配置路径(自动获取)
+	FrwderAddr   string              // 转发层(IP+PROT)
+	SendQueueLen uint32              // 发送队列长度
+	RecvQueueLen uint32              // 接收队列长度
+	WorkerNum    uint16              // 协程数
+	RedisAddr    string              // Redis地址(IP+PORT)
+	LogPath      string              // 日志路径
+	SecretKey    string              // 密钥
+	rtmq_proxy   *rtmq.RtmqProxyConf // RTMQ配置
 }
 
 /* 加载配置信息 */

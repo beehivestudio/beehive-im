@@ -2,20 +2,19 @@ package rtmq
 
 /* 工作协程的处理 */
 func rtmq_proxy_work_routine(pxy *RtmqProxyCntx, idx int) {
-	var item RtmqRegItem
+	svr := pxy.server[idx]
+	recv_chan := svr.recv_chan
 
-	recvq := pxy.recv[idx]
-
-	for data := range recvq {
-		/* 已为本机字节序 */
-		header := data.(*RtmqHeader)
+	for p := range recv_chan {
+		header := rtmq_head_ntoh(p)
 
 		/* 获取CMD对应的注册项 */
-		if item, ok := pxy.reg[header.cmd]; !ok {
+		item, ok := pxy.reg[header.cmd]
+		if !ok {
 			continue
 		}
 
 		/* 调用注册处理函数 */
-		item.Proc(header.cmd, header.nid, data[RTMQ_HEAD_SIZE:], header.length, item.Param)
+		item.Proc(header.cmd, header.nid, p.buff[RTMQ_HEAD_SIZE:], header.length, item.Param)
 	}
 }

@@ -5,12 +5,15 @@ import (
 	"os"
 
 	"github.com/astaxie/beego/logs"
+
+	"chat/src/golang/lib/rtmq"
 )
 
 /* OLS上下文 */
 type OlSvrCntx struct {
-	conf *OlSvrConf      // 配置信息
-	log  *logs.BeeLogger // 日志对象
+	conf       *OlSvrConf          // 配置信息
+	log        *logs.BeeLogger     // 日志对象
+	rtmq_proxy *rtmq.RtmqProxyCntx // 代理对象
 }
 
 /* 初始化对象 */
@@ -20,7 +23,12 @@ func OlSvrInit(conf *OlSvrConf) (ctx *OlSvrCntx, err error) {
 	ctx.conf = conf
 
 	if err := ctx.log_init(); nil != err {
-		return ctx, err
+		return nil, err
+	}
+
+	ctx.rtmq_proxy = rtmq.RtmqProxyInit(conf.rtmq_proxy, ctx.log)
+	if nil == ctx.rtmq_proxy {
+		return nil, err
 	}
 
 	return ctx, nil

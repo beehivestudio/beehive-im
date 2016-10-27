@@ -3,14 +3,15 @@ package rtmq
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
+	"io"
 	"net"
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
-var RTMQ_HEAD_SIZE = binary.Size(RtmqHeader)
+var (
+	RTMQ_HEAD_SIZE uint32 = 17
+)
 
 /* 错误类型 */
 var (
@@ -21,14 +22,14 @@ var (
 
 /* TCP连接对象 */
 type RtmqProxyConn struct {
-	s          *RtmqProxyServer
-	conn       *net.TCPConn  // the raw connection
-	extra      interface{}   // to save extra data
-	closeOnce  sync.Once     // close the conn, once, per instance
-	is_close   int32         // close flag
-	send_chan  *chan Packet  // packet send chanel
-	recv_chan  *chan Packet  // packeet receive chanel
-	close_chan chan struct{} // close chanel
+	svr        *RtmqProxyServer
+	conn       *net.TCPConn     // the raw connection
+	extra      interface{}      // to save extra data
+	closeOnce  sync.Once        // close the conn, once, per instance
+	is_close   int32            // close flag
+	send_chan  chan *RtmqPacket // packet send chanel
+	recv_chan  chan *RtmqPacket // packeet receive chanel
+	close_chan chan struct{}    // close chanel
 }
 
 // ConnCallback is an interface of methods that are used as callbacks on a connection
@@ -40,57 +41,51 @@ type ConnCallback interface {
 
 	// OnMessage is called when the connection receives a packet,
 	// If the return value of false is closed
-	OnMessage(*RtmqProxyConn, Packet) bool
+	OnMessage(*RtmqProxyConn, []byte) bool
 
 	// OnClose is called when the connection closed
 	OnClose(*RtmqProxyConn)
 }
 
 /* "网络->主机"字节序 */
-func rtmq_proxy_head_ntoh(header *RtmqHeader) {
-	header.cmd = binary.BigEndian.Uint32(header.cmd)       /* CMD */
-	header.nid = binary.BigEndian.Uint32(header.nid)       /* NID */
-	header.length = binary.BigEndian.Uint32(header.length) /* LENGTH */
-	header.chksum = binary.BigEndian.Uint32(header.chksum) /* CHKSUM */
+func rtmq_head_ntoh(p *RtmqPacket) *RtmqHeader {
+	head := &RtmqHeader{}
+
+	head.cmd = p.get_cmd()       /* CMD */
+	head.nid = p.get_nid()       /* NID */
+	head.flag = p.get_flag()     /* FLAG */
+	head.length = p.get_len()    /* LENGTH */
+	head.chksum = p.get_chksum() /* CHKSUM */
+
+	return head
+}
+
+func (p *RtmqPacket) get_cmd() uint32 {
+	return binary.BigEndian.Uint32(p.buff[0:4])
+}
+
+func (p *RtmqPacket) get_nid() uint32 {
+	return binary.BigEndian.Uint32(p.buff[4:8])
+}
+
+func (p *RtmqPacket) get_flag() uint8 {
+	return uint8(binary.BigEndian.Uint32(p.buff[8:9]))
+}
+
+func (p *RtmqPacket) get_len() uint32 {
+	return binary.BigEndian.Uint32(p.buff[9:13])
+}
+
+func (p *RtmqPacket) get_chksum() uint32 {
+	return binary.BigEndian.Uint32(p.buff[13:17])
 }
 
 /* "主机->网络"字节序 */
-func rtmq_head_hton(header *RtmqHeader) {
-	binary.BigEndian.PutUint32(header.cmd, header.cmd)       /* CMD */
-	binary.BigEndian.PutUint32(header.nid, header.nid)       /* NID */
-	binary.BigEndian.PutUint32(header.length, header.length) /* LENGTH */
-	binary.BigEndian.PutUint32(header.chksum, header.chksum) /* CHKSUM */
-}
-
-/* 接收协程 */
-func rtmq_proxy_recv_routine(pxy *RtmqProxyCntx, idx int) {
-	recv_chan := pxy.recv_chan[idx]
-
-	for {
-		conn := pxy.conn[idx]
-
-		/* 读取RTMQ协议头 */
-		h := make([]byte, RTMQ_HEAD_SIZE)
-
-		if _, err := io.ReadFull(conn, h); nil != err {
-		}
-
-		/* 转换字节序 */
-		header := h.(*RtmqHeader)
-
-		rtmq_proxy_head_ntoh(header)
-
-		/* 读取承载数据 */
-		buff := make([]byte, RTMQ_HEAD_SIZE+header.length)
-
-		copy(buff[0:RTMQ_HEAD_SIZE], header)
-
-		if _, err := io.ReadFull(buff[RTMQ_HEAD_SIZE:], length); nil != err {
-		}
-
-		/* 放入接收队列 */
-		recv_chan <- buff
-	}
+func rtmq_head_hton(header *RtmqHeader, p *RtmqPacket) {
+	binary.BigEndian.PutUint32(p.buff[0:4], header.cmd)      /* CMD */
+	binary.BigEndian.PutUint32(p.buff[4:8], header.nid)      /* NID */
+	binary.BigEndian.PutUint32(p.buff[9:13], header.length)  /* LENGTH */
+	binary.BigEndian.PutUint32(p.buff[13:17], header.chksum) /* CHKSUM */
 }
 
 /* 创建连接对象 */
@@ -99,8 +94,8 @@ func rtmq_proxy_conn_creat(conn *net.TCPConn, s *RtmqProxyServer) *RtmqProxyConn
 		svr:        s,
 		conn:       conn,
 		close_chan: make(chan struct{}),
-		send_chan:  &s.send_chan,
-		recv_chan:  &s.recv_chan,
+		send_chan:  s.send_chan,
+		recv_chan:  s.recv_chan,
 	}
 }
 
@@ -176,29 +171,31 @@ func (c *RtmqProxyConn) readLoop() {
 		default:
 		}
 
-		/* 读取RTMQ协议头 */
-		h := make([]byte, RTMQ_HEAD_SIZE)
+		tp := &RtmqPacket{}
 
-		if _, err := io.ReadFull(conn, h); nil != err {
+		/* 读取RTMQ协议头 */
+		tp.buff = make([]byte, RTMQ_HEAD_SIZE)
+
+		if _, err := io.ReadFull(c.conn, tp.buff); nil != err {
 			return
 		}
 
 		/* 转换字节序 */
-		header := h.(*RtmqHeader)
-
-		rtmq_proxy_head_ntoh(header)
+		header := rtmq_head_ntoh(tp)
 
 		/* 读取承载数据 */
-		buff := make([]byte, RTMQ_HEAD_SIZE+header.length)
+		p := &RtmqPacket{}
 
-		copy(buff[0:RTMQ_HEAD_SIZE], header)
+		p.buff = make([]byte, RTMQ_HEAD_SIZE+header.length)
 
-		if _, err := io.ReadFull(buff[RTMQ_HEAD_SIZE:], length); nil != err {
+		copy(p.buff[:RTMQ_HEAD_SIZE], tp.buff)
+
+		if _, err := io.ReadFull(c.conn, p.buff[RTMQ_HEAD_SIZE:]); nil != err {
 			return
 		}
 
 		/* 放入接收队列 */
-		c.recv_chan <- buff
+		c.recv_chan <- p
 	}
 }
 
@@ -220,7 +217,7 @@ func (c *RtmqProxyConn) writeLoop() {
 			return
 
 		case p := <-c.send_chan:
-			if _, err := c.conn.Write([]byte(p)); nil != err {
+			if _, err := c.conn.Write([]byte(p.buff)); nil != err {
 				return
 			}
 		}
@@ -245,7 +242,7 @@ func (c *RtmqProxyConn) handleLoop() {
 			return
 
 		case p := <-c.recv_chan:
-			if !c.svr.callback.OnMessage(c, p) {
+			if !c.svr.callback.OnMessage(c, p.buff) {
 				// return
 			}
 			// go c.svr.callback.OnMessage(c, p)

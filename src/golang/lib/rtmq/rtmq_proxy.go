@@ -1,5 +1,12 @@
 package rtmq
 
+import (
+	"sync"
+	"time"
+
+	"github.com/astaxie/beego/logs"
+)
+
 const (
 	RTMQ_SSVR_NUM   = 10
 	RTMQ_CHKSUM_VAL = 0x1FE23DC4
@@ -33,8 +40,13 @@ const (
 /* 配置信息 */
 type RtmqProxyConf struct {
 	NodeId        uint32 /* 结点ID */
+	WorkerNum     uint32 /* 工作协程数 */
 	SendChanLimit uint32 /* 发送队列长度 */
 	RecvChanLimit uint32 /* 接收队列长度 */
+}
+
+type RtmqPacket struct {
+	buff []byte /* 接收数据 */
 }
 
 /* 协议头 */
@@ -46,38 +58,43 @@ type RtmqHeader struct {
 	chksum uint32 /* 校验值(固定为0x1FE23DE4) */
 }
 
-type RtmqRegCb func(cmd uint32, orig uint32, data *interface{}, length uint32, param *interface{})
+type RtmqRegCb func(cmd uint32, orig uint32, data []byte, length uint32, param *interface{})
 
 /* 回调注册项 */
 type RtmqRegItem struct {
-	Cmd   int          /* 命令类型 */
+	Cmd   uint32       /* 命令类型 */
 	Proc  RtmqRegCb    /* 回调函数 */
 	Param *interface{} /* 附加参数 */
 }
 
 type RtmqProxyServer struct {
-	conf      *RtmqProxyConf  /* 配置数据 */
-	send_chan chan Packet     /* 发送队列 */
-	recv_chan chan Packet     /* 接收队列 */
-	callback  ConnCallback    /* 连接回调 */
-	exit_chan chan struct{}   /* 通知所有协程退出 */
-	waitGroup *sync.WaitGroup /* 用于等待所有协程 */
+	conf      *RtmqProxyConf   /* 配置数据 */
+	send_chan chan *RtmqPacket /* 发送队列 */
+	recv_chan chan *RtmqPacket /* 接收队列 */
+	callback  ConnCallback     /* 连接回调 */
+	exit_chan chan struct{}    /* 通知所有协程退出 */
+	waitGroup *sync.WaitGroup  /* 用于等待所有协程 */
 }
 
 /* 上下文信息 */
 type RtmqProxyCntx struct {
-	conf   *RtmqProxyConf                 /* 配置数据 */
-	reg    map[int]*RtmqRegItem           /* 回调注册 */
-	server [RTMQ_SSVR_NUM]RtmqProxyServer /* 服务对象 */
+	conf   *RtmqProxyConf                  /* 配置数据 */
+	reg    map[uint32]*RtmqRegItem         /* 回调注册 */
+	server [RTMQ_SSVR_NUM]*RtmqProxyServer /* 服务对象 */
 }
 
 /* 初始化PROXY服务 */
-func RtmqProxyInit(conf *RtmqConf, callback ConnCallback) *RtmqProxyCntx {
+func RtmqProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
+	var callback ConnCallback
+
 	pxy := &RtmqProxyCntx{}
 
 	pxy.conf = conf
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
 		pxy.server[idx] = rtmq_proxy_server_init(conf, callback)
+		if nil == pxy.server[idx] {
+			return nil
+		}
 		go pxy.server[idx].StartConnector(3)
 	}
 	go rtmq_proxy_keepalive_routine(pxy) /* 保活协程 */
@@ -86,21 +103,27 @@ func RtmqProxyInit(conf *RtmqConf, callback ConnCallback) *RtmqProxyCntx {
 }
 
 /* 发送保活消息 */
-func rtmq_proxy_send_keepalive(conn *net.TCPConn, send_chan chan *interface{}) {
-	req = &RtmqHeader{}
+func rtmq_proxy_send_keepalive(send_chan chan *RtmqPacket) {
+	req := &RtmqHeader{}
 
 	req.cmd = RTMQ_CMD_KPALIVE_REQ
 	req.flag = 0
 	req.length = 0
 	req.chksum = RTMQ_CHKSUM_VAL
 
-	send_chan <- req
+	p := &RtmqPacket{}
+	p.buff = make([]byte, RTMQ_HEAD_SIZE)
+
+	rtmq_head_hton(req, p)
+
+	send_chan <- p
 }
 
 /* 保活协程 */
 func rtmq_proxy_keepalive_routine(pxy *RtmqProxyCntx) {
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
-		rtmq_proxy_send_keepalive(pxy.conn[idx], pxy.send_chan[idx])
+		server := pxy.server[idx]
+		rtmq_proxy_send_keepalive(server.send_chan)
 		time.Sleep(30)
 	}
 }
@@ -111,8 +134,8 @@ func rtmq_proxy_server_init(conf *RtmqProxyConf, callback ConnCallback) *RtmqPro
 		conf:      conf,
 		callback:  callback,
 		exit_chan: make(chan struct{}),
-		send_chan: make(chan Packet, 20000),
-		recv_chan: make(chan Packet, 20000),
+		send_chan: make(chan *RtmqPacket, 20000),
+		recv_chan: make(chan *RtmqPacket, 20000),
 		waitGroup: &sync.WaitGroup{},
 	}
 }
