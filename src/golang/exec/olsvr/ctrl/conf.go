@@ -10,28 +10,31 @@ import (
 	"chat/src/golang/lib/rtmq"
 )
 
+/* 在线中心配置 */
 type OlSvrConf struct {
-	NodeId      uint32              // 结点ID
-	WorkPath    string              // 工作路径(自动获取)
-	AppPath     string              // 程序路径(自动获取)
-	ConfPath    string              // 配置路径(自动获取)
-	FrwderAddr  string              // 转发层(IP+PROT)
-	SendChanLen uint32              // 发送队列长度
-	RecvChanLen uint32              // 接收队列长度
-	WorkerNum   uint16              // 协程数
-	RedisAddr   string              // Redis地址(IP+PORT)
-	LogPath     string              // 日志路径
-	rtmq_proxy  *rtmq.RtmqProxyConf // RTMQ配置
+	NodeId     uint32             // 结点ID
+	WorkPath   string             // 工作路径(自动获取)
+	AppPath    string             // 程序路径(自动获取)
+	ConfPath   string             // 配置路径(自动获取)
+	RedisAddr  string             // Redis地址(IP+PORT)
+	LogPath    string             // 日志路径
+	rtmq_proxy rtmq.RtmqProxyConf // RTMQ配置
 }
 
+/* 在线中心XML配置 */
 type OlSvrXmlNode struct {
-	NodeName    xml.Name `xml:OlSvr`       // 根结点名
-	FrwderAddr  string   `xml:FrwderAddr`  // 转发层(IP+PROT)
+	Name      xml.Name              `xml:OLSVR`     // 根结点名
+	RedisAddr string                `xml:RedisAddr` // Redis地址(IP+PORT)
+	LogPath   string                `xml:LogPath`   // 日志路径
+	RtmqProxy OlSvrRtmqProxyXmlNode `xml:RtmqProxy` // RTMQ PROXY配置
+}
+
+type OlSvrRtmqProxyXmlNode struct {
+	Name        xml.Name `xml:RtmqProxy`   // 结点名
+	RemoteAddr  string   `xml:RemoteAddr`  // 对端IP(IP+PROT)
+	WorkerNum   uint32   `xml:WorkerNum`   // 协程数
 	SendChanLen uint32   `xml:SendChanLen` // 发送队列长度
 	RecvChanLen uint32   `xml:RecvChanLen` // 接收队列长度
-	WorkerNum   uint16   `xml:WorkerNum`   // 协程数
-	RedisAddr   string   `xml:RedisAddr`   // Redis地址(IP+PORT)
-	LogPath     string   `xml:LogPath`     // 日志路径
 }
 
 /* 加载配置信息 */
@@ -59,48 +62,49 @@ func (conf *OlSvrConf) conf_parse() (err error) {
 		return err
 	}
 
-	v := OlSvrXmlNode{}
+	node := OlSvrXmlNode{}
 
-	err = xml.Unmarshal(data, &v)
+	err = xml.Unmarshal(data, &node)
 	if nil != err {
 		return err
 	}
 
 	/* > 解析配置文件 */
-	/* 转发层(IP+PROT) */
-	conf.FrwderAddr = v.FrwderAddr
-	if 0 == len(conf.FrwderAddr) {
-		return errors.New("Get frwder addr failed!")
-	}
-
-	/* 发送队列长度 */
-	conf.SendChanLen = v.SendChanLen
-	if 0 == conf.SendChanLen {
-		return errors.New("Get send channel length failed!")
-	}
-
-	/* 接收队列长度 */
-	conf.RecvChanLen = v.RecvChanLen
-	if 0 == conf.RecvChanLen {
-		return errors.New("Get recv channel length failed!")
-	}
-
-	/* 协程数 */
-	conf.WorkerNum = v.WorkerNum
-	if 0 == conf.WorkerNum {
-		return errors.New("Get worker number failed!")
-	}
-
 	/* Redis地址(IP+PORT) */
-	conf.RedisAddr = v.RedisAddr
+	conf.RedisAddr = node.RedisAddr
 	if 0 == len(conf.RedisAddr) {
 		return errors.New("Get redis addr failed!")
 	}
 
 	/* 日志路径 */
-	conf.LogPath = v.LogPath
+	conf.LogPath = node.LogPath
 	if 0 == len(conf.LogPath) {
 		return errors.New("Get log path failed!")
+	}
+
+	/* RTMQ-PROXY配置 */
+	/* 转发层(IP+PROT) */
+	conf.rtmq_proxy.RemoteAddr = node.RtmqProxy.RemoteAddr
+	if 0 == len(conf.rtmq_proxy.RemoteAddr) {
+		return errors.New("Get frwder addr failed!")
+	}
+
+	/* 发送队列长度 */
+	conf.rtmq_proxy.SendChanLen = node.RtmqProxy.SendChanLen
+	if 0 == conf.rtmq_proxy.SendChanLen {
+		return errors.New("Get send channel length failed!")
+	}
+
+	/* 接收队列长度 */
+	conf.rtmq_proxy.RecvChanLen = node.RtmqProxy.RecvChanLen
+	if 0 == conf.rtmq_proxy.RecvChanLen {
+		return errors.New("Get recv channel length failed!")
+	}
+
+	/* 协程数 */
+	conf.rtmq_proxy.WorkerNum = node.RtmqProxy.WorkerNum
+	if 0 == conf.rtmq_proxy.WorkerNum {
+		return errors.New("Get worker number failed!")
 	}
 
 	return nil

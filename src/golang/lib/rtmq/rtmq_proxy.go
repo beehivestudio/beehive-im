@@ -39,10 +39,11 @@ const (
 
 /* 配置信息 */
 type RtmqProxyConf struct {
-	NodeId        uint32 /* 结点ID */
-	WorkerNum     uint32 /* 工作协程数 */
-	SendChanLimit uint32 /* 发送队列长度 */
-	RecvChanLimit uint32 /* 接收队列长度 */
+	NodeId      uint32 /* 结点ID */
+	RemoteAddr  string /* 对端IP地址 */
+	WorkerNum   uint32 /* 工作协程数 */
+	SendChanLen uint32 /* 发送队列长度 */
+	RecvChanLen uint32 /* 接收队列长度 */
 }
 
 type RtmqPacket struct {

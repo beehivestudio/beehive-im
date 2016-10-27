@@ -1,9 +1,0 @@
-<OLSVR>
-  <FRWDER IP="127.0.0.1" PORT="12800" />
-  <SENDQ LEN="20000" />
-  <RECVQ LEN="20000" />
-  <WORKER NUM="1" />
-  <REDIS IP="127.0.0.1" PORT="6379" />
-  <LOG PATH="log" />
-  <SECRET KEY="ybw19x.3z9axwu" />
-</OLSVR>
