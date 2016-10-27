@@ -50,7 +50,6 @@ all:
 		echo $${ITEM}; \
 		clang=`echo $${ITEM} | grep 'clang' | wc -l`; \
 		golang=`echo $${ITEM} | grep 'golang' | wc -l`; \
-		echo "clang:$${clang} golang:$${golang} item:$${ITEM}"; \
 		if [ $${clang} -eq 1 ]; then \
 			if [ -e $${ITEM}/Makefile ]; then \
 				cd $${ITEM}; \
