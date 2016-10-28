@@ -125,7 +125,7 @@ func RtmqProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
 	ctx.log = log
 	ctx.conf = conf
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
-		ctx.server[idx] = rtmq_proxy_server_init(conf)
+		ctx.server[idx] = rtmq_proxy_server_init(conf, log)
 		if nil == ctx.server[idx] {
 			return nil
 		}
@@ -163,9 +163,10 @@ func rtmq_proxy_keepalive_routine(ctx *RtmqProxyCntx) {
 }
 
 /* 初始化PROXY服务对象 */
-func rtmq_proxy_server_init(conf *RtmqProxyConf) *RtmqProxyServer {
+func rtmq_proxy_server_init(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyServer {
 	return &RtmqProxyServer{
 		conf:      conf,
+		log:       log,
 		exit_chan: make(chan struct{}),
 		send_chan: make(chan *RtmqPacket, 20000),
 		recv_chan: make(chan *RtmqPacket, 20000),
