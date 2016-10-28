@@ -70,6 +70,7 @@ type RtmqRegItem struct {
 }
 
 type RtmqProxyServer struct {
+	ctx       *RtmqProxyCntx   /* 全局对象 */
 	conf      *RtmqProxyConf   /* 配置数据 */
 	log       *logs.BeeLogger  /* 日志对象 */
 	send_chan chan *RtmqPacket /* 发送队列 */
@@ -110,7 +111,20 @@ func (s *RtmqProxyServer) OnConnect(c *RtmqProxyConn) bool {
 	return true
 }
 
-func (s *RtmqProxyServer) OnMessage(c *RtmqProxyConn, buff []byte) bool {
+func (s *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqPacket) bool {
+	ctx := s.ctx
+	header := rtmq_head_ntoh(p)
+
+	/* 获取CMD对应的注册项 */
+	item, ok := ctx.reg[header.cmd]
+	if !ok {
+		ctx.log.Error("Drop unknown data! cmd:%d", header.cmd)
+		return false
+	}
+
+	/* 调用注册处理函数 */
+	item.proc(header.cmd, header.nid, p.buff[RTMQ_HEAD_SIZE:], header.length, item.param)
+
 	return true
 }
 
@@ -125,7 +139,7 @@ func RtmqProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
 	ctx.log = log
 	ctx.conf = conf
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
-		ctx.server[idx] = rtmq_proxy_server_init(conf, log)
+		ctx.server[idx] = rtmq_proxy_server_init(ctx, conf)
 		if nil == ctx.server[idx] {
 			return nil
 		}
@@ -174,13 +188,14 @@ func rtmq_proxy_keepalive_routine(ctx *RtmqProxyCntx) {
 }
 
 /* 初始化PROXY服务对象 */
-func rtmq_proxy_server_init(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyServer {
+func rtmq_proxy_server_init(ctx *RtmqProxyCntx, conf *RtmqProxyConf) *RtmqProxyServer {
 	return &RtmqProxyServer{
+		ctx:       ctx,
 		conf:      conf,
-		log:       log,
+		log:       ctx.log,
 		exit_chan: make(chan struct{}),
-		send_chan: make(chan *RtmqPacket, 20000),
-		recv_chan: make(chan *RtmqPacket, 20000),
+		send_chan: make(chan *RtmqPacket, conf.SendChanLen),
+		recv_chan: make(chan *RtmqPacket, conf.RecvChanLen),
 		waitGroup: &sync.WaitGroup{},
 	}
 }

@@ -120,9 +120,9 @@ func (c *RtmqProxyConn) Do() {
 		return
 	}
 
-	go c.handleLoop()
-	go c.readLoop()
-	go c.writeLoop()
+	go c.read_routine()
+	go c.write_routine()
+	go c.handle_routine()
 }
 
 /* 启动多个处理协程 */
@@ -132,14 +132,14 @@ func (c *RtmqProxyConn) DoPool(num uint32) {
 	}
 	var i uint32
 	for i = 0; i < num; i++ {
-		go c.handleLoop()
+		go c.handle_routine()
 	}
-	go c.readLoop()
-	go c.writeLoop()
+	go c.read_routine()
+	go c.write_routine()
 }
 
 /* 接收协程的处理流程 */
-func (c *RtmqProxyConn) readLoop() {
+func (c *RtmqProxyConn) read_routine() {
 	c.svr.waitGroup.Add(1)
 	defer func() {
 		recover()
@@ -185,7 +185,7 @@ func (c *RtmqProxyConn) readLoop() {
 }
 
 /* 发送协程的处理流程 */
-func (c *RtmqProxyConn) writeLoop() {
+func (c *RtmqProxyConn) write_routine() {
 	c.svr.waitGroup.Add(1)
 	defer func() {
 		recover()
@@ -210,7 +210,7 @@ func (c *RtmqProxyConn) writeLoop() {
 }
 
 /* 工作协程的处理流程 */
-func (c *RtmqProxyConn) handleLoop() {
+func (c *RtmqProxyConn) handle_routine() {
 	c.svr.waitGroup.Add(1)
 	defer func() {
 		recover()
@@ -227,7 +227,7 @@ func (c *RtmqProxyConn) handleLoop() {
 			return
 
 		case p := <-c.recv_chan:
-			c.svr.OnMessage(c, p.buff)
+			c.svr.OnMessage(c, p)
 		}
 	}
 }
