@@ -47,7 +47,6 @@ all:
 	$(call func_mkdir)
 	@for ITEM in ${DIR}; \
 	do \
-		echo $${ITEM}; \
 		clang=`echo $${ITEM} | grep 'clang' | wc -l`; \
 		golang=`echo $${ITEM} | grep 'golang' | wc -l`; \
 		if [ $${clang} -eq 1 ]; then \
@@ -61,11 +60,13 @@ all:
 			fi \
 		elif [ $${golang} -eq 1 ]; then \
 			if [ -e $${ITEM} ]; then \
-				echo "cd $${ITEM}"; \
+				echo "make[1]: Entering directory '${PROJ}/$${ITEM}'"; \
 				cd $${ITEM}; \
+				echo "go build -gcflags \"-N -l\""; \
 				go build -gcflags "-N -l"; \
 				EXEC=`basename \`pwd\``; \
 				mv $${EXEC} $${PROJ_BIN}/$${EXEC}.${VERSION}; \
+				echo "make[1]: Leaving directory '${PROJ}/$${ITEM}'"; \
 				cd ${PROJ}; \
 			else \
 				echo "Path [$${ITEM}] isn't exist!"; exit; \
