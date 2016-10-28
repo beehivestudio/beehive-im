@@ -46,13 +46,13 @@ func (ctx *OlSvrCntx) log_init() (err error) {
 	ctx.log = logs.NewLogger(20000)
 	log := ctx.log
 
-	err = os.Mkdir("log", 0755)
+	err = os.Mkdir("../log", 0755)
 	if nil != err && false == os.IsExist(err) {
 		log.Emergency(err.Error())
 		return err
 	}
 
-	log.SetLogger("file", fmt.Sprintf(`{"filename":"%s/log/olsvr.log"}`, conf.AppPath))
+	log.SetLogger("file", fmt.Sprintf(`{"filename":"%s/../log/olsvr.log"}`, conf.AppPath))
 	log.SetLevel(logs.LevelDebug)
 	return nil
 }
