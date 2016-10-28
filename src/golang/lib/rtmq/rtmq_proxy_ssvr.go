@@ -32,21 +32,6 @@ type RtmqProxyConn struct {
 	close_chan chan struct{}    // close chanel
 }
 
-// ConnCallback is an interface of methods that are used as callbacks on a connection
-type ConnCallback interface {
-	OnDial() (*net.TCPConn, error)
-	// OnConnect is called when the connection was accepted,
-	// If the return value of false is closed
-	OnConnect(*RtmqProxyConn) bool
-
-	// OnMessage is called when the connection receives a packet,
-	// If the return value of false is closed
-	OnMessage(*RtmqProxyConn, []byte) bool
-
-	// OnClose is called when the connection closed
-	OnClose(*RtmqProxyConn)
-}
-
 /* "网络->主机"字节序 */
 func rtmq_head_ntoh(p *RtmqPacket) *RtmqHeader {
 	head := &RtmqHeader{}
@@ -120,7 +105,7 @@ func (c *RtmqProxyConn) Close() {
 		atomic.StoreInt32(&c.is_close, 1)
 		close(c.close_chan)
 		c.conn.Close()
-		c.svr.callback.OnClose(c)
+		c.svr.OnClose(c)
 	})
 }
 
@@ -131,7 +116,7 @@ func (c *RtmqProxyConn) IsClosed() bool {
 
 /* 各协程启动一个 */
 func (c *RtmqProxyConn) Do() {
-	if !c.svr.callback.OnConnect(c) {
+	if !c.svr.OnConnect(c) {
 		return
 	}
 
@@ -142,7 +127,7 @@ func (c *RtmqProxyConn) Do() {
 
 /* 启动多个处理协程 */
 func (c *RtmqProxyConn) DoPool(num uint32) {
-	if !c.svr.callback.OnConnect(c) {
+	if !c.svr.OnConnect(c) {
 		return
 	}
 	var i uint32
@@ -242,10 +227,7 @@ func (c *RtmqProxyConn) handleLoop() {
 			return
 
 		case p := <-c.recv_chan:
-			if !c.svr.callback.OnMessage(c, p.buff) {
-				// return
-			}
-			// go c.svr.callback.OnMessage(c, p)
+			c.svr.OnMessage(c, p.buff)
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package rtmq
 
 import (
+	"net"
 	"sync"
 	"time"
 
@@ -70,9 +71,9 @@ type RtmqRegItem struct {
 
 type RtmqProxyServer struct {
 	conf      *RtmqProxyConf   /* 配置数据 */
+	log       *logs.BeeLogger  /* 日志对象 */
 	send_chan chan *RtmqPacket /* 发送队列 */
 	recv_chan chan *RtmqPacket /* 接收队列 */
-	callback  ConnCallback     /* 连接回调 */
 	exit_chan chan struct{}    /* 通知所有协程退出 */
 	waitGroup *sync.WaitGroup  /* 用于等待所有协程 */
 }
@@ -80,27 +81,59 @@ type RtmqProxyServer struct {
 /* 上下文信息 */
 type RtmqProxyCntx struct {
 	conf   *RtmqProxyConf                  /* 配置数据 */
+	log    *logs.BeeLogger                 /* 日志对象 */
 	reg    map[uint32]*RtmqRegItem         /* 回调注册 */
 	server [RTMQ_SSVR_NUM]*RtmqProxyServer /* 服务对象 */
 }
 
+/* 连接远端服务 */
+func (s *RtmqProxyServer) OnDial() (*net.TCPConn, error) {
+	conf := s.conf
+
+	addr, err := net.ResolveTCPAddr("tcp4", conf.RemoteAddr)
+	if nil != err {
+		s.log.Error("Resolve tcp addr failed! addr:%s errmsg:%s", conf.RemoteAddr, err.Error())
+		return nil, err
+	}
+
+	conn, err := net.DialTCP("tcp", nil, addr)
+	if nil != err {
+		s.log.Error("Dial tcp addr failed! addr:%s errmsg:%s", conf.RemoteAddr, err.Error())
+		return nil, err
+	}
+
+	return conn, nil
+}
+
+/* 连接远端服务 */
+func (s *RtmqProxyServer) OnConnect(c *RtmqProxyConn) bool {
+	return true
+}
+
+func (s *RtmqProxyServer) OnMessage(c *RtmqProxyConn, buff []byte) bool {
+	return true
+}
+
+func (s *RtmqProxyServer) OnClose(c *RtmqProxyConn) {
+	s.log.Error("Connection is close! ip:%s", c.GetRawConn().RemoteAddr())
+}
+
 /* 初始化PROXY服务 */
 func RtmqProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
-	var callback ConnCallback
+	ctx := &RtmqProxyCntx{}
 
-	pxy := &RtmqProxyCntx{}
-
-	pxy.conf = conf
+	ctx.log = log
+	ctx.conf = conf
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
-		pxy.server[idx] = rtmq_proxy_server_init(conf, callback)
-		if nil == pxy.server[idx] {
+		ctx.server[idx] = rtmq_proxy_server_init(conf)
+		if nil == ctx.server[idx] {
 			return nil
 		}
-		go pxy.server[idx].StartConnector(3)
+		go ctx.server[idx].StartConnector(3)
 	}
-	go rtmq_proxy_keepalive_routine(pxy) /* 保活协程 */
+	go rtmq_proxy_keepalive_routine(ctx) /* 保活协程 */
 
-	return pxy
+	return ctx
 }
 
 /* 发送保活消息 */
@@ -121,19 +154,18 @@ func rtmq_proxy_send_keepalive(send_chan chan *RtmqPacket) {
 }
 
 /* 保活协程 */
-func rtmq_proxy_keepalive_routine(pxy *RtmqProxyCntx) {
+func rtmq_proxy_keepalive_routine(ctx *RtmqProxyCntx) {
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
-		server := pxy.server[idx]
+		server := ctx.server[idx]
 		rtmq_proxy_send_keepalive(server.send_chan)
 		time.Sleep(30)
 	}
 }
 
 /* 初始化PROXY服务对象 */
-func rtmq_proxy_server_init(conf *RtmqProxyConf, callback ConnCallback) *RtmqProxyServer {
+func rtmq_proxy_server_init(conf *RtmqProxyConf) *RtmqProxyServer {
 	return &RtmqProxyServer{
 		conf:      conf,
-		callback:  callback,
 		exit_chan: make(chan struct{}),
 		send_chan: make(chan *RtmqPacket, 20000),
 		recv_chan: make(chan *RtmqPacket, 20000),
@@ -150,7 +182,7 @@ func (s *RtmqProxyServer) StartConnector(timeout time.Duration) {
 
 	for {
 		/* > 建立TCP连接 */
-		conn, err := s.callback.OnDial()
+		conn, err := s.OnDial()
 		if nil != err {
 			select {
 			case <-s.exit_chan:
