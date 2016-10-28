@@ -3,7 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"os/signal"
 	"runtime"
+	"sync"
+	"syscall"
 
 	"chat/src/golang/exec/olsvr/ctrl"
 )
@@ -30,6 +34,14 @@ func main() {
 
 	/* > 启动OLS服务 */
 	ctx.OlSvrLaunch()
+
+	/* > 捕捉中断信号 */
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+
+	wait := &sync.WaitGroup{}
+	wait.Add(1)
+	wait.Wait()
 
 	return
 }
