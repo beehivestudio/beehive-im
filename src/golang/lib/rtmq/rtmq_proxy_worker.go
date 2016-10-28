@@ -15,6 +15,6 @@ func rtmq_proxy_work_routine(pxy *RtmqProxyCntx, idx int) {
 		}
 
 		/* 调用注册处理函数 */
-		item.Proc(header.cmd, header.nid, p.buff[RTMQ_HEAD_SIZE:], header.length, item.Param)
+		item.proc(header.cmd, header.nid, p.buff[RTMQ_HEAD_SIZE:], header.length, item.param)
 	}
 }

@@ -60,13 +60,13 @@ type RtmqHeader struct {
 	chksum uint32 /* 校验值(固定为0x1FE23DE4) */
 }
 
-type RtmqRegCb func(cmd uint32, orig uint32, data []byte, length uint32, param *interface{})
+type RtmqRegCb func(cmd uint32, orig uint32, data []byte, length uint32, param interface{})
 
 /* 回调注册项 */
 type RtmqRegItem struct {
-	Cmd   uint32       /* 命令类型 */
-	Proc  RtmqRegCb    /* 回调函数 */
-	Param *interface{} /* 附加参数 */
+	cmd   uint32      /* 命令类型 */
+	proc  RtmqRegCb   /* 回调函数 */
+	param interface{} /* 附加参数 */
 }
 
 type RtmqProxyServer struct {
@@ -134,6 +134,17 @@ func RtmqProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
 	go rtmq_proxy_keepalive_routine(ctx) /* 保活协程 */
 
 	return ctx
+}
+
+/* 回调注册函数 */
+func (this *RtmqProxyCntx) RtmqProxyRegister(cmd uint32, proc RtmqRegCb, param interface{}) {
+	item := &RtmqRegItem{}
+
+	item.cmd = cmd
+	item.proc = proc
+	item.param = param
+
+	this.reg[cmd] = item
 }
 
 /* 发送保活消息 */
