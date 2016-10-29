@@ -53,25 +53,25 @@ func (p *RtmqPacket) get_nid() uint32 {
 	return binary.BigEndian.Uint32(p.buff[4:8])
 }
 
-func (p *RtmqPacket) get_flag() uint8 {
-	return uint8(binary.BigEndian.Uint32(p.buff[8:9]))
+func (p *RtmqPacket) get_flag() uint32 {
+	return binary.BigEndian.Uint32(p.buff[8:12])
 }
 
 func (p *RtmqPacket) get_len() uint32 {
-	return binary.BigEndian.Uint32(p.buff[9:13])
+	return binary.BigEndian.Uint32(p.buff[12:16])
 }
 
 func (p *RtmqPacket) get_chksum() uint32 {
-	return binary.BigEndian.Uint32(p.buff[13:17])
+	return binary.BigEndian.Uint32(p.buff[16:20])
 }
 
 /* "主机->网络"字节序 */
 func rtmq_head_hton(header *RtmqHeader, p *RtmqPacket) {
-	binary.BigEndian.PutUint32(p.buff[0:4], header.cmd)          /* CMD */
-	binary.BigEndian.PutUint32(p.buff[4:8], header.nid)          /* NID */
-	binary.BigEndian.PutUint32(p.buff[8:9], uint32(header.flag)) /* NID */
-	binary.BigEndian.PutUint32(p.buff[9:13], header.length)      /* LENGTH */
-	binary.BigEndian.PutUint32(p.buff[13:17], header.chksum)     /* CHKSUM */
+	binary.BigEndian.PutUint32(p.buff[0:4], header.cmd)      /* CMD */
+	binary.BigEndian.PutUint32(p.buff[4:8], header.nid)      /* NID */
+	binary.BigEndian.PutUint32(p.buff[8:12], header.flag)    /* NID */
+	binary.BigEndian.PutUint32(p.buff[12:16], header.length) /* LENGTH */
+	binary.BigEndian.PutUint32(p.buff[16:20], header.chksum) /* CHKSUM */
 }
 
 /* 创建连接对象 */

@@ -55,7 +55,7 @@ type RtmqPacket struct {
 type RtmqHeader struct {
 	cmd    uint32 /* 消息类型 */
 	nid    uint32 /* 结点ID */
-	flag   uint8  /* 消息标识(0:系统消息 1:业务消息) */
+	flag   uint32 /* 消息标识(0:系统消息 1:业务消息) */
 	length uint32 /* 报体长度 */
 	chksum uint32 /* 校验值(固定为0x1FE23DE4) */
 }
