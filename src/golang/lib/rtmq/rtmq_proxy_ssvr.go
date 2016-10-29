@@ -7,6 +7,7 @@ import (
 	"net"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 var (
@@ -23,13 +24,14 @@ var (
 /* TCP连接对象 */
 type RtmqProxyConn struct {
 	svr        *RtmqProxyServer
-	conn       *net.TCPConn     // the raw connection
-	extra      interface{}      // to save extra data
-	closeOnce  sync.Once        // close the conn, once, per instance
-	is_close   int32            // close flag
-	send_chan  chan *RtmqPacket // packet send chanel
-	recv_chan  chan *RtmqPacket // packeet receive chanel
-	close_chan chan struct{}    // close chanel
+	conn       *net.TCPConn     /* the raw connection */
+	extra      interface{}      /* to save extra data */
+	closeOnce  sync.Once        /* close the conn, once, per instance */
+	is_close   int32            /* close flag */
+	send_chan  chan *RtmqPacket /* 普通消息发送队列 */
+	mesg_chan  chan *RtmqPacket /* 系统消息发送队列 */
+	recv_chan  chan *RtmqPacket /* 普通消息接收队列 */
+	close_chan chan struct{}    /* close chanel */
 }
 
 /* "网络->主机"字节序 */
@@ -81,6 +83,7 @@ func rtmq_proxy_conn_creat(conn *net.TCPConn, s *RtmqProxyServer) *RtmqProxyConn
 		conn:       conn,
 		close_chan: make(chan struct{}),
 		send_chan:  s.send_chan,
+		mesg_chan:  make(chan *RtmqPacket, 100),
 		recv_chan:  s.recv_chan,
 	}
 }
@@ -124,19 +127,23 @@ func (c *RtmqProxyConn) Do() {
 	go c.read_routine()
 	go c.write_routine()
 	go c.handle_routine()
+	go c.keepalive_routine()
 }
 
 /* 启动多个处理协程 */
 func (c *RtmqProxyConn) DoPool(num uint32) {
+	var i uint32
+
 	if !c.svr.OnConnect(c) {
 		return
 	}
-	var i uint32
+
 	for i = 0; i < num; i++ {
 		go c.handle_routine()
 	}
 	go c.read_routine()
 	go c.write_routine()
+	go c.keepalive_routine()
 }
 
 /* 接收协程的处理流程 */
@@ -202,12 +209,62 @@ func (c *RtmqProxyConn) write_routine() {
 		case <-c.close_chan:
 			return
 
-		case p := <-c.send_chan:
+		case p := <-c.mesg_chan: /* 系统消息发送队列 */
+			if _, err := c.conn.Write([]byte(p.buff)); nil != err {
+				return
+			}
+
+		case p := <-c.send_chan: /* 普通消息发送队列 */
 			if _, err := c.conn.Write([]byte(p.buff)); nil != err {
 				return
 			}
 		}
 	}
+}
+
+/* 保活协程的处理流程 */
+func (c *RtmqProxyConn) keepalive_routine() {
+	c.svr.waitGroup.Add(1)
+	defer func() {
+		recover()
+		c.Close()
+		c.svr.waitGroup.Done()
+	}()
+
+	for {
+		select {
+		case <-c.svr.exit_chan:
+			return
+
+		case <-c.close_chan:
+			return
+
+		case <-time.After(30 * time.Second):
+			c.keepalive()
+			continue
+		}
+	}
+}
+
+/* 发送保活消息 */
+func (c *RtmqProxyConn) keepalive() {
+	svr := c.svr
+	conf := svr.conf
+
+	req := &RtmqHeader{}
+
+	req.cmd = RTMQ_CMD_KPALIVE_REQ
+	req.nid = conf.NodeId
+	req.flag = 0
+	req.length = 0
+	req.chksum = RTMQ_CHKSUM_VAL
+
+	p := &RtmqPacket{}
+	p.buff = make([]byte, RTMQ_HEAD_SIZE)
+
+	rtmq_head_hton(req, p)
+
+	c.mesg_chan <- p
 }
 
 /* 工作协程的处理流程 */
