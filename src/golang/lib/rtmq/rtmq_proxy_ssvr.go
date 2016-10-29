@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	RTMQ_HEAD_SIZE uint32 = 17
+	RTMQ_HEAD_SIZE uint32 = uint32(binary.Size(RtmqHeader{}))
 )
 
 /* 错误类型 */
@@ -67,10 +67,11 @@ func (p *RtmqPacket) get_chksum() uint32 {
 
 /* "主机->网络"字节序 */
 func rtmq_head_hton(header *RtmqHeader, p *RtmqPacket) {
-	binary.BigEndian.PutUint32(p.buff[0:4], header.cmd)      /* CMD */
-	binary.BigEndian.PutUint32(p.buff[4:8], header.nid)      /* NID */
-	binary.BigEndian.PutUint32(p.buff[9:13], header.length)  /* LENGTH */
-	binary.BigEndian.PutUint32(p.buff[13:17], header.chksum) /* CHKSUM */
+	binary.BigEndian.PutUint32(p.buff[0:4], header.cmd)          /* CMD */
+	binary.BigEndian.PutUint32(p.buff[4:8], header.nid)          /* NID */
+	binary.BigEndian.PutUint32(p.buff[8:9], uint32(header.flag)) /* NID */
+	binary.BigEndian.PutUint32(p.buff[9:13], header.length)      /* LENGTH */
+	binary.BigEndian.PutUint32(p.buff[13:17], header.chksum)     /* CHKSUM */
 }
 
 /* 创建连接对象 */

@@ -162,10 +162,11 @@ func (this *RtmqProxyCntx) RtmqProxyRegister(cmd uint32, proc RtmqRegCb, param i
 }
 
 /* 发送保活消息 */
-func rtmq_proxy_send_keepalive(send_chan chan *RtmqPacket) {
+func rtmq_proxy_send_keepalive(nid uint32, send_chan chan *RtmqPacket) {
 	req := &RtmqHeader{}
 
 	req.cmd = RTMQ_CMD_KPALIVE_REQ
+	req.nid = nid
 	req.flag = 0
 	req.length = 0
 	req.chksum = RTMQ_CHKSUM_VAL
@@ -180,9 +181,11 @@ func rtmq_proxy_send_keepalive(send_chan chan *RtmqPacket) {
 
 /* 保活协程 */
 func rtmq_proxy_keepalive_routine(ctx *RtmqProxyCntx) {
-	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
-		server := ctx.server[idx]
-		rtmq_proxy_send_keepalive(server.send_chan)
+	for {
+		for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
+			server := ctx.server[idx]
+			rtmq_proxy_send_keepalive(ctx.conf.NodeId, server.send_chan)
+		}
 		time.Sleep(30)
 	}
 }

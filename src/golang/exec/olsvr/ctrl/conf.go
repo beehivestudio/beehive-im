@@ -24,6 +24,7 @@ type OlSvrConf struct {
 /* 在线中心XML配置 */
 type OlSvrXmlNode struct {
 	Name      xml.Name              `xml:OLSVR`     // 根结点名
+	NodeId    uint32                `xml:NodeId`    // 结点ID
 	RedisAddr string                `xml:RedisAddr` // Redis地址(IP+PORT)
 	LogPath   string                `xml:LogPath`   // 日志路径
 	RtmqProxy OlSvrRtmqProxyXmlNode `xml:RtmqProxy` // RTMQ PROXY配置
@@ -70,6 +71,12 @@ func (conf *OlSvrConf) conf_parse() (err error) {
 	}
 
 	/* > 解析配置文件 */
+	/* 结点ID */
+	conf.NodeId = node.NodeId
+	if 0 == conf.NodeId {
+		return errors.New("Get node id failed!")
+	}
+
 	/* Redis地址(IP+PORT) */
 	conf.RedisAddr = node.RedisAddr
 	if 0 == len(conf.RedisAddr) {
@@ -83,6 +90,8 @@ func (conf *OlSvrConf) conf_parse() (err error) {
 	}
 
 	/* RTMQ-PROXY配置 */
+	conf.rtmq_proxy.NodeId = conf.NodeId
+
 	/* 转发层(IP+PROT) */
 	conf.rtmq_proxy.RemoteAddr = node.RtmqProxy.RemoteAddr
 	if 0 == len(conf.rtmq_proxy.RemoteAddr) {
