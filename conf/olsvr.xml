@@ -1,10 +1,11 @@
 <OLSVR>
+  <NodeId>30000</NodeId>
   <LogPath>../log</LogPath>
   <RedisAddr>127.0.0.1:19000</RedisAddr>
   <RtmqProxy>
     <WorkerNum>10</WorkerNum>
     <SendChanLen>20000</SendChanLen>
     <RecvChanLen>20000</RecvChanLen>
-    <RemoteAddr>127.0.0.1:28000</RemoteAddr>
+    <RemoteAddr>127.0.0.1:28889</RemoteAddr>
   </RtmqProxy>
 </OLSVR>
