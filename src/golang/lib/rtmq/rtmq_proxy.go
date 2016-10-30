@@ -33,6 +33,14 @@ const (
 	RTMQ_USR_DATA    = 1          /* 业务数据 */
 )
 
+/* 保活状态 */
+const (
+	RTMQ_KPALIVE_STAT_UNKNOWN = 0 /* 未知 */
+	RTMQ_KPALIVE_STAT_SENT    = 1 /* 已发送 */
+	RTMQ_KPALIVE_STAT_SUCC    = 2 /* 成功 */
+	RTMQ_KPALIVE_STAT_FAIL    = 3 /* 失败 */
+)
+
 /* 命令类型 */
 const (
 	RTMQ_CMD_UNKNOWN             = 0      /* 未知命令 */
@@ -88,6 +96,23 @@ type RtmqRegItem struct {
 	cmd   uint32      /* 命令类型 */
 	proc  RtmqRegCb   /* 回调函数 */
 	param interface{} /* 附加参数 */
+}
+
+/* TCP连接对象 */
+type RtmqProxyConn struct {
+	svr           *RtmqProxyServer
+	conn          *net.TCPConn     /* 原始TCP连接 */
+	extra         interface{}      /* 扩展数据 */
+	is_close      int32            /* 连接是否关闭 */
+	send_chan     chan *RtmqPacket /* 普通消息发送队列 */
+	mesg_chan     chan *RtmqPacket /* 系统消息发送队列 */
+	recv_chan     chan *RtmqPacket /* 普通消息接收队列 */
+	close_chan    chan struct{}    /* 关闭通道 */
+	close_once    sync.Once        /* 连接只允许被关闭一次 */
+	is_auth       bool             /* 鉴权是否成功 */
+	kpalive_time  int64            /* 发送保活的时间 */
+	kpalive_stat  int32            /* 保活状态 */
+	kpalive_times int32            /* 保活尝试次数 */
 }
 
 /* 代理服务 */
@@ -173,7 +198,7 @@ func (svr *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqPacket) bool {
 
 	/* 内部消息处理 */
 	if RTMQ_SYS_DATA == header.flag {
-		return c.mesg_handler(header.cmd, p.buff[RTMQ_HEAD_SIZE:], header.length)
+		return c.mesg_handler(header.cmd, p)
 	}
 
 	/* 获取CMD对应的注册项 */
@@ -357,19 +382,6 @@ func (svr *RtmqProxyServer) Stop() {
 	svr.waitGroup.Wait()
 }
 
-/* TCP连接对象 */
-type RtmqProxyConn struct {
-	svr        *RtmqProxyServer
-	conn       *net.TCPConn     /* 原始TCP连接 */
-	extra      interface{}      /* 扩展数据 */
-	is_close   int32            /* 连接是否关闭 */
-	send_chan  chan *RtmqPacket /* 普通消息发送队列 */
-	mesg_chan  chan *RtmqPacket /* 系统消息发送队列 */
-	recv_chan  chan *RtmqPacket /* 普通消息接收队列 */
-	close_chan chan struct{}    /* 关闭通道 */
-	close_once sync.Once        /* 连接只允许被关闭一次 */
-}
-
 /* "网络->主机"字节序 */
 func rtmq_head_ntoh(p *RtmqPacket) *RtmqHeader {
 	head := &RtmqHeader{}
@@ -425,12 +437,15 @@ func rtmq_head_hton(header *RtmqHeader, p *RtmqPacket) {
  ******************************************************************************/
 func (svr *RtmqProxyServer) conn_new(conn *net.TCPConn) *RtmqProxyConn {
 	return &RtmqProxyConn{
-		svr:        svr,
-		conn:       conn,
-		close_chan: make(chan struct{}),
-		send_chan:  svr.send_chan,
-		mesg_chan:  make(chan *RtmqPacket, 1000),
-		recv_chan:  svr.recv_chan,
+		svr:           svr,
+		conn:          conn,
+		close_chan:    make(chan struct{}),
+		send_chan:     svr.send_chan,
+		mesg_chan:     make(chan *RtmqPacket, 1000),
+		recv_chan:     svr.recv_chan,
+		kpalive_time:  time.Now().Unix(),
+		kpalive_stat:  RTMQ_KPALIVE_STAT_UNKNOWN,
+		kpalive_times: 0,
 	}
 }
 
@@ -537,6 +552,9 @@ func (c *RtmqProxyConn) recv_routine() {
 			return
 		}
 
+		c.kpalive_times = 0
+		c.kpalive_stat = RTMQ_KPALIVE_STAT_SUCC
+
 		/* 放入接收队列 */
 		c.recv_chan <- p
 	}
@@ -578,7 +596,11 @@ func (c *RtmqProxyConn) send_routine() {
 				return
 			}
 
-		case <-time.After(1 * time.Second): /* 保活消息 */
+		case <-time.After(5 * time.Second): /* 保活消息 */
+			if c.kpalive_times > 3 &&
+				RTMQ_KPALIVE_STAT_SENT == c.kpalive_stat {
+				return
+			}
 			c.keepalive()
 			continue
 
@@ -647,13 +669,21 @@ func (c *RtmqProxyConn) keepalive() {
 
 	rtmq_head_hton(head, p)
 
+	c.kpalive_time = time.Now().Unix()
+	c.kpalive_times += 1
 	c.mesg_chan <- p
+	c.kpalive_stat = RTMQ_KPALIVE_STAT_SENT
 }
 
 /* 链路鉴权请求 */
 type RtmqAuthReq struct {
 	usr    [RTMQ_USR_MAX_LEN]byte /* 用户名 */
 	passwd [RTMQ_PWD_MAX_LEN]byte /* 登录密码 */
+}
+
+/* 链路鉴权应答 */
+type RtmqAuthRsp struct {
+	is_succ uint32 /* 鉴权是否成功(0:失败 1:成功) */
 }
 
 /* 设置鉴权请求 */
@@ -761,11 +791,42 @@ func (c *RtmqProxyConn) subscribe() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
  ******************************************************************************/
-func (c *RtmqProxyConn) mesg_handler(cmd uint32, buff []byte, length uint32) bool {
+func (c *RtmqProxyConn) mesg_handler(cmd uint32, p *RtmqPacket) bool {
 	switch cmd {
 	case RTMQ_CMD_LINK_AUTH_RSP:
+		return c.auth_rsp_handler(p)
 	case RTMQ_CMD_KPALIVE_RSP:
-	case RTMQ_CMD_SUB_ONE_RSP:
+		c.kpalive_times = 0
+		c.kpalive_stat = RTMQ_KPALIVE_STAT_SUCC
 	}
+	return true
+}
+
+/******************************************************************************
+ **函数名称: auth_rsp_handler
+ **功    能: 鉴权应答处理
+ **输入参数:
+ **     buff: 消息体
+ **     length: 消息体长度
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
+ ******************************************************************************/
+func (c *RtmqProxyConn) auth_rsp_handler(p *RtmqPacket) bool {
+	log := c.svr.log
+	conf := c.svr.conf
+
+	is_succ := binary.BigEndian.Uint32(p.buff[RTMQ_HEAD_SIZE : RTMQ_HEAD_SIZE+4])
+	if 0 == is_succ {
+		c.is_auth = false
+		log.Error("Auth failed! usr:%s passwd:%s", conf.Usr, conf.Passwd)
+		return false
+	}
+
+	log.Debug("Auth success! usr:%s passwd:%s", conf.Usr, conf.Passwd)
+
+	c.is_auth = true
 	return true
 }
