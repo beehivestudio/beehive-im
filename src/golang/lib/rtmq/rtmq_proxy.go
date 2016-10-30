@@ -9,8 +9,12 @@ import (
 )
 
 const (
-	RTMQ_SSVR_NUM   = 10
-	RTMQ_CHKSUM_VAL = 0x1FE23DC4
+	RTMQ_SSVR_NUM    = 10
+	RTMQ_CHKSUM_VAL  = 0x1FE23DC4
+	RTMQ_USR_MAX_LEN = 32
+	RTMQ_PWD_MAX_LEN = 16
+	RTMQ_SYS_DATA    = 0 /* 系统数据 */
+	RTMQ_USR_DATA    = 1 /* 业务数据 */
 )
 
 /* 系统数据类型 */
@@ -41,6 +45,8 @@ const (
 /* 配置信息 */
 type RtmqProxyConf struct {
 	NodeId      uint32 /* 结点ID */
+	Usr         string /* 用户名 */
+	Passwd      string /* 登录密码 */
 	RemoteAddr  string /* 对端IP地址 */
 	WorkerNum   uint32 /* 工作协程数 */
 	SendChanLen uint32 /* 发送队列长度 */

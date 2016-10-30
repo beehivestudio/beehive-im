@@ -124,10 +124,11 @@ func (c *RtmqProxyConn) Do() {
 		return
 	}
 
+	c.auth()
+
 	go c.read_routine()
 	go c.write_routine()
 	go c.handle_routine()
-	go c.keepalive_routine()
 }
 
 /* 启动多个处理协程 */
@@ -138,12 +139,13 @@ func (c *RtmqProxyConn) DoPool(num uint32) {
 		return
 	}
 
+	c.auth()
+
 	for i = 0; i < num; i++ {
 		go c.handle_routine()
 	}
 	go c.read_routine()
 	go c.write_routine()
-	go c.keepalive_routine()
 }
 
 /* 接收协程的处理流程 */
@@ -218,30 +220,11 @@ func (c *RtmqProxyConn) write_routine() {
 			if _, err := c.conn.Write([]byte(p.buff)); nil != err {
 				return
 			}
-		}
-	}
-}
 
-/* 保活协程的处理流程 */
-func (c *RtmqProxyConn) keepalive_routine() {
-	c.svr.waitGroup.Add(1)
-	defer func() {
-		recover()
-		c.Close()
-		c.svr.waitGroup.Done()
-	}()
-
-	for {
-		select {
-		case <-c.svr.exit_chan:
-			return
-
-		case <-c.close_chan:
-			return
-
-		case <-time.After(30 * time.Second):
+		case <-time.After(1 * time.Second): /* 保活消息 */
 			c.keepalive()
 			continue
+
 		}
 	}
 }
@@ -251,18 +234,50 @@ func (c *RtmqProxyConn) keepalive() {
 	svr := c.svr
 	conf := svr.conf
 
-	req := &RtmqHeader{}
+	head := &RtmqHeader{}
 
-	req.cmd = RTMQ_CMD_KPALIVE_REQ
-	req.nid = conf.NodeId
-	req.flag = 0
-	req.length = 0
-	req.chksum = RTMQ_CHKSUM_VAL
+	head.cmd = RTMQ_CMD_KPALIVE_REQ
+	head.nid = conf.NodeId
+	head.flag = RTMQ_SYS_DATA
+	head.length = 0
+	head.chksum = RTMQ_CHKSUM_VAL
 
 	p := &RtmqPacket{}
 	p.buff = make([]byte, RTMQ_HEAD_SIZE)
 
-	rtmq_head_hton(req, p)
+	rtmq_head_hton(head, p)
+
+	c.mesg_chan <- p
+}
+
+/* 链路鉴权请求 */
+type RtmqAuthReq struct {
+	usr    [RTMQ_USR_MAX_LEN]byte /* 用户名 */
+	passwd [RTMQ_PWD_MAX_LEN]byte /* 登录密码 */
+}
+
+/* 发送鉴权消息 */
+func (c *RtmqProxyConn) auth() {
+	svr := c.svr
+	conf := svr.conf
+
+	/* > 设置头部数据 */
+	head := &RtmqHeader{}
+
+	head.cmd = RTMQ_CMD_KPALIVE_REQ
+	head.nid = conf.NodeId
+	head.flag = RTMQ_SYS_DATA
+	head.length = uint32(binary.Size(RtmqAuthReq{}))
+	head.chksum = RTMQ_CHKSUM_VAL
+
+	/* > 申请内存空间 */
+	p := &RtmqPacket{}
+	p.buff = make([]byte, RTMQ_HEAD_SIZE+head.length)
+
+	rtmq_head_hton(head, p)
+
+	copy(p.buff[RTMQ_HEAD_SIZE:], []byte(conf.Usr))
+	copy(p.buff[RTMQ_HEAD_SIZE+RTMQ_USR_MAX_LEN:], []byte(conf.Passwd))
 
 	c.mesg_chan <- p
 }
