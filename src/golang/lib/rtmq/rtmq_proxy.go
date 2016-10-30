@@ -613,9 +613,6 @@ func (c *RtmqProxyConn) handle_routine() {
 		case <-c.close_chan:
 			return
 
-		case p := <-c.mesg_chan: /* 内部消息 */
-			c.svr.OnMessage(c, p)
-
 		case p := <-c.recv_chan: /* 业务消息 */
 			c.svr.OnMessage(c, p)
 		}

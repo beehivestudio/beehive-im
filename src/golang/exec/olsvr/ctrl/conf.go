@@ -47,7 +47,17 @@ type OlSvrConfXmlData struct {
 	RtmqProxy OlSvrConfRtmqProxyXmlData `xml:RtmqProxy` // RTMQ PROXY配置
 }
 
-/* 加载配置信息 */
+/******************************************************************************
+ **函数名称: LoadConf
+ **功    能: 加载配置信息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **     err: 日志对象
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
+ ******************************************************************************/
 func (conf *OlSvrConf) LoadConf() (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
@@ -57,7 +67,17 @@ func (conf *OlSvrConf) LoadConf() (err error) {
 	return conf.conf_parse()
 }
 
-/* 解析配置信息 */
+/******************************************************************************
+ **函数名称: conf_parse
+ **功    能: 解析配置信息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **     err: 日志对象
+ **实现描述: 加载配置并提取有效信息
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
+ ******************************************************************************/
 func (conf *OlSvrConf) conf_parse() (err error) {
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)

@@ -25,12 +25,15 @@ func main() {
 		return
 	}
 
-	/* > 初始化OLS环境 */
-	_, err := ctrl.OlSvrInit(&conf)
+	/* > 初始化OLSVR环境 */
+	ctx, err := ctrl.OlSvrInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return
 	}
+
+	/* > 启动OLSVR服务 */
+	ctx.Launch()
 
 	/* > 捕捉中断信号 */
 	ch := make(chan os.Signal)
