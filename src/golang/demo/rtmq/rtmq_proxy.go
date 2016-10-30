@@ -64,7 +64,7 @@ func main() {
 	}
 
 	/* > 初始化RTMQ-PROXY对象 */
-	pxy, err := rtmq.RtmqProxyInit(conf, log)
+	pxy, err := rtmq.ProxyInit(conf, log)
 	if nil != err {
 		log.Error("Rtmq proxy init failed!")
 		return
@@ -74,6 +74,6 @@ func main() {
 	pxy.Register(CHAT_CMD_ONLINE, chat_cmd_online_handler, pxy)
 	pxy.Register(CHAT_CMD_OFFLINE, chat_cmd_offline_handler, pxy)
 
-	/* > 发送数据 */
-	//pxy.Send(1, []byte(data), len(data))
+	/* > 启动PROXY服务 */
+	pxy.Launch()
 }

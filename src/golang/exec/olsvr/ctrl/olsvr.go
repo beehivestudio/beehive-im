@@ -26,7 +26,7 @@ func OlSvrInit(conf *OlSvrConf) (ctx *OlSvrCntx, err error) {
 		return nil, err
 	}
 
-	ctx.rtmq_proxy = rtmq.RtmqProxyInit(&conf.rtmq_proxy, ctx.log)
+	ctx.rtmq_proxy = rtmq.ProxyInit(&conf.rtmq_proxy, ctx.log)
 	if nil == ctx.rtmq_proxy {
 		return nil, err
 	}
