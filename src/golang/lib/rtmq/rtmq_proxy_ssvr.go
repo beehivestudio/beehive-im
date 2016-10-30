@@ -3,7 +3,6 @@ package rtmq
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -126,6 +125,7 @@ func (c *RtmqProxyConn) Do() {
 	}
 
 	c.auth()
+	c.subscribe()
 
 	go c.read_routine()
 	go c.write_routine()
@@ -141,6 +141,7 @@ func (c *RtmqProxyConn) DoPool(num uint32) {
 	}
 
 	c.auth()
+	c.subscribe()
 
 	for i = 0; i < num; i++ {
 		go c.handle_routine()
@@ -230,6 +231,29 @@ func (c *RtmqProxyConn) write_routine() {
 	}
 }
 
+/* 工作协程的处理流程 */
+func (c *RtmqProxyConn) handle_routine() {
+	c.svr.waitGroup.Add(1)
+	defer func() {
+		recover()
+		c.Close()
+		c.svr.waitGroup.Done()
+	}()
+
+	for {
+		select {
+		case <-c.svr.exit_chan:
+			return
+
+		case <-c.close_chan:
+			return
+
+		case p := <-c.recv_chan:
+			c.svr.OnMessage(c, p)
+		}
+	}
+}
+
 /* 发送保活消息 */
 func (c *RtmqProxyConn) keepalive() {
 	svr := c.svr
@@ -257,6 +281,12 @@ type RtmqAuthReq struct {
 	passwd [RTMQ_PWD_MAX_LEN]byte /* 登录密码 */
 }
 
+/* 设置鉴权请求 */
+func rtmq_set_auth_req(conf *RtmqProxyConf, p *RtmqPacket) {
+	copy(p.buff[RTMQ_HEAD_SIZE:], []byte(conf.Usr))
+	copy(p.buff[RTMQ_HEAD_SIZE+RTMQ_USR_MAX_LEN:], []byte(conf.Passwd))
+}
+
 /* 发送鉴权消息 */
 func (c *RtmqProxyConn) auth() {
 	svr := c.svr
@@ -276,34 +306,47 @@ func (c *RtmqProxyConn) auth() {
 	p.buff = make([]byte, RTMQ_HEAD_SIZE+head.length)
 
 	rtmq_head_hton(head, p)
-
-	fmt.Printf("auth:%s passwd:%s", conf.Usr, conf.Passwd)
-
-	copy(p.buff[RTMQ_HEAD_SIZE:], []byte(conf.Usr))
-	copy(p.buff[RTMQ_HEAD_SIZE+RTMQ_USR_MAX_LEN:], []byte(conf.Passwd))
+	rtmq_set_auth_req(conf, p)
 
 	c.mesg_chan <- p
 }
 
-/* 工作协程的处理流程 */
-func (c *RtmqProxyConn) handle_routine() {
-	c.svr.waitGroup.Add(1)
-	defer func() {
-		recover()
-		c.Close()
-		c.svr.waitGroup.Done()
-	}()
+/* 订阅请求 */
+type RtmqSubReq struct {
+	cmd uint32 /* 被订阅的消息 */
+}
 
-	for {
-		select {
-		case <-c.svr.exit_chan:
-			return
+/* 设置订阅请求 */
+func rtmq_set_sub_req(req *RtmqSubReq, p *RtmqPacket) {
+	binary.BigEndian.PutUint32(p.buff[RTMQ_HEAD_SIZE:4], req.cmd) /* CMD */
+}
 
-		case <-c.close_chan:
-			return
+/* 发送订阅消息 */
+func (c *RtmqProxyConn) subscribe() {
+	svr := c.svr
+	ctx := svr.ctx
+	conf := svr.conf
 
-		case p := <-c.recv_chan:
-			c.svr.OnMessage(c, p)
-		}
+	for cmd, _ := range ctx.reg {
+		/* > 设置头部数据 */
+		head := &RtmqHeader{}
+
+		head.cmd = RTMQ_CMD_SUB_ONE_REQ
+		head.nid = conf.NodeId
+		head.flag = RTMQ_SYS_DATA
+		head.length = uint32(binary.Size(RtmqSubReq{}))
+		head.chksum = RTMQ_CHKSUM_VAL
+
+		req := &RtmqSubReq{}
+		req.cmd = cmd
+
+		/* > 申请内存空间 */
+		p := &RtmqPacket{}
+		p.buff = make([]byte, RTMQ_HEAD_SIZE+head.length)
+
+		rtmq_head_hton(head, p)
+		rtmq_set_sub_req(req, p)
+
+		c.mesg_chan <- p
 	}
 }
