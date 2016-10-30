@@ -211,14 +211,13 @@ func (svr *RtmqProxyServer) OnClose(c *RtmqProxyConn) {
  **     conf: 配置数据
  **     log: 日志对象
  **输出参数: NONE
- **返    回:
- **     ctx: 上下文对象
+ **返    回: 上下文对象
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:09:33 #
  ******************************************************************************/
-func ProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) (ctx *RtmqProxyCntx) {
-	ctx = &RtmqProxyCntx{}
+func ProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
+	ctx := &RtmqProxyCntx{}
 
 	ctx.log = log
 	ctx.conf = conf
@@ -240,7 +239,7 @@ func ProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) (ctx *RtmqProxyCntx) {
  **     proc: 消息处理回调
  **     param: 附加参数
  **输出参数: NONE
- **返    回:
+ **返    回: true:成功 false:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:17:46 #
@@ -281,8 +280,7 @@ func (ctx *RtmqProxyCntx) Launch() {
  **功    能: 新建PROXY服务对象
  **输入参数: NONE
  **输出参数: NONE
- **返    回:
- **     svr: 服务对象
+ **返    回: 服务对象
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:17:46 #
@@ -362,14 +360,14 @@ func (svr *RtmqProxyServer) Stop() {
 /* TCP连接对象 */
 type RtmqProxyConn struct {
 	svr        *RtmqProxyServer
-	conn       *net.TCPConn     /* the raw connection */
-	extra      interface{}      /* to save extra data */
-	closeOnce  sync.Once        /* close the conn, once, per instance */
-	is_close   int32            /* close flag */
+	conn       *net.TCPConn     /* 原始TCP连接 */
+	extra      interface{}      /* 扩展数据 */
+	is_close   int32            /* 连接是否关闭 */
 	send_chan  chan *RtmqPacket /* 普通消息发送队列 */
 	mesg_chan  chan *RtmqPacket /* 系统消息发送队列 */
 	recv_chan  chan *RtmqPacket /* 普通消息接收队列 */
-	close_chan chan struct{}    /* close chanel */
+	close_chan chan struct{}    /* 关闭通道 */
+	close_once sync.Once        /* 连接只允许被关闭一次 */
 }
 
 /* "网络->主机"字节序 */
@@ -431,7 +429,7 @@ func (svr *RtmqProxyServer) conn_new(conn *net.TCPConn) *RtmqProxyConn {
 		conn:       conn,
 		close_chan: make(chan struct{}),
 		send_chan:  svr.send_chan,
-		mesg_chan:  make(chan *RtmqPacket, 100),
+		mesg_chan:  make(chan *RtmqPacket, 1000),
 		recv_chan:  svr.recv_chan,
 	}
 }
@@ -443,8 +441,9 @@ func (c *RtmqProxyConn) GetRawConn() *net.TCPConn {
 
 /* 关闭连接 */
 func (c *RtmqProxyConn) Close() {
-	c.closeOnce.Do(func() {
+	c.close_once.Do(func() {
 		atomic.StoreInt32(&c.is_close, 1)
+		close(c.mesg_chan)
 		close(c.close_chan)
 		c.conn.Close()
 		c.svr.OnClose(c)
