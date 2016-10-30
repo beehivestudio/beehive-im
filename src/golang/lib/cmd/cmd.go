@@ -1,4 +1,4 @@
-package mesg
+package cmd
 
 const (
 	CMD_UNKNOWN = 0 /* 未知消息 */
