@@ -3,6 +3,7 @@ package rtmq
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"sync"
@@ -264,7 +265,7 @@ func (c *RtmqProxyConn) auth() {
 	/* > 设置头部数据 */
 	head := &RtmqHeader{}
 
-	head.cmd = RTMQ_CMD_KPALIVE_REQ
+	head.cmd = RTMQ_CMD_LINK_AUTH_REQ
 	head.nid = conf.NodeId
 	head.flag = RTMQ_SYS_DATA
 	head.length = uint32(binary.Size(RtmqAuthReq{}))
@@ -275,6 +276,8 @@ func (c *RtmqProxyConn) auth() {
 	p.buff = make([]byte, RTMQ_HEAD_SIZE+head.length)
 
 	rtmq_head_hton(head, p)
+
+	fmt.Printf("auth:%s passwd:%s", conf.Usr, conf.Passwd)
 
 	copy(p.buff[RTMQ_HEAD_SIZE:], []byte(conf.Usr))
 	copy(p.buff[RTMQ_HEAD_SIZE+RTMQ_USR_MAX_LEN:], []byte(conf.Passwd))

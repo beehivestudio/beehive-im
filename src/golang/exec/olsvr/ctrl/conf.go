@@ -21,21 +21,30 @@ type OlSvrConf struct {
 	rtmq_proxy rtmq.RtmqProxyConf // RTMQ配置
 }
 
-/* 在线中心XML配置 */
-type OlSvrXmlNode struct {
-	Name      xml.Name              `xml:OLSVR`     // 根结点名
-	NodeId    uint32                `xml:NodeId`    // 结点ID
-	RedisAddr string                `xml:RedisAddr` // Redis地址(IP+PORT)
-	LogPath   string                `xml:LogPath`   // 日志路径
-	RtmqProxy OlSvrRtmqProxyXmlNode `xml:RtmqProxy` // RTMQ PROXY配置
+/* 鉴权信息 */
+type OlSvrConfRtmqAuthXmlData struct {
+	Name   xml.Name `xml:Auth`   // 结点名
+	Usr    string   `xml:Usr`    // 用户名
+	Passwd string   `xml:Passwd` // 登录密码
 }
 
-type OlSvrRtmqProxyXmlNode struct {
-	Name        xml.Name `xml:RtmqProxy`   // 结点名
-	RemoteAddr  string   `xml:RemoteAddr`  // 对端IP(IP+PROT)
-	WorkerNum   uint32   `xml:WorkerNum`   // 协程数
-	SendChanLen uint32   `xml:SendChanLen` // 发送队列长度
-	RecvChanLen uint32   `xml:RecvChanLen` // 接收队列长度
+/* RTMQ代理配置 */
+type OlSvrConfRtmqProxyXmlData struct {
+	Name        xml.Name                 `xml:RtmqProxy`   // 结点名
+	Auth        OlSvrConfRtmqAuthXmlData `xml:Auth`        // 鉴权信息
+	RemoteAddr  string                   `xml:RemoteAddr`  // 对端IP(IP+PROT)
+	WorkerNum   uint32                   `xml:WorkerNum`   // 协程数
+	SendChanLen uint32                   `xml:SendChanLen` // 发送队列长度
+	RecvChanLen uint32                   `xml:RecvChanLen` // 接收队列长度
+}
+
+/* 在线中心XML配置 */
+type OlSvrConfXmlData struct {
+	Name      xml.Name                  `xml:OLSVR`     // 根结点名
+	NodeId    uint32                    `xml:NodeId`    // 结点ID
+	RedisAddr string                    `xml:RedisAddr` // Redis地址(IP+PORT)
+	LogPath   string                    `xml:LogPath`   // 日志路径
+	RtmqProxy OlSvrConfRtmqProxyXmlData `xml:RtmqProxy` // RTMQ PROXY配置
 }
 
 /* 加载配置信息 */
@@ -63,7 +72,7 @@ func (conf *OlSvrConf) conf_parse() (err error) {
 		return err
 	}
 
-	node := OlSvrXmlNode{}
+	node := OlSvrConfXmlData{}
 
 	err = xml.Unmarshal(data, &node)
 	if nil != err {
@@ -91,6 +100,13 @@ func (conf *OlSvrConf) conf_parse() (err error) {
 
 	/* RTMQ-PROXY配置 */
 	conf.rtmq_proxy.NodeId = conf.NodeId
+
+	/* 鉴权信息 */
+	conf.rtmq_proxy.Usr = node.RtmqProxy.Auth.Usr
+	conf.rtmq_proxy.Passwd = node.RtmqProxy.Auth.Passwd
+	if 0 == len(conf.rtmq_proxy.Usr) || 0 == len(conf.rtmq_proxy.Passwd) {
+		return errors.New("Get auth conf failed!")
+	}
 
 	/* 转发层(IP+PROT) */
 	conf.rtmq_proxy.RemoteAddr = node.RtmqProxy.RemoteAddr
