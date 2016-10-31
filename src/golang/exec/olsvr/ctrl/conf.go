@@ -23,28 +23,28 @@ type OlsvrConf struct {
 
 /* 鉴权信息 */
 type OlsvrConfRtmqAuthXmlData struct {
-	Name   xml.Name `xml:Auth`   // 结点名
-	Usr    string   `xml:Usr`    // 用户名
-	Passwd string   `xml:Passwd` // 登录密码
+	Name   xml.Name `xml:"AUTH"`        // 结点名
+	Usr    string   `xml:"USR,attr"`    // 用户名
+	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
 type OlsvrConfRtmqProxyXmlData struct {
-	Name        xml.Name                 `xml:RtmqProxy`   // 结点名
-	Auth        OlsvrConfRtmqAuthXmlData `xml:Auth`        // 鉴权信息
-	RemoteAddr  string                   `xml:RemoteAddr`  // 对端IP(IP+PROT)
-	WorkerNum   uint32                   `xml:WorkerNum`   // 协程数
-	SendChanLen uint32                   `xml:SendChanLen` // 发送队列长度
-	RecvChanLen uint32                   `xml:RecvChanLen` // 接收队列长度
+	Name        xml.Name                 `xml:"RTMQ-PROXY"`    // 结点名
+	Auth        OlsvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
+	RemoteAddr  string                   `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
+	WorkerNum   uint32                   `xml:"WORKER-NUM"`    // 协程数
+	SendChanLen uint32                   `xml:"SEND-CHAN-LEN"` // 发送队列长度
+	RecvChanLen uint32                   `xml:"RECV-CHAN-LEN"` // 接收队列长度
 }
 
 /* 在线中心XML配置 */
 type OlsvrConfXmlData struct {
-	Name      xml.Name                  `xml:OLSVR`     // 根结点名
-	NodeId    uint32                    `xml:NodeId`    // 结点ID
-	RedisAddr string                    `xml:RedisAddr` // Redis地址(IP+PORT)
-	LogPath   string                    `xml:LogPath`   // 日志路径
-	RtmqProxy OlsvrConfRtmqProxyXmlData `xml:RtmqProxy` // RTMQ PROXY配置
+	Name      xml.Name                  `xml:"OLSVR"`      // 根结点名
+	Id        uint32                    `xml:"ID,attr"`    // 结点ID
+	RedisAddr string                    `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
+	LogPath   string                    `xml:"LOG-PATH"`   // 日志路径
+	RtmqProxy OlsvrConfRtmqProxyXmlData `xml:"RTMQ-PROXY"` // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -101,7 +101,7 @@ func (conf *OlsvrConf) conf_parse() (err error) {
 
 	/* > 解析配置文件 */
 	/* 结点ID */
-	conf.NodeId = node.NodeId
+	conf.NodeId = node.Id
 	if 0 == conf.NodeId {
 		return errors.New("Get node id failed!")
 	}

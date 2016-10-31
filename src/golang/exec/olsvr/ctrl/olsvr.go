@@ -56,7 +56,7 @@ func OlsvrInit(conf *OlsvrConf) (ctx *OlsvrCntx, err error) {
  **输出参数: NONE
  **返    回: VOID
  **实现描述: 注册回调函数
- **注意事项:
+ **注意事项: 请在调用Launch()前完成此函数调用
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *OlsvrCntx) Register() {

@@ -1,15 +1,11 @@
 <OLSVR ID="30000">
-  <NodeId>3000</NodeId>
-  <LogPath>../log</LogPath>
-  <RedisAddr>127.0.0.1:19000</RedisAddr>
-  <RtmqProxy>
-    <Auth>
-      <Usr>qifeng</Usr>
-      <Passwd>111111</Passwd>
-    </Auth>
-    <WorkerNum>10</WorkerNum>
-    <SendChanLen>20000</SendChanLen>
-    <RecvChanLen>20000</RecvChanLen>
-    <RemoteAddr>127.0.0.1:28889</RemoteAddr>
-  </RtmqProxy>
+  <LOG-PATH>../log</LOG-PATH>
+  <REDIS-ADDR>127.0.0.1:19000</REDIS-ADDR>
+  <RTMQ-PROXY>
+    <AUTH USR="qifeng" PASSWD="111111" />
+    <WORKER-NUM>10</WORKER-NUM>
+    <SEND-CHAN-LEN>20000</SEND-CHAN-LEN>
+    <RECV-CHAN-LEN>20000</RECV-CHAN-LEN>
+    <REMOTE-ADDR>127.0.0.1:28889</REMOTE-ADDR>
+  </RTMQ-PROXY>
 </OLSVR>
