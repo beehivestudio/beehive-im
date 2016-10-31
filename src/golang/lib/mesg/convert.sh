@@ -1,14 +1,11 @@
 #!/bin/sh
 
-INCL_DIR=../../incl/mesg
-mkdir -p $INCL_DIR
-
-LIST="mesg_room.proto"
-LIST=$LIST" mesg_online.proto"
-LIST=$LIST" mesg_online_ack.proto"
-LIST=$LIST" mesg_join.proto"
-LIST=$LIST" mesg_join_ack.proto"
-LIST=$LIST" mesg_unjoin.proto"
+LIST="room/mesg_room.proto"
+LIST=$LIST" online/mesg_online.proto"
+LIST=$LIST" online_ack/mesg_online_ack.proto"
+LIST=$LIST" join/mesg_join.proto"
+LIST=$LIST" join_ack/mesg_join_ack.proto"
+LIST=$LIST" unjoin/mesg_unjoin.proto"
 
 for ITEM in $LIST;
 do
