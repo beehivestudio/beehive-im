@@ -75,9 +75,12 @@ type RtmqProxyConf struct {
 	SendChanLen uint32 /* 发送队列长度 */
 	RecvChanLen uint32 /* 接收队列长度 */
 }
-
 type RtmqPacket struct {
-	buff []byte /* 接收数据 */
+	buff []byte /* 数据 */
+}
+type RtmqRecvPacket struct {
+	head []byte /* 头部数据 */
+	body []byte /* 报体数据 */
 }
 
 /* 协议头 */
@@ -101,29 +104,29 @@ type RtmqRegItem struct {
 /* TCP连接对象 */
 type RtmqProxyConn struct {
 	svr           *RtmqProxyServer
-	conn          *net.TCPConn     /* 原始TCP连接 */
-	extra         interface{}      /* 扩展数据 */
-	is_close      int32            /* 连接是否关闭 */
-	send_chan     chan *RtmqPacket /* 普通消息发送队列 */
-	mesg_chan     chan *RtmqPacket /* 系统消息发送队列 */
-	recv_chan     chan *RtmqPacket /* 普通消息接收队列 */
-	close_chan    chan struct{}    /* 关闭通道 */
-	close_once    sync.Once        /* 连接只允许被关闭一次 */
-	is_auth       bool             /* 鉴权是否成功 */
-	kpalive_time  int64            /* 发送保活的时间 */
-	kpalive_stat  int32            /* 保活状态 */
-	kpalive_times int32            /* 保活尝试次数 */
+	conn          *net.TCPConn         /* 原始TCP连接 */
+	extra         interface{}          /* 扩展数据 */
+	is_close      int32                /* 连接是否关闭 */
+	send_chan     chan *RtmqPacket     /* 普通消息发送队列 */
+	mesg_chan     chan *RtmqPacket     /* 系统消息发送队列 */
+	recv_chan     chan *RtmqRecvPacket /* 普通消息接收队列 */
+	close_chan    chan struct{}        /* 关闭通道 */
+	close_once    sync.Once            /* 连接只允许被关闭一次 */
+	is_auth       bool                 /* 鉴权是否成功 */
+	kpalive_time  int64                /* 发送保活的时间 */
+	kpalive_stat  int32                /* 保活状态 */
+	kpalive_times int32                /* 保活尝试次数 */
 }
 
 /* 代理服务 */
 type RtmqProxyServer struct {
-	ctx       *RtmqProxyCntx   /* 全局对象 */
-	conf      *RtmqProxyConf   /* 配置数据 */
-	log       *logs.BeeLogger  /* 日志对象 */
-	send_chan chan *RtmqPacket /* 发送队列 */
-	recv_chan chan *RtmqPacket /* 接收队列 */
-	exit_chan chan struct{}    /* 通知所有协程退出 */
-	waitGroup *sync.WaitGroup  /* 用于等待所有协程 */
+	ctx       *RtmqProxyCntx       /* 全局对象 */
+	conf      *RtmqProxyConf       /* 配置数据 */
+	log       *logs.BeeLogger      /* 日志对象 */
+	send_chan chan *RtmqPacket     /* 发送队列 */
+	recv_chan chan *RtmqRecvPacket /* 接收队列 */
+	exit_chan chan struct{}        /* 通知所有协程退出 */
+	waitGroup *sync.WaitGroup      /* 用于等待所有协程 */
 }
 
 /* 上下文信息 */
@@ -192,7 +195,7 @@ func (svr *RtmqProxyServer) OnConnect(c *RtmqProxyConn) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:06:03 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqPacket) bool {
+func (svr *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqRecvPacket) bool {
 	ctx := svr.ctx
 	header := rtmq_head_ntoh(p)
 
@@ -209,7 +212,7 @@ func (svr *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqPacket) bool {
 	}
 
 	/* 调用注册处理函数 */
-	item.proc(header.cmd, header.nid, p.buff[RTMQ_HEAD_SIZE:], header.length, item.param)
+	item.proc(header.cmd, header.nid, p.body[:], header.length, item.param)
 
 	return true
 }
@@ -318,7 +321,7 @@ func (ctx *RtmqProxyCntx) server_new() *RtmqProxyServer {
 		log:       ctx.log,
 		exit_chan: make(chan struct{}),
 		send_chan: make(chan *RtmqPacket, conf.SendChanLen),
-		recv_chan: make(chan *RtmqPacket, conf.RecvChanLen),
+		recv_chan: make(chan *RtmqRecvPacket, conf.RecvChanLen),
 		waitGroup: &sync.WaitGroup{},
 	}
 }
@@ -383,7 +386,7 @@ func (svr *RtmqProxyServer) Stop() {
 }
 
 /* "网络->主机"字节序 */
-func rtmq_head_ntoh(p *RtmqPacket) *RtmqHeader {
+func rtmq_head_ntoh(p *RtmqRecvPacket) *RtmqHeader {
 	head := &RtmqHeader{}
 
 	head.cmd = p.get_cmd()       /* CMD */
@@ -395,24 +398,24 @@ func rtmq_head_ntoh(p *RtmqPacket) *RtmqHeader {
 	return head
 }
 
-func (p *RtmqPacket) get_cmd() uint32 {
-	return binary.BigEndian.Uint32(p.buff[0:4])
+func (p *RtmqRecvPacket) get_cmd() uint32 {
+	return binary.BigEndian.Uint32(p.head[0:4])
 }
 
-func (p *RtmqPacket) get_nid() uint32 {
-	return binary.BigEndian.Uint32(p.buff[4:8])
+func (p *RtmqRecvPacket) get_nid() uint32 {
+	return binary.BigEndian.Uint32(p.head[4:8])
 }
 
-func (p *RtmqPacket) get_flag() uint32 {
-	return binary.BigEndian.Uint32(p.buff[8:12])
+func (p *RtmqRecvPacket) get_flag() uint32 {
+	return binary.BigEndian.Uint32(p.head[8:12])
 }
 
-func (p *RtmqPacket) get_len() uint32 {
-	return binary.BigEndian.Uint32(p.buff[12:16])
+func (p *RtmqRecvPacket) get_len() uint32 {
+	return binary.BigEndian.Uint32(p.head[12:16])
 }
 
-func (p *RtmqPacket) get_chksum() uint32 {
-	return binary.BigEndian.Uint32(p.buff[16:20])
+func (p *RtmqRecvPacket) get_chksum() uint32 {
+	return binary.BigEndian.Uint32(p.head[16:20])
 }
 
 /* "主机->网络"字节序 */
@@ -529,26 +532,22 @@ func (c *RtmqProxyConn) recv_routine() {
 		default:
 		}
 
-		tp := &RtmqPacket{}
+		p := &RtmqRecvPacket{}
 
 		/* 读取RTMQ协议头 */
-		tp.buff = make([]byte, RTMQ_HEAD_SIZE)
+		p.head = make([]byte, RTMQ_HEAD_SIZE)
 
-		if _, err := io.ReadFull(c.conn, tp.buff); nil != err {
+		if _, err := io.ReadFull(c.conn, p.head); nil != err {
 			return
 		}
 
 		/* 转换字节序 */
-		header := rtmq_head_ntoh(tp)
+		header := rtmq_head_ntoh(p)
 
 		/* 读取承载数据 */
-		p := &RtmqPacket{}
+		p.body = make([]byte, header.length)
 
-		p.buff = make([]byte, RTMQ_HEAD_SIZE+header.length)
-
-		copy(p.buff[:RTMQ_HEAD_SIZE], tp.buff)
-
-		if _, err := io.ReadFull(c.conn, p.buff[RTMQ_HEAD_SIZE:]); nil != err {
+		if _, err := io.ReadFull(c.conn, p.body[:]); nil != err {
 			return
 		}
 
@@ -783,15 +782,14 @@ func (c *RtmqProxyConn) subscribe() {
  **功    能: 系统消息处理
  **输入参数:
  **     cmd: 消息类型
- **     buff: 消息体
- **     length: 消息体长度
+ **     p: 接收的数据
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
  ******************************************************************************/
-func (c *RtmqProxyConn) mesg_handler(cmd uint32, p *RtmqPacket) bool {
+func (c *RtmqProxyConn) mesg_handler(cmd uint32, p *RtmqRecvPacket) bool {
 	switch cmd {
 	case RTMQ_CMD_LINK_AUTH_RSP:
 		return c.auth_rsp_handler(p)
@@ -806,19 +804,18 @@ func (c *RtmqProxyConn) mesg_handler(cmd uint32, p *RtmqPacket) bool {
  **函数名称: auth_rsp_handler
  **功    能: 鉴权应答处理
  **输入参数:
- **     buff: 消息体
- **     length: 消息体长度
+ **     p: 数据包对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
  ******************************************************************************/
-func (c *RtmqProxyConn) auth_rsp_handler(p *RtmqPacket) bool {
+func (c *RtmqProxyConn) auth_rsp_handler(p *RtmqRecvPacket) bool {
 	log := c.svr.log
 	conf := c.svr.conf
 
-	is_succ := binary.BigEndian.Uint32(p.buff[RTMQ_HEAD_SIZE : RTMQ_HEAD_SIZE+4])
+	is_succ := binary.BigEndian.Uint32(p.body[:4])
 	if 0 == is_succ {
 		c.is_auth = false
 		log.Error("Auth failed! usr:%s passwd:%s", conf.Usr, conf.Passwd)
