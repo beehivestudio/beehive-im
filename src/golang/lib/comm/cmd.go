@@ -1,4 +1,4 @@
-package cmd
+package comm
 
 const (
 	CMD_UNKNOWN = 0 /* 未知消息 */
@@ -12,8 +12,8 @@ const (
 	CMD_JOIN_ACK         = 0x0106 /* 加入聊天室应答 */
 	CMD_QUIT_REQ         = 0x0107 /* 退出聊天室 */
 	CMD_QUIT_ACK         = 0x0108 /* 退出聊天室应答 */
-	CMD_CLIENT_PING      = 0x0109 /* 客户端心跳 */
-	CMD_CLIENT_PONG      = 0x010A /* 客户端心跳应答 */
+	CMD_PING             = 0x0109 /* 客户端心跳 */
+	CMD_PONG             = 0x010A /* 客户端心跳应答 */
 	CMD_SUB_REQ          = 0x010B /* 订阅请求 */
 	CMD_SUB_ACK          = 0x010C /* 订阅应答 */
 	CMD_UNSUB_REQ        = 0x010D /* 取消订阅 */
