@@ -89,7 +89,7 @@ type RtmqHeader struct {
 	chksum uint32 /* 校验值(固定为0x1FE23DE4) */
 }
 
-type RtmqRegCb func(cmd uint32, orig uint32, data []byte, length uint32, param interface{})
+type RtmqRegCb func(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int
 
 /* 回调注册项 */
 type RtmqRegItem struct {

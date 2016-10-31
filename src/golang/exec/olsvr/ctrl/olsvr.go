@@ -6,18 +6,19 @@ import (
 
 	"github.com/astaxie/beego/logs"
 
+	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/rtmq"
 )
 
 /* OLS上下文 */
-type OlSvrCntx struct {
-	conf       *OlSvrConf          /* 配置信息 */
-	log        *logs.BeeLogger     /* 日志对象 */
-	rtmq_proxy *rtmq.RtmqProxyCntx /* 代理对象 */
+type OlsvrCntx struct {
+	conf  *OlsvrConf          /* 配置信息 */
+	log   *logs.BeeLogger     /* 日志对象 */
+	proxy *rtmq.RtmqProxyCntx /* 代理对象 */
 }
 
 /******************************************************************************
- **函数名称: OlSvrInit
+ **函数名称: OlsvrInit
  **功    能: 初始化对象
  **输入参数:
  **     conf: 配置信息
@@ -29,8 +30,8 @@ type OlSvrCntx struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlSvrInit(conf *OlSvrConf) (ctx *OlSvrCntx, err error) {
-	ctx = &OlSvrCntx{}
+func OlsvrInit(conf *OlsvrConf) (ctx *OlsvrCntx, err error) {
+	ctx = &OlsvrCntx{}
 
 	ctx.conf = conf
 
@@ -40,12 +41,32 @@ func OlSvrInit(conf *OlSvrConf) (ctx *OlSvrCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.rtmq_proxy = rtmq.ProxyInit(&conf.rtmq_proxy, ctx.log)
-	if nil == ctx.rtmq_proxy {
+	ctx.proxy = rtmq.ProxyInit(&conf.proxy, ctx.log)
+	if nil == ctx.proxy {
 		return nil, err
 	}
 
 	return ctx, nil
+}
+
+/******************************************************************************
+ **函数名称: Register
+ **功    能: 注册处理回调
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 注册回调函数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) Register() {
+	ctx.proxy.Register(comm.CMD_ONLINE_REQ, OlsvrMesgOnlineReqHandler, ctx)
+	ctx.proxy.Register(comm.CMD_OFFLINE_REQ, OlsvrMesgOfflineReqHandler, ctx)
+
+	ctx.proxy.Register(comm.CMD_JOIN_REQ, OlsvrMesgJoinReqHandler, ctx)
+	ctx.proxy.Register(comm.CMD_QUIT_REQ, OlsvrMesgQuitReqHandler, ctx)
+
+	ctx.proxy.Register(comm.CMD_PING, OlsvrMesgPingHandler, ctx)
 }
 
 /******************************************************************************
@@ -58,8 +79,8 @@ func OlSvrInit(conf *OlSvrConf) (ctx *OlSvrCntx, err error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *OlSvrCntx) Launch() {
-	ctx.rtmq_proxy.Launch()
+func (ctx *OlsvrCntx) Launch() {
+	ctx.proxy.Launch()
 }
 
 /******************************************************************************
@@ -73,7 +94,7 @@ func (ctx *OlSvrCntx) Launch() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:34:34 #
  ******************************************************************************/
-func (ctx *OlSvrCntx) log_init() (err error) {
+func (ctx *OlsvrCntx) log_init() (err error) {
 	conf := ctx.conf
 
 	ctx.log = logs.NewLogger(20000)
