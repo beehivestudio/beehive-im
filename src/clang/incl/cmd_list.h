@@ -27,8 +27,8 @@ typedef enum
     , CMD_QUIT_REQ              = 0x0107    /* 退出聊天室 */
     , CMD_QUIT_ACK              = 0x0108    /* 退出聊天室应答 */
 
-    , CMD_CLIENT_PING           = 0x0109    /* 客户端心跳 */
-    , CMD_CLIENT_PONG           = 0x010A    /* 客户端心跳应答 */
+    , CMD_PING                  = 0x0109    /* 客户端心跳 */
+    , CMD_PONG                  = 0x010A    /* 客户端心跳应答 */
 
     , CMD_SUB_REQ               = 0x010B    /* 订阅请求 */
     , CMD_SUB_ACK               = 0x010C    /* 订阅应答 */
@@ -80,36 +80,6 @@ typedef enum
     , CMD_LSN_RPT_ACK           = 0x0404    /* 帧听层上报应答 */
     , CMD_FRWD_LIST             = 0x0405    /* 转发层列表 */
     , CMD_FRWD_LIST_ACK         = 0x0406    /* 转发层列表应答 */
-
-    ////////////////////////////////////////////
-    , MSG_PING                          /* PING-请求 */
-    , MSG_PONG                          /* PONG-应答 */
-
-    , MSG_SEARCH_REQ                    /* 搜索关键字-请求 */
-    , MSG_SEARCH_RSP                    /* 搜索关键字-应答 */
-
-    , MSG_INSERT_WORD_REQ               /* 插入关键字-请求 */
-    , MSG_INSERT_WORD_RSP               /* 插入关键字-应答 */
-
-    , MSG_PRINT_INVT_TAB_REQ            /* 打印倒排表-请求 */
-    , MSG_PRINT_INVT_TAB_RSP            /* 打印倒排表-应答 */
-
-    , MSG_QUERY_CONF_REQ                /* 查询配置信息-请求 */
-    , MSG_QUERY_CONF_RSP                /* 反馈配置信息-应答 */
-
-    , MSG_QUERY_WORKER_STAT_REQ         /* 查询工作信息-请求 */
-    , MSG_QUERY_WORKER_STAT_RSP         /* 反馈工作信息-应答 */
-
-    , MSG_QUERY_WORKQ_STAT_REQ          /* 查询工作队列信息-请求 */
-    , MSG_QUERY_WORKQ_STAT_RSP          /* 反馈工作队列信息-应答 */
-
-    , MSG_SWITCH_SCHED_REQ              /* 切换调度-请求 */
-    , MSG_SWITCH_SCHED_RSP              /* 反馈切换调度信息-应答 */
-
-    , MSG_SUB_REQ                       /* 订阅-请求 */
-    , MSG_SUB_RSP                       /* 订阅-应答 */
-
-    , MSG_TYPE_TOTAL                    /* 消息类型总数 */
 } mesg_type_e;
 
 #endif /*__CMD_LIST_H__*/
