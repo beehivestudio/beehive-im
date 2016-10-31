@@ -1,5 +1,9 @@
 package comm
 
+import (
+	"encoding/binary"
+)
+
 const (
 	MSG_FLAG_SYS   = 0          /* 0: 系统数据类型 */
 	MSG_FLAG_USR   = 1          /* 1: 自定义数据类型 */
