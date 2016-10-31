@@ -1,0 +1,8 @@
+message mesg_online_req
+{
+    optional uint64 uid = 1;        // M|用户ID|数字|
+    optional string token = 2;      // M|鉴权TOKEN|字串|
+    optional string app = 3;        // M|APP名|字串|
+    optional string version = 4;    // M|APP版本|字串|
+    optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+}
