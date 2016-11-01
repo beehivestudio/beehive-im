@@ -1,10 +1,12 @@
 package ctrl
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/astaxie/beego/logs"
+	"github.com/garyburd/redigo/redis"
 
 	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/rtmq"
@@ -15,6 +17,7 @@ type OlsvrCntx struct {
 	conf  *OlsvrConf          /* 配置信息 */
 	log   *logs.BeeLogger     /* 日志对象 */
 	proxy *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis *redis.Pool         /* REDIS连接池 */
 }
 
 /******************************************************************************
@@ -38,6 +41,23 @@ func OlsvrInit(conf *OlsvrConf) (ctx *OlsvrCntx, err error) {
 	/* > 初始化日志 */
 	if err := ctx.log_init(); nil != err {
 		return nil, err
+	}
+
+	/* > REDIS连接池 */
+	ctx.redis = &redis.Pool{
+		MaxIdle:   80,
+		MaxActive: 12000,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", conf.RedisAddr)
+			if err != nil {
+				panic(err.Error())
+			}
+			return c, err
+		},
+	}
+	if nil != ctx.redis {
+		ctx.log.Error("Create redis pool failed! addr:%s", conf.RedisAddr)
+		return nil, errors.New("Create redis pool failed!")
 	}
 
 	/* > 初始化RTMQ-PROXY */
