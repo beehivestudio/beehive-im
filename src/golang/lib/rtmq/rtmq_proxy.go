@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+	"math/rand"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -76,7 +77,8 @@ type RtmqProxyConf struct {
 	RecvChanLen uint32 /* 接收队列长度 */
 }
 type RtmqPacket struct {
-	buff []byte /* 数据 */
+	head []byte /* 头部数据 */
+	body []byte /* 报体数据 */
 }
 type RtmqRecvPacket struct {
 	head []byte /* 头部数据 */
@@ -304,6 +306,50 @@ func (ctx *RtmqProxyCntx) Launch() {
 }
 
 /******************************************************************************
+ **函数名称: Send
+ **功    能: 发送数据
+ **输入参数:
+ **     cmd: 数据类型
+ **     data: 数据内容
+ **     length: 数据长度
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 将数据放入发送队列
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 09:36:10 #
+ ******************************************************************************/
+func (ctx *RtmqProxyCntx) Send(cmd uint32, data []byte, length uint32) int {
+	/* > 设置协议头 */
+	head := &RtmqHeader{}
+
+	head.cmd = cmd
+	head.nid = ctx.conf.NodeId
+	head.length = length
+	head.flag = RTMQ_USR_DATA
+	head.chksum = RTMQ_CHKSUM_VAL
+
+	/* > 字节序转换 */
+	p := &RtmqPacket{}
+	p.head = make([]byte, RTMQ_HEAD_SIZE)
+	p.body = make([]byte, length)
+
+	rtmq_head_hton(head, p)
+	copy(p.body, data)
+
+	/* > 放入发送队列 */
+	idx := rand.Intn(RTMQ_SSVR_NUM)
+
+	select {
+	case ctx.server[idx].send_chan <- p:
+		return 0
+	case <-time.After(3 * time.Second): /* 超时则丢弃 */
+		return -1
+	}
+
+	return 0
+}
+
+/******************************************************************************
  **函数名称: server_new
  **功    能: 新建PROXY服务对象
  **输入参数: NONE
@@ -420,11 +466,11 @@ func (p *RtmqRecvPacket) get_chksum() uint32 {
 
 /* "主机->网络"字节序 */
 func rtmq_head_hton(header *RtmqHeader, p *RtmqPacket) {
-	binary.BigEndian.PutUint32(p.buff[0:4], header.cmd)      /* CMD */
-	binary.BigEndian.PutUint32(p.buff[4:8], header.nid)      /* NID */
-	binary.BigEndian.PutUint32(p.buff[8:12], header.flag)    /* NID */
-	binary.BigEndian.PutUint32(p.buff[12:16], header.length) /* LENGTH */
-	binary.BigEndian.PutUint32(p.buff[16:20], header.chksum) /* CHKSUM */
+	binary.BigEndian.PutUint32(p.head[0:4], header.cmd)      /* CMD */
+	binary.BigEndian.PutUint32(p.head[4:8], header.nid)      /* NID */
+	binary.BigEndian.PutUint32(p.head[8:12], header.flag)    /* NID */
+	binary.BigEndian.PutUint32(p.head[12:16], header.length) /* LENGTH */
+	binary.BigEndian.PutUint32(p.head[16:20], header.chksum) /* CHKSUM */
 }
 
 /******************************************************************************
@@ -586,12 +632,18 @@ func (c *RtmqProxyConn) send_routine() {
 			return
 
 		case p := <-c.mesg_chan: /* 系统消息发送队列 */
-			if _, err := c.conn.Write([]byte(p.buff)); nil != err {
+			if _, err := c.conn.Write([]byte(p.head)); nil != err {
+				return
+			}
+			if _, err := c.conn.Write([]byte(p.body)); nil != err {
 				return
 			}
 
 		case p := <-c.send_chan: /* 普通消息发送队列 */
-			if _, err := c.conn.Write([]byte(p.buff)); nil != err {
+			if _, err := c.conn.Write([]byte(p.head)); nil != err {
+				return
+			}
+			if _, err := c.conn.Write([]byte(p.body)); nil != err {
 				return
 			}
 
@@ -664,7 +716,7 @@ func (c *RtmqProxyConn) keepalive() {
 
 	/* > 申请内存空间 */
 	p := &RtmqPacket{}
-	p.buff = make([]byte, RTMQ_HEAD_SIZE)
+	p.head = make([]byte, RTMQ_HEAD_SIZE)
 
 	rtmq_head_hton(head, p)
 
@@ -687,10 +739,10 @@ type RtmqAuthRsp struct {
 
 /* 设置鉴权请求 */
 func rtmq_set_auth_req(conf *RtmqProxyConf, p *RtmqPacket) {
-	off := RTMQ_HEAD_SIZE
-	copy(p.buff[off:off+RTMQ_USR_MAX_LEN], []byte(conf.Usr))
+	off := 0
+	copy(p.body[:RTMQ_USR_MAX_LEN], []byte(conf.Usr))
 	off += RTMQ_USR_MAX_LEN
-	copy(p.buff[off:off+RTMQ_PWD_MAX_LEN], []byte(conf.Passwd))
+	copy(p.body[off:off+RTMQ_PWD_MAX_LEN], []byte(conf.Passwd))
 }
 
 /******************************************************************************
@@ -718,7 +770,8 @@ func (c *RtmqProxyConn) auth() {
 
 	/* > 申请内存空间 */
 	p := &RtmqPacket{}
-	p.buff = make([]byte, RTMQ_HEAD_SIZE+head.length)
+	p.head = make([]byte, RTMQ_HEAD_SIZE)
+	p.body = make([]byte, head.length)
 
 	rtmq_head_hton(head, p)
 	rtmq_set_auth_req(conf, p)
@@ -733,8 +786,7 @@ type RtmqSubReq struct {
 
 /* 设置订阅请求 */
 func rtmq_set_sub_req(req *RtmqSubReq, p *RtmqPacket) {
-	off := RTMQ_HEAD_SIZE
-	binary.BigEndian.PutUint32(p.buff[off:off+4], req.cmd) /* CMD */
+	binary.BigEndian.PutUint32(p.body[0:4], req.cmd) /* CMD */
 }
 
 /******************************************************************************
@@ -768,7 +820,8 @@ func (c *RtmqProxyConn) subscribe() {
 
 		/* > 申请内存空间 */
 		p := &RtmqPacket{}
-		p.buff = make([]byte, RTMQ_HEAD_SIZE+head.length)
+		p.head = make([]byte, RTMQ_HEAD_SIZE)
+		p.body = make([]byte, head.length)
 
 		rtmq_head_hton(head, p)
 		rtmq_set_sub_req(req, p)
