@@ -50,18 +50,18 @@ func (head *MesgHeader) GetSerial() uint64 {
 }
 
 type MesgPacket struct {
-	buff []byte /* 接收数据 */
+	Buff []byte /* 接收数据 */
 }
 
 /* "主机->网络"字节序 */
 func MesgHeadHton(header *MesgHeader, p *MesgPacket) {
-	binary.BigEndian.PutUint32(p.buff[0:4], header.Cmd)      /* CMD */
-	binary.BigEndian.PutUint32(p.buff[4:8], header.Flag)     /* FLAG */
-	binary.BigEndian.PutUint32(p.buff[8:12], header.Length)  /* LENGTH */
-	binary.BigEndian.PutUint32(p.buff[12:16], header.ChkSum) /* CHKSUM */
-	binary.BigEndian.PutUint64(p.buff[16:24], header.Sid)    /* SID */
-	binary.BigEndian.PutUint32(p.buff[24:28], header.Nid)    /* NID */
-	binary.BigEndian.PutUint64(p.buff[28:36], header.Serial) /* SERIAL */
+	binary.BigEndian.PutUint32(p.Buff[0:4], header.Cmd)      /* CMD */
+	binary.BigEndian.PutUint32(p.Buff[4:8], header.Flag)     /* FLAG */
+	binary.BigEndian.PutUint32(p.Buff[8:12], header.Length)  /* LENGTH */
+	binary.BigEndian.PutUint32(p.Buff[12:16], header.ChkSum) /* CHKSUM */
+	binary.BigEndian.PutUint64(p.Buff[16:24], header.Sid)    /* SID */
+	binary.BigEndian.PutUint32(p.Buff[24:28], header.Nid)    /* NID */
+	binary.BigEndian.PutUint64(p.Buff[28:36], header.Serial) /* SERIAL */
 }
 
 /* "网络->主机"字节序 */
