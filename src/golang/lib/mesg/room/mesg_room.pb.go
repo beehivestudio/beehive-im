@@ -23,10 +23,10 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type MesgRoom struct {
-	Rid              *uint64 `protobuf:"varint,1,opt,name=rid" json:"rid,omitempty"`
-	Gid              *uint32 `protobuf:"varint,2,opt,name=gid" json:"gid,omitempty"`
-	MesgLevel        *uint32 `protobuf:"varint,3,opt,name=mesg_level" json:"mesg_level,omitempty"`
-	Data             []byte  `protobuf:"bytes,4,opt,name=data" json:"data,omitempty"`
+	Rid              *uint64 `protobuf:"varint,1,opt,name=Rid" json:"Rid,omitempty"`
+	Gid              *uint32 `protobuf:"varint,2,opt,name=Gid" json:"Gid,omitempty"`
+	MesgLevel        *uint32 `protobuf:"varint,3,opt,name=Mesg_level" json:"Mesg_level,omitempty"`
+	Data             []byte  `protobuf:"bytes,4,opt,name=Data" json:"Data,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 

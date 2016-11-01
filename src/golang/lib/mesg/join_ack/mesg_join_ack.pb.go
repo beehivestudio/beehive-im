@@ -23,11 +23,11 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type MesgJoinAck struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=uid" json:"uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,opt,name=rid" json:"rid,omitempty"`
-	Gid              *uint32 `protobuf:"varint,3,opt,name=gid" json:"gid,omitempty"`
-	Errnum           *uint32 `protobuf:"varint,4,opt,name=errnum" json:"errnum,omitempty"`
-	Errmsg           *string `protobuf:"bytes,5,opt,name=errmsg" json:"errmsg,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
+	Gid              *uint32 `protobuf:"varint,3,opt,name=Gid" json:"Gid,omitempty"`
+	Errnum           *uint32 `protobuf:"varint,4,opt,name=Errnum" json:"Errnum,omitempty"`
+	Errmsg           *string `protobuf:"bytes,5,opt,name=Errmsg" json:"Errmsg,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 

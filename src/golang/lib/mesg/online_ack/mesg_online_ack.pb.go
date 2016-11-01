@@ -23,13 +23,13 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type MesgOnlineAck struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=uid" json:"uid,omitempty"`
-	Cid              *uint64 `protobuf:"varint,2,opt,name=cid" json:"cid,omitempty"`
-	App              *string `protobuf:"bytes,3,opt,name=app" json:"app,omitempty"`
-	Version          *string `protobuf:"bytes,4,opt,name=version" json:"version,omitempty"`
-	Terminal         *uint32 `protobuf:"varint,5,opt,name=terminal" json:"terminal,omitempty"`
-	Errnum           *uint32 `protobuf:"varint,6,opt,name=errnum" json:"errnum,omitempty"`
-	Errmsg           *string `protobuf:"bytes,7,opt,name=errmsg" json:"errmsg,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
+	Cid              *uint64 `protobuf:"varint,2,opt,name=Cid" json:"Cid,omitempty"`
+	App              *string `protobuf:"bytes,3,opt,name=App" json:"App,omitempty"`
+	Version          *string `protobuf:"bytes,4,opt,name=Version" json:"Version,omitempty"`
+	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
+	Errnum           *uint32 `protobuf:"varint,6,opt,name=Errnum" json:"Errnum,omitempty"`
+	Errmsg           *string `protobuf:"bytes,7,opt,name=Errmsg" json:"Errmsg,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 

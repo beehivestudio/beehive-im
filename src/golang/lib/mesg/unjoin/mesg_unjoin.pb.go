@@ -23,8 +23,8 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type MesgUnjoinReq struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=uid" json:"uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,opt,name=rid" json:"rid,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 

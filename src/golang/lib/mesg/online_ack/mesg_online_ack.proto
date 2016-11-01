@@ -1,10 +1,10 @@
 message mesg_online_ack
 {
-   optional uint64 uid = 1;        // M|用户ID|数字|<br>
-   optional uint64 cid = 2;        // M|连接ID|数字|内部使用<br>
-   optional string app = 3;        // M|APP名|字串|<br>
-   optional string version = 4;    // M|APP版本|字串|<br>
-   optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
-   optional uint32 errnum = 6;     // M|错误码|数字|<br>
-   optional string errmsg = 7;     // M|错误描述|字串|<br>
+   optional uint64 Uid = 1;        // M|用户ID|数字|<br>
+   optional uint64 Cid = 2;        // M|连接ID|数字|内部使用<br>
+   optional string App = 3;        // M|APP名|字串|<br>
+   optional string Version = 4;    // M|APP版本|字串|<br>
+   optional uint32 Terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
+   optional uint32 Errnum = 6;     // M|错误码|数字|<br>
+   optional string Errmsg = 7;     // M|错误描述|字串|<br>
 }
