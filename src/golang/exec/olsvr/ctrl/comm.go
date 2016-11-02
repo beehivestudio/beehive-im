@@ -21,5 +21,13 @@ func (ctx *OlsvrCntx) alloc_sid() (sid uint64, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	return redis.Uint64(rds.Do("INCRBY", comm.CHAT_KEY_SID_INCR, 1))
+	for {
+		sid, err := redis.Uint64(rds.Do("INCRBY", comm.CHAT_KEY_SID_INCR, 1))
+		if nil != err {
+			return 0, err
+		} else if 0 == sid {
+			continue
+		}
+		return sid, nil
+	}
 }
