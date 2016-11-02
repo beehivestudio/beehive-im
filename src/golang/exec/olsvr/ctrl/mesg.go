@@ -10,7 +10,7 @@ import (
 
 	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/crypt"
-	"chat/src/golang/lib/mesg/online"
+	"chat/src/golang/lib/mesg"
 )
 
 /******************************************************************************
@@ -27,7 +27,7 @@ import (
  **     ttl: 该token的最大生命时间
  **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) online_req_isvalid(req *mesg_online.MesgOnlineReq) bool {
+func (ctx *OlsvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
 	/* > TOKEN解码 */
 	cry := crypt.CreateEncodeCtx(ctx.conf.SecretKey)
 	token := crypt.Decode(cry, req.GetToken())
@@ -65,7 +65,7 @@ func (ctx *OlsvrCntx) online_req_isvalid(req *mesg_online.MesgOnlineReq) bool {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *OlsvrCntx) online_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg_online.MesgOnlineReq) {
+	head *comm.MesgHeader, req *mesg.MesgOnlineReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if comm.CMD_ONLINE_REQ != head.GetCmd() {
@@ -74,7 +74,7 @@ func (ctx *OlsvrCntx) online_parse(data []byte) (
 	}
 
 	/* > 解析PB协议 */
-	req = &mesg_online.MesgOnlineReq{}
+	req = &mesg.MesgOnlineReq{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal online request failed! errmsg:%s", err.Error())
@@ -109,11 +109,13 @@ func (ctx *OlsvrCntx) online_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
 func (ctx *OlsvrCntx) send_err_online_ack(errno uint32, errmsg string) int {
-	rsp := &mesg_online.MesgOnlineAck{}
+	/* 设置应答数据 */
+	rsp := &mesg.MesgOnlineAck{
+		ErrNum: proto.Uint32(errno),
+		ErrMsg: proto.String(errmsg),
+	}
 
-	rsp.Errnum = &errno
-	rsp.Errmsg = &errmsg
-
+	/* 生成PB数据 */
 	body, err := proto.Marshal(rsp)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
@@ -144,7 +146,7 @@ func (ctx *OlsvrCntx) send_err_online_ack(errno uint32, errmsg string) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *mesg_online.MesgOnlineReq) int {
+func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *mesg.MesgOnlineReq) int {
 	var errno uint32 = 0
 	errmsg := "Ok"
 	cid := head.Sid
@@ -152,16 +154,17 @@ func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *me
 	head.Sid = sid
 
 	/* > 设置协议体 */
-	rsp := &mesg_online.MesgOnlineAck{}
+	rsp := &mesg.MesgOnlineAck{
+		Uid:      proto.Uint64(req.GetUid()),
+		Cid:      proto.Uint64(cid),
+		App:      proto.String(req.GetApp()),
+		Version:  proto.String(req.GetVersion()),
+		Terminal: proto.Uint32(req.GetTerminal()),
+		ErrNum:   proto.Uint32(errno),
+		ErrMsg:   proto.String(errmsg),
+	}
 
-	rsp.Uid = req.Uid
-	rsp.Cid = &cid
-	rsp.App = req.App
-	rsp.Version = req.Version
-	rsp.Terminal = req.Terminal
-	rsp.Errnum = &errno
-	rsp.Errmsg = &errmsg
-
+	/* 生成PB数据 */
 	body, err := proto.Marshal(rsp)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
@@ -194,7 +197,7 @@ func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *me
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) online_handler(req *mesg_online.MesgOnlineReq) (sid uint64, err error) {
+func (ctx *OlsvrCntx) online_handler(req *mesg.MesgOnlineReq) (sid uint64, err error) {
 	/* > 申请会话SID */
 	sid, err = ctx.alloc_sid()
 	if nil != err {
