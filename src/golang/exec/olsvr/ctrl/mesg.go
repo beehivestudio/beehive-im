@@ -3,6 +3,7 @@ package ctrl
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -202,14 +203,17 @@ func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *me
 /******************************************************************************
  **函数名称: online_update
  **功    能: 更新数据库
- **输入参数: NONE
+ **输入参数:
+ **     head: 头部数据
+ **     req: 上线请求数据
+ **     sid: 会话ID
  **输出参数: NONE
  **返    回: true:成功 false:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.02 19:17:01 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) online_update(head *comm.MesgHeader, sid uint64) bool {
+func (ctx *OlsvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnlineReq, sid uint64) bool {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -217,7 +221,23 @@ func (ctx *OlsvrCntx) online_update(head *comm.MesgHeader, sid uint64) bool {
 	}()
 
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
+
+	/* 记录SID集合 */
 	pl.Send("ZADD", comm.CHAT_KEY_SID_ZSET, ttl, sid)
+
+	/* 记录UID集合 */
+	pl.Send("ZADD", comm.CHAT_KEY_UID_ZSET, ttl, req.GetUid())
+
+	/* 记录SID->UID/NID */
+	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, sid)
+	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.Nid)
+
+	/* 记录UID->SID集合 */
+	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_SID_SET, req.GetUid())
+	pl.Send("SADD", key, sid)
+
+	/* 统计帧听层结点人数 */
+	pl.Send("ZINCRBY", comm.CHAT_KEY_NID_TO_NUM_ZSET, 1, head.Nid)
 
 	return true
 }
@@ -243,7 +263,7 @@ func (ctx *OlsvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline
 	}
 
 	/* > 更新数据库 */
-	if !ctx.online_update(head, sid) {
+	if !ctx.online_update(head, req, sid) {
 		return 0, errors.New("Update database failed!")
 	}
 
