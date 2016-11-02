@@ -1,3 +1,5 @@
+package mesg;
+
 message mesg_join_req
 {
     optional uint64 Uid = 1;    // M|用户ID|数字|

@@ -1,3 +1,5 @@
+package mesg;
+
 message mesg_room
 {
     optional uint64 Rid = 1;            // 聊天室ID

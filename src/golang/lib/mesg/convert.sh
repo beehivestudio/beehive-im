@@ -1,9 +1,9 @@
 #!/bin/sh
 
-LIST="room/mesg_room.proto"
-LIST=$LIST" online/mesg_online.proto"
-LIST=$LIST" join/mesg_join.proto"
-LIST=$LIST" unjoin/mesg_unjoin.proto"
+LIST="mesg_room.proto"
+LIST=$LIST" mesg_online.proto"
+LIST=$LIST" mesg_join.proto"
+LIST=$LIST" mesg_unjoin.proto"
 
 for ITEM in $LIST;
 do
