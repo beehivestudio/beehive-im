@@ -55,7 +55,7 @@ func OlsvrInit(conf *OlsvrConf) (ctx *OlsvrCntx, err error) {
 			return c, err
 		},
 	}
-	if nil != ctx.redis {
+	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s", conf.RedisAddr)
 		return nil, errors.New("Create redis pool failed!")
 	}
