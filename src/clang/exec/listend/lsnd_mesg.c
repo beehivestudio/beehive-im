@@ -98,31 +98,31 @@ int chat_mesg_online_req_hdl(int type, void *data, int len, void *args)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.01 21:06:07 #
  ******************************************************************************/
-static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t sid)
+static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t cid)
 {
     chat_conn_extra_t *extra, key;
 
     /* > 查找扩展数据 */
-    key.cid = ack->cid;
+    key.cid = cid;
 
     extra = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
     if (NULL == extra) {
-        log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", ack->cid);
+        log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", cid);
         return -1;
     }
     else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
-        log_error(lsnd->log, "Connection status isn't establish! cid:%lu", ack->cid);
+        log_error(lsnd->log, "Connection status isn't establish! cid:%lu", cid);
         return -1;
     }
-    else if (0 == sid) { /* SID分配失败 */
+    else if (0 == ack->sid) { /* SID分配失败 */
         extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
         hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
-        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", ack->cid);
-        acc_async_kick(lsnd->access, ack->cid);
+        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", cid);
+        acc_async_kick(lsnd->access, cid);
         return -1;
     }
 
-    extra->sid = sid;
+    extra->sid = ack->sid;
     extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
@@ -154,24 +154,27 @@ static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack,
  **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
  ** {
  **     optional uint64 uid = 1;        // M|用户ID|数字|
- **     optional uint64 cid = 2;        // M|CID|数字|
+ **     optional uint64 sid = 2;        // M|会话ID|数字|
  **     optional string app = 3;        // M|APP名|字串|
  **     optional string version = 4;    // M|APP版本|字串|
  **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
  **     optional uint32 errnum = 6;     // M|错误码|数字|
  **     optional string errmsg = 7;     // M|错误描述|字串|
  ** }
- **注意事项:
+ **注意事项: 此时head.sid为cid.
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
  ******************************************************************************/
 int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
+    uint64_t cid;
     MesgOnlineAck *ack;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
+
+    cid = hhead.sid;
 
     MESG_HEAD_PRINT(lsnd->log, &hhead)
     log_debug(lsnd->log, "body:%s", head->body);
@@ -182,20 +185,20 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
         log_error(lsnd->log, "Unpack online ack failed! body:%s", head->body);
         return -1;
     }
-    else if (false == ack->has_cid) {
+    else if (false == ack->has_sid) {
         mesg_online_ack__free_unpacked(ack, NULL);
-        log_error(lsnd->log, "Miss required field!");
+        log_error(lsnd->log, "Miss sid field!");
         return -1;
     }
 
-    if (chat_mesg_online_ack_logic_hdl(lsnd, ack, hhead.sid)) {
+    if (chat_mesg_online_ack_logic_hdl(lsnd, ack, cid)) {
         mesg_online_ack__free_unpacked(ack, NULL);
         log_error(lsnd->log, "Miss required field!");
         return -1;
     }
 
     /* 下发应答请求 */
-    acc_async_send(lsnd->access, type, ack->cid, data, len);
+    acc_async_send(lsnd->access, type, cid, data, len);
 
     mesg_online_ack__free_unpacked(ack, NULL);
 

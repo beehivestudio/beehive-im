@@ -73,7 +73,7 @@ func (m *MesgOnlineReq) GetTerminal() uint32 {
 
 type MesgOnlineAck struct {
 	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
-	Cid              *uint64 `protobuf:"varint,2,opt,name=Cid" json:"Cid,omitempty"`
+	Sid              *uint64 `protobuf:"varint,2,opt,name=Sid" json:"Sid,omitempty"`
 	App              *string `protobuf:"bytes,3,opt,name=App" json:"App,omitempty"`
 	Version          *string `protobuf:"bytes,4,opt,name=Version" json:"Version,omitempty"`
 	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
@@ -93,9 +93,9 @@ func (m *MesgOnlineAck) GetUid() uint64 {
 	return 0
 }
 
-func (m *MesgOnlineAck) GetCid() uint64 {
-	if m != nil && m.Cid != nil {
-		return *m.Cid
+func (m *MesgOnlineAck) GetSid() uint64 {
+	if m != nil && m.Sid != nil {
+		return *m.Sid
 	}
 	return 0
 }

@@ -21,8 +21,8 @@ struct  _MesgOnlineAck
   ProtobufCMessage base;
   protobuf_c_boolean has_uid;
   uint64_t uid;
-  protobuf_c_boolean has_cid;
-  uint64_t cid;
+  protobuf_c_boolean has_sid;
+  uint64_t sid;
   char *app;
   char *version;
   protobuf_c_boolean has_terminal;

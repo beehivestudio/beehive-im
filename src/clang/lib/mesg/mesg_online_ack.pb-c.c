@@ -64,12 +64,12 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "cid",
+    "sid",
     2,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_cid),
-    PROTOBUF_C_OFFSETOF(MesgOnlineAck, cid),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_sid),
+    PROTOBUF_C_OFFSETOF(MesgOnlineAck, sid),
     NULL,
     NULL,
     0,            /* packed */
@@ -138,9 +138,9 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
 };
 static const unsigned mesg_online_ack__field_indices_by_name[] = {
   2,   /* field[2] = app */
-  1,   /* field[1] = cid */
   6,   /* field[6] = errmsg */
   5,   /* field[5] = errnum */
+  1,   /* field[1] = sid */
   4,   /* field[4] = terminal */
   0,   /* field[0] = uid */
   3,   /* field[3] = version */
