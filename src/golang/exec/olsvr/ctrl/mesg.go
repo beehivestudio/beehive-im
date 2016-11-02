@@ -2,15 +2,57 @@ package ctrl
 
 import (
 	"encoding/binary"
+	"strconv"
+	"strings"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 
 	"chat/src/golang/lib/comm"
+	"chat/src/golang/lib/crypt"
 	"chat/src/golang/lib/mesg/online"
 )
 
 /******************************************************************************
- **函数名称: MesgOnlineReqParse
+ **函数名称: online_req_isvalid
+ **功    能: 判断ONLINE是否合法
+ **输入参数:
+ **     req: ONLINE请求
+ **输出参数: NONE
+ **返    回: true:合法 false:非法
+ **实现描述: 计算TOKEN合法性
+ **注意事项:
+ **     TOKEN的格式"uid:${uid}:ttl:${ttl}"
+ **     uid: 用户ID
+ **     ttl: 该token的最大生命时间
+ **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) online_req_isvalid(req *mesg_online.MesgOnlineReq) bool {
+	/* > TOKEN解码 */
+	cry := crypt.CreateEncodeCtx("beehivestudio")
+	token := crypt.Decode(cry, req.GetToken())
+	words := strings.Split(token, ":")
+	if 4 != len(words) {
+		ctx.log.Error("Token format not right! token:%s", token)
+		return false
+	}
+
+	/* > 验证TOKEN合法性 */
+	uid, _ := strconv.ParseInt(words[1], 10, 64)
+	ttl, _ := strconv.ParseInt(words[3], 10, 64)
+	if ttl < time.Now().Unix() {
+		ctx.log.Error("Token is timeout!")
+		return false
+	} else if uint64(uid) != req.GetUid() {
+		ctx.log.Error("Token is invalid! uid:%d/%d", uid, req.GetUid())
+		return false
+	}
+
+	return true
+}
+
+/******************************************************************************
+ **函数名称: online_parse
  **功    能: 解析上线请求
  **输入参数:
  **     data: 接收的数据
@@ -22,7 +64,8 @@ import (
  **注意事项: 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) MesgOnlineReqParse(data []byte) (head *comm.MesgHeader, req *mesg_online.MesgOnlineReq) {
+func (ctx *OlsvrCntx) online_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg_online.MesgOnlineReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if comm.CMD_ONLINE_REQ != head.GetCmd() {
@@ -39,12 +82,15 @@ func (ctx *OlsvrCntx) MesgOnlineReqParse(data []byte) (head *comm.MesgHeader, re
 	}
 
 	/* > 校验协议合法性 */
+	if !ctx.online_req_isvalid(req) {
+		return nil, nil
+	}
 
 	return head, req
 }
 
 /******************************************************************************
- **函数名称: SendErrOnlineAck
+ **函数名称: send_err_online_ack
  **功    能: 发送上线应答
  **输入参数:
  **输出参数: NONE
@@ -62,7 +108,7 @@ func (ctx *OlsvrCntx) MesgOnlineReqParse(data []byte) (head *comm.MesgHeader, re
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) SendErrOnlineAck(errno uint32, errmsg string) int {
+func (ctx *OlsvrCntx) send_err_online_ack(errno uint32, errmsg string) int {
 	rsp := &mesg_online.MesgOnlineAck{}
 
 	rsp.Errnum = &errno
@@ -80,7 +126,7 @@ func (ctx *OlsvrCntx) SendErrOnlineAck(errno uint32, errmsg string) int {
 }
 
 /******************************************************************************
- **函数名称: SendOnlineAck
+ **函数名称: send_online_ack
  **功    能: 发送上线应答
  **输入参数:
  **输出参数: NONE
@@ -98,7 +144,7 @@ func (ctx *OlsvrCntx) SendErrOnlineAck(errno uint32, errmsg string) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) SendOnlineAck(sid uint64, head *comm.MesgHeader, req *mesg_online.MesgOnlineReq) int {
+func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *mesg_online.MesgOnlineReq) int {
 	var errno uint32 = 0
 	errmsg := "Ok"
 	cid := head.Sid
@@ -136,7 +182,7 @@ func (ctx *OlsvrCntx) SendOnlineAck(sid uint64, head *comm.MesgHeader, req *mesg
 }
 
 /******************************************************************************
- **函数名称: OnlineHandler
+ **函数名称: online_handler
  **功    能: 上线处理
  **输入参数:
  **     req: 上线请求
@@ -148,7 +194,15 @@ func (ctx *OlsvrCntx) SendOnlineAck(sid uint64, head *comm.MesgHeader, req *mesg
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) OnlineHandler(req *mesg_online.MesgOnlineReq) (sid uint64, err error) {
+func (ctx *OlsvrCntx) online_handler(req *mesg_online.MesgOnlineReq) (sid uint64, err error) {
+	/* > 申请会话SID */
+	sid, err = ctx.alloc_sid()
+	if nil != err {
+		return 0, err
+	}
+
+	/* > 更新数据库 */
+
 	return sid, err
 }
 
@@ -176,23 +230,23 @@ func OlsvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint
 	ctx.log.Debug("Recv online request!")
 
 	/* 1. > 解析上线请求 */
-	head, req := ctx.MesgOnlineReqParse(data)
+	head, req := ctx.online_parse(data)
 	if nil == head || nil != req {
 		ctx.log.Error("Parse online request failed!")
-		ctx.SendErrOnlineAck(comm.ERR_SVR_PARSE_PARAM, "Parse online request failed!")
+		ctx.send_err_online_ack(comm.ERR_SVR_PARSE_PARAM, "Parse online request failed!")
 		return -1
 	}
 
 	/* 2. > 初始化上线环境 */
-	sid, err := ctx.OnlineHandler(req)
+	sid, err := ctx.online_handler(req)
 	if nil != err {
 		ctx.log.Error("Online handler failed!")
-		ctx.SendErrOnlineAck(comm.ERR_SYS_SYSTEM, err.Error())
+		ctx.send_err_online_ack(comm.ERR_SYS_SYSTEM, err.Error())
 		return -1
 	}
 
 	/* 3. > 发送上线应答 */
-	ctx.SendOnlineAck(sid, head, req)
+	ctx.send_online_ack(sid, head, req)
 
 	return 0
 }
