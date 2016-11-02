@@ -46,10 +46,7 @@
 ---
 命令ID: 0x0103<br>
 命令描述: 下线请求(OFFLINE)<br>
-协议格式:
->{<br>
->   optional uint64 uid = 1;    // M|用户ID|数字|<br>
->}
+协议格式: NONE
 
 ---
 命令ID: 0x0104<br>

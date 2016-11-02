@@ -3,12 +3,11 @@ package comm
 //#聊天室系统REDIS键值定义列表
 const (
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
-	CHAT_KEY_SID_ZSET        = "chat:sid:zset"          //| ZSET | 会话SID集合 | 成员:SID/分值:TTL |
-	CHAT_KEY_UID_ZSET        = "chat:uid:zset"          //| ZSET | 用户UID集合 | 成员:UID/分值:TTL |
-	CHAT_KEY_SID_INCR        = "chat:sid:incr"          //| ZSET | 会话SID增量器 | 只增不减 注意:sid不能为0 |
-	CHAT_KEY_SID_ATTR        = "chat:sid:%d:attr"       //| HTAB | 会话SID属性 | 包含UID/NID |
-	CHAT_KEY_UID_TO_SID_SET  = "chat:uid:%d:to:sid:set" //| SET | 用户UID对应的会话SID集合 | SID集合 |
-	CHAT_KEY_NID_TO_NUM_ZSET = "chat:nid::to:num:zset"  //| ZSET | 各帧听层在线人数 | 成员:NID/分值:USERNUM |
+	CHAT_KEY_SID_ZSET       = "chat:sid:zset"          //| ZSET | 会话SID集合 | 成员:SID/分值:TTL |
+	CHAT_KEY_UID_ZSET       = "chat:uid:zset"          //| ZSET | 用户UID集合 | 成员:UID/分值:TTL |
+	CHAT_KEY_SID_INCR       = "chat:sid:incr"          //| ZSET | 会话SID增量器 | 只增不减 注意:sid不能为0 |
+	CHAT_KEY_SID_ATTR       = "chat:sid:%d:attr"       //| HTAB | 会话SID属性 | 包含UID/NID |
+	CHAT_KEY_UID_TO_SID_SET = "chat:uid:%d:to:sid:set" //| SET | 用户UID对应的会话SID集合 | SID集合 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	CHAT_KEY_RID_ZSET             = "chat:rid:zset"                  //| ZSET | 聊天室RID集合 | 成员:RID/分值:TTL |
 	CHAT_KEY_SID_TO_RID_ZSET      = "chat:sid:%d:to:rid:zset"        //| ZSET | 会话SID对应的RID集合 | 成员:RID/分值:GID |

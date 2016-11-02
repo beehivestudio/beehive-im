@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
 	"chat/src/golang/lib/comm"
@@ -230,14 +231,11 @@ func (ctx *OlsvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnlineR
 
 	/* 记录SID->UID/NID */
 	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, sid)
-	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.Nid)
+	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
 	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_SID_SET, req.GetUid())
 	pl.Send("SADD", key, sid)
-
-	/* 统计帧听层结点人数 */
-	pl.Send("ZINCRBY", comm.CHAT_KEY_NID_TO_NUM_ZSET, 1, head.Nid)
 
 	return true
 }
@@ -316,6 +314,91 @@ func OlsvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint
 }
 
 /******************************************************************************
+ **函数名称: offline_parse
+ **功    能: 解析下线请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **实现描述:
+ **注意事项: 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
+ **作    者: # Qifeng.zou # 2016.11.02 22:17:38 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if comm.CMD_OFFLINE_REQ != head.GetCmd() {
+		ctx.log.Error("Command type isn't right! cmd:%d", head.GetCmd())
+		return nil
+	}
+
+	return head
+}
+
+/******************************************************************************
+ **函数名称: offline_handler
+ **功    能: 下线处理
+ **输入参数:
+ **     head: 协议头
+ **     req: 下线请求
+ **输出参数: NONE
+ **返    回: 异常信息
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.02 22:22:02 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) offline_handler(head *comm.MesgHeader) error {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	// 获取SID -> (UID/NID)的映射
+	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, head.GetSid())
+
+	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
+	if nil != err {
+		ctx.log.Error("Get sid attribution failed! errmsg:%s", err)
+		return err
+	}
+
+	id, _ := strconv.ParseInt(vals[0], 10, 64)
+	uid := uint64(id)
+	id, _ = strconv.ParseInt(vals[1], 10, 32)
+	nid := uint32(id)
+
+	if nid != head.GetNid() {
+		ctx.log.Error("Nid isn't right! nid:%d/%d", nid, head.GetNid())
+		return errors.New("Node id isn't right!")
+	}
+
+	// 删除SID -> (UID/NID)的映射
+	num, err := redis.Int(rds.Do("DEL", key))
+	if nil != err {
+		ctx.log.Error("Delete key failed! errmsg:%s", err)
+		return err
+	} else if 0 == num {
+		ctx.log.Error("Sid [%d] was cleaned!", head.GetSid())
+		return nil
+	}
+
+	/* 删除SID集合 */
+	pl.Send("ZREM", comm.CHAT_KEY_SID_ZSET, head.GetSid())
+
+	/* 记录UID->SID集合 */
+	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_SID_SET, uid)
+	pl.Send("SREM", key, head.GetSid())
+
+	return nil
+}
+
+/******************************************************************************
  **函数名称: OlsvrMesgOfflineReqHandler
  **功    能: 下线请求
  **输入参数:
@@ -336,7 +419,21 @@ func OlsvrMesgOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uin
 		return -1
 	}
 
-	ctx.log.Debug("Recv online request!")
+	ctx.log.Debug("Recv offline request!")
+
+	/* 1. > 解析下线请求 */
+	head := ctx.offline_parse(data)
+	if nil == head {
+		ctx.log.Error("Parse offline request failed!")
+		return -1
+	}
+
+	/* 2. > 初始化上线环境 */
+	err := ctx.offline_handler(head)
+	if nil != err {
+		ctx.log.Error("Offline handler failed!")
+		return -1
+	}
 
 	return 0
 }
