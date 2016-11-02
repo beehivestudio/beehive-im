@@ -8,11 +8,16 @@ import sys
 # 设置统计路径
 def set_dir_list():
     dir_list = []
-    path = "../src"
+    path = "../src/clang"
+
+    dir_list.append(path + "/exec")
+    dir_list.append(path + "/incl")
+    dir_list.append(path + "/lib")
+
+    path = "../src/golang"
 
     dir_list.append(path + "/exec")
     dir_list.append(path + "/demo")
-    dir_list.append(path + "/incl")
     dir_list.append(path + "/lib")
 
     return dir_list
@@ -44,7 +49,7 @@ class CStatistics(object):
                 self._get_lines(fpath)
                 continue
             ext = os.path.splitext(fname)[1] # splitext()返回元组(filename, extension)
-            if (".c" == ext) or (".h" == ext):
+            if (".c" == ext) or (".h" == ext) or (".go" == ext):
                 for line in open(fpath):
                     line = line.strip()
                     self.total_lines += 1
