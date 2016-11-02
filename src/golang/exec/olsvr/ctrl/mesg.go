@@ -29,7 +29,7 @@ import (
  ******************************************************************************/
 func (ctx *OlsvrCntx) online_req_isvalid(req *mesg_online.MesgOnlineReq) bool {
 	/* > TOKEN解码 */
-	cry := crypt.CreateEncodeCtx("beehivestudio")
+	cry := crypt.CreateEncodeCtx(ctx.conf.SecretKey)
 	token := crypt.Decode(cry, req.GetToken())
 	words := strings.Split(token, ":")
 	if 4 != len(words) {

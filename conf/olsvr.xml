@@ -1,6 +1,7 @@
 <OLSVR ID="30000">
   <LOG-PATH>../log</LOG-PATH>
   <REDIS-ADDR>127.0.0.1:19000</REDIS-ADDR>
+  <SECRET-KEY>%b@e!e@h@i#v@e$s$tVu^d(i(o</SECRET-KEY>
   <RTMQ-PROXY>
     <AUTH USR="qifeng" PASSWD="111111" />
     <WORKER-NUM>10</WORKER-NUM>
