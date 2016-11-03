@@ -67,17 +67,13 @@ func (ctx *OlsvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
  **     head: 通用协议头
  **     req: 协议体内容
  **实现描述:
- **注意事项: 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
+ **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *OlsvrCntx) online_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgOnlineReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if comm.CMD_ONLINE_REQ != head.GetCmd() {
-		ctx.log.Error("Command type isn't right! cmd:%d", head.GetCmd())
-		return nil, nil
-	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgOnlineReq{}
@@ -339,16 +335,12 @@ func OlsvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint
  **     head: 通用协议头
  **     req: 协议体内容
  **实现描述:
- **注意事项: 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
+ **注意事项:
  **作    者: # Qifeng.zou # 2016.11.02 22:17:38 #
  ******************************************************************************/
 func (ctx *OlsvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if comm.CMD_OFFLINE_REQ != head.GetCmd() {
-		ctx.log.Error("Command type isn't right! cmd:%d", head.GetCmd())
-		return nil
-	}
 
 	return head
 }
@@ -516,10 +508,6 @@ func (ctx *OlsvrCntx) join_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgJoinReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if comm.CMD_JOIN_REQ != head.GetCmd() {
-		ctx.log.Error("Command type isn't right! cmd:%d", head.GetCmd())
-		return nil, nil
-	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgJoinReq{}
@@ -901,10 +889,6 @@ func (ctx *OlsvrCntx) unjoin_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgUnjoinReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if comm.CMD_JOIN_REQ != head.GetCmd() {
-		ctx.log.Error("Command type isn't right! cmd:%d", head.GetCmd())
-		return nil, nil
-	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgUnjoinReq{}
@@ -1039,6 +1023,70 @@ func OlsvrMesgUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint
 	return 0
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: ping_parse
+ **功    能: 解析PING请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回: 协议头
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 21:18:29 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
+	/* > 字节序转换 */
+	return comm.MesgHeadNtoh(data)
+}
+
+/******************************************************************************
+ **函数名称: ping_handler
+ **功    能: PING处理
+ **输入参数:
+ **     head: 协议头
+ **输出参数: NONE
+ **返    回: 组ID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) ping_handler(head *comm.MesgHeader) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* 获取SID->UID/NID */
+	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, head.GetSid())
+	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
+	if nil != err {
+		ctx.log.Error("Get uid by sid [%d] failed!", head.GetSid())
+		return
+	}
+
+	uid_int, _ := strconv.ParseInt(vals[0], 10, 64)
+	uid := uint64(uid_int)
+	nid_int, _ := strconv.ParseInt(vals[1], 10, 64)
+	nid := uint32(nid_int)
+
+	if nid != head.GetNid() {
+		ctx.log.Error("Node id isn't right! sid:%d nid:%d/%d",
+			head.GetSid(), nid, head.GetNid())
+		return
+	}
+
+	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
+	pl.Send("ZADD", comm.CHAT_KEY_SID_ZSET, ttl, head.GetSid())
+	pl.Send("ZADD", comm.CHAT_KEY_UID_ZSET, ttl, uid)
+}
+
 /******************************************************************************
  **函数名称: OlsvrMesgPingHandler
  **功    能: 客户端PING
@@ -1052,7 +1100,7 @@ func OlsvrMesgUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint
  **返    回: VOID
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
+ **作    者: # Qifeng.zou # 2016.11.03 21:40:30 #
  ******************************************************************************/
 func OlsvrMesgPingHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*OlsvrCntx)
@@ -1060,7 +1108,13 @@ func OlsvrMesgPingHandler(cmd uint32, orig uint32, data []byte, length uint32, p
 		return -1
 	}
 
-	ctx.log.Debug("Recv online request!")
+	ctx.log.Debug("Recv ping request!")
+
+	/* 1. > 解析PING请求 */
+	head := ctx.ping_parse(data)
+
+	/* 2. > PING请求处理 */
+	ctx.ping_handler(head)
 
 	return 0
 }
