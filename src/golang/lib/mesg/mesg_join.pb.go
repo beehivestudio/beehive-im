@@ -11,6 +11,8 @@ It is generated from these files:
 It has these top-level messages:
 	MesgJoinReq
 	MesgJoinAck
+	MesgUnjoinReq
+	MesgUnjoinAck
 */
 package mesg
 
@@ -97,6 +99,70 @@ func (m *MesgJoinAck) GetErrNum() uint32 {
 }
 
 func (m *MesgJoinAck) GetErrMsg() string {
+	if m != nil && m.ErrMsg != nil {
+		return *m.ErrMsg
+	}
+	return ""
+}
+
+type MesgUnjoinReq struct {
+	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgUnjoinReq) Reset()         { *m = MesgUnjoinReq{} }
+func (m *MesgUnjoinReq) String() string { return proto.CompactTextString(m) }
+func (*MesgUnjoinReq) ProtoMessage()    {}
+
+func (m *MesgUnjoinReq) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgUnjoinReq) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+type MesgUnjoinAck struct {
+	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
+	ErrNum           *uint32 `protobuf:"varint,3,opt,name=ErrNum" json:"ErrNum,omitempty"`
+	ErrMsg           *string `protobuf:"bytes,4,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgUnjoinAck) Reset()         { *m = MesgUnjoinAck{} }
+func (m *MesgUnjoinAck) String() string { return proto.CompactTextString(m) }
+func (*MesgUnjoinAck) ProtoMessage()    {}
+
+func (m *MesgUnjoinAck) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgUnjoinAck) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+func (m *MesgUnjoinAck) GetErrNum() uint32 {
+	if m != nil && m.ErrNum != nil {
+		return *m.ErrNum
+	}
+	return 0
+}
+
+func (m *MesgUnjoinAck) GetErrMsg() string {
 	if m != nil && m.ErrMsg != nil {
 		return *m.ErrMsg
 	}
