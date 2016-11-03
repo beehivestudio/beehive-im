@@ -320,7 +320,7 @@ TODO: 协议头中的to为用户ID(UID)
 >   optional uint64 nid = 1;    // M|结点ID|数字|<br>
 >   optional uint32 mod = 2;    // M|模块类型|数字|(1:接入层 2:转发层)<br>
 >   optional string ipaddr = 3; // M|IP地址|字串|<br>
->   optional uint16 port = 4;   // M|端口号|数字|<br>
+>   optional uint32 port = 4;   // M|端口号|数字|<br>
 >}
 
 ---
@@ -334,8 +334,8 @@ TODO: 协议头中的to为用户ID(UID)
 协议格式: <br>
 >{<br>
 >   optional uint64 nid = 1;    // M|结点ID|数字|<br>
->   optional string ipaddr = 3; // M|IP地址|字串|<br>
->   optional uint16 port = 4;   // M|端口号|数字|<br>
+>   optional string ipaddr = 2; // M|IP地址|字串|<br>
+>   optional uint32 port = 3;   // M|端口号|数字|<br>
 >}
 
 ---
@@ -348,8 +348,8 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 转发层列表(FRWD-LIST)<br>
 协议格式: <br>
 >{<br>
->   optional uint16 len = 1;    // M|结点ID|数字|<br>
->   optional string list = 3;   // M|IP地址|字串|<br>
+>   optional uint32 len = 1;    // M|结点ID|数字|<br>
+>   optional string list = 2;   // M|IP地址|字串|<br>
 >}
 
 协议说明:<br>
