@@ -278,7 +278,7 @@ func (ctx *OlSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline
 }
 
 /******************************************************************************
- **函数名称: OlSvrMesgOnlineReqHandler
+ **函数名称: OlSvrOnlineReqHandler
  **功    能: 上线请求
  **输入参数:
  **     cmd: 消息类型
@@ -292,7 +292,7 @@ func (ctx *OlSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline
  **注意事项: 首先需要调用mesg_head_ntoh()对头部数据进行直接序转换.
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlSvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func OlSvrOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
@@ -407,7 +407,7 @@ func (ctx *OlSvrCntx) offline_handler(head *comm.MesgHeader) error {
 }
 
 /******************************************************************************
- **函数名称: OlSvrMesgOfflineReqHandler
+ **函数名称: OlSvrOfflineReqHandler
  **功    能: 下线请求
  **输入参数:
  **     cmd: 消息类型
@@ -421,7 +421,7 @@ func (ctx *OlSvrCntx) offline_handler(head *comm.MesgHeader) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlSvrMesgOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func OlSvrOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
@@ -758,7 +758,7 @@ GET_GID:
 }
 
 /******************************************************************************
- **函数名称: OlSvrMesgJoinReqHandler
+ **函数名称: OlSvrJoinReqHandler
  **功    能: 加入聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -772,7 +772,7 @@ GET_GID:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlSvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func OlSvrJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
@@ -984,7 +984,7 @@ func (ctx *OlSvrCntx) unjoin_handler(
 }
 
 /******************************************************************************
- **函数名称: OlSvrMesgUnjoinReqHandler
+ **函数名称: OlSvrUnjoinReqHandler
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -998,7 +998,7 @@ func (ctx *OlSvrCntx) unjoin_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlSvrMesgUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func OlSvrUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
@@ -1088,7 +1088,7 @@ func (ctx *OlSvrCntx) ping_handler(head *comm.MesgHeader) {
 }
 
 /******************************************************************************
- **函数名称: OlSvrMesgPingHandler
+ **函数名称: OlSvrPingHandler
  **功    能: 客户端PING
  **输入参数:
  **     cmd: 消息类型
@@ -1102,7 +1102,7 @@ func (ctx *OlSvrCntx) ping_handler(head *comm.MesgHeader) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:40:30 #
  ******************************************************************************/
-func OlSvrMesgPingHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func OlSvrPingHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
