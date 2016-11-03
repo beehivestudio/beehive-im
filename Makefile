@@ -36,6 +36,7 @@ DIR += "$(CLANG_EXEC_DIR)/listend"
 GOLANG_EXEC_DIR = "src/golang/exec"
 DIR += "$(GOLANG_EXEC_DIR)/cross"
 DIR += "$(GOLANG_EXEC_DIR)/olsvr"
+DIR += "$(GOLANG_EXEC_DIR)/msgsvr"
 
 # 获取系统配置
 CPU_CORES = $(call func_cpu_cores)
