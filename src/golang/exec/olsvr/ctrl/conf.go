@@ -11,7 +11,7 @@ import (
 )
 
 /* 在线中心配置 */
-type OlsvrConf struct {
+type OlSvrConf struct {
 	NodeId    uint32             // 结点ID
 	WorkPath  string             // 工作路径(自动获取)
 	AppPath   string             // 程序路径(自动获取)
@@ -23,16 +23,16 @@ type OlsvrConf struct {
 }
 
 /* 鉴权信息 */
-type OlsvrConfRtmqAuthXmlData struct {
+type OlSvrConfRtmqAuthXmlData struct {
 	Name   xml.Name `xml:"AUTH"`        // 结点名
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
-type OlsvrConfRtmqProxyXmlData struct {
+type OlSvrConfRtmqProxyXmlData struct {
 	Name        xml.Name                 `xml:"RTMQ-PROXY"`    // 结点名
-	Auth        OlsvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
+	Auth        OlSvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
 	RemoteAddr  string                   `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
 	WorkerNum   uint32                   `xml:"WORKER-NUM"`    // 协程数
 	SendChanLen uint32                   `xml:"SEND-CHAN-LEN"` // 发送队列长度
@@ -40,13 +40,13 @@ type OlsvrConfRtmqProxyXmlData struct {
 }
 
 /* 在线中心XML配置 */
-type OlsvrConfXmlData struct {
+type OlSvrConfXmlData struct {
 	Name      xml.Name                  `xml:"OLSVR"`      // 根结点名
 	Id        uint32                    `xml:"ID,attr"`    // 结点ID
 	RedisAddr string                    `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	SecretKey string                    `xml:"SECRET-KEY"` // 私密密钥
 	LogPath   string                    `xml:"LOG-PATH"`   // 日志路径
-	RtmqProxy OlsvrConfRtmqProxyXmlData `xml:"RTMQ-PROXY"` // RTMQ PROXY配置
+	RtmqProxy OlSvrConfRtmqProxyXmlData `xml:"RTMQ-PROXY"` // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -60,7 +60,7 @@ type OlsvrConfXmlData struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *OlsvrConf) LoadConf() (err error) {
+func (conf *OlSvrConf) LoadConf() (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
@@ -80,7 +80,7 @@ func (conf *OlsvrConf) LoadConf() (err error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *OlsvrConf) conf_parse() (err error) {
+func (conf *OlSvrConf) conf_parse() (err error) {
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)
 	if nil != err {
@@ -94,7 +94,7 @@ func (conf *OlsvrConf) conf_parse() (err error) {
 		return err
 	}
 
-	node := OlsvrConfXmlData{}
+	node := OlSvrConfXmlData{}
 
 	err = xml.Unmarshal(data, &node)
 	if nil != err {

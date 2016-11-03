@@ -13,15 +13,15 @@ import (
 )
 
 /* OLS上下文 */
-type OlsvrCntx struct {
-	conf  *OlsvrConf          /* 配置信息 */
+type OlSvrCntx struct {
+	conf  *OlSvrConf          /* 配置信息 */
 	log   *logs.BeeLogger     /* 日志对象 */
 	proxy *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis *redis.Pool         /* REDIS连接池 */
 }
 
 /******************************************************************************
- **函数名称: OlsvrInit
+ **函数名称: OlSvrInit
  **功    能: 初始化对象
  **输入参数:
  **     conf: 配置信息
@@ -33,8 +33,8 @@ type OlsvrCntx struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlsvrInit(conf *OlsvrConf) (ctx *OlsvrCntx, err error) {
-	ctx = &OlsvrCntx{}
+func OlSvrInit(conf *OlSvrConf) (ctx *OlSvrCntx, err error) {
+	ctx = &OlSvrCntx{}
 
 	ctx.conf = conf
 
@@ -79,14 +79,14 @@ func OlsvrInit(conf *OlsvrConf) (ctx *OlsvrCntx, err error) {
  **注意事项: 请在调用Launch()前完成此函数调用
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) Register() {
-	ctx.proxy.Register(comm.CMD_ONLINE_REQ, OlsvrMesgOnlineReqHandler, ctx)
-	ctx.proxy.Register(comm.CMD_OFFLINE_REQ, OlsvrMesgOfflineReqHandler, ctx)
+func (ctx *OlSvrCntx) Register() {
+	ctx.proxy.Register(comm.CMD_ONLINE_REQ, OlSvrMesgOnlineReqHandler, ctx)
+	ctx.proxy.Register(comm.CMD_OFFLINE_REQ, OlSvrMesgOfflineReqHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_JOIN_REQ, OlsvrMesgJoinReqHandler, ctx)
-	ctx.proxy.Register(comm.CMD_UNJOIN_REQ, OlsvrMesgUnjoinReqHandler, ctx)
+	ctx.proxy.Register(comm.CMD_JOIN_REQ, OlSvrMesgJoinReqHandler, ctx)
+	ctx.proxy.Register(comm.CMD_UNJOIN_REQ, OlSvrMesgUnjoinReqHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_PING, OlsvrMesgPingHandler, ctx)
+	ctx.proxy.Register(comm.CMD_PING, OlSvrMesgPingHandler, ctx)
 }
 
 /******************************************************************************
@@ -99,7 +99,7 @@ func (ctx *OlsvrCntx) Register() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) Launch() {
+func (ctx *OlSvrCntx) Launch() {
 	ctx.proxy.Launch()
 }
 
@@ -114,7 +114,7 @@ func (ctx *OlsvrCntx) Launch() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:34:34 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) log_init() (err error) {
+func (ctx *OlSvrCntx) log_init() (err error) {
 	conf := ctx.conf
 
 	ctx.log = logs.NewLogger(20000)

@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	var conf ctrl.OlsvrConf
+	var conf ctrl.OlSvrConf
 
 	flag.Parse()
 
@@ -26,7 +26,7 @@ func main() {
 	}
 
 	/* > 初始化OLSVR环境 */
-	ctx, err := ctrl.OlsvrInit(&conf)
+	ctx, err := ctrl.OlSvrInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

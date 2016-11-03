@@ -33,7 +33,7 @@ import (
  **     ttl: 该token的最大生命时间
  **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
+func (ctx *OlSvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
 	/* > TOKEN解码 */
 	cry := crypt.CreateEncodeCtx(ctx.conf.SecretKey)
 	token := crypt.Decode(cry, req.GetToken())
@@ -70,7 +70,7 @@ func (ctx *OlsvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) online_parse(data []byte) (
+func (ctx *OlSvrCntx) online_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgOnlineReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -114,7 +114,7 @@ func (ctx *OlsvrCntx) online_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_err_online_ack(head *comm.MesgHeader,
+func (ctx *OlSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 	req *mesg.MesgOnlineReq, errno uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
@@ -173,7 +173,7 @@ func (ctx *OlsvrCntx) send_err_online_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *mesg.MesgOnlineReq) int {
+func (ctx *OlSvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *mesg.MesgOnlineReq) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
@@ -223,7 +223,7 @@ func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *me
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.02 19:17:01 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnlineReq, sid uint64) bool {
+func (ctx *OlSvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnlineReq, sid uint64) bool {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -262,7 +262,7 @@ func (ctx *OlsvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnlineR
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (sid uint64, err error) {
+func (ctx *OlSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (sid uint64, err error) {
 	/* > 申请会话SID */
 	sid, err = ctx.alloc_sid()
 	if nil != err {
@@ -278,7 +278,7 @@ func (ctx *OlsvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline
 }
 
 /******************************************************************************
- **函数名称: OlsvrMesgOnlineReqHandler
+ **函数名称: OlSvrMesgOnlineReqHandler
  **功    能: 上线请求
  **输入参数:
  **     cmd: 消息类型
@@ -292,8 +292,8 @@ func (ctx *OlsvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline
  **注意事项: 首先需要调用mesg_head_ntoh()对头部数据进行直接序转换.
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlsvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*OlsvrCntx)
+func OlSvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
 	}
@@ -338,7 +338,7 @@ func OlsvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.02 22:17:38 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
+func (ctx *OlSvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
@@ -357,7 +357,7 @@ func (ctx *OlsvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.02 22:22:02 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) offline_handler(head *comm.MesgHeader) error {
+func (ctx *OlSvrCntx) offline_handler(head *comm.MesgHeader) error {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -407,7 +407,7 @@ func (ctx *OlsvrCntx) offline_handler(head *comm.MesgHeader) error {
 }
 
 /******************************************************************************
- **函数名称: OlsvrMesgOfflineReqHandler
+ **函数名称: OlSvrMesgOfflineReqHandler
  **功    能: 下线请求
  **输入参数:
  **     cmd: 消息类型
@@ -421,8 +421,8 @@ func (ctx *OlsvrCntx) offline_handler(head *comm.MesgHeader) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlsvrMesgOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*OlsvrCntx)
+func OlSvrMesgOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
 	}
@@ -463,7 +463,7 @@ func OlsvrMesgOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uin
  **     ttl: 该token的最大生命时间
  **作    者: # Qifeng.zou # 2016.11.03 16:41:28 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) join_req_isvalid(req *mesg.MesgJoinReq) bool {
+func (ctx *OlSvrCntx) join_req_isvalid(req *mesg.MesgJoinReq) bool {
 	/* > TOKEN解码 */
 	cry := crypt.CreateEncodeCtx(ctx.conf.SecretKey)
 	token := crypt.Decode(cry, req.GetToken())
@@ -504,7 +504,7 @@ func (ctx *OlsvrCntx) join_req_isvalid(req *mesg.MesgJoinReq) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 16:41:17 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) join_parse(data []byte) (
+func (ctx *OlSvrCntx) join_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgJoinReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -546,7 +546,7 @@ func (ctx *OlsvrCntx) join_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_err_join_ack(head *comm.MesgHeader,
+func (ctx *OlSvrCntx) send_err_join_ack(head *comm.MesgHeader,
 	req *mesg.MesgJoinReq, errno uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgJoinAck{
@@ -599,7 +599,7 @@ func (ctx *OlsvrCntx) send_err_join_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq, gid uint32) int {
+func (ctx *OlSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq, gid uint32) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -645,7 +645,7 @@ func (ctx *OlsvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 20:08:06 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) alloc_gid(rid uint64) (gid uint32, err error) {
+func (ctx *OlSvrCntx) alloc_gid(rid uint64) (gid uint32, err error) {
 	var num int
 
 	rds := ctx.redis.Get()
@@ -692,7 +692,7 @@ func (ctx *OlsvrCntx) alloc_gid(rid uint64) (gid uint32, err error) {
  **注意事项: 已验证了JION请求的合法性
  **作    者: # Qifeng.zou # 2016.11.03 19:51:46 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) join_handler(
+func (ctx *OlSvrCntx) join_handler(
 	head *comm.MesgHeader, req *mesg.MesgJoinReq) (gid uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
@@ -758,7 +758,7 @@ GET_GID:
 }
 
 /******************************************************************************
- **函数名称: OlsvrMesgJoinReqHandler
+ **函数名称: OlSvrMesgJoinReqHandler
  **功    能: 加入聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -772,8 +772,8 @@ GET_GID:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlsvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*OlsvrCntx)
+func OlSvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
 	}
@@ -816,7 +816,7 @@ func OlsvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:26:22 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
+func (ctx *OlSvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
 	if 0 == req.GetUid() || 0 == req.GetRid() {
 		return false
 	}
@@ -837,7 +837,7 @@ func (ctx *OlsvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:20:34 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
+func (ctx *OlSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
 	req *mesg.MesgUnjoinReq, errno uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgUnjoinAck{
@@ -885,7 +885,7 @@ func (ctx *OlsvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:18:29 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) unjoin_parse(data []byte) (
+func (ctx *OlSvrCntx) unjoin_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgUnjoinReq) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -923,7 +923,7 @@ func (ctx *OlsvrCntx) unjoin_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjoinReq) int {
+func (ctx *OlSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjoinReq) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgUnjoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -969,7 +969,7 @@ func (ctx *OlsvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjoi
  **注意事项: 已验证了UNJION请求的合法性
  **作    者: # Qifeng.zou # 2016.11.03 21:28:18 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) unjoin_handler(
+func (ctx *OlSvrCntx) unjoin_handler(
 	head *comm.MesgHeader, req *mesg.MesgUnjoinReq) (err error) {
 	pl := ctx.redis.Get()
 	defer func() {
@@ -984,7 +984,7 @@ func (ctx *OlsvrCntx) unjoin_handler(
 }
 
 /******************************************************************************
- **函数名称: OlsvrMesgUnjoinReqHandler
+ **函数名称: OlSvrMesgUnjoinReqHandler
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -998,8 +998,8 @@ func (ctx *OlsvrCntx) unjoin_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlsvrMesgUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*OlsvrCntx)
+func OlSvrMesgUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
 	}
@@ -1037,7 +1037,7 @@ func OlsvrMesgUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:18:29 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
+func (ctx *OlSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	return comm.MesgHeadNtoh(data)
 }
@@ -1053,7 +1053,7 @@ func (ctx *OlsvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) ping_handler(head *comm.MesgHeader) {
+func (ctx *OlSvrCntx) ping_handler(head *comm.MesgHeader) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -1088,7 +1088,7 @@ func (ctx *OlsvrCntx) ping_handler(head *comm.MesgHeader) {
 }
 
 /******************************************************************************
- **函数名称: OlsvrMesgPingHandler
+ **函数名称: OlSvrMesgPingHandler
  **功    能: 客户端PING
  **输入参数:
  **     cmd: 消息类型
@@ -1102,8 +1102,8 @@ func (ctx *OlsvrCntx) ping_handler(head *comm.MesgHeader) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:40:30 #
  ******************************************************************************/
-func OlsvrMesgPingHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*OlsvrCntx)
+func OlSvrMesgPingHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*OlSvrCntx)
 	if false == ok {
 		return -1
 	}

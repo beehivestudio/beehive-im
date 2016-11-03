@@ -17,7 +17,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.02 10:48:40 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) alloc_sid() (sid uint64, err error) {
+func (ctx *OlSvrCntx) alloc_sid() (sid uint64, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
