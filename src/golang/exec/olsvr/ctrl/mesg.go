@@ -135,9 +135,14 @@ func (ctx *OlsvrCntx) send_err_online_ack(
 		return -1
 	}
 
+	length := len(body)
+
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+len(body))
+	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+
+	head.Cmd = comm.CMD_ONLINE_ACK
+	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
@@ -188,9 +193,14 @@ func (ctx *OlsvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *me
 		return -1
 	}
 
+	length := len(body)
+
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+len(body))
+	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+
+	head.Cmd = comm.CMD_ONLINE_ACK
+	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
@@ -439,6 +449,212 @@ func OlsvrMesgOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uin
 }
 
 /******************************************************************************
+ **函数名称: join_req_isvalid
+ **功    能: 判断JOIN是否合法
+ **输入参数:
+ **     req: JOIN请求
+ **输出参数: NONE
+ **返    回: true:合法 false:非法
+ **实现描述: 计算TOKEN合法性
+ **注意事项:
+ **     TOKEN的格式"uid:${uid}:rid:${rid}:ttl:${ttl}"
+ **     uid: 用户ID
+ **     ttl: 该token的最大生命时间
+ **作    者: # Qifeng.zou # 2016.11.03 16:41:28 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) join_req_isvalid(req *mesg.MesgJoinReq) bool {
+	/* > TOKEN解码 */
+	cry := crypt.CreateEncodeCtx(ctx.conf.SecretKey)
+	token := crypt.Decode(cry, req.GetToken())
+	words := strings.Split(token, ":")
+	if 4 != len(words) {
+		ctx.log.Error("Token format not right! token:%s", token)
+		return false
+	}
+
+	/* > 验证TOKEN合法性 */
+	uid, _ := strconv.ParseInt(words[1], 10, 64)
+	rid, _ := strconv.ParseInt(words[3], 10, 64)
+	ttl, _ := strconv.ParseInt(words[5], 10, 64)
+	if ttl < time.Now().Unix() {
+		ctx.log.Error("Token is timeout!")
+		return false
+	} else if uint64(uid) != req.GetUid() {
+		ctx.log.Error("Token is invalid! uid:%d/%d", uid, req.GetUid())
+		return false
+	} else if uint64(rid) != req.GetRid() {
+		ctx.log.Error("Token is invalid! rid:%d/%d", rid, req.GetRid())
+		return false
+	}
+
+	return true
+}
+
+/******************************************************************************
+ **函数名称: join_parse
+ **功    能: 解析JOIN请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 16:41:17 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) join_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgJoinReq) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if comm.CMD_JOIN_REQ != head.GetCmd() {
+		ctx.log.Error("Command type isn't right! cmd:%d", head.GetCmd())
+		return nil, nil
+	}
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgJoinReq{}
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal join request failed! errmsg:%s", err.Error())
+		return nil, nil
+	}
+
+	/* > 校验协议合法性 */
+	if !ctx.join_req_isvalid(req) {
+		return nil, nil
+	}
+
+	return head, req
+}
+
+/******************************************************************************
+ **函数名称: send_err_join_ack
+ **功    能: 发送上线应答
+ **输入参数:
+ **     head: 协议头
+ **     req: 上线请求
+ **     errno: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **     {
+ **         optional uint64 Uid = 1;    // M|用户ID|数字|
+ **         optional uint64 Rid = 2;    // M|聊天室ID|数字|
+ **         optional uint32 Gid = 3;    // M|分组ID|数字|
+ **         optional uint32 Errnum = 4; // M|错误码|数字|
+ **         optional string Errmsg = 5; // M|错误描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) send_err_join_ack(
+	head *comm.MesgHeader, req *mesg.MesgJoinReq, errno uint32, errmsg string) int {
+	/* > 设置协议体 */
+	rsp := &mesg.MesgJoinAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Rid:    proto.Uint64(req.GetRid()),
+		Gid:    proto.Uint32(0),
+		ErrNum: proto.Uint32(errno),
+		ErrMsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+
+	head.Cmd = comm.CMD_JOIN_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+
+	/* > 发送协议包 */
+	ctx.proxy.Send(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: send_join_ack
+ **功    能: 发送上线应答
+ **输入参数:
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **     {
+ **         optional uint64 Uid = 1;    // M|用户ID|数字|
+ **         optional uint64 Rid = 2;    // M|聊天室ID|数字|
+ **         optional uint32 Gid = 3;    // M|分组ID|数字|
+ **         optional uint32 Errnum = 4; // M|错误码|数字|
+ **         optional string Errmsg = 5; // M|错误描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq) int {
+	/* > 设置协议体 */
+	rsp := &mesg.MesgJoinAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Rid:    proto.Uint64(req.GetRid()),
+		Gid:    proto.Uint32(0),
+		ErrNum: proto.Uint32(0),
+		ErrMsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+
+	head.Cmd = comm.CMD_JOIN_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+
+	/* > 发送协议包 */
+	ctx.proxy.Send(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: join_handler
+ **功    能: JOIN处理
+ **输入参数:
+ **     req: JOIN请求
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 16:41:07 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) join_handler(head *comm.MesgHeader, req *mesg.MesgJoinReq) (err error) {
+	return nil
+}
+
+/******************************************************************************
  **函数名称: OlsvrMesgJoinReqHandler
  **功    能: 加入聊天室
  **输入参数:
@@ -459,7 +675,26 @@ func OlsvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32
 		return -1
 	}
 
-	ctx.log.Debug("Recv online request!")
+	ctx.log.Debug("Recv join request!")
+
+	/* 1. > 解析JOIN请求 */
+	head, req := ctx.join_parse(data)
+	if nil == head || nil != req {
+		ctx.log.Error("Parse join request failed!")
+		ctx.send_err_join_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
+		return -1
+	}
+
+	/* 2. > 初始化上线环境 */
+	err := ctx.join_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Online handler failed!")
+		ctx.send_err_join_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
+		return -1
+	}
+
+	/* 3. > 发送上线应答 */
+	ctx.send_join_ack(head, req)
 
 	return 0
 }

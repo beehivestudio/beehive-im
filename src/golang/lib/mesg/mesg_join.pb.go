@@ -59,8 +59,8 @@ type MesgJoinAck struct {
 	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
 	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
 	Gid              *uint32 `protobuf:"varint,3,opt,name=Gid" json:"Gid,omitempty"`
-	Errnum           *uint32 `protobuf:"varint,4,opt,name=Errnum" json:"Errnum,omitempty"`
-	Errmsg           *string `protobuf:"bytes,5,opt,name=Errmsg" json:"Errmsg,omitempty"`
+	ErrNum           *uint32 `protobuf:"varint,4,opt,name=ErrNum" json:"ErrNum,omitempty"`
+	ErrMsg           *string `protobuf:"bytes,5,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -89,16 +89,16 @@ func (m *MesgJoinAck) GetGid() uint32 {
 	return 0
 }
 
-func (m *MesgJoinAck) GetErrnum() uint32 {
-	if m != nil && m.Errnum != nil {
-		return *m.Errnum
+func (m *MesgJoinAck) GetErrNum() uint32 {
+	if m != nil && m.ErrNum != nil {
+		return *m.ErrNum
 	}
 	return 0
 }
 
-func (m *MesgJoinAck) GetErrmsg() string {
-	if m != nil && m.Errmsg != nil {
-		return *m.Errmsg
+func (m *MesgJoinAck) GetErrMsg() string {
+	if m != nil && m.ErrMsg != nil {
+		return *m.ErrMsg
 	}
 	return ""
 }
