@@ -748,9 +748,6 @@ GET_GID:
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
 	pl.Send("ZINCRBY", key, 1, gid)
 
-	key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
-	pl.Send("ZINCRBY", key, 1, head.GetNid())
-
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, req.GetRid())
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZINCRBY", key, ttl, req.GetUid())
