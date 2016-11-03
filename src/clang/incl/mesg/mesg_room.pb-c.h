@@ -19,18 +19,14 @@ typedef struct _MesgRoom MesgRoom;
 struct  _MesgRoom
 {
   ProtobufCMessage base;
-  protobuf_c_boolean has_rid;
   uint64_t rid;
-  protobuf_c_boolean has_gid;
   uint32_t gid;
-  protobuf_c_boolean has_mesg_level;
-  uint32_t mesg_level;
-  protobuf_c_boolean has_data;
+  uint32_t level;
   ProtobufCBinaryData data;
 };
 #define MESG_ROOM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room__descriptor) \
-    , 0,0, 0,0, 0,0, 0,{0,NULL} }
+    , 0, 0, 0, {0,NULL} }
 
 
 /* MesgRoom methods */

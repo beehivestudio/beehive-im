@@ -26,9 +26,9 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type MesgJoinReq struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
-	Token            *string `protobuf:"bytes,3,opt,name=Token" json:"Token,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=Rid" json:"Rid,omitempty"`
+	Token            *string `protobuf:"bytes,3,req,name=Token" json:"Token,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -58,9 +58,9 @@ func (m *MesgJoinReq) GetToken() string {
 }
 
 type MesgJoinAck struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
-	Gid              *uint32 `protobuf:"varint,3,opt,name=Gid" json:"Gid,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=Rid" json:"Rid,omitempty"`
+	Gid              *uint32 `protobuf:"varint,3,req,name=Gid" json:"Gid,omitempty"`
 	ErrNum           *uint32 `protobuf:"varint,4,opt,name=ErrNum" json:"ErrNum,omitempty"`
 	ErrMsg           *string `protobuf:"bytes,5,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
@@ -106,8 +106,8 @@ func (m *MesgJoinAck) GetErrMsg() string {
 }
 
 type MesgUnjoinReq struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=Rid" json:"Rid,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -130,8 +130,8 @@ func (m *MesgUnjoinReq) GetRid() uint64 {
 }
 
 type MesgUnjoinAck struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,opt,name=Rid" json:"Rid,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=Rid" json:"Rid,omitempty"`
 	ErrNum           *uint32 `protobuf:"varint,3,opt,name=ErrNum" json:"ErrNum,omitempty"`
 	ErrMsg           *string `protobuf:"bytes,4,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`

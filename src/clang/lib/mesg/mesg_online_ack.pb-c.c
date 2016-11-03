@@ -54,9 +54,9 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   {
     "uid",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_uid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineAck, uid),
     NULL,
     NULL,
@@ -66,9 +66,9 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   {
     "sid",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgOnlineAck, has_sid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineAck, sid),
     NULL,
     NULL,
@@ -78,7 +78,7 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   {
     "app",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineAck, app),
@@ -90,7 +90,7 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   {
     "version",
     4,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineAck, version),

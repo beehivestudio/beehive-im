@@ -54,9 +54,9 @@ static const ProtobufCFieldDescriptor mesg_unjoin_req__field_descriptors[2] =
   {
     "uid",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgUnjoinReq, has_uid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgUnjoinReq, uid),
     NULL,
     NULL,
@@ -66,9 +66,9 @@ static const ProtobufCFieldDescriptor mesg_unjoin_req__field_descriptors[2] =
   {
     "rid",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgUnjoinReq, has_rid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgUnjoinReq, rid),
     NULL,
     NULL,

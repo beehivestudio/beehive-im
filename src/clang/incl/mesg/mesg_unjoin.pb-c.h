@@ -19,14 +19,12 @@ typedef struct _MesgUnjoinReq MesgUnjoinReq;
 struct  _MesgUnjoinReq
 {
   ProtobufCMessage base;
-  protobuf_c_boolean has_uid;
   uint64_t uid;
-  protobuf_c_boolean has_rid;
   uint64_t rid;
 };
 #define MESG_UNJOIN_REQ__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_unjoin_req__descriptor) \
-    , 0,0, 0,0 }
+    , 0, 0 }
 
 
 /* MesgUnjoinReq methods */

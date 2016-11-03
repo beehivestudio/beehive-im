@@ -19,11 +19,8 @@ typedef struct _MesgJoinAck MesgJoinAck;
 struct  _MesgJoinAck
 {
   ProtobufCMessage base;
-  protobuf_c_boolean has_uid;
   uint64_t uid;
-  protobuf_c_boolean has_rid;
   uint64_t rid;
-  protobuf_c_boolean has_gid;
   uint32_t gid;
   protobuf_c_boolean has_errnum;
   uint32_t errnum;
@@ -31,7 +28,7 @@ struct  _MesgJoinAck
 };
 #define MESG_JOIN_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_join_ack__descriptor) \
-    , 0,0, 0,0, 0,0, 0,0, NULL }
+    , 0, 0, 0, 0,0, NULL }
 
 
 /* MesgJoinAck methods */

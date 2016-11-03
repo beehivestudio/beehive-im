@@ -185,11 +185,6 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
         log_error(lsnd->log, "Unpack online ack failed! body:%s", head->body);
         return -1;
     }
-    else if (false == ack->has_sid) {
-        mesg_online_ack__free_unpacked(ack, NULL);
-        log_error(lsnd->log, "Miss sid field!");
-        return -1;
-    }
 
     if (chat_mesg_online_ack_logic_hdl(lsnd, ack, cid)) {
         mesg_online_ack__free_unpacked(ack, NULL);
@@ -471,13 +466,8 @@ int chat_mesg_room_mesg_hdl(int type, int orig, void *data, size_t len, void *ar
         log_error(lsnd->log, "Unpack chat room message failed!");
         return -1;
     }
-    else if (false == mesg->has_rid) {
-        mesg_room__free_unpacked(mesg, NULL);
-        log_error(lsnd->log, "Get room id failed!");
-        return -1;
-    }
 
-    gid = mesg->has_gid? mesg->gid : 0;
+    gid = mesg->gid;
 
     /* > 给制定聊天室和分组发送消息 */
     param.lsnd = lsnd;

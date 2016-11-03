@@ -54,9 +54,9 @@ static const ProtobufCFieldDescriptor mesg_room__field_descriptors[4] =
   {
     "rid",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgRoom, has_rid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgRoom, rid),
     NULL,
     NULL,
@@ -66,9 +66,9 @@ static const ProtobufCFieldDescriptor mesg_room__field_descriptors[4] =
   {
     "gid",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(MesgRoom, has_gid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgRoom, gid),
     NULL,
     NULL,
@@ -76,12 +76,12 @@ static const ProtobufCFieldDescriptor mesg_room__field_descriptors[4] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "mesg_level",
+    "level",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(MesgRoom, has_mesg_level),
-    PROTOBUF_C_OFFSETOF(MesgRoom, mesg_level),
+    0,   /* quantifier_offset */
+    PROTOBUF_C_OFFSETOF(MesgRoom, level),
     NULL,
     NULL,
     0,            /* packed */
@@ -90,9 +90,9 @@ static const ProtobufCFieldDescriptor mesg_room__field_descriptors[4] =
   {
     "data",
     4,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_BYTES,
-    PROTOBUF_C_OFFSETOF(MesgRoom, has_data),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgRoom, data),
     NULL,
     NULL,
@@ -103,7 +103,7 @@ static const ProtobufCFieldDescriptor mesg_room__field_descriptors[4] =
 static const unsigned mesg_room__field_indices_by_name[] = {
   3,   /* field[3] = data */
   1,   /* field[1] = gid */
-  2,   /* field[2] = mesg_level */
+  2,   /* field[2] = level */
   0,   /* field[0] = rid */
 };
 static const ProtobufCIntRange mesg_room__number_ranges[1 + 1] =

@@ -54,9 +54,9 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   {
     "uid",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgOnlineReq, has_uid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineReq, uid),
     NULL,
     NULL,
@@ -66,7 +66,7 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   {
     "token",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineReq, token),
@@ -78,7 +78,7 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   {
     "app",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineReq, app),
@@ -90,7 +90,7 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   {
     "version",
     4,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgOnlineReq, version),

@@ -24,10 +24,10 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 type MesgOnlineReq struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
-	Token            *string `protobuf:"bytes,2,opt,name=Token" json:"Token,omitempty"`
-	App              *string `protobuf:"bytes,3,opt,name=App" json:"App,omitempty"`
-	Version          *string `protobuf:"bytes,4,opt,name=Version" json:"Version,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Token            *string `protobuf:"bytes,2,req,name=Token" json:"Token,omitempty"`
+	App              *string `protobuf:"bytes,3,req,name=App" json:"App,omitempty"`
+	Version          *string `protobuf:"bytes,4,req,name=Version" json:"Version,omitempty"`
 	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
@@ -72,10 +72,10 @@ func (m *MesgOnlineReq) GetTerminal() uint32 {
 }
 
 type MesgOnlineAck struct {
-	Uid              *uint64 `protobuf:"varint,1,opt,name=Uid" json:"Uid,omitempty"`
-	Sid              *uint64 `protobuf:"varint,2,opt,name=Sid" json:"Sid,omitempty"`
-	App              *string `protobuf:"bytes,3,opt,name=App" json:"App,omitempty"`
-	Version          *string `protobuf:"bytes,4,opt,name=Version" json:"Version,omitempty"`
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Sid              *uint64 `protobuf:"varint,2,req,name=Sid" json:"Sid,omitempty"`
+	App              *string `protobuf:"bytes,3,req,name=App" json:"App,omitempty"`
+	Version          *string `protobuf:"bytes,4,req,name=Version" json:"Version,omitempty"`
 	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
 	ErrNum           *uint32 `protobuf:"varint,6,opt,name=ErrNum" json:"ErrNum,omitempty"`
 	ErrMsg           *string `protobuf:"bytes,7,opt,name=ErrMsg" json:"ErrMsg,omitempty"`

@@ -19,9 +19,7 @@ typedef struct _MesgOnlineAck MesgOnlineAck;
 struct  _MesgOnlineAck
 {
   ProtobufCMessage base;
-  protobuf_c_boolean has_uid;
   uint64_t uid;
-  protobuf_c_boolean has_sid;
   uint64_t sid;
   char *app;
   char *version;
@@ -33,7 +31,7 @@ struct  _MesgOnlineAck
 };
 #define MESG_ONLINE_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_online_ack__descriptor) \
-    , 0,0, 0,0, NULL, NULL, 0,0, 0,0, NULL }
+    , 0, 0, NULL, NULL, 0,0, 0,0, NULL }
 
 
 /* MesgOnlineAck methods */

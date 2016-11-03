@@ -54,9 +54,9 @@ static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
   {
     "uid",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgJoinAck, has_uid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgJoinAck, uid),
     NULL,
     NULL,
@@ -66,9 +66,9 @@ static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
   {
     "rid",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgJoinAck, has_rid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgJoinAck, rid),
     NULL,
     NULL,
@@ -78,9 +78,9 @@ static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
   {
     "gid",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
-    PROTOBUF_C_OFFSETOF(MesgJoinAck, has_gid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgJoinAck, gid),
     NULL,
     NULL,

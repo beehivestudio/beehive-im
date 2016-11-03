@@ -2,8 +2,8 @@ package mesg;
 
 message mesg_room
 {
-    optional uint64 Rid = 1;            // 聊天室ID
-    optional uint32 Gid = 2;            // 分组ID
-    optional uint32 Mesg_level = 3;     // 消息级别
-    optional bytes  Data = 4;           // 透传数据
+    required uint64 Rid = 1;            // 聊天室ID
+    required uint32 Gid = 2;            // 分组ID
+    required uint32 level = 3;          // 消息级别
+    required bytes  Data = 4;           // 透传数据
 }

@@ -54,9 +54,9 @@ static const ProtobufCFieldDescriptor mesg_join_req__field_descriptors[3] =
   {
     "uid",
     1,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgJoinReq, has_uid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgJoinReq, uid),
     NULL,
     NULL,
@@ -66,9 +66,9 @@ static const ProtobufCFieldDescriptor mesg_join_req__field_descriptors[3] =
   {
     "rid",
     2,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
-    PROTOBUF_C_OFFSETOF(MesgJoinReq, has_rid),
+    0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgJoinReq, rid),
     NULL,
     NULL,
@@ -78,7 +78,7 @@ static const ProtobufCFieldDescriptor mesg_join_req__field_descriptors[3] =
   {
     "token",
     3,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     PROTOBUF_C_OFFSETOF(MesgJoinReq, token),

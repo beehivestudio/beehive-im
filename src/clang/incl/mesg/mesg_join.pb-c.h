@@ -19,15 +19,13 @@ typedef struct _MesgJoinReq MesgJoinReq;
 struct  _MesgJoinReq
 {
   ProtobufCMessage base;
-  protobuf_c_boolean has_uid;
   uint64_t uid;
-  protobuf_c_boolean has_rid;
   uint64_t rid;
   char *token;
 };
 #define MESG_JOIN_REQ__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_join_req__descriptor) \
-    , 0,0, 0,0, NULL }
+    , 0, 0, NULL }
 
 
 /* MesgJoinReq methods */
