@@ -115,8 +115,8 @@ func (ctx *OlsvrCntx) online_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_err_online_ack(
-	head *comm.MesgHeader, req *mesg.MesgOnlineReq, errno uint32, errmsg string) int {
+func (ctx *OlsvrCntx) send_err_online_ack(head *comm.MesgHeader,
+	req *mesg.MesgOnlineReq, errno uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
@@ -530,7 +530,7 @@ func (ctx *OlsvrCntx) join_parse(data []byte) (
 
 /******************************************************************************
  **函数名称: send_err_join_ack
- **功    能: 发送上线应答
+ **功    能: 发送JOIN应答(异常)
  **输入参数:
  **     head: 协议头
  **     req: 上线请求
@@ -549,8 +549,8 @@ func (ctx *OlsvrCntx) join_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_err_join_ack(
-	head *comm.MesgHeader, req *mesg.MesgJoinReq, errno uint32, errmsg string) int {
+func (ctx *OlsvrCntx) send_err_join_ack(head *comm.MesgHeader,
+	req *mesg.MesgJoinReq, errno uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -604,12 +604,12 @@ func (ctx *OlsvrCntx) send_err_join_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq) int {
+func (ctx *OlsvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq, gid uint32) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
-		Gid:    proto.Uint32(0),
+		Gid:    proto.Uint32(gid),
 		ErrNum: proto.Uint32(0),
 		ErrMsg: proto.String("Ok"),
 	}
@@ -640,18 +640,122 @@ func (ctx *OlsvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq
 }
 
 /******************************************************************************
+ **函数名称: alloc_gid
+ **功    能: 分配组ID
+ **输入参数:
+ **     rid: 聊天室ID
+ **输出参数: NONE
+ **返    回: 组ID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 20:08:06 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) alloc_gid(rid uint64) (gid uint32, err error) {
+	var num int
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, rid)
+
+	/* > 优先加入到gid为0的分组 */
+	num, err = redis.Int(rds.Do("ZSCORE", key, "0"))
+	if uint32(num) < comm.CHAT_ROOM_GROUP_MAX_NUM {
+		return 0, nil
+	}
+
+	/* > 获取有序GID列表: 以人数从多到少进行排序(加入人数最少的分组) */
+	min := 0
+	max := comm.CHAT_ROOM_GROUP_MAX_NUM - 1
+
+	gid_lst, err := redis.Ints(rds.Do("ZRANGEBYSCORE", key, min, max, "LIMIT", 0, 1))
+	if nil != err {
+		ctx.log.Error("Get group list failed! errmsg:%s", err)
+		return 0, err
+	} else if len(gid_lst) > 0 {
+		return uint32(gid_lst[0]), nil
+	}
+
+	grp_num, err := redis.Int(rds.Do("ZCARD", key))
+	if nil != err {
+		ctx.log.Error("Get group num failed! errmsg:%s", err)
+		return 0, err
+	}
+
+	return uint32(grp_num), nil
+}
+
+/******************************************************************************
  **函数名称: join_handler
  **功    能: JOIN处理
  **输入参数:
+ **     head: 协议头
  **     req: JOIN请求
  **输出参数: NONE
- **返    回:
+ **返    回: 组ID
  **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.11.03 16:41:07 #
+ **注意事项: 已验证了JION请求的合法性
+ **作    者: # Qifeng.zou # 2016.11.03 19:51:46 #
  ******************************************************************************/
-func (ctx *OlsvrCntx) join_handler(head *comm.MesgHeader, req *mesg.MesgJoinReq) (err error) {
-	return nil
+func (ctx *OlsvrCntx) join_handler(
+	head *comm.MesgHeader, req *mesg.MesgJoinReq) (gid uint32, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+GET_GID:
+	/* > 判断UID是否登录过 */
+	key := fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, req.GetUid())
+	ok, err := redis.Bool(rds.Do("HEXISTS", key, req.GetRid()))
+	if nil != err {
+		ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
+		return 0, err
+	} else if true == ok {
+		gid_int, err := redis.Int(rds.Do("HGET", key, req.GetRid()))
+		if nil != err {
+			ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
+			return 0, err
+		}
+		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, req.GetRid())
+		ttl := time.Now().Unix() + comm.CHAT_SID_TTL
+		pl.Send("ZINCRBY", key, ttl, req.GetUid())
+		return uint32(gid_int), nil
+	}
+
+	/* > 分配新的分组 */
+	gid, err = ctx.alloc_gid(req.GetRid())
+	if nil != err {
+		ctx.log.Error("Alloc gid failed! rid:%d", req.GetRid())
+		return 0, err
+	}
+
+	/* > 设置UID的RID组GID */
+	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, req.GetUid())
+	ok, err = redis.Bool(rds.Do("HSETNX", key, req.GetRid(), gid)) /* 防止冲突 */
+	if nil != err {
+		ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
+		return 0, err
+	} else if false == ok {
+		goto GET_GID /* 存在冲突 */
+	}
+
+	/* > 更新数据库统计 */
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
+	pl.Send("ZINCRBY", key, 1, gid)
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
+	pl.Send("ZINCRBY", key, 1, head.GetNid())
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, req.GetRid())
+	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
+	pl.Send("ZINCRBY", key, ttl, req.GetUid())
+
+	return gid, nil
 }
 
 /******************************************************************************
@@ -686,7 +790,7 @@ func OlsvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32
 	}
 
 	/* 2. > 初始化上线环境 */
-	err := ctx.join_handler(head, req)
+	gid, err := ctx.join_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Online handler failed!")
 		ctx.send_err_join_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
@@ -694,7 +798,7 @@ func OlsvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32
 	}
 
 	/* 3. > 发送上线应答 */
-	ctx.send_join_ack(head, req)
+	ctx.send_join_ack(head, req, gid)
 
 	return 0
 }
