@@ -10,8 +10,8 @@ const (
 	CMD_OFFLINE_ACK      = 0x0104 /* 下线请求应答 */
 	CMD_JOIN_REQ         = 0x0105 /* 加入聊天室 */
 	CMD_JOIN_ACK         = 0x0106 /* 加入聊天室应答 */
-	CMD_QUIT_REQ         = 0x0107 /* 退出聊天室 */
-	CMD_QUIT_ACK         = 0x0108 /* 退出聊天室应答 */
+	CMD_UNJOIN_REQ       = 0x0107 /* 退出聊天室 */
+	CMD_UNJOIN_ACK       = 0x0108 /* 退出聊天室应答 */
 	CMD_PING             = 0x0109 /* 客户端心跳 */
 	CMD_PONG             = 0x010A /* 客户端心跳应答 */
 	CMD_SUB_REQ          = 0x010B /* 订阅请求 */

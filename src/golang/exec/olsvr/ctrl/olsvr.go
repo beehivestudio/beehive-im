@@ -84,7 +84,7 @@ func (ctx *OlsvrCntx) Register() {
 	ctx.proxy.Register(comm.CMD_OFFLINE_REQ, OlsvrMesgOfflineReqHandler, ctx)
 
 	ctx.proxy.Register(comm.CMD_JOIN_REQ, OlsvrMesgJoinReqHandler, ctx)
-	ctx.proxy.Register(comm.CMD_QUIT_REQ, OlsvrMesgQuitReqHandler, ctx)
+	ctx.proxy.Register(comm.CMD_UNJOIN_REQ, OlsvrMesgUnjoinReqHandler, ctx)
 
 	ctx.proxy.Register(comm.CMD_PING, OlsvrMesgPingHandler, ctx)
 }

@@ -16,6 +16,9 @@ import (
 	"chat/src/golang/lib/mesg"
 )
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /******************************************************************************
  **函数名称: online_req_isvalid
  **功    能: 判断ONLINE是否合法
@@ -323,9 +326,12 @@ func OlsvrMesgOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint
 	return 0
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /******************************************************************************
  **函数名称: offline_parse
- **功    能: 解析下线请求
+ **功    能: 解析Offline请求
  **输入参数:
  **     data: 接收的数据
  **输出参数: NONE
@@ -349,7 +355,7 @@ func (ctx *OlsvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
 
 /******************************************************************************
  **函数名称: offline_handler
- **功    能: 下线处理
+ **功    能: Offline处理
  **输入参数:
  **     head: 协议头
  **     req: 下线请求
@@ -447,6 +453,9 @@ func OlsvrMesgOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uin
 
 	return 0
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
  **函数名称: join_req_isvalid
@@ -581,8 +590,6 @@ func (ctx *OlsvrCntx) send_err_join_ack(head *comm.MesgHeader,
 
 	/* > 发送协议包 */
 	ctx.proxy.Send(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
-
-	return 0
 
 	return 0
 }
@@ -721,9 +728,13 @@ GET_GID:
 			ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
 			return 0, err
 		}
+
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, req.GetRid())
 		ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 		pl.Send("ZINCRBY", key, ttl, req.GetUid())
+
+		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
+		pl.Send("ZADD", key, ttl, head.GetSid())
 		return uint32(gid_int), nil
 	}
 
@@ -751,6 +762,9 @@ GET_GID:
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, req.GetRid())
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZINCRBY", key, ttl, req.GetUid())
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
+	pl.Send("ZADD", key, ttl, head.GetSid())
 
 	return gid, nil
 }
@@ -800,8 +814,193 @@ func OlsvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32
 	return 0
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /******************************************************************************
- **函数名称: OlsvrMesgQuitReqHandler
+ **函数名称: unjoin_req_isvalid
+ **功    能: 判断UNJOIN是否合法
+ **输入参数:
+ **     req: UNJOIN请求
+ **输出参数: NONE
+ **返    回: true:合法 false:非法
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 21:26:22 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
+	if 0 == req.GetUid() || 0 == req.GetRid() {
+		return false
+	}
+	return true
+}
+
+/******************************************************************************
+ **函数名称: send_err_unjoin_ack
+ **功    能: 发送UNJOIN应答(异常)
+ **输入参数:
+ **     head: 协议头
+ **     req: 上线请求
+ **     errno: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 21:20:34 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
+	req *mesg.MesgUnjoinReq, errno uint32, errmsg string) int {
+	/* > 设置协议体 */
+	rsp := &mesg.MesgUnjoinAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Rid:    proto.Uint64(req.GetRid()),
+		ErrNum: proto.Uint32(errno),
+		ErrMsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+
+	head.Cmd = comm.CMD_UNJOIN_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+
+	/* > 发送协议包 */
+	ctx.proxy.Send(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: unjoin_parse
+ **功    能: 解析UNJOIN请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.03 21:18:29 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) unjoin_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgUnjoinReq) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if comm.CMD_JOIN_REQ != head.GetCmd() {
+		ctx.log.Error("Command type isn't right! cmd:%d", head.GetCmd())
+		return nil, nil
+	}
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgUnjoinReq{}
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal join request failed! errmsg:%s", err.Error())
+		return nil, nil
+	}
+
+	/* > 校验协议合法性 */
+	if !ctx.unjoin_req_isvalid(req) {
+		return nil, nil
+	}
+
+	return head, req
+}
+
+/******************************************************************************
+ **函数名称: send_unjoin_ack
+ **功    能: 发送UNJOIN应答
+ **输入参数:
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **     {
+ **         optional uint64 Uid = 1;    // M|用户ID|数字|
+ **         optional uint64 Rid = 2;    // M|聊天室ID|数字|
+ **         optional uint32 Gid = 3;    // M|分组ID|数字|
+ **         optional uint32 Errnum = 4; // M|错误码|数字|
+ **         optional string Errmsg = 5; // M|错误描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjoinReq) int {
+	/* > 设置协议体 */
+	rsp := &mesg.MesgUnjoinAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Rid:    proto.Uint64(req.GetRid()),
+		ErrNum: proto.Uint32(0),
+		ErrMsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+
+	head.Cmd = comm.CMD_UNJOIN_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+
+	/* > 发送协议包 */
+	ctx.proxy.Send(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: unjoin_handler
+ **功    能: UNJOIN处理
+ **输入参数:
+ **     head: 协议头
+ **     req: UNJOIN请求
+ **输出参数: NONE
+ **返    回: 组ID
+ **实现描述:
+ **注意事项: 已验证了UNJION请求的合法性
+ **作    者: # Qifeng.zou # 2016.11.03 21:28:18 #
+ ******************************************************************************/
+func (ctx *OlsvrCntx) unjoin_handler(
+	head *comm.MesgHeader, req *mesg.MesgUnjoinReq) (err error) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
+	pl.Send("ZREM", key, head.GetSid())
+
+	return nil
+}
+
+/******************************************************************************
+ **函数名称: OlsvrMesgUnjoinReqHandler
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -815,13 +1014,27 @@ func OlsvrMesgJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func OlsvrMesgQuitReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func OlsvrMesgUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*OlsvrCntx)
 	if false == ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv online request!")
+	ctx.log.Debug("Recv unjoin request!")
+
+	/* 1. > 解析UNJOIN请求 */
+	head, req := ctx.unjoin_parse(data)
+	if nil == head || nil != req {
+		ctx.log.Error("Parse join request failed!")
+		ctx.send_err_unjoin_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
+		return -1
+	}
+
+	/* 2. > 退出聊天室处理 */
+	ctx.unjoin_handler(head, req)
+
+	/* 3. > 发送UNJOIN应答 */
+	ctx.send_unjoin_ack(head, req)
 
 	return 0
 }
