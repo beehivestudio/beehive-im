@@ -1,0 +1,9 @@
+package mesg;
+
+message mesg_hb
+{
+    optional uint64 nid = 1;    // M|结点ID|数字|<br>
+    optional uint32 mod = 2;    // M|模块类型|数字|(1:接入层 2:转发层)<br>
+    optional string ipaddr = 3; // M|IP地址|字串|<br>
+    optional uint32 port = 4;   // M|端口号|数字|<br>
+}
