@@ -75,10 +75,18 @@ message mesg_frwd_rpt
     required uint32 backend_port = 4;   // M|端口号|数字|<br>
 }
 
+/* 聊天室消息 */
 message mesg_room
 {
-    required uint64 Rid = 1;            // 聊天室ID
-    required uint32 Gid = 2;            // 分组ID
-    required uint32 level = 3;          // 消息级别
-    required bytes  Data = 4;           // 透传数据
+    required uint64 Rid = 1;        // 聊天室ID
+    required uint32 Gid = 2;        // 分组ID
+    required uint32 level = 3;      // 消息级别
+    required bytes  Data = 4;       // 透传数据
+}
+
+/* 聊天室消息应答 */
+message mesg_room_ack
+{
+    optional uint32 ErrNum = 1;     // 错误码
+    optional string ErrMsg = 2;     // 错误描述
 }

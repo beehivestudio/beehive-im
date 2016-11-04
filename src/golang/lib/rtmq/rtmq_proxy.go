@@ -306,7 +306,7 @@ func (ctx *RtmqProxyCntx) Launch() {
 }
 
 /******************************************************************************
- **函数名称: Send
+ **函数名称: AsyncSend
  **功    能: 发送数据
  **输入参数:
  **     cmd: 数据类型
@@ -318,7 +318,7 @@ func (ctx *RtmqProxyCntx) Launch() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 09:36:10 #
  ******************************************************************************/
-func (ctx *RtmqProxyCntx) Send(cmd uint32, data []byte, length uint32) int {
+func (ctx *RtmqProxyCntx) AsyncSend(cmd uint32, data []byte, length uint32) int {
 	/* > 设置协议头 */
 	head := &RtmqHeader{}
 

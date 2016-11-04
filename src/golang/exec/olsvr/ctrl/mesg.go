@@ -148,7 +148,7 @@ func (ctx *OlSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.Send(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.proxy.AsyncSend(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 
@@ -206,7 +206,7 @@ func (ctx *OlSvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *me
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.Send(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.proxy.AsyncSend(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -587,7 +587,7 @@ func (ctx *OlSvrCntx) send_err_join_ack(head *comm.MesgHeader,
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.Send(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.proxy.AsyncSend(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -640,7 +640,7 @@ func (ctx *OlSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.Send(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.proxy.AsyncSend(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -892,7 +892,7 @@ func (ctx *OlSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.Send(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.proxy.AsyncSend(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -978,7 +978,7 @@ func (ctx *OlSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjoi
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.Send(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.proxy.AsyncSend(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }

@@ -18,6 +18,7 @@ It has these top-level messages:
 	MesgLsnRpt
 	MesgFrwdRpt
 	MesgRoom
+	MesgRoomAck
 */
 package mesg
 
@@ -408,6 +409,7 @@ func (m *MesgFrwdRpt) GetBackendPort() uint32 {
 	return 0
 }
 
+// 聊天室消息
 type MesgRoom struct {
 	Rid              *uint64 `protobuf:"varint,1,req,name=Rid" json:"Rid,omitempty"`
 	Gid              *uint32 `protobuf:"varint,2,req,name=Gid" json:"Gid,omitempty"`
@@ -446,6 +448,31 @@ func (m *MesgRoom) GetData() []byte {
 		return m.Data
 	}
 	return nil
+}
+
+// 聊天室消息应答
+type MesgRoomAck struct {
+	ErrNum           *uint32 `protobuf:"varint,1,opt,name=ErrNum" json:"ErrNum,omitempty"`
+	ErrMsg           *string `protobuf:"bytes,2,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomAck) Reset()         { *m = MesgRoomAck{} }
+func (m *MesgRoomAck) String() string { return proto.CompactTextString(m) }
+func (*MesgRoomAck) ProtoMessage()    {}
+
+func (m *MesgRoomAck) GetErrNum() uint32 {
+	if m != nil && m.ErrNum != nil {
+		return *m.ErrNum
+	}
+	return 0
+}
+
+func (m *MesgRoomAck) GetErrMsg() string {
+	if m != nil && m.ErrMsg != nil {
+		return *m.ErrMsg
+	}
+	return ""
 }
 
 func init() {
