@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"chat/src/golang/lib/log"
 	"chat/src/golang/lib/rtmq"
 )
 
@@ -18,11 +19,18 @@ type OlSvrConf struct {
 	ConfPath  string             // 配置路径(自动获取)
 	RedisAddr string             // Redis地址(IP+PORT)
 	SecretKey string             // 私密密钥
-	LogPath   string             // 日志路径
+	Log       log.LogConf        // 日志配置
 	proxy     rtmq.RtmqProxyConf // RTMQ配置
 }
 
-/* 鉴权信息 */
+/* 日志配置 */
+type OlSvrConfLogXmlData struct {
+	Name  xml.Name `xml:"LOG"`        // 结点名
+	Level string   `xml:"LEVEL,attr"` // 日志级别
+	Path  string   `xml:"PATH,attr"`  // 日志路径
+}
+
+/* 鉴权配置 */
 type OlSvrConfRtmqAuthXmlData struct {
 	Name   xml.Name `xml:"AUTH"`        // 结点名
 	Usr    string   `xml:"USR,attr"`    // 用户名
@@ -45,7 +53,7 @@ type OlSvrConfXmlData struct {
 	Id        uint32                    `xml:"ID,attr"`    // 结点ID
 	RedisAddr string                    `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	SecretKey string                    `xml:"SECRET-KEY"` // 私密密钥
-	LogPath   string                    `xml:"LOG-PATH"`   // 日志路径
+	Log       OlSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
 	RtmqProxy OlSvrConfRtmqProxyXmlData `xml:"RTMQ-PROXY"` // RTMQ PROXY配置
 }
 
@@ -120,9 +128,11 @@ func (conf *OlSvrConf) conf_parse() (err error) {
 		return errors.New("Get secret key failed!")
 	}
 
-	/* 日志路径 */
-	conf.LogPath = node.LogPath
-	if 0 == len(conf.LogPath) {
+	/* 日志配置 */
+	conf.Log.Level = log.GetLevel(node.Log.Level)
+
+	conf.Log.Path = node.Log.Path
+	if 0 == len(conf.Log.Path) {
 		return errors.New("Get log path failed!")
 	}
 

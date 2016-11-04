@@ -1,5 +1,5 @@
 <OLSVR ID="30000"> <!-- ID: 结点ID -->
-  <LOG-PATH>../log</LOG-PATH> <!-- 日志路径 -->
+  <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
   <REDIS-ADDR>127.0.0.1:6379</REDIS-ADDR> <!-- REDIS地址(IP+PORT) -->
   <SECRET-KEY>%b@e!e@h@i#v@e$s$tVu^d(i(o</SECRET-KEY> <!-- 私密密钥 -->
   <RTMQ-PROXY> <!-- RTMQ代理 -->

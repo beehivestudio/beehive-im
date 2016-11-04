@@ -2,13 +2,12 @@ package ctrl
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
 	"chat/src/golang/lib/comm"
+	"chat/src/golang/lib/log"
 	"chat/src/golang/lib/rtmq"
 )
 
@@ -39,8 +38,9 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	ctx.conf = conf
 
 	/* > 初始化日志 */
-	if err := ctx.log_init(); nil != err {
-		return nil, err
+	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "olsvr.log")
+	if nil == ctx.log {
+		return nil, errors.New("Initialize log failed!")
 	}
 
 	/* > REDIS连接池 */
@@ -114,32 +114,4 @@ func (ctx *MsgSvrCntx) Register() {
  ******************************************************************************/
 func (ctx *MsgSvrCntx) Launch() {
 	ctx.proxy.Launch()
-}
-
-/******************************************************************************
- **函数名称: log_init
- **功    能: 初始化日志
- **输入参数: NONE
- **输出参数: NONE
- **返    回:
- **     err: 日志对象
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.10.30 22:34:34 #
- ******************************************************************************/
-func (ctx *MsgSvrCntx) log_init() (err error) {
-	conf := ctx.conf
-
-	ctx.log = logs.NewLogger(20000)
-	log := ctx.log
-
-	err = os.Mkdir("../log", 0755)
-	if nil != err && false == os.IsExist(err) {
-		log.Emergency(err.Error())
-		return err
-	}
-
-	log.SetLogger("file", fmt.Sprintf(`{"filename":"%s/../log/msgsvr.log"}`, conf.AppPath))
-	log.SetLevel(logs.LevelDebug)
-	return nil
 }
