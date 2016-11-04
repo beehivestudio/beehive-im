@@ -46,7 +46,6 @@ func (ctx *TaskerCntx) timer_clean() {
 func (ctx *TaskerCntx) timer_update() {
 	for {
 		ctx.update_prec_statis()
-		ctx.clean_prec_statis()
 
 		time.Sleep(30)
 	}
@@ -423,6 +422,8 @@ func (ctx *TaskerCntx) update_prec_statis() {
 		pl.Do("")
 		pl.Close()
 	}()
+
+	defer ctx.clean_prec_statis()
 
 	/* > 获取当前并发数 */
 	sid_num, err := redis.Int64(rds.Do("ZCARD", comm.CHAT_KEY_SID_ZSET))
