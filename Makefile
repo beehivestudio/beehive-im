@@ -37,6 +37,7 @@ GOLANG_EXEC_DIR = "src/golang/exec"
 DIR += "$(GOLANG_EXEC_DIR)/cross"
 DIR += "$(GOLANG_EXEC_DIR)/olsvr"
 DIR += "$(GOLANG_EXEC_DIR)/msgsvr"
+DIR += "$(GOLANG_EXEC_DIR)/tasker"
 
 # 获取系统配置
 CPU_CORES = $(call func_cpu_cores)

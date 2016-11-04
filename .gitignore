@@ -1,5 +1,7 @@
 *.o
+*.so
+*.a
+*.log
 cscope.*
 tags
 bin/
-lib/
