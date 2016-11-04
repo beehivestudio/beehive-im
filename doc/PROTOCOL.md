@@ -195,6 +195,10 @@ TODO: 协议头中的to为用户ID(UID)
 命令ID: 0x0119<br>
 命令描述: 聊天室消息应答(ROOM-MSG-ACK)<br>
 协议格式: NONE<br>
+>{<br>
+>   optional uint32 errnum = 1;     // M|错误码<br>
+>   optional string errmsg = 2;     // M|错误描述<br>
+>}
 
 ---
 命令ID: 0x011A<br>
