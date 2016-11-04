@@ -9,13 +9,13 @@ It is generated from these files:
 	mesg.proto
 
 It has these top-level messages:
-	MesgHeartBeat
+	MesgOnlineReq
+	MesgOnlineAck
 	MesgJoinReq
 	MesgJoinAck
 	MesgUnjoinReq
 	MesgUnjoinAck
-	MesgOnlineReq
-	MesgOnlineAck
+	MesgHeartBeat
 	MesgRoom
 */
 package mesg
@@ -65,44 +65,116 @@ func (x *ModuleType) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-type MesgHeartBeat struct {
-	Nid              *uint64 `protobuf:"varint,1,req,name=nid" json:"nid,omitempty"`
-	Mod              *uint32 `protobuf:"varint,2,req,name=mod" json:"mod,omitempty"`
-	Ipaddr           *string `protobuf:"bytes,3,req,name=ipaddr" json:"ipaddr,omitempty"`
-	Port             *uint32 `protobuf:"varint,4,req,name=port" json:"port,omitempty"`
+type MesgOnlineReq struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Token            *string `protobuf:"bytes,2,req,name=Token" json:"Token,omitempty"`
+	App              *string `protobuf:"bytes,3,req,name=App" json:"App,omitempty"`
+	Version          *string `protobuf:"bytes,4,req,name=Version" json:"Version,omitempty"`
+	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgHeartBeat) Reset()         { *m = MesgHeartBeat{} }
-func (m *MesgHeartBeat) String() string { return proto.CompactTextString(m) }
-func (*MesgHeartBeat) ProtoMessage()    {}
+func (m *MesgOnlineReq) Reset()         { *m = MesgOnlineReq{} }
+func (m *MesgOnlineReq) String() string { return proto.CompactTextString(m) }
+func (*MesgOnlineReq) ProtoMessage()    {}
 
-func (m *MesgHeartBeat) GetNid() uint64 {
-	if m != nil && m.Nid != nil {
-		return *m.Nid
+func (m *MesgOnlineReq) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
 	}
 	return 0
 }
 
-func (m *MesgHeartBeat) GetMod() uint32 {
-	if m != nil && m.Mod != nil {
-		return *m.Mod
-	}
-	return 0
-}
-
-func (m *MesgHeartBeat) GetIpaddr() string {
-	if m != nil && m.Ipaddr != nil {
-		return *m.Ipaddr
+func (m *MesgOnlineReq) GetToken() string {
+	if m != nil && m.Token != nil {
+		return *m.Token
 	}
 	return ""
 }
 
-func (m *MesgHeartBeat) GetPort() uint32 {
-	if m != nil && m.Port != nil {
-		return *m.Port
+func (m *MesgOnlineReq) GetApp() string {
+	if m != nil && m.App != nil {
+		return *m.App
+	}
+	return ""
+}
+
+func (m *MesgOnlineReq) GetVersion() string {
+	if m != nil && m.Version != nil {
+		return *m.Version
+	}
+	return ""
+}
+
+func (m *MesgOnlineReq) GetTerminal() uint32 {
+	if m != nil && m.Terminal != nil {
+		return *m.Terminal
 	}
 	return 0
+}
+
+type MesgOnlineAck struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
+	Sid              *uint64 `protobuf:"varint,2,req,name=Sid" json:"Sid,omitempty"`
+	App              *string `protobuf:"bytes,3,req,name=App" json:"App,omitempty"`
+	Version          *string `protobuf:"bytes,4,req,name=Version" json:"Version,omitempty"`
+	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
+	ErrNum           *uint32 `protobuf:"varint,6,opt,name=ErrNum" json:"ErrNum,omitempty"`
+	ErrMsg           *string `protobuf:"bytes,7,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgOnlineAck) Reset()         { *m = MesgOnlineAck{} }
+func (m *MesgOnlineAck) String() string { return proto.CompactTextString(m) }
+func (*MesgOnlineAck) ProtoMessage()    {}
+
+func (m *MesgOnlineAck) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgOnlineAck) GetSid() uint64 {
+	if m != nil && m.Sid != nil {
+		return *m.Sid
+	}
+	return 0
+}
+
+func (m *MesgOnlineAck) GetApp() string {
+	if m != nil && m.App != nil {
+		return *m.App
+	}
+	return ""
+}
+
+func (m *MesgOnlineAck) GetVersion() string {
+	if m != nil && m.Version != nil {
+		return *m.Version
+	}
+	return ""
+}
+
+func (m *MesgOnlineAck) GetTerminal() uint32 {
+	if m != nil && m.Terminal != nil {
+		return *m.Terminal
+	}
+	return 0
+}
+
+func (m *MesgOnlineAck) GetErrNum() uint32 {
+	if m != nil && m.ErrNum != nil {
+		return *m.ErrNum
+	}
+	return 0
+}
+
+func (m *MesgOnlineAck) GetErrMsg() string {
+	if m != nil && m.ErrMsg != nil {
+		return *m.ErrMsg
+	}
+	return ""
 }
 
 type MesgJoinReq struct {
@@ -249,116 +321,44 @@ func (m *MesgUnjoinAck) GetErrMsg() string {
 	return ""
 }
 
-type MesgOnlineReq struct {
-	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
-	Token            *string `protobuf:"bytes,2,req,name=Token" json:"Token,omitempty"`
-	App              *string `protobuf:"bytes,3,req,name=App" json:"App,omitempty"`
-	Version          *string `protobuf:"bytes,4,req,name=Version" json:"Version,omitempty"`
-	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
+type MesgHeartBeat struct {
+	Nid              *uint64 `protobuf:"varint,1,req,name=nid" json:"nid,omitempty"`
+	Mod              *uint32 `protobuf:"varint,2,req,name=mod" json:"mod,omitempty"`
+	Ipaddr           *string `protobuf:"bytes,3,req,name=ipaddr" json:"ipaddr,omitempty"`
+	Port             *uint32 `protobuf:"varint,4,req,name=port" json:"port,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgOnlineReq) Reset()         { *m = MesgOnlineReq{} }
-func (m *MesgOnlineReq) String() string { return proto.CompactTextString(m) }
-func (*MesgOnlineReq) ProtoMessage()    {}
+func (m *MesgHeartBeat) Reset()         { *m = MesgHeartBeat{} }
+func (m *MesgHeartBeat) String() string { return proto.CompactTextString(m) }
+func (*MesgHeartBeat) ProtoMessage()    {}
 
-func (m *MesgOnlineReq) GetUid() uint64 {
-	if m != nil && m.Uid != nil {
-		return *m.Uid
+func (m *MesgHeartBeat) GetNid() uint64 {
+	if m != nil && m.Nid != nil {
+		return *m.Nid
 	}
 	return 0
 }
 
-func (m *MesgOnlineReq) GetToken() string {
-	if m != nil && m.Token != nil {
-		return *m.Token
-	}
-	return ""
-}
-
-func (m *MesgOnlineReq) GetApp() string {
-	if m != nil && m.App != nil {
-		return *m.App
-	}
-	return ""
-}
-
-func (m *MesgOnlineReq) GetVersion() string {
-	if m != nil && m.Version != nil {
-		return *m.Version
-	}
-	return ""
-}
-
-func (m *MesgOnlineReq) GetTerminal() uint32 {
-	if m != nil && m.Terminal != nil {
-		return *m.Terminal
+func (m *MesgHeartBeat) GetMod() uint32 {
+	if m != nil && m.Mod != nil {
+		return *m.Mod
 	}
 	return 0
 }
 
-type MesgOnlineAck struct {
-	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
-	Sid              *uint64 `protobuf:"varint,2,req,name=Sid" json:"Sid,omitempty"`
-	App              *string `protobuf:"bytes,3,req,name=App" json:"App,omitempty"`
-	Version          *string `protobuf:"bytes,4,req,name=Version" json:"Version,omitempty"`
-	Terminal         *uint32 `protobuf:"varint,5,opt,name=Terminal" json:"Terminal,omitempty"`
-	ErrNum           *uint32 `protobuf:"varint,6,opt,name=ErrNum" json:"ErrNum,omitempty"`
-	ErrMsg           *string `protobuf:"bytes,7,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgOnlineAck) Reset()         { *m = MesgOnlineAck{} }
-func (m *MesgOnlineAck) String() string { return proto.CompactTextString(m) }
-func (*MesgOnlineAck) ProtoMessage()    {}
-
-func (m *MesgOnlineAck) GetUid() uint64 {
-	if m != nil && m.Uid != nil {
-		return *m.Uid
-	}
-	return 0
-}
-
-func (m *MesgOnlineAck) GetSid() uint64 {
-	if m != nil && m.Sid != nil {
-		return *m.Sid
-	}
-	return 0
-}
-
-func (m *MesgOnlineAck) GetApp() string {
-	if m != nil && m.App != nil {
-		return *m.App
+func (m *MesgHeartBeat) GetIpaddr() string {
+	if m != nil && m.Ipaddr != nil {
+		return *m.Ipaddr
 	}
 	return ""
 }
 
-func (m *MesgOnlineAck) GetVersion() string {
-	if m != nil && m.Version != nil {
-		return *m.Version
-	}
-	return ""
-}
-
-func (m *MesgOnlineAck) GetTerminal() uint32 {
-	if m != nil && m.Terminal != nil {
-		return *m.Terminal
+func (m *MesgHeartBeat) GetPort() uint32 {
+	if m != nil && m.Port != nil {
+		return *m.Port
 	}
 	return 0
-}
-
-func (m *MesgOnlineAck) GetErrNum() uint32 {
-	if m != nil && m.ErrNum != nil {
-		return *m.ErrNum
-	}
-	return 0
-}
-
-func (m *MesgOnlineAck) GetErrMsg() string {
-	if m != nil && m.ErrMsg != nil {
-		return *m.ErrMsg
-	}
-	return ""
 }
 
 type MesgRoom struct {
