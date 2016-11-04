@@ -11,7 +11,7 @@ import (
 )
 
 /******************************************************************************
- **函数名称: TimerClean
+ **函数名称: timer_clean
  **功    能: 定时清理操作
  **输入参数:
  **输出参数: NONE
@@ -26,6 +26,7 @@ func (ctx *TaskerCntx) timer_clean() {
 
 		ctx.clean_sid_zset(ctm)
 		ctx.clean_rid_zset(ctm)
+		ctx.clean_uid_zset(ctm)
 
 		time.Sleep(30)
 	}
@@ -106,7 +107,6 @@ func (ctx *TaskerCntx) clean_by_sid(sid uint64) {
 	pl.Send("ZREM", key, sid)
 
 	pl.Send("ZREM", comm.CHAT_KEY_SID_ZSET, sid)
-
 }
 
 /******************************************************************************
@@ -311,6 +311,70 @@ func (ctx *TaskerCntx) clean_rid_zset(ctm int64) {
 		}
 
 		if rid_num < comm.CHAT_BAT_NUM {
+			break
+		}
+		off += comm.CHAT_BAT_NUM
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: clean_by_uid
+ **功    能: 通过UID清理资源
+ **输入参数:
+ **     uid: 用户UID
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 17:36:41 #
+ ******************************************************************************/
+func (ctx *TaskerCntx) clean_by_uid(uid uint64) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 获取SID对应的数据 */
+	key := fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, uid)
+	pl.Send("DEL", key)
+
+	pl.Send("ZREM", comm.CHAT_KEY_UID_ZSET, uid)
+}
+
+/******************************************************************************
+ **函数名称: clean_uid_zset
+ **功    能: 清理UID资源
+ **输入参数:
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 17:32:11 #
+ ******************************************************************************/
+func (ctx *TaskerCntx) clean_uid_zset(ctm int64) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	off := 0
+	for {
+		uid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			comm.CHAT_KEY_UID_ZSET, "-inf", ctm, "LIMIT", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			ctx.log.Error("Get sid list failed! errmsg:%s", err.Error())
+			return
+		}
+
+		uid_num := len(uid_list)
+		for idx := 0; idx < uid_num; idx += 1 {
+			uid, _ := strconv.ParseInt(uid_list[idx], 10, 64)
+			ctx.clean_by_uid(uint64(uid))
+		}
+
+		if uid_num < comm.CHAT_BAT_NUM {
 			break
 		}
 		off += comm.CHAT_BAT_NUM
