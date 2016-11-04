@@ -156,13 +156,13 @@ func (svr *RtmqProxyServer) OnDial() (conn *net.TCPConn, err error) {
 
 	addr, err := net.ResolveTCPAddr("tcp4", conf.RemoteAddr)
 	if nil != err {
-		svr.log.Error("Resolve tcp addr failed! addr:%s errmsg:%s", conf.RemoteAddr, err.Error())
+		svr.log.Error("Resolve tcp addr failed! errmsg:%s", err.Error())
 		return nil, err
 	}
 
 	conn, err = net.DialTCP("tcp", nil, addr)
 	if nil != err {
-		svr.log.Error("Dial tcp addr failed! addr:%s errmsg:%s", conf.RemoteAddr, err.Error())
+		svr.log.Error("Dial tcp addr failed! errmsg:%s", err.Error())
 		return nil, err
 	}
 
