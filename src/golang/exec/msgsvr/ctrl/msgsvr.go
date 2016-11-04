@@ -38,7 +38,7 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	ctx.conf = conf
 
 	/* > 初始化日志 */
-	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "olsvr.log")
+	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "msgsvr.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
 	}
