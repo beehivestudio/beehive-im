@@ -14,6 +14,7 @@ const (
 	CHAT_KEY_SID_TO_RID_ZSET      = "chat:sid:%d:to:rid:zset"        //*| ZSET | 会话SID对应的RID集合 | 成员:RID/分值:GID |
 	CHAT_KEY_ROOM_GROUP_USR_NUM   = "chat:room:group:usr:num"        //| ZSET | 聊天室分组人数配置 | 成员:RID/分值:USERNUM |
 	CHAT_KEY_RID_GID_TO_NUM_ZSET  = "chat:rid:%d:to:gid:num:zset"    //*| ZSET | 某聊天室各组人数 | 成员:GID/分值:USERNUM |
+	CHAT_KEY_RID_TO_NID_ZSET      = "chat:rid:%d:to:nid:zset"        //*| ZSET | 某聊天室->帧听层 | 成员:NID/分值:TTL |
 	CHAT_KEY_RID_NID_TO_NUM_ZSET  = "chat:rid:%d:nid:to:num:zset"    //*| ZSET | 某聊天室各帧听层人数 | 成员:NID/分值:USERNUM | 由帧听层上报数据获取
 	CHAT_KEY_RID_SUB_USR_NUM_ZSET = "chat:rid:sub:usr:num:zset"      //| ZSET | 聊天室人数订阅集合 | 暂无 |
 	CHAT_KEY_RID_TO_UID_ZSET      = "chat:rid:%d:to:uid:zset | ZSET" //| ZSET | 聊天室用户列表 | 成员:UID/分值:TTL |

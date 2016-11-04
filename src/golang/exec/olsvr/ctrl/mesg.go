@@ -765,6 +765,9 @@ GET_GID:
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
 	pl.Send("ZADD", key, ttl, head.GetSid())
 
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, req.GetRid())
+	pl.Send("ZADD", key, ttl, head.GetNid())
+
 	return gid, nil
 }
 

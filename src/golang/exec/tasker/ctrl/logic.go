@@ -288,6 +288,9 @@ func (ctx *TaskerCntx) clean_by_rid(rid uint64) {
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, rid)
 	pl.Send("DEL", key)
 
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, rid)
+	pl.Send("DEL", key)
+
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, rid)
 	ctx.clean_uid_by_rid(rid)
 	pl.Send("DEL", key)
