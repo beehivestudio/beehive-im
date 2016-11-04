@@ -11,7 +11,7 @@ import (
 	"chat/src/golang/lib/rtmq"
 )
 
-/* OLS上下文 */
+/* Tasker上下文 */
 type TaskerCntx struct {
 	conf  *TaskerConf         /* 配置信息 */
 	log   *logs.BeeLogger     /* 日志对象 */
@@ -83,7 +83,7 @@ func (ctx *TaskerCntx) Register() {
 
 /******************************************************************************
  **函数名称: Launch
- **功    能: 启动OLSVR服务
+ **功    能: 启动Tasker服务
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
@@ -92,6 +92,8 @@ func (ctx *TaskerCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *TaskerCntx) Launch() {
+	go ctx.timer_clean()
+
 	ctx.proxy.Launch()
 }
 
