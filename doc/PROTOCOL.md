@@ -21,9 +21,9 @@
 命令描述: 上线请求(ONLINE)<br>
 协议格式:<br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
->   required string token = 2;  // M|鉴权TOKEN|字串|<br>
->   required string app = 3;    // M|APP名|字串|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required string token = 2;      // M|鉴权TOKEN|字串|<br>
+>   required string app = 3;        // M|APP名|字串|<br>
 >   required string version = 4;    // M|APP版本|字串|<br>
 >   optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
 >}
@@ -34,13 +34,13 @@
 命令描述: 上线请求应答(ONLINE-ACK)<br>
 协议格式:<br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
->   required uint64 sid = 2;    // M|会话ID|数字|<br>
->   required string app = 3;    // M|APP名|字串|<br>
->   required string version = 4;  // M|APP版本|字串|<br>
->   optional uint32 terminal = 5; // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
->   optional uint32 errnum = 6; // M|错误码|数字|<br>
->   optional string errmsg = 7; // M|错误描述|字串|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint64 sid = 2;        // M|会话ID|数字|<br>
+>   required string app = 3;        // M|APP名|字串|<br>
+>   required string version = 4;    // M|APP版本|字串|<br>
+>   optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
+>   optional uint32 errnum = 6;     // M|错误码|数字|<br>
+>   optional string errmsg = 7;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -58,9 +58,9 @@
 命令描述: 加入聊天室(JOIN)<br>
 协议格式:<br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
->   required uint64 rid = 2;    // M|聊天室ID|数字|<br>
->   required string token = 3;  // M|鉴权TOKEN|字串|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
+>   required string token = 3;      // M|鉴权TOKEN|字串|<br>
 >}
 
 ---
@@ -68,11 +68,11 @@
 命令描述: 加入聊天室应答(JOIN-ACK)<br>
 协议格式:<br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
->   required uint64 rid = 2;    // M|聊天室ID|数字|<br>
->   required uint32 gid = 3;    // M|分组ID|数字|<br>
->   optional uint32 errnum = 4; // M|错误码|数字|<br>
->   optional string errmsg = 5; // M|错误描述|字串|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
+>   required uint32 gid = 3;        // M|分组ID|数字|<br>
+>   optional uint32 errnum = 4;     // M|错误码|数字|<br>
+>   optional string errmsg = 5;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -80,8 +80,8 @@
 命令描述: 退出聊天室(UNJOIN)<br>
 协议格式: NONE
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
->   required uint64 rid = 2;    // M|聊天室ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
 >}
 
 ---
@@ -104,7 +104,7 @@
 命令描述: 订阅请求(SUB)<br>
 协议格式:<br>
 >{<br>
->   optional uint32 sub = 1;    // M|订阅的数据|数字| <br>
+>   optional uint32 sub = 1;        // M|订阅的数据|数字| <br>
 >}
 
 ---
@@ -112,9 +112,9 @@
 命令描述: 订阅应答(SUB-ACK)<br>
 协议格式:<br>
 >{<br>
->   required uint32 sub = 1;    // M|订阅的数据|数字|<br>
->   optional uint32 errnum = 2; // M|错误码|数字|<br>
->   optional string errmsg = 3; // M|错误描述|字串|<br>
+>   required uint32 sub = 1;        // M|订阅的数据|数字|<br>
+>   optional uint32 errnum = 2;     // M|错误码|数字|<br>
+>   optional string errmsg = 3;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -122,7 +122,7 @@
 命令描述: 取消订阅(UNSUB)<br>
 协议格式:<br>
 >{<br>
->   required uint32 sub = 1;    // M|取消订阅的数据|数字| <br>
+>   required uint32 sub = 1;        // M|取消订阅的数据|数字| <br>
 >}
 
 ---
@@ -130,9 +130,9 @@
 命令描述: 取消订阅应答(UNSUB-ACK)<br>
 协议格式:<br>
 >{<br>
->   required uint32 sub = 1;    // M|取消订阅的数据|数字|<br>
->   optional uint32 errnum = 2; // M|错误码|数字|<br>
->   optional string errmsg = 3; // M|错误描述|字串|<br>
+>   required uint32 sub = 1;        // M|取消订阅的数据|数字|<br>
+>   optional uint32 errnum = 2;     // M|错误码|数字|<br>
+>   optional string errmsg = 3;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -185,10 +185,10 @@ TODO: 协议头中的to为用户ID(UID)
 协议格式: <br>
 >message ChatRoomMesg<br>
 >{<br>
->   required uint64 rid = 1;    // M|聊天室ID<br>
->   required uint32 gid = 2;    // M|分组ID<br>
->   required uint32 level = 3;  // M|消息级别<br>
->   required bytes data = 4;    // M|透传数据<br>
+>   required uint64 rid = 1;        // M|聊天室ID<br>
+>   required uint32 gid = 2;        // M|分组ID<br>
+>   required uint32 level = 3;      // M|消息级别<br>
+>   required bytes data = 4;        // M|透传数据<br>
 >}
 
 ---
@@ -211,8 +211,8 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 通用异常消息(UNUSUAL)<br>
 协议格式:<br>
 >{<br>
->   required uint32 errnum = 1; // M|错误码|数字|<br>
->   required string errmsg = 2; // M|错误描述|字串|<br>
+>   required uint32 errnum = 1;     // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -225,8 +225,8 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 聊天室人数(ROOM-USR-NUM)<br>
 协议格式:<br>
 >{<br>
->   required uint64 rid = 1;    // M|聊天室ID|数字|<br>
->   required uint32 num = 2;    // M|用户人数|数字|<br>
+>   required uint64 rid = 1;        // M|聊天室ID|数字|<br>
+>   required uint32 num = 2;        // M|用户人数|数字|<br>
 >}
 
 ---
@@ -251,7 +251,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 上线通知(ONLINE-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 ---
@@ -259,7 +259,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 下线通知(OFFLINE-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 ---
@@ -267,7 +267,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 加入聊天室通知(JOIN-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 ---
@@ -275,7 +275,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 退出聊天室通知(UNJOIN-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 ---
@@ -283,7 +283,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 禁言通知(BAN-ADD-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 ---
@@ -291,7 +291,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 解除禁言通知(BAN-DEL-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 ---
@@ -299,7 +299,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 加入黑名单通知(BLACKLIST-ADD-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 ---
@@ -307,60 +307,38 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 移除黑名单通知(BLACKLIST-DEL-NTC)<br>
 协议格式: <br>
 >{<br>
->   required uint64 uid = 1;    // M|用户ID|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >}
 
 # 系统内部命令
 
 ---
 命令ID: 0x0401<br>
-命令描述: 内部心跳(HB)<br>
+命令描述: 帧听层上报(LSN-RPT)<br>
 协议格式: <br>
 >{<br>
->   required uint64 nid = 1;    // M|结点ID|数字|<br>
->   required uint32 mod = 2;    // M|模块类型|数字|(1:接入层 2:转发层)<br>
->   required string ipaddr = 3; // M|IP地址|字串|<br>
->   required uint32 port = 4;   // M|端口号|数字|<br>
+>   required uint64 nid = 1;        // M|结点ID|数字|<br>
+>   required string ipaddr = 2;     // M|IP地址|字串|<br>
+>   required uint32 fw_port = 3;    // M|前端口号|数字|<br>
+>   required uint32 bc_port = 4;    // M|后端口号|数字|<br>
 >}
 
 ---
 命令ID: 0x0402<br>
-命令描述: 内部心跳应答(HB-ACK)<br>
-协议格式: NONE<br>
-
----
-命令ID: 0x0403<br>
-命令描述: 帧听层上报(LSN-RPT)<br>
-协议格式: <br>
->{<br>
->   required uint64 nid = 1;    // M|结点ID|数字|<br>
->   required string ipaddr = 2; // M|IP地址|字串|<br>
->   required uint32 port = 3;   // M|端口号|数字|<br>
->}
-
----
-命令ID: 0x0404<br>
 命令描述: 帧听层上报应答(LSN-RPT-ACK)<br>
 协议格式: NONE<br>
 
 ---
-命令ID: 0x0405<br>
-命令描述: 转发层列表(FRWD-LIST)<br>
+命令ID: 0x0403<br>
+命令描述: 转发层上报 (FRWD-RPT)<br>
 协议格式: <br>
 >{<br>
->   required uint32 len = 1;    // M|结点ID|数字|<br>
->   required string list = 2;   // M|IP地址|字串|<br>
+>   required uint64 nid = 1;        // M|结点ID|数字|<br>
+>   required string ipaddr = 2;     // M|IP地址|字串|<br>
+>   required uint32 port = 3;       // M|端口号|数字|<br>
 >}
 
-协议说明:<br>
-list:<br>
->[<br>
->       {"ipaddr":"${ipaddr}", "port":${port}}, // M|IP+端口|<br>
->       {"ipaddr":"${ipaddr}", "port":${port}}, // M|IP+端口|<br>
->       {"ipaddr":"${ipaddr}", "port":${port}}  // M|IP+端口|<br>
->]
-
 ---
-命令ID: 0x0406<br>
-命令描述: 转发层列表应答(FRWD-LIST-ACK)<br>
+命令ID: 0x0404<br>
+命令描述: 转发层上报应答(FRWD-RPT-ACK)<br>
 协议格式: NONE<br>
