@@ -30,6 +30,46 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// 运营商ID
+type OpId int32
+
+const (
+	OpId_OP_UNKNOWN   OpId = 0
+	OpId_OP_CN_BGP    OpId = 1
+	OpId_OP_CN_UNICOM OpId = 2
+	OpId_OP_CN_TELCOM OpId = 3
+)
+
+var OpId_name = map[int32]string{
+	0: "OP_UNKNOWN",
+	1: "OP_CN_BGP",
+	2: "OP_CN_UNICOM",
+	3: "OP_CN_TELCOM",
+}
+var OpId_value = map[string]int32{
+	"OP_UNKNOWN":   0,
+	"OP_CN_BGP":    1,
+	"OP_CN_UNICOM": 2,
+	"OP_CN_TELCOM": 3,
+}
+
+func (x OpId) Enum() *OpId {
+	p := new(OpId)
+	*p = x
+	return p
+}
+func (x OpId) String() string {
+	return proto.EnumName(OpId_name, int32(x))
+}
+func (x *OpId) UnmarshalJSON(data []byte) error {
+	value, err := proto.UnmarshalJSONEnum(OpId_value, data, "OpId")
+	if err != nil {
+		return err
+	}
+	*x = OpId(value)
+	return nil
+}
+
 type MesgOnlineReq struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
 	Token            *string `protobuf:"bytes,2,req,name=Token" json:"Token,omitempty"`
@@ -288,8 +328,9 @@ func (m *MesgUnjoinAck) GetErrMsg() string {
 
 type MesgLsnRpt struct {
 	Nid              *uint64 `protobuf:"varint,1,req,name=nid" json:"nid,omitempty"`
-	Ipaddr           *string `protobuf:"bytes,2,req,name=ipaddr" json:"ipaddr,omitempty"`
-	Port             *uint32 `protobuf:"varint,3,req,name=port" json:"port,omitempty"`
+	Op               *OpId   `protobuf:"varint,2,req,name=op,enum=mesg.OpId,def=0" json:"op,omitempty"`
+	Ipaddr           *string `protobuf:"bytes,3,req,name=ipaddr" json:"ipaddr,omitempty"`
+	Port             *uint32 `protobuf:"varint,4,req,name=port" json:"port,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
@@ -297,11 +338,20 @@ func (m *MesgLsnRpt) Reset()         { *m = MesgLsnRpt{} }
 func (m *MesgLsnRpt) String() string { return proto.CompactTextString(m) }
 func (*MesgLsnRpt) ProtoMessage()    {}
 
+const Default_MesgLsnRpt_Op OpId = OpId_OP_UNKNOWN
+
 func (m *MesgLsnRpt) GetNid() uint64 {
 	if m != nil && m.Nid != nil {
 		return *m.Nid
 	}
 	return 0
+}
+
+func (m *MesgLsnRpt) GetOp() OpId {
+	if m != nil && m.Op != nil {
+		return *m.Op
+	}
+	return Default_MesgLsnRpt_Op
 }
 
 func (m *MesgLsnRpt) GetIpaddr() string {
@@ -396,4 +446,8 @@ func (m *MesgRoom) GetData() []byte {
 		return m.Data
 	}
 	return nil
+}
+
+func init() {
+	proto.RegisterEnum("mesg.OpId", OpId_name, OpId_value)
 }

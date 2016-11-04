@@ -1165,7 +1165,10 @@ func OlSvrPingHandler(cmd uint32, orig uint32, data []byte, length uint32, param
  **作    者: # Qifeng.zou # 2016.11.04 08:38:48 #
  ******************************************************************************/
 func (ctx *OlSvrCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
-	if 0 == req.GetNid() || 0 == len(req.GetIpaddr()) || 0 == req.GetPort() {
+	if 0 == req.GetOp() ||
+		0 == req.GetNid() ||
+		0 == req.GetPort() ||
+		0 == len(req.GetIpaddr()) {
 		return false
 	}
 	return true
@@ -1206,6 +1209,55 @@ func (ctx *OlSvrCntx) lsn_rpt_parse(data []byte) (
 }
 
 /******************************************************************************
+ **函数名称: lsn_rpt_has_conflict
+ **功    能: 判断数据是否冲突
+ **输入参数:
+ **     req: 帧听层上报消息
+ **输出参数: NONE
+ **返    回: true:存在冲突 false:不存在冲突
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 10:34:00 #
+ ******************************************************************************/
+func (ctx *OlSvrCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	addr := fmt.Sprintf("%s:%s", req.GetIpaddr(), req.GetPort())
+	ok, err := redis.Bool(rds.Do("HEXISTS", comm.CHAT_KEY_LSN_ADDR_TO_NID, addr))
+	if nil != err {
+		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
+		return false, err
+	} else if true == ok {
+		nid, err := redis.Int(rds.Do("HGET", comm.CHAT_KEY_LSN_ADDR_TO_NID, addr))
+		if nil != err {
+			ctx.log.Error("Exec hget failed! err:%s", err.Error())
+			return false, err
+		} else if uint64(nid) != req.GetNid() {
+			ctx.log.Error("Node id conflict! nid:%d/%d", nid, req.GetNid())
+			return true, nil
+		}
+	}
+
+	ok, err = redis.Bool(rds.Do("HEXISTS", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+	if nil != err {
+		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
+		return
+	} else if true == ok {
+		_addr, err := redis.String(rds.Do("HGET", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+		if nil != err {
+			ctx.log.Error("Exec hget failed! err:%s", err.Error())
+			return false, err
+		} else if _addr != addr {
+			ctx.log.Error("Node id conflict! addr:%s/%s", addr, _addr)
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+/******************************************************************************
  **函数名称: lsn_rpt_handler
  **功    能: LSN-RPT处理
  **输入参数:
@@ -1217,9 +1269,34 @@ func (ctx *OlSvrCntx) lsn_rpt_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 08:41:18 #
  ******************************************************************************/
-func (ctx *OlSvrCntx) lsn_rpt_handler(
-	head *comm.MesgHeader, req *mesg.MesgLsnRpt) (err error) {
-	return err
+func (ctx *OlSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 判断数据是否冲突 */
+	has, err := ctx.lsn_rpt_has_conflict(req)
+	if nil != err {
+		ctx.log.Error("Something was wrong! errmsg:%s", err.Error())
+		return
+	} else if true == has {
+		ctx.log.Error("Data has conflict!")
+		return
+	}
+
+	addr := fmt.Sprintf("%s:%s", req.GetIpaddr(), req.GetPort())
+	pl.Send("HSET", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid(), addr)
+	pl.Send("HSET", comm.CHAT_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
+
+	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
+	pl.Send("ZADD", comm.CHAT_KEY_LSN_OP_ZSET, ttl, req.GetOp())
+
+	key := fmt.Sprintf(comm.CHAT_KEY_LSN_OP_TO_NID_ZSET, req.GetOp())
+	pl.Send("ZADD", key, ttl, req.GetNid())
+
+	return
 }
 
 /******************************************************************************
@@ -1237,8 +1314,9 @@ func (ctx *OlSvrCntx) lsn_rpt_handler(
  **协议格式:
  **     {
  **        required uint64 nid = 1;    // M|结点ID|数字|<br>
- **        required string ipaddr = 2; // M|IP地址|字串|<br>
- **        required uint32 port = 3;   // M|端口号|数字|<br>
+ **        required OpId op = 2;       // M|运营商ID|数字|<br>
+ **        required string ipaddr = 3; // M|IP地址|字串|<br>
+ **        required uint32 port = 4;   // M|端口号|数字|<br>
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 06:32:03 #
