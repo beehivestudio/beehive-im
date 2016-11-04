@@ -15,7 +15,8 @@ It has these top-level messages:
 	MesgJoinAck
 	MesgUnjoinReq
 	MesgUnjoinAck
-	MesgHeartBeat
+	MesgLsnRpt
+	MesgFrwdRpt
 	MesgRoom
 */
 package mesg
@@ -28,42 +29,6 @@ import math "math"
 var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
-
-type ModuleType int32
-
-const (
-	ModuleType_MOD_UNKNOWN ModuleType = 0
-	ModuleType_MOD_LSN     ModuleType = 1
-	ModuleType_MOD_FRWD    ModuleType = 2
-)
-
-var ModuleType_name = map[int32]string{
-	0: "MOD_UNKNOWN",
-	1: "MOD_LSN",
-	2: "MOD_FRWD",
-}
-var ModuleType_value = map[string]int32{
-	"MOD_UNKNOWN": 0,
-	"MOD_LSN":     1,
-	"MOD_FRWD":    2,
-}
-
-func (x ModuleType) Enum() *ModuleType {
-	p := new(ModuleType)
-	*p = x
-	return p
-}
-func (x ModuleType) String() string {
-	return proto.EnumName(ModuleType_name, int32(x))
-}
-func (x *ModuleType) UnmarshalJSON(data []byte) error {
-	value, err := proto.UnmarshalJSONEnum(ModuleType_value, data, "ModuleType")
-	if err != nil {
-		return err
-	}
-	*x = ModuleType(value)
-	return nil
-}
 
 type MesgOnlineReq struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=Uid" json:"Uid,omitempty"`
@@ -321,42 +286,74 @@ func (m *MesgUnjoinAck) GetErrMsg() string {
 	return ""
 }
 
-type MesgHeartBeat struct {
+type MesgLsnRpt struct {
 	Nid              *uint64 `protobuf:"varint,1,req,name=nid" json:"nid,omitempty"`
-	Mod              *uint32 `protobuf:"varint,2,req,name=mod" json:"mod,omitempty"`
-	Ipaddr           *string `protobuf:"bytes,3,req,name=ipaddr" json:"ipaddr,omitempty"`
-	Port             *uint32 `protobuf:"varint,4,req,name=port" json:"port,omitempty"`
+	Ipaddr           *string `protobuf:"bytes,2,req,name=ipaddr" json:"ipaddr,omitempty"`
+	Port             *uint32 `protobuf:"varint,3,req,name=port" json:"port,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgHeartBeat) Reset()         { *m = MesgHeartBeat{} }
-func (m *MesgHeartBeat) String() string { return proto.CompactTextString(m) }
-func (*MesgHeartBeat) ProtoMessage()    {}
+func (m *MesgLsnRpt) Reset()         { *m = MesgLsnRpt{} }
+func (m *MesgLsnRpt) String() string { return proto.CompactTextString(m) }
+func (*MesgLsnRpt) ProtoMessage()    {}
 
-func (m *MesgHeartBeat) GetNid() uint64 {
+func (m *MesgLsnRpt) GetNid() uint64 {
 	if m != nil && m.Nid != nil {
 		return *m.Nid
 	}
 	return 0
 }
 
-func (m *MesgHeartBeat) GetMod() uint32 {
-	if m != nil && m.Mod != nil {
-		return *m.Mod
-	}
-	return 0
-}
-
-func (m *MesgHeartBeat) GetIpaddr() string {
+func (m *MesgLsnRpt) GetIpaddr() string {
 	if m != nil && m.Ipaddr != nil {
 		return *m.Ipaddr
 	}
 	return ""
 }
 
-func (m *MesgHeartBeat) GetPort() uint32 {
+func (m *MesgLsnRpt) GetPort() uint32 {
 	if m != nil && m.Port != nil {
 		return *m.Port
+	}
+	return 0
+}
+
+type MesgFrwdRpt struct {
+	Nid              *uint64 `protobuf:"varint,1,req,name=nid" json:"nid,omitempty"`
+	Ipaddr           *string `protobuf:"bytes,2,req,name=ipaddr" json:"ipaddr,omitempty"`
+	ForwardPort      *uint32 `protobuf:"varint,3,req,name=forward_port" json:"forward_port,omitempty"`
+	BackendPort      *uint32 `protobuf:"varint,4,req,name=backend_port" json:"backend_port,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgFrwdRpt) Reset()         { *m = MesgFrwdRpt{} }
+func (m *MesgFrwdRpt) String() string { return proto.CompactTextString(m) }
+func (*MesgFrwdRpt) ProtoMessage()    {}
+
+func (m *MesgFrwdRpt) GetNid() uint64 {
+	if m != nil && m.Nid != nil {
+		return *m.Nid
+	}
+	return 0
+}
+
+func (m *MesgFrwdRpt) GetIpaddr() string {
+	if m != nil && m.Ipaddr != nil {
+		return *m.Ipaddr
+	}
+	return ""
+}
+
+func (m *MesgFrwdRpt) GetForwardPort() uint32 {
+	if m != nil && m.ForwardPort != nil {
+		return *m.ForwardPort
+	}
+	return 0
+}
+
+func (m *MesgFrwdRpt) GetBackendPort() uint32 {
+	if m != nil && m.BackendPort != nil {
+		return *m.BackendPort
 	}
 	return 0
 }
@@ -399,8 +396,4 @@ func (m *MesgRoom) GetData() []byte {
 		return m.Data
 	}
 	return nil
-}
-
-func init() {
-	proto.RegisterEnum("mesg.ModuleType", ModuleType_name, ModuleType_value)
 }

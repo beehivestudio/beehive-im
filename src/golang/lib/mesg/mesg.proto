@@ -50,19 +50,19 @@ message mesg_unjoin_ack
     optional string ErrMsg = 4; // M|错误描述|字串|
 }
 
-enum ModuleType
-{
-    MOD_UNKNOWN = 0;            // 未知
-    MOD_LSN = 1;                // 帧听层
-    MOD_FRWD = 2;               // 转发层
-}
-
-message mesg_heart_beat
+message mesg_lsn_rpt
 {
     required uint64 nid = 1;    // M|结点ID|数字|<br>
-    required uint32 mod = 2;    // M|模块类型|数字|(1:接入层 2:转发层)<br>
-    required string ipaddr = 3; // M|IP地址|字串|<br>
-    required uint32 port = 4;   // M|端口号|数字|<br>
+    required string ipaddr = 2; // M|IP地址|字串|<br>
+    required uint32 port = 3;   // M|端口号|数字|<br>
+}
+
+message mesg_frwd_rpt
+{
+    required uint64 nid = 1;    // M|结点ID|数字|<br>
+    required string ipaddr = 2; // M|IP地址|字串|<br>
+    required uint32 forward_port = 3;   // M|端口号|数字|<br>
+    required uint32 backend_port = 4;   // M|端口号|数字|<br>
 }
 
 message mesg_room

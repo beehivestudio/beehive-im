@@ -102,14 +102,15 @@ func (ctx *OlSvrCntx) online_parse(data []byte) (
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
+ **应答协议:
  ** {
- **     optional uint64 Uid = 1;        // M|用户ID|数字|<br>
- **     optional uint64 Sid = 2;        // M|连接ID|数字|内部使用<br>
- **     optional string App = 3;        // M|APP名|字串|<br>
- **     optional string Version = 4;    // M|APP版本|字串|<br>
- **     optional uint32 Terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
- **     optional uint32 Errnum = 6;     // M|错误码|数字|<br>
- **     optional string Errmsg = 7;     // M|错误描述|字串|<br>
+ **     required uint64 uid = 1;        // M|用户ID|数字|
+ **     required uint64 sid = 2;        // M|连接ID|数字|内部使用
+ **     required string app = 3;        // M|APP名|字串|
+ **     required string version = 4;    // M|APP版本|字串|
+ **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+ **     optional uint32 errnum = 6;     // M|错误码|数字|
+ **     optional string errmsg = 7;     // M|错误描述|字串|
  ** }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
@@ -162,13 +163,13 @@ func (ctx *OlSvrCntx) send_err_online_ack(head *comm.MesgHeader,
  **返    回: VOID
  **实现描述:
  ** {
- **     optional uint64 Uid = 1;        // M|用户ID|数字|<br>
- **     optional uint64 Sid = 2;        // M|会话ID|数字|内部使用<br>
- **     optional string App = 3;        // M|APP名|字串|<br>
- **     optional string Version = 4;    // M|APP版本|字串|<br>
- **     optional uint32 Terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
- **     optional uint32 Errnum = 6;     // M|错误码|数字|<br>
- **     optional string Errmsg = 7;     // M|错误描述|字串|<br>
+ **     required uint64 uid = 1;        // M|用户ID|数字|
+ **     required uint64 sid = 2;        // M|会话ID|数字|内部使用
+ **     required string app = 3;        // M|APP名|字串|
+ **     required string version = 4;    // M|APP版本|字串|
+ **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+ **     optional uint32 errnum = 6;     // M|错误码|数字|
+ **     optional string errmsg = 7;     // M|错误描述|字串|
  ** }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
@@ -289,7 +290,15 @@ func (ctx *OlSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
- **注意事项: 首先需要调用mesg_head_ntoh()对头部数据进行直接序转换.
+ **请求协议:
+ **     {
+ **        required uint64 uid = 1;    // M|用户ID|数字|
+ **        required string token = 2;  // M|鉴权TOKEN|字串|
+ **        required string app = 3;    // M|APP名|字串|
+ **        required string version = 4;    // M|APP版本|字串|
+ **        optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+ **     }
+ **注意事项: 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func OlSvrOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
@@ -536,12 +545,13 @@ func (ctx *OlSvrCntx) join_parse(data []byte) (
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
+ **应答协议:
  **     {
- **         optional uint64 Uid = 1;    // M|用户ID|数字|
- **         optional uint64 Rid = 2;    // M|聊天室ID|数字|
- **         optional uint32 Gid = 3;    // M|分组ID|数字|
- **         optional uint32 Errnum = 4; // M|错误码|数字|
- **         optional string Errmsg = 5; // M|错误描述|字串|
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **         required uint32 gid = 3;    // M|分组ID|数字|
+ **         optional uint32 errnum = 4; // M|错误码|数字|
+ **         optional string errmsg = 5; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
@@ -589,12 +599,13 @@ func (ctx *OlSvrCntx) send_err_join_ack(head *comm.MesgHeader,
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
+ **应答协议:
  **     {
- **         optional uint64 Uid = 1;    // M|用户ID|数字|
- **         optional uint64 Rid = 2;    // M|聊天室ID|数字|
- **         optional uint32 Gid = 3;    // M|分组ID|数字|
- **         optional uint32 Errnum = 4; // M|错误码|数字|
- **         optional string Errmsg = 5; // M|错误描述|字串|
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **         required uint32 gid = 3;    // M|分组ID|数字|
+ **         optional uint32 errnum = 4; // M|错误码|数字|
+ **         optional string errmsg = 5; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
@@ -769,6 +780,12 @@ GET_GID:
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
+ **请求协议:
+ **     {
+ **        required uint64 uid = 1;    // M|用户ID|数字|
+ **        required uint64 rid = 2;    // M|聊天室ID|数字|
+ **        required string token = 3;  // M|鉴权TOKEN|字串|
+ **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
@@ -834,6 +851,14 @@ func (ctx *OlSvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
+ **应答协议:
+ **     {
+ **        required uint64 uid = 1;    // M|用户ID|数字|
+ **        required uint64 rid = 2;    // M|聊天室ID|数字|
+ **        required uint32 gid = 3;    // M|分组ID|数字|
+ **        optional uint32 errnum = 4; // M|错误码|数字|
+ **        optional string errmsg = 5; // M|错误描述|字串|
+ **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:20:34 #
  ******************************************************************************/
@@ -913,12 +938,13 @@ func (ctx *OlSvrCntx) unjoin_parse(data []byte) (
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
+ **应答协议:
  **     {
- **         optional uint64 Uid = 1;    // M|用户ID|数字|
- **         optional uint64 Rid = 2;    // M|聊天室ID|数字|
- **         optional uint32 Gid = 3;    // M|分组ID|数字|
- **         optional uint32 Errnum = 4; // M|错误码|数字|
- **         optional string Errmsg = 5; // M|错误描述|字串|
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **         required uint32 gid = 3;    // M|分组ID|数字|
+ **         optional uint32 errnum = 4; // M|错误码|数字|
+ **         optional string errmsg = 5; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
@@ -995,6 +1021,11 @@ func (ctx *OlSvrCntx) unjoin_handler(
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
+ **请求协议:
+ **     {
+ **        required uint64 uid = 1;    // M|用户ID|数字|
+ **        required uint64 rid = 2;    // M|聊天室ID|数字|
+ **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
@@ -1115,6 +1146,153 @@ func OlSvrPingHandler(cmd uint32, orig uint32, data []byte, length uint32, param
 
 	/* 2. > PING请求处理 */
 	ctx.ping_handler(head)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsn_rpt_isvalid
+ **功    能: 判断LSN-RPT是否合法
+ **输入参数:
+ **     req: HB请求
+ **输出参数: NONE
+ **返    回: true:合法 false:非法
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 08:38:48 #
+ ******************************************************************************/
+func (ctx *OlSvrCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
+	if 0 == req.GetNid() || 0 == len(req.GetIpaddr()) || 0 == req.GetPort() {
+		return false
+	}
+	return true
+}
+
+/******************************************************************************
+ **函数名称: lsn_rpt_parse
+ **功    能: 解析LSN-PRT请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 08:14:10 #
+ ******************************************************************************/
+func (ctx *OlSvrCntx) lsn_rpt_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgLsnRpt{}
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal lsn-rpt failed! errmsg:%s", err.Error())
+		return nil, nil
+	}
+
+	/* > 校验协议合法性 */
+	if !ctx.lsn_rpt_isvalid(req) {
+		return nil, nil
+	}
+
+	return head, req
+}
+
+/******************************************************************************
+ **函数名称: lsn_rpt_handler
+ **功    能: LSN-RPT处理
+ **输入参数:
+ **     head: 协议头
+ **     req: 上线请求
+ **输出参数: NONE
+ **返    回: 异常信息
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 08:41:18 #
+ ******************************************************************************/
+func (ctx *OlSvrCntx) lsn_rpt_handler(
+	head *comm.MesgHeader, req *mesg.MesgLsnRpt) (err error) {
+	return err
+}
+
+/******************************************************************************
+ **函数名称: OlSvrLsnRptHandler
+ **功    能: 帧听层上报
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **协议格式:
+ **     {
+ **        required uint64 nid = 1;    // M|结点ID|数字|<br>
+ **        required string ipaddr = 2; // M|IP地址|字串|<br>
+ **        required uint32 port = 3;   // M|端口号|数字|<br>
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 06:32:03 #
+ ******************************************************************************/
+func OlSvrLsnRptHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*OlSvrCntx)
+	if false == ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv lsn-rpt request!")
+
+	/* 1. > 解析LSN-RPT请求 */
+	head, req := ctx.lsn_rpt_parse(data)
+	if nil == head || nil == req {
+		ctx.log.Error("Parse lsn-rpt failed!")
+		return -1
+	}
+
+	/* 2. > LSN-RPT请求处理 */
+	ctx.lsn_rpt_handler(head, req)
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: OlSvrFrwdRptHandler
+ **功    能: 转发层上报
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **协议格式:
+ **     {
+ **        required uint64 nid = 1;    // M|结点ID|数字|
+ **        required uint32 mod = 2;    // M|模块类型|数字|(1:接入层 2:转发层)
+ **        required string ipaddr = 3; // M|IP地址|字串|
+ **        required uint32 port = 4;   // M|端口号|数字|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 08:39:10 #
+ ******************************************************************************/
+func OlSvrFrwdRptHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*OlSvrCntx)
+	if false == ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv frwd-rpt request!")
 
 	return 0
 }

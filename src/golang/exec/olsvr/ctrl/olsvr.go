@@ -80,6 +80,7 @@ func OlSvrInit(conf *OlSvrConf) (ctx *OlSvrCntx, err error) {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *OlSvrCntx) Register() {
+	/* > 业务消息 */
 	ctx.proxy.Register(comm.CMD_ONLINE_REQ, OlSvrOnlineReqHandler, ctx)
 	ctx.proxy.Register(comm.CMD_OFFLINE_REQ, OlSvrOfflineReqHandler, ctx)
 
@@ -87,6 +88,10 @@ func (ctx *OlSvrCntx) Register() {
 	ctx.proxy.Register(comm.CMD_UNJOIN_REQ, OlSvrUnjoinReqHandler, ctx)
 
 	ctx.proxy.Register(comm.CMD_PING, OlSvrPingHandler, ctx)
+
+	/* > 运维消息 */
+	ctx.proxy.Register(comm.CMD_HB, OlSvrLsnRptHandler, ctx)
+	ctx.proxy.Register(comm.CMD_HB, OlSvrFrwdRptHandler, ctx)
 }
 
 /******************************************************************************
