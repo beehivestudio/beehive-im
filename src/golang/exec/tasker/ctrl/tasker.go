@@ -93,6 +93,7 @@ func (ctx *TaskerCntx) Register() {
  ******************************************************************************/
 func (ctx *TaskerCntx) Launch() {
 	go ctx.timer_clean()
+	go ctx.timer_update()
 
 	ctx.proxy.Launch()
 }
