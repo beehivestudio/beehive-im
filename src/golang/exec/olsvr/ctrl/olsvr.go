@@ -90,8 +90,8 @@ func (ctx *OlSvrCntx) Register() {
 	ctx.proxy.Register(comm.CMD_PING, OlSvrPingHandler, ctx)
 
 	/* > 运维消息 */
-	ctx.proxy.Register(comm.CMD_HB, OlSvrLsnRptHandler, ctx)
-	ctx.proxy.Register(comm.CMD_HB, OlSvrFrwdRptHandler, ctx)
+	ctx.proxy.Register(comm.CMD_LSN_RPT, OlSvrLsnRptHandler, ctx)
+	ctx.proxy.Register(comm.CMD_FRWD_LIST, OlSvrFrwdRptHandler, ctx)
 }
 
 /******************************************************************************

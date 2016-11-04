@@ -74,12 +74,10 @@ typedef enum
     , CMD_BLACKLIST_DEL_NTC     = 0x0308    /* 移除黑名单通知 */
 
     /* 系统内部消息 */
-    , CMD_HB                    = 0x0401    /* 内部心跳 */
-    , CMD_HB_ACK                = 0x0402    /* 内部心跳应答 */
-    , CMD_LSN_RPT               = 0x0403    /* 帧听层上报 */
-    , CMD_LSN_RPT_ACK           = 0x0404    /* 帧听层上报应答 */
-    , CMD_FRWD_LIST             = 0x0405    /* 转发层列表 */
-    , CMD_FRWD_LIST_ACK         = 0x0406    /* 转发层列表应答 */
+    , CMD_LSN_RPT               = 0x0401    /* 帧听层上报 */
+    , CMD_LSN_RPT_ACK           = 0x0402    /* 帧听层上报应答 */
+    , CMD_FRWD_RPT              = 0x0403    /* 转发层上报 */
+    , CMD_FRWD_RPT_ACK          = 0x0404    /* 转发层上报应答 */
 } mesg_type_e;
 
 #endif /*__CMD_LIST_H__*/
