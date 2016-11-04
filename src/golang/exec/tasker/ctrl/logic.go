@@ -28,7 +28,7 @@ func (ctx *TaskerCntx) timer_clean() {
 		ctx.clean_rid_zset(ctm)
 		ctx.clean_uid_zset(ctm)
 
-		time.Sleep(30)
+		time.Sleep(30 * time.Second)
 	}
 	return
 }
@@ -47,7 +47,7 @@ func (ctx *TaskerCntx) timer_update() {
 	for {
 		ctx.update_prec_statis()
 
-		time.Sleep(30)
+		time.Sleep(30 * time.Second)
 	}
 	return
 }

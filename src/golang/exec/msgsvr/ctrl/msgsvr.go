@@ -2,6 +2,7 @@ package ctrl
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
@@ -11,12 +12,24 @@ import (
 	"chat/src/golang/lib/rtmq"
 )
 
-/* OLS上下文 */
+/* RID->NID映射项 */
+type MsgSvrRidToNidItem struct {
+	nid_list []int /* NID映射表 */
+}
+
+/* RID->NID映射表 */
+type MsgSvrRidToNidMap struct {
+	sync.RWMutex                               /* 读写锁 */
+	items        map[uint64]MsgSvrRidToNidItem /* RID->NID映射表 */
+}
+
+/* MSGSVR上下文 */
 type MsgSvrCntx struct {
-	conf  *MsgSvrConf         /* 配置信息 */
-	log   *logs.BeeLogger     /* 日志对象 */
-	proxy *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis *redis.Pool         /* REDIS连接池 */
+	conf           *MsgSvrConf         /* 配置信息 */
+	log            *logs.BeeLogger     /* 日志对象 */
+	proxy          *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis          *redis.Pool         /* REDIS连接池 */
+	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
 }
 
 /******************************************************************************
@@ -113,5 +126,6 @@ func (ctx *MsgSvrCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) Launch() {
+	go ctx.update()
 	ctx.proxy.Launch()
 }

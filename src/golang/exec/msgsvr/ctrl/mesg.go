@@ -245,6 +245,16 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoom) (err error) {
+	ctx.rid_to_nid_map.RLock()
+	item, ok := ctx.rid_to_nid_map.items[req.GetRid()]
+	if false == ok {
+		ctx.rid_to_nid_map.RUnlock()
+		return nil
+	}
+	for nid := range item.nid_list {
+		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
+	}
+	ctx.rid_to_nid_map.RUnlock()
 	return err
 }
 
