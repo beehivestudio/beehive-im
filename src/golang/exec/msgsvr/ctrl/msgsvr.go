@@ -139,7 +139,7 @@ func (ctx *MsgSvrCntx) log_init() (err error) {
 		return err
 	}
 
-	log.SetLogger("file", fmt.Sprintf(`{"filename":"%s/../log/olsvr.log"}`, conf.AppPath))
+	log.SetLogger("file", fmt.Sprintf(`{"filename":"%s/../log/msgsvr.log"}`, conf.AppPath))
 	log.SetLevel(logs.LevelDebug)
 	return nil
 }

@@ -64,7 +64,7 @@ func (conf *MsgSvrConf) LoadConf() (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "olsvr.xml")
+	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "msgsvr.xml")
 
 	return conf.conf_parse()
 }

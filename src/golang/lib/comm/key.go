@@ -22,10 +22,10 @@ const (
 	CHAT_KEY_LSN_OP_ZSET        = "chat:lsn:op:zset"           //| ZSET | 帧听层运营商集合 | 成员:运营商ID/分值:TTL |
 	CHAT_KEY_LSN_OP_TO_NID_ZSET = "chat:lsn:op:%d:to:nid:zset" //| ZSET | 运营商帧听层NID集合 | 成员:NID/分值:TTL |
 	CHAT_KEY_LSN_NID_ZSET       = "chat:lsn:nid:zset"          //| ZSET | 帧听层NID集合 | 成员:NID/分值:TTL |
-	CHAT_KEY_FRWD_NID_ZSET      = "chat:frwd:nid:zset"         //| ZSET | 转发层NID集合 | 成员:NID/分值:TTL |
 	CHAT_KEY_LSN_NID_TO_ADDR    = "chat:lsn:nid:to:addr"       //| HTAB | 帧听层NID->地址 | 键:NID/值:外网IP+端口 |
-	CHAT_KEY_FRWD_NID_TO_ADDR   = "chat:frwd:nid:to:addr"      //| HTAB | 转发层NID->地址 | 键:NID/值:内网IP+端口 |
 	CHAT_KEY_LSN_ADDR_TO_NID    = "chat:lsn:addr:to:nid"       //| HTAB | 帧听层地址->NID | 键:外网IP+端口/值:NID |
+	CHAT_KEY_FRWD_NID_ZSET      = "chat:frwd:nid:zset"         //| ZSET | 转发层NID集合 | 成员:NID/分值:TTL |
+	CHAT_KEY_FRWD_NID_TO_ADDR   = "chat:frwd:nid:to:addr"      //| HTAB | 转发层NID->地址 | 键:NID/值:内网IP+端口 |
 	CHAT_KEY_FRWD_ADDR_TO_NID   = "chat:frwd:addr:to:nid"      //| HTAB | 转发层地址->NID | 键:内网IP+端口/值:NID |
 	CHAT_KEY_PREC_USR_NUM_ZSET  = "chat:prec:usr:num:zset"     //| ZSET | 人数统计精度 | 成员:prec/分值:记录条数 |
 	CHAT_KEY_PREC_USR_MAX_NUM   = "chat:prec:%d:usr:max:num"   //| HASH | 某统计精度最大人数 | 键:时间/值:最大人数 |

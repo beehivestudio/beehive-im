@@ -118,7 +118,7 @@ func (ctx *TaskerCntx) log_init() (err error) {
 		return err
 	}
 
-	log.SetLogger("file", fmt.Sprintf(`{"filename":"%s/../log/olsvr.log"}`, conf.AppPath))
+	log.SetLogger("file", fmt.Sprintf(`{"filename":"%s/../log/tasker.log"}`, conf.AppPath))
 	log.SetLevel(logs.LevelDebug)
 	return nil
 }
