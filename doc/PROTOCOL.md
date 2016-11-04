@@ -335,8 +335,8 @@ TODO: 协议头中的to为用户ID(UID)
 >{<br>
 >   required uint64 nid = 1;        // M|结点ID|数字|<br>
 >   required string ipaddr = 2;     // M|IP地址|字串|<br>
->   required uint32 fw_port = 3;    // M|前端口号|数字|<br>
->   required uint32 bc_port = 4;    // M|后端口号|数字|<br>
+>   required uint32 forward_port = 3;    // M|前端口号|数字|<br>
+>   required uint32 backend_port = 4;    // M|后端口号|数字|<br>
 >}
 
 ---
