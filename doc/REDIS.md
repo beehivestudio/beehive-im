@@ -16,8 +16,8 @@
 | 04 | CHAT_KEY_RID_SUB_USR_NUM_ZSET | chat:rid:sub:usr:num:zset | ZSET | 聊天室人数订阅集合 | 暂无 |
 | 05 | CHAT_KEY_RID_TO_UID_ZSET | chat:rid:%d:to:uid:zset | ZSET | 聊天室用户列表 | UID列表 |
 |**序号**|**宏**|**键值**|**类型**|**描述**|**备注**|
-| 01 | CHAT_KEY_LSN_OPT_ZSET | chat:lsn:opt:zset | ZSET | 帧听层运营商集合 | 成员:运营商ID/分值:TTL |
-| 02 | CHAT_KEY_LSN_OPT_TO_NID_ZSET | chat:lsn:opt:%d:to:nid:zset | ZSET | 运营商帧听层NID集合 | 成员:NID/分值:TTL |
+| 01 | CHAT_KEY_LSN_OP_ZSET | chat:lsn:op:zset | ZSET | 帧听层运营商集合 | 成员:运营商ID/分值:TTL |
+| 02 | CHAT_KEY_LSN_OP_TO_NID_ZSET | chat:lsn:op:%d:to:nid:zset | ZSET | 运营商帧听层NID集合 | 成员:NID/分值:TTL |
 | 03 | CHAT_KEY_LSN_NID_ZSET | chat:lsn:nid:zset | ZSET | 帧听层NID集合 | 成员:NID/分值:TTL |
 | 04 | CHAT_KEY_FWD_NID_ZSET | chat:fwd:nid:zset | ZSET | 转发层NID集合 | 成员:NID/分值:TTL |
 | 05 | CHAT_KEY_LSN_NID_TO_ADDR | chat:lsn:nid:to:addr | KEY | 帧听层NID->地址 | 键:NID/值:外网IP+端口 |
