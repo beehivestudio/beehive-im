@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"sync"
 	"syscall"
 
 	"chat/src/golang/exec/tasker/ctrl"
@@ -39,9 +38,7 @@ func main() {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 
-	wait := &sync.WaitGroup{}
-	wait.Add(1)
-	wait.Wait()
+	<-ch
 
 	return
 }
