@@ -2,7 +2,7 @@
 <FRWDER ID="20001" NAME="frwder">
     <!-- 下行配置 -->
     <FORWARD PORT="28888">
-        <PATH>../temp/frwder/dwn/</PATH>                    <!-- 工作路径 -->
+        <PATH>../.temp/frwder/dwn/</PATH>                    <!-- 工作路径 -->
         <AUTH>                                              <!-- 鉴权配置 -->
             <ITEM USR="qifeng" PASSWD="111111" />
             <ITEM USR="127.0.0.1" PASSWD="111111" />
