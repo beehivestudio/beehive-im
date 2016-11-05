@@ -19,6 +19,8 @@
 #include "hash_alg.h"
 #include "lsnd_mesg.h"
 
+#define LSND_MOD_NAME "listend"
+
 static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log);
 static int lsnd_launch(lsnd_cntx_t *ctx);
 static int lsnd_set_reg(lsnd_cntx_t *ctx);
@@ -65,7 +67,7 @@ int main(int argc, char *argv[])
 
     do {
         /* > 初始化日志 */
-        log_get_path(path, sizeof(path), basename(argv[0]));
+        log_get_path(path, sizeof(path), LSND_MOD_NAME);
 
         log = log_init(opt.log_level, path);
         if (NULL == log) {
@@ -256,8 +258,6 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
             break;
         }
 
-
-
         /* > 初始化帧听模块 */
         protocol.args = (void *)ctx;
         ctx->access = acc_init(&protocol, &conf->access, log);
@@ -293,9 +293,9 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
  ******************************************************************************/
 static int lsnd_set_reg(lsnd_cntx_t *ctx)
 {
-#define LSND_ACC_REG_CB(ctx, type, proc, args) /* 注册代理数据回调 */\
-    if (lsnd_acc_reg_add(ctx, type, (lsnd_reg_cb_t)proc, (void *)args)) { \
-        log_error(stderr, "Register type [0x%0X] failed!", type); \
+#define LSND_ACC_REG_CB(lsnd, type, proc, args) /* 注册代理数据回调 */\
+    if (lsnd_acc_reg_add(lsnd, type, (lsnd_reg_cb_t)proc, (void *)args)) { \
+        log_error((lsnd)->log, "Register type [0x%0X] failed!", type); \
         return LSND_ERR; \
     }
 
