@@ -17,8 +17,10 @@ It has these top-level messages:
 	MesgUnjoinAck
 	MesgLsnRpt
 	MesgFrwdRpt
-	MesgRoom
+	MesgRoomMsg
 	MesgRoomAck
+	MesgPrvtMsg
+	MesgPrvtAck
 */
 package mesg
 
@@ -410,7 +412,7 @@ func (m *MesgFrwdRpt) GetBackendPort() uint32 {
 }
 
 // 聊天室消息
-type MesgRoom struct {
+type MesgRoomMsg struct {
 	Rid              *uint64 `protobuf:"varint,1,req,name=Rid" json:"Rid,omitempty"`
 	Gid              *uint32 `protobuf:"varint,2,req,name=Gid" json:"Gid,omitempty"`
 	Level            *uint32 `protobuf:"varint,3,req,name=level" json:"level,omitempty"`
@@ -418,32 +420,32 @@ type MesgRoom struct {
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgRoom) Reset()         { *m = MesgRoom{} }
-func (m *MesgRoom) String() string { return proto.CompactTextString(m) }
-func (*MesgRoom) ProtoMessage()    {}
+func (m *MesgRoomMsg) Reset()         { *m = MesgRoomMsg{} }
+func (m *MesgRoomMsg) String() string { return proto.CompactTextString(m) }
+func (*MesgRoomMsg) ProtoMessage()    {}
 
-func (m *MesgRoom) GetRid() uint64 {
+func (m *MesgRoomMsg) GetRid() uint64 {
 	if m != nil && m.Rid != nil {
 		return *m.Rid
 	}
 	return 0
 }
 
-func (m *MesgRoom) GetGid() uint32 {
+func (m *MesgRoomMsg) GetGid() uint32 {
 	if m != nil && m.Gid != nil {
 		return *m.Gid
 	}
 	return 0
 }
 
-func (m *MesgRoom) GetLevel() uint32 {
+func (m *MesgRoomMsg) GetLevel() uint32 {
 	if m != nil && m.Level != nil {
 		return *m.Level
 	}
 	return 0
 }
 
-func (m *MesgRoom) GetData() []byte {
+func (m *MesgRoomMsg) GetData() []byte {
 	if m != nil {
 		return m.Data
 	}
@@ -469,6 +471,72 @@ func (m *MesgRoomAck) GetErrNum() uint32 {
 }
 
 func (m *MesgRoomAck) GetErrMsg() string {
+	if m != nil && m.ErrMsg != nil {
+		return *m.ErrMsg
+	}
+	return ""
+}
+
+// 私聊消息
+type MesgPrvtMsg struct {
+	Rid              *uint64 `protobuf:"varint,1,req,name=Rid" json:"Rid,omitempty"`
+	Gid              *uint32 `protobuf:"varint,2,req,name=Gid" json:"Gid,omitempty"`
+	Level            *uint32 `protobuf:"varint,3,req,name=level" json:"level,omitempty"`
+	Data             []byte  `protobuf:"bytes,4,req,name=Data" json:"Data,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgPrvtMsg) Reset()         { *m = MesgPrvtMsg{} }
+func (m *MesgPrvtMsg) String() string { return proto.CompactTextString(m) }
+func (*MesgPrvtMsg) ProtoMessage()    {}
+
+func (m *MesgPrvtMsg) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+func (m *MesgPrvtMsg) GetGid() uint32 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+func (m *MesgPrvtMsg) GetLevel() uint32 {
+	if m != nil && m.Level != nil {
+		return *m.Level
+	}
+	return 0
+}
+
+func (m *MesgPrvtMsg) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+// 私聊消息应答
+type MesgPrvtAck struct {
+	ErrNum           *uint32 `protobuf:"varint,1,opt,name=ErrNum" json:"ErrNum,omitempty"`
+	ErrMsg           *string `protobuf:"bytes,2,opt,name=ErrMsg" json:"ErrMsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgPrvtAck) Reset()         { *m = MesgPrvtAck{} }
+func (m *MesgPrvtAck) String() string { return proto.CompactTextString(m) }
+func (*MesgPrvtAck) ProtoMessage()    {}
+
+func (m *MesgPrvtAck) GetErrNum() uint32 {
+	if m != nil && m.ErrNum != nil {
+		return *m.ErrNum
+	}
+	return 0
+}
+
+func (m *MesgPrvtAck) GetErrMsg() string {
 	if m != nil && m.ErrMsg != nil {
 		return *m.ErrMsg
 	}

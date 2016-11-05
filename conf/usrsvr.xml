@@ -1,4 +1,4 @@
-<OLSVR ID="30000"> <!-- ID: 结点ID -->
+<USRSVR ID="30000"> <!-- ID: 结点ID -->
   <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
   <REDIS-ADDR>127.0.0.1:6379</REDIS-ADDR> <!-- REDIS地址(IP+PORT) -->
   <SECRET-KEY>%b@e!e@h@i#v@e$s$tVu^d(i(o</SECRET-KEY> <!-- 私密密钥 -->
@@ -9,4 +9,4 @@
     <RECV-CHAN-LEN>20000</RECV-CHAN-LEN>        <!-- 接收队列长度 -->
     <REMOTE-ADDR>127.0.0.1:28889</REMOTE-ADDR>  <!-- 远端服务地址(IP + PORT) -->
   </RTMQ-PROXY>
-</OLSVR>
+</USRSVR>

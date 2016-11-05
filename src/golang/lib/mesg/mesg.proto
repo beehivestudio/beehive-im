@@ -76,7 +76,7 @@ message mesg_frwd_rpt
 }
 
 /* 聊天室消息 */
-message mesg_room
+message mesg_room_msg
 {
     required uint64 Rid = 1;        // 聊天室ID
     required uint32 Gid = 2;        // 分组ID
@@ -86,6 +86,23 @@ message mesg_room
 
 /* 聊天室消息应答 */
 message mesg_room_ack
+{
+    optional uint32 ErrNum = 1;     // 错误码
+    optional string ErrMsg = 2;     // 错误描述
+}
+
+
+/* 私聊消息 */
+message mesg_prvt_msg
+{
+    required uint64 Rid = 1;        // 聊天室ID
+    required uint32 Gid = 2;        // 分组ID
+    required uint32 level = 3;      // 消息级别
+    required bytes  Data = 4;       // 透传数据
+}
+
+/* 私聊消息应答 */
+message mesg_prvt_ack
 {
     optional uint32 ErrNum = 1;     // 错误码
     optional string ErrMsg = 2;     // 错误描述

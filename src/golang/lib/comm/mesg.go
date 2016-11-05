@@ -28,7 +28,7 @@ const (
 	CMD_PRVT_MSG_ACK     = 0x0113 /* 私聊消息应答 */
 	CMD_BC_MSG           = 0x0114 /* 广播消息 */
 	CMD_BC_MSG_ACK       = 0x0115 /* 广播消息应答 */
-	CMD_P2P_MSG          = 0x0116 /* 点到点消息 */
+	CMD_P2P_MSG          = 0x0116 /* 点到点消息(暂时不需要) */
 	CMD_P2P_MSG_ACK      = 0x0117 /* 点到点消息应答 */
 	CMD_ROOM_MSG         = 0x0118 /* 聊天室消息 */
 	CMD_ROOM_MSG_ACK     = 0x0119 /* 聊天室消息应答 */
