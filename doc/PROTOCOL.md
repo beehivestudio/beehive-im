@@ -155,7 +155,11 @@ TODO: 协议头中的to为用户ID(UID)
 ---
 命令ID: 0x0113<br>
 命令描述: 私聊消息应答(PRVG-MSG-ACK)<br>
-协议格式: NONE<br>
+协议格式:
+>{<br>
+>   optional uint32 errnum = 1;     // M|错误码|数字|<br>
+>   optional string errmsg = 2;     // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x0114<br>
