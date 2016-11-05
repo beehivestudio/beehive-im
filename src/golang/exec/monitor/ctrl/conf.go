@@ -49,7 +49,7 @@ type MonConfRtmqProxyXmlData struct {
 
 /* 在线中心XML配置 */
 type MonConfXmlData struct {
-	Name      xml.Name                `xml:"OLSVR"`      // 根结点名
+	Name      xml.Name                `xml:"MONITOR"`    // 根结点名
 	Id        uint32                  `xml:"ID,attr"`    // 结点ID
 	RedisAddr string                  `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	SecretKey string                  `xml:"SECRET-KEY"` // 私密密钥
