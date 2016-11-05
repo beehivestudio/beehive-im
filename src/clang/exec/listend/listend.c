@@ -295,7 +295,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
 {
 #define LSND_ACC_REG_CB(ctx, type, proc, args) /* 注册代理数据回调 */\
     if (lsnd_acc_reg_add(ctx, type, (lsnd_reg_cb_t)proc, (void *)args)) { \
-        fprintf(stderr, "Set register callback failed! type:0x%X\n", type); \
+        log_error(stderr, "Register type [0x%0X] failed!", type); \
         return LSND_ERR; \
     }
 
@@ -306,7 +306,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
 
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
-        log_error((lsnd)->log, "Register type [%d] failed!", type); \
+        log_error((lsnd)->log, "Register type [0x%0X] failed!", type); \
         return LSND_ERR; \
     }
 
