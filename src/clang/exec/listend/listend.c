@@ -295,13 +295,14 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
 {
 #define LSND_ACC_REG_CB(ctx, type, proc, args) /* 注册代理数据回调 */\
     if (lsnd_acc_reg_add(ctx, type, (lsnd_reg_cb_t)proc, (void *)args)) { \
+        fprintf(stderr, "Set register callback failed! type:0x%X\n", type); \
         return LSND_ERR; \
     }
 
     LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, chat_mesg_online_req_hdl, ctx);
     LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, chat_mesg_offline_req_hdl, ctx);
     LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_mesg_join_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_mesg_unjoin_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_UNJOIN_REQ, chat_mesg_unjoin_req_hdl, ctx);
 
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
