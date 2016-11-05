@@ -47,6 +47,7 @@ func (ctx *MsgSvrCntx) update_rid_to_nid_map() {
 	off := 0
 	ctm := time.Now().Unix()
 	for {
+		/* 获取RID列表 */
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
 			comm.CHAT_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
@@ -56,9 +57,9 @@ func (ctx *MsgSvrCntx) update_rid_to_nid_map() {
 
 		rid_num := len(rid_list)
 		for idx := 0; idx < rid_num; idx += 1 {
-			rid_int, _ := strconv.ParseInt(rid_list[idx], 10, 64)
-			rid := uint64(rid_int)
-			key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, rid)
+			/* 获取RID->NID列表 */
+			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
+			key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, uint64(rid))
 			nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 			if nil != err {
 				ctx.log.Error("Get nid list by rid failed! errmsg:%s", err.Error())
@@ -70,7 +71,7 @@ func (ctx *MsgSvrCntx) update_rid_to_nid_map() {
 			var item MsgSvrRidToNidItem
 
 			item.nid_list = nid_list
-			items[rid] = item
+			items[uint64(rid)] = item
 		}
 
 		if rid_num < comm.CHAT_BAT_NUM {
