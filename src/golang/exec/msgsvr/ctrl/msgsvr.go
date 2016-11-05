@@ -102,8 +102,8 @@ func (ctx *MsgSvrCntx) Register() {
 	ctx.proxy.Register(comm.CMD_BC_MSG, MsgSvrBcMsgHandler, ctx)
 	ctx.proxy.Register(comm.CMD_BC_MSG_ACK, MsgSvrBcMsgAckHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
-	ctx.proxy.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
+	//ctx.proxy.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
+	//ctx.proxy.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
 
 	ctx.proxy.Register(comm.CMD_ROOM_MSG, MsgSvrRoomMsgHandler, ctx)
 	ctx.proxy.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomMsgAckHandler, ctx)
