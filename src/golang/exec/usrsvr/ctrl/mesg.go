@@ -35,7 +35,7 @@ import (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
 	/* > TOKEN解码 */
-	cry := crypt.CreateEncodeCtx(ctx.conf.SecretKey)
+	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
 	token := crypt.Decode(cry, req.GetToken())
 	words := strings.Split(token, ":")
 	if 4 != len(words) {
@@ -474,7 +474,7 @@ func UsrSvrOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uint32
  ******************************************************************************/
 func (ctx *UsrSvrCntx) join_req_isvalid(req *mesg.MesgJoinReq) bool {
 	/* > TOKEN解码 */
-	cry := crypt.CreateEncodeCtx(ctx.conf.SecretKey)
+	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
 	token := crypt.Decode(cry, req.GetToken())
 	words := strings.Split(token, ":")
 	if 4 != len(words) {

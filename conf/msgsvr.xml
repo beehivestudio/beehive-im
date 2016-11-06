@@ -1,7 +1,7 @@
 <MSGSVR ID="31000"> <!-- ID: 结点ID -->
   <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
   <REDIS-ADDR>127.0.0.1:6379</REDIS-ADDR> <!-- REDIS地址(IP+PORT) -->
-  <SECRET-KEY>%b@e!e@h@i#v@e$s$tVu^d(i(o</SECRET-KEY> <!-- 私密密钥 -->
+  <CIPHER>%b@e!e@h@i#v@e$s$tVu^d(i(o</CIPHER> <!-- 私密密钥 -->
   <RTMQ-PROXY> <!-- RTMQ代理 -->
     <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->
     <WORKER-NUM>10</WORKER-NUM>                 <!-- 工作协程数 -->

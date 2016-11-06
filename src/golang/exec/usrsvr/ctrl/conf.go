@@ -18,7 +18,7 @@ type UsrSvrConf struct {
 	AppPath   string             // 程序路径(自动获取)
 	ConfPath  string             // 配置路径(自动获取)
 	RedisAddr string             // Redis地址(IP+PORT)
-	SecretKey string             // 私密密钥
+	Cipher    string             // 私密密钥
 	Log       log.LogConf        // 日志配置
 	proxy     rtmq.RtmqProxyConf // RTMQ配置
 }
@@ -52,7 +52,7 @@ type UsrSvrConfXmlData struct {
 	Name      xml.Name                   `xml:"USRSVR"`     // 根结点名
 	Id        uint32                     `xml:"ID,attr"`    // 结点ID
 	RedisAddr string                     `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
-	SecretKey string                     `xml:"SECRET-KEY"` // 私密密钥
+	Cipher    string                     `xml:"CIPHER"`     // 私密密钥
 	Log       UsrSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
 	RtmqProxy UsrSvrConfRtmqProxyXmlData `xml:"RTMQ-PROXY"` // RTMQ PROXY配置
 }
@@ -123,9 +123,9 @@ func (conf *UsrSvrConf) conf_parse() (err error) {
 	}
 
 	/* > 私密密钥 */
-	conf.SecretKey = node.SecretKey
-	if 0 == len(conf.SecretKey) {
-		return errors.New("Get secret key failed!")
+	conf.Cipher = node.Cipher
+	if 0 == len(conf.Cipher) {
+		return errors.New("Get chiper failed!")
 	}
 
 	/* 日志配置 */
