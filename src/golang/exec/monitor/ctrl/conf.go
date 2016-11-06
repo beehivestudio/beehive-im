@@ -18,7 +18,6 @@ type MonConf struct {
 	AppPath   string             // 程序路径(自动获取)
 	ConfPath  string             // 配置路径(自动获取)
 	RedisAddr string             // Redis地址(IP+PORT)
-	SecretKey string             // 私密密钥
 	Log       log.LogConf        // 日志配置
 	proxy     rtmq.RtmqProxyConf // RTMQ配置
 }
@@ -52,7 +51,6 @@ type MonConfXmlData struct {
 	Name      xml.Name                `xml:"MONITOR"`    // 根结点名
 	Id        uint32                  `xml:"ID,attr"`    // 结点ID
 	RedisAddr string                  `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
-	SecretKey string                  `xml:"SECRET-KEY"` // 私密密钥
 	Log       MonConfLogXmlData       `xml:"LOG"`        // 日志配置
 	RtmqProxy MonConfRtmqProxyXmlData `xml:"RTMQ-PROXY"` // RTMQ PROXY配置
 }
@@ -120,12 +118,6 @@ func (conf *MonConf) conf_parse() (err error) {
 	conf.RedisAddr = node.RedisAddr
 	if 0 == len(conf.RedisAddr) {
 		return errors.New("Get redis addr failed!")
-	}
-
-	/* > 私密密钥 */
-	conf.SecretKey = node.SecretKey
-	if 0 == len(conf.SecretKey) {
-		return errors.New("Get secret key failed!")
 	}
 
 	/* 日志配置 */
