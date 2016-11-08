@@ -2,6 +2,7 @@ package chat
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -34,28 +35,27 @@ func GroupGetGidToNidSet(pool *redis.Pool, gid uint64) (list []uint32, err error
 	}
 
 	num := len(nid_list)
-	list = make([]uint32)
+	list = make([]uint32, 0)
 	for idx := 0; idx < num; idx += 1 {
 		nid, _ := strconv.ParseInt(nid_list[idx], 10, 32)
-		list.append(nid)
+		list = append(list, uint32(nid))
 	}
 
 	return list, nil
 }
 
 /******************************************************************************
- **函数名称: GroupGetRidToNidMap
+ **函数名称: GroupGetGidToNidMap
  **功    能: 通过群GID获取对应的帧听层NID映射表
  **输入参数:
  **     pool: REDIS连接池
- **     gid: 群ID
  **输出参数: NONE
  **返    回: 帧听层ID列表
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.07 23:15:00 #
  ******************************************************************************/
-func GroupGetRidToNidMap(pool *redis.Pool, gid uint64) (m map[uint64][]uint32, err error) {
+func GroupGetGidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -71,11 +71,11 @@ func GroupGetRidToNidMap(pool *redis.Pool, gid uint64) (m map[uint64][]uint32, e
 			return nil, err
 		}
 
-		num := len(nid_list)
+		num := len(gid_list)
 		for idx := 0; idx < num; idx += 1 {
 			gid, _ := strconv.ParseInt(gid_list[idx], 10, 64)
 
-			m[rid], err = GroupGetGidToNidSet(pool, gid)
+			m[uint64(gid)], err = GroupGetGidToNidSet(pool, uint64(gid))
 			if nil != err {
 				return nil, err
 			}

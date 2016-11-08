@@ -1,13 +1,12 @@
 package ctrl
 
 import (
-	"fmt"
-	"strconv"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
+	_ "github.com/garyburd/redigo/redis"
 
-	"chat/src/golang/lib/comm"
+	"chat/src/golang/lib/chat"
+	_ "chat/src/golang/lib/comm"
 )
 
 /******************************************************************************
@@ -23,14 +22,15 @@ import (
 func (ctx *MsgSvrCntx) update() {
 	for {
 		ctx.update_rid_to_nid_map()
+		ctx.update_gid_to_nid_map()
 
-		time.Sleep(30 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
 }
 
 /******************************************************************************
  **函数名称: update_rid_to_nid_map
- **功    能: 更新RID->NID映射表
+ **功    能: 更新聊天室RID->NID映射表
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
@@ -39,48 +39,35 @@ func (ctx *MsgSvrCntx) update() {
  **作    者: # Qifeng.zou # 2016.11.05 00:21:54 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) update_rid_to_nid_map() {
-	var items map[uint64]MsgSvrRidToNidItem
-
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	off := 0
-	ctm := time.Now().Unix()
-	for {
-		/* 获取RID列表 */
-		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			comm.CHAT_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
-		if nil != err {
-			ctx.log.Error("Get rid zset failed! errmsg:%s", err.Error())
-			return
-		}
-
-		rid_num := len(rid_list)
-		for idx := 0; idx < rid_num; idx += 1 {
-			/* 获取RID->NID列表 */
-			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
-			key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, uint64(rid))
-			nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
-			if nil != err {
-				ctx.log.Error("Get nid list by rid failed! errmsg:%s", err.Error())
-				return
-			} else if 0 == len(nid_list) {
-				break
-			}
-
-			var item MsgSvrRidToNidItem
-
-			item.nid_list = nid_list
-			items[uint64(rid)] = item
-		}
-
-		if rid_num < comm.CHAT_BAT_NUM {
-			break
-		}
-		off += rid_num
+	m, err := chat.RoomGetRidToNidMap(ctx.redis)
+	if nil != err {
+		ctx.log.Error("Get rid to nid map failed! errmsg:%s", err.Error())
+		return
 	}
 
 	ctx.rid_to_nid_map.Lock()
-	ctx.rid_to_nid_map.items = items
+	ctx.rid_to_nid_map.m = m
 	ctx.rid_to_nid_map.Unlock()
+}
+
+/******************************************************************************
+ **函数名称: update_gid_to_nid_map
+ **功    能: 更新群GID->NID映射表
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.08 23:15:29 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) update_gid_to_nid_map() {
+	m, err := chat.GroupGetGidToNidMap(ctx.redis)
+	if nil != err {
+		ctx.log.Error("Get gid to nid map failed! errmsg:%s", err.Error())
+		return
+	}
+
+	ctx.gid_to_nid_map.Lock()
+	ctx.gid_to_nid_map.m = m
+	ctx.gid_to_nid_map.Unlock()
 }

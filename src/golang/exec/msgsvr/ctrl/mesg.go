@@ -183,12 +183,12 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 func (ctx *MsgSvrCntx) prvt_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomMsg) (err error) {
 	ctx.rid_to_nid_map.RLock()
-	item, ok := ctx.rid_to_nid_map.items[req.GetRid()]
+	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
 	if false == ok {
 		ctx.rid_to_nid_map.RUnlock()
 		return nil
 	}
-	for nid := range item.nid_list {
+	for nid := range nid_list {
 		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
 	}
 	ctx.rid_to_nid_map.RUnlock()
@@ -441,12 +441,12 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 func (ctx *MsgSvrCntx) room_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomMsg) (err error) {
 	ctx.rid_to_nid_map.RLock()
-	item, ok := ctx.rid_to_nid_map.items[req.GetRid()]
+	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
 	if false == ok {
 		ctx.rid_to_nid_map.RUnlock()
 		return nil
 	}
-	for nid := range item.nid_list {
+	for nid := range nid_list {
 		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
 	}
 	ctx.rid_to_nid_map.RUnlock()

@@ -12,15 +12,16 @@ import (
 	"chat/src/golang/lib/rtmq"
 )
 
-/* RID->NID映射项 */
-type MsgSvrRidToNidItem struct {
-	nid_list []int /* NID映射表 */
-}
-
 /* RID->NID映射表 */
 type MsgSvrRidToNidMap struct {
-	sync.RWMutex                               /* 读写锁 */
-	items        map[uint64]MsgSvrRidToNidItem /* RID->NID映射表 */
+	sync.RWMutex                     /* 读写锁 */
+	m            map[uint64][]uint32 /* RID->NID映射表 */
+}
+
+/* GID->NID映射表 */
+type MsgSvrGidToNidMap struct {
+	sync.RWMutex                     /* 读写锁 */
+	m            map[uint64][]uint32 /* GID->NID映射表 */
 }
 
 /* MSGSVR上下文 */
@@ -30,6 +31,7 @@ type MsgSvrCntx struct {
 	proxy          *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis          *redis.Pool         /* REDIS连接池 */
 	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
+	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
 }
 
 /******************************************************************************
