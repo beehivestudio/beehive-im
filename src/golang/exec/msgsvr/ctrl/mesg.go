@@ -12,7 +12,28 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrGroupMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrGroupMsgHandler
+ **功    能: 群消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **     1. 判断群消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
+ **        进行进行第2步的处理.
+ **     2. 将群消息放入群历史消息
+ **     3. 将群消息发送给在线的人员.
+ **     4. 回复发送成功应答给发送方.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.09 08:45:19 #
+ ******************************************************************************/
+func MsgSvrGroupMsgHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -26,7 +47,23 @@ func MsgSvrGroupMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrGroupMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrGroupMsgAckHandler
+ **功    能: 群消息应答处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 无需处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.09 21:43:01 #
+ ******************************************************************************/
+func MsgSvrGroupMsgAckHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -214,7 +251,8 @@ func (ctx *MsgSvrCntx) prvt_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.05 13:05:26 #
  ******************************************************************************/
-func MsgSvrPrvtMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func MsgSvrPrvtMsgHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -228,7 +266,23 @@ func MsgSvrPrvtMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, p
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrPrvtMsgAckHandler
+ **功    能: 私聊消息应答处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 收到私有消息的应答后, 删除离线队列中的对应数据.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.09 21:45:08 #
+ ******************************************************************************/
+func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -242,7 +296,23 @@ func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrBcMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrBcMsgHandler
+ **功    能: 广播消息的处理(待商议)
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.09 21:48:07 #
+ ******************************************************************************/
+func MsgSvrBcMsgHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -256,6 +326,21 @@ func MsgSvrBcMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, par
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/******************************************************************************
+ **函数名称: MsgSvrBcMsgAckHandler
+ **功    能: 广播消息应答处理(待商议)
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.09 21:54:37 #
+ ******************************************************************************/
 func MsgSvrBcMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -270,7 +355,28 @@ func MsgSvrBcMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrP2pMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrP2pMsgHandler
+ **功    能: 点到点消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **     1. 判断点到点消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
+ **        进行进行第2步的处理.
+ **     2. 将消息放入离线队列
+ **     3. 将消息发送给在线的人员.
+ **     4. 回复发送成功应答给发送方.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
+ ******************************************************************************/
+func MsgSvrP2pMsgHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -284,7 +390,23 @@ func MsgSvrP2pMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, pa
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrP2pMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrP2pMsgAckHandler
+ **功    能: 点到点应答的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 将离线消息从离线队列中删除.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.09 21:58:12 #
+ ******************************************************************************/
+func MsgSvrP2pMsgAckHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -465,10 +587,16 @@ func (ctx *MsgSvrCntx) room_msg_handler(
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
+ **     1. 判断消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
+ **        进行进行第2步的处理.
+ **     2. 将消息放入历史队列
+ **     3. 将消息发送分发到聊天室对应帧听层.
+ **     4. 回复发送成功应答给发送方.
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:28:02 #
  ******************************************************************************/
-func MsgSvrRoomMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func MsgSvrRoomMsgHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -498,7 +626,23 @@ func MsgSvrRoomMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, p
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrRoomMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrRoomMsgAckHandler
+ **功    能: 聊天室消息应答
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 暂不处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
+ ******************************************************************************/
+func MsgSvrRoomMsgAckHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -512,7 +656,28 @@ func MsgSvrRoomMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrRoomBcMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrRoomBcMsgHandler
+ **功    能: 聊天室广播消息处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **     1. 判断消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
+ **        进行进行第2步的处理.
+ **     2. 将消息放入聊天室广播队列
+ **     3. 将消息发送分发到聊天室对应帧听层.
+ **     4. 回复发送成功应答给发送方.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
+ ******************************************************************************/
+func MsgSvrRoomBcMsgHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -526,7 +691,23 @@ func MsgSvrRoomBcMsgHandler(cmd uint32, orig uint32, data []byte, length uint32,
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrRoomBcMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrRoomBcMsgAckHandler
+ **功    能: 聊天室广播消息处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 暂不处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
+ ******************************************************************************/
+func MsgSvrRoomBcMsgAckHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -540,27 +721,32 @@ func MsgSvrRoomBcMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-func MsgSvrSyncMsgHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+/******************************************************************************
+ **函数名称: MsgSvrSyncMsgHandler
+ **功    能: 同步请求的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     orig: 帧听层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 发现上线用户存在离线数据时, 则直接下发离线消息.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:28:02 #
+ ******************************************************************************/
+func MsgSvrSyncMsgHandler(cmd uint32, orig uint32,
+	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv group msg ack!")
+	ctx.log.Debug("Recv sync msg!")
 
 	return 0
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-
-func MsgSvrSyncMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
-		return -1
-	}
-
-	ctx.log.Debug("Recv group msg ack!")
-
-	return 0
-}

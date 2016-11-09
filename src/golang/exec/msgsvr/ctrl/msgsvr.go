@@ -114,7 +114,7 @@ func (ctx *MsgSvrCntx) Register() {
 	ctx.proxy.Register(comm.CMD_ROOM_BC_MSG_ACK, MsgSvrRoomBcMsgAckHandler, ctx)
 
 	ctx.proxy.Register(comm.CMD_SYNC_MSG, MsgSvrSyncMsgHandler, ctx)
-	ctx.proxy.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)
+	//ctx.proxy.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)
 }
 
 /******************************************************************************
