@@ -12,10 +12,10 @@ import (
 
 /* Tasker上下文 */
 type TaskerCntx struct {
-	conf  *TaskerConf         /* 配置信息 */
-	log   *logs.BeeLogger     /* 日志对象 */
-	proxy *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis *redis.Pool         /* REDIS连接池 */
+	conf   *TaskerConf         /* 配置信息 */
+	log    *logs.BeeLogger     /* 日志对象 */
+	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis  *redis.Pool         /* REDIS连接池 */
 }
 
 /******************************************************************************
@@ -60,8 +60,8 @@ func TaskerInit(conf *TaskerConf) (ctx *TaskerCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.proxy = rtmq.ProxyInit(&conf.proxy, ctx.log)
-	if nil == ctx.proxy {
+	ctx.frwder = rtmq.ProxyInit(&conf.frwder, ctx.log)
+	if nil == ctx.frwder {
 		return nil, err
 	}
 
@@ -95,5 +95,5 @@ func (ctx *TaskerCntx) Launch() {
 	go ctx.timer_clean()
 	go ctx.timer_update()
 
-	ctx.proxy.Launch()
+	ctx.frwder.Launch()
 }

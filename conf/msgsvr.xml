@@ -2,11 +2,11 @@
   <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
   <REDIS-ADDR>127.0.0.1:6379</REDIS-ADDR> <!-- REDIS地址(IP+PORT) -->
   <CIPHER>%b@e!e@h@i#v@e$s$tVu^d(i(o</CIPHER> <!-- 私密密钥 -->
-  <RTMQ-PROXY> <!-- RTMQ代理 -->
+  <FRWDER> <!-- RTMQ代理 -->
     <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->
     <WORKER-NUM>10</WORKER-NUM>                 <!-- 工作协程数 -->
     <SEND-CHAN-LEN>20000</SEND-CHAN-LEN>        <!-- 发送队列长度 -->
     <RECV-CHAN-LEN>20000</RECV-CHAN-LEN>        <!-- 接收队列长度 -->
     <REMOTE-ADDR>127.0.0.1:28889</REMOTE-ADDR>  <!-- 远端服务地址(IP + PORT) -->
-  </RTMQ-PROXY>
+  </FRWDER>
 </MSGSVR>

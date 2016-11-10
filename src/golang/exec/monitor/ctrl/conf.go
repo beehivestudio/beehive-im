@@ -19,7 +19,7 @@ type MonConf struct {
 	ConfPath  string             // 配置路径(自动获取)
 	RedisAddr string             // Redis地址(IP+PORT)
 	Log       log.LogConf        // 日志配置
-	proxy     rtmq.RtmqProxyConf // RTMQ配置
+	frwder    rtmq.RtmqProxyConf // RTMQ配置
 }
 
 /* 日志配置 */
@@ -38,7 +38,7 @@ type MonConfRtmqAuthXmlData struct {
 
 /* RTMQ代理配置 */
 type MonConfRtmqProxyXmlData struct {
-	Name        xml.Name               `xml:"RTMQ-PROXY"`    // 结点名
+	Name        xml.Name               `xml:"FRWDER"`        // 结点名
 	Auth        MonConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
 	RemoteAddr  string                 `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
 	WorkerNum   uint32                 `xml:"WORKER-NUM"`    // 协程数
@@ -52,7 +52,7 @@ type MonConfXmlData struct {
 	Id        uint32                  `xml:"ID,attr"`    // 结点ID
 	RedisAddr string                  `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	Log       MonConfLogXmlData       `xml:"LOG"`        // 日志配置
-	RtmqProxy MonConfRtmqProxyXmlData `xml:"RTMQ-PROXY"` // RTMQ PROXY配置
+	Frwder    MonConfRtmqProxyXmlData `xml:"FRWDER"`     // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -128,37 +128,37 @@ func (conf *MonConf) conf_parse() (err error) {
 		return errors.New("Get log path failed!")
 	}
 
-	/* RTMQ-PROXY配置 */
-	conf.proxy.NodeId = conf.NodeId
+	/* FRWDER配置 */
+	conf.frwder.NodeId = conf.NodeId
 
 	/* 鉴权信息 */
-	conf.proxy.Usr = node.RtmqProxy.Auth.Usr
-	conf.proxy.Passwd = node.RtmqProxy.Auth.Passwd
-	if 0 == len(conf.proxy.Usr) || 0 == len(conf.proxy.Passwd) {
+	conf.frwder.Usr = node.Frwder.Auth.Usr
+	conf.frwder.Passwd = node.Frwder.Auth.Passwd
+	if 0 == len(conf.frwder.Usr) || 0 == len(conf.frwder.Passwd) {
 		return errors.New("Get auth conf failed!")
 	}
 
 	/* 转发层(IP+PROT) */
-	conf.proxy.RemoteAddr = node.RtmqProxy.RemoteAddr
-	if 0 == len(conf.proxy.RemoteAddr) {
+	conf.frwder.RemoteAddr = node.Frwder.RemoteAddr
+	if 0 == len(conf.frwder.RemoteAddr) {
 		return errors.New("Get frwder addr failed!")
 	}
 
 	/* 发送队列长度 */
-	conf.proxy.SendChanLen = node.RtmqProxy.SendChanLen
-	if 0 == conf.proxy.SendChanLen {
+	conf.frwder.SendChanLen = node.Frwder.SendChanLen
+	if 0 == conf.frwder.SendChanLen {
 		return errors.New("Get send channel length failed!")
 	}
 
 	/* 接收队列长度 */
-	conf.proxy.RecvChanLen = node.RtmqProxy.RecvChanLen
-	if 0 == conf.proxy.RecvChanLen {
+	conf.frwder.RecvChanLen = node.Frwder.RecvChanLen
+	if 0 == conf.frwder.RecvChanLen {
 		return errors.New("Get recv channel length failed!")
 	}
 
 	/* 协程数 */
-	conf.proxy.WorkerNum = node.RtmqProxy.WorkerNum
-	if 0 == conf.proxy.WorkerNum {
+	conf.frwder.WorkerNum = node.Frwder.WorkerNum
+	if 0 == conf.frwder.WorkerNum {
 		return errors.New("Get worker number failed!")
 	}
 

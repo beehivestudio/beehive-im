@@ -153,7 +153,7 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -200,7 +200,7 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -496,7 +496,7 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -543,7 +543,7 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.proxy.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }

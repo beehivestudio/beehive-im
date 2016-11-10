@@ -13,10 +13,10 @@ import (
 
 /* OLS上下文 */
 type UsrSvrCntx struct {
-	conf  *UsrSvrConf         /* 配置信息 */
-	log   *logs.BeeLogger     /* 日志对象 */
-	proxy *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis *redis.Pool         /* REDIS连接池 */
+	conf   *UsrSvrConf         /* 配置信息 */
+	log    *logs.BeeLogger     /* 日志对象 */
+	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis  *redis.Pool         /* REDIS连接池 */
 }
 
 /******************************************************************************
@@ -61,8 +61,8 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.proxy = rtmq.ProxyInit(&conf.proxy, ctx.log)
-	if nil == ctx.proxy {
+	ctx.frwder = rtmq.ProxyInit(&conf.frwder, ctx.log)
+	if nil == ctx.frwder {
 		return nil, err
 	}
 
@@ -81,13 +81,13 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
  ******************************************************************************/
 func (ctx *UsrSvrCntx) Register() {
 	/* > 业务消息 */
-	ctx.proxy.Register(comm.CMD_ONLINE_REQ, UsrSvrOnlineReqHandler, ctx)
-	ctx.proxy.Register(comm.CMD_OFFLINE_REQ, UsrSvrOfflineReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ONLINE_REQ, UsrSvrOnlineReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_OFFLINE_REQ, UsrSvrOfflineReqHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_JOIN_REQ, UsrSvrJoinReqHandler, ctx)
-	ctx.proxy.Register(comm.CMD_UNJOIN_REQ, UsrSvrUnjoinReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_JOIN_REQ, UsrSvrJoinReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_UNJOIN_REQ, UsrSvrUnjoinReqHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_PING, UsrSvrPingHandler, ctx)
+	ctx.frwder.Register(comm.CMD_PING, UsrSvrPingHandler, ctx)
 }
 
 /******************************************************************************
@@ -101,5 +101,5 @@ func (ctx *UsrSvrCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) Launch() {
-	ctx.proxy.Launch()
+	ctx.frwder.Launch()
 }

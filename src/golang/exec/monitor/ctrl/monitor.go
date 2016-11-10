@@ -13,10 +13,10 @@ import (
 
 /* OLS上下文 */
 type MonCntx struct {
-	conf  *MonConf            /* 配置信息 */
-	log   *logs.BeeLogger     /* 日志对象 */
-	proxy *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis *redis.Pool         /* REDIS连接池 */
+	conf   *MonConf            /* 配置信息 */
+	log    *logs.BeeLogger     /* 日志对象 */
+	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis  *redis.Pool         /* REDIS连接池 */
 }
 
 /******************************************************************************
@@ -61,8 +61,8 @@ func MonInit(conf *MonConf) (ctx *MonCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.proxy = rtmq.ProxyInit(&conf.proxy, ctx.log)
-	if nil == ctx.proxy {
+	ctx.frwder = rtmq.ProxyInit(&conf.frwder, ctx.log)
+	if nil == ctx.frwder {
 		return nil, err
 	}
 
@@ -81,8 +81,8 @@ func MonInit(conf *MonConf) (ctx *MonCntx, err error) {
  ******************************************************************************/
 func (ctx *MonCntx) Register() {
 	/* > 运维消息 */
-	ctx.proxy.Register(comm.CMD_LSN_RPT, MonLsnRptHandler, ctx)
-	ctx.proxy.Register(comm.CMD_FRWD_LIST, MonFrwdRptHandler, ctx)
+	ctx.frwder.Register(comm.CMD_LSN_RPT, MonLsnRptHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRWD_LIST, MonFrwdRptHandler, ctx)
 }
 
 /******************************************************************************
@@ -96,5 +96,5 @@ func (ctx *MonCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *MonCntx) Launch() {
-	ctx.proxy.Launch()
+	ctx.frwder.Launch()
 }

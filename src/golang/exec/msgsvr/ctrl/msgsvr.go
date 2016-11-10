@@ -28,7 +28,7 @@ type MsgSvrGidToNidMap struct {
 type MsgSvrCntx struct {
 	conf           *MsgSvrConf         /* 配置信息 */
 	log            *logs.BeeLogger     /* 日志对象 */
-	proxy          *rtmq.RtmqProxyCntx /* 代理对象 */
+	frwder         *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis          *redis.Pool         /* REDIS连接池 */
 	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
 	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
@@ -76,8 +76,8 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.proxy = rtmq.ProxyInit(&conf.proxy, ctx.log)
-	if nil == ctx.proxy {
+	ctx.frwder = rtmq.ProxyInit(&conf.frwder, ctx.log)
+	if nil == ctx.frwder {
 		return nil, err
 	}
 
@@ -95,26 +95,26 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) Register() {
-	ctx.proxy.Register(comm.CMD_GROUP_MSG, MsgSvrGroupMsgHandler, ctx)
-	ctx.proxy.Register(comm.CMD_GROUP_MSG_ACK, MsgSvrGroupMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_MSG, MsgSvrGroupMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_MSG_ACK, MsgSvrGroupMsgAckHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_PRVT_MSG, MsgSvrPrvtMsgHandler, ctx)
-	ctx.proxy.Register(comm.CMD_PRVT_MSG_ACK, MsgSvrPrvtMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_PRVT_MSG, MsgSvrPrvtMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_PRVT_MSG_ACK, MsgSvrPrvtMsgAckHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_BC_MSG, MsgSvrBcMsgHandler, ctx)
-	ctx.proxy.Register(comm.CMD_BC_MSG_ACK, MsgSvrBcMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BC_MSG, MsgSvrBcMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BC_MSG_ACK, MsgSvrBcMsgAckHandler, ctx)
 
-	//ctx.proxy.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
-	//ctx.proxy.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_ROOM_MSG, MsgSvrRoomMsgHandler, ctx)
-	ctx.proxy.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_MSG, MsgSvrRoomMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomMsgAckHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_ROOM_BC_MSG, MsgSvrRoomBcMsgHandler, ctx)
-	ctx.proxy.Register(comm.CMD_ROOM_BC_MSG_ACK, MsgSvrRoomBcMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_BC_MSG, MsgSvrRoomBcMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_BC_MSG_ACK, MsgSvrRoomBcMsgAckHandler, ctx)
 
-	ctx.proxy.Register(comm.CMD_SYNC_MSG, MsgSvrSyncMsgHandler, ctx)
-	//ctx.proxy.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_SYNC_MSG, MsgSvrSyncMsgHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)
 }
 
 /******************************************************************************
@@ -129,5 +129,5 @@ func (ctx *MsgSvrCntx) Register() {
  ******************************************************************************/
 func (ctx *MsgSvrCntx) Launch() {
 	go ctx.update()
-	ctx.proxy.Launch()
+	ctx.frwder.Launch()
 }
