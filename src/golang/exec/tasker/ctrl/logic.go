@@ -535,26 +535,28 @@ func (ctx *TaskerCntx) clean_prec_statis() {
 
 		/* > 清理最大峰值 */
 		key := fmt.Sprintf(comm.CHAT_KEY_PREC_USR_MAX_NUM, prec)
-		time_list, err := redis.Int64s(rds.Do("HKEYS", key))
+		time_list, err := redis.Strings(rds.Do("HKEYS", key))
 		if nil == err {
 			time_num := len(time_list)
 			for idx := 0; idx < time_num; idx += 1 {
-				intval_num := (seg - time_list[idx]) / prec
+				tm, _ := strconv.ParseInt(time_list[idx], 10, 64)
+				intval_num := (seg - tm) / prec
 				if intval_num > rnum {
-					pl.Send("HDEL", key, time_list[idx])
+					pl.Send("HDEL", key, tm)
 				}
 			}
 		}
 
 		/* > 清理最低峰值 */
 		key = fmt.Sprintf(comm.CHAT_KEY_PREC_USR_MIN_NUM, prec)
-		time_list, err = redis.Int64s(rds.Do("HKEYS", key))
+		time_list, err = redis.Strings(rds.Do("HKEYS", key))
 		if nil == err {
 			time_num := len(time_list)
 			for idx := 0; idx < time_num; idx += 1 {
-				intval_num := (seg - time_list[idx]) / prec
+				tm, _ := strconv.ParseInt(time_list[idx], 10, 64)
+				intval_num := (seg - tm) / prec
 				if intval_num > rnum {
-					pl.Send("HDEL", key, time_list[idx])
+					pl.Send("HDEL", key, tm)
 				}
 			}
 		}
