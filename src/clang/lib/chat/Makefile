@@ -13,6 +13,7 @@ INCLUDE = -I. \
 		  -I$(PROJ)/src/clang/incl/chat \
 		  -I$(PROJ)/../cctrl/src/incl
 LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../cctrl/lib
+
 # 静态链接库
 STATIC_LIB_LIST = libcore.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
