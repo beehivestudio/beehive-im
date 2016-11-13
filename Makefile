@@ -31,6 +31,7 @@ DIR += "$(CLANG_LIB_DIR)/chat"
 DIR += "$(CLANG_LIB_DIR)/mesg"
 
 CLANG_EXEC_DIR = "src/clang/exec"
+DIR += "$(CLANG_EXEC_DIR)/client"
 DIR += "$(CLANG_EXEC_DIR)/frwder"
 DIR += "$(CLANG_EXEC_DIR)/listend"
 
