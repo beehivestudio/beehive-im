@@ -23,34 +23,38 @@ import (
  **函数名称: online_req_isvalid
  **功    能: 判断ONLINE是否合法
  **输入参数:
+ **     head: 协议头
  **     req: ONLINE请求
  **输出参数: NONE
  **返    回: true:合法 false:非法
  **实现描述: 计算TOKEN合法性
  **注意事项:
- **     TOKEN的格式"uid:${uid}:ttl:${ttl}"
+ **     TOKEN的格式"${uid}:${ttl}:${sid}"
  **     uid: 用户ID
  **     ttl: 该token的最大生命时间
+ **     sid: 会话SID
  **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
+func (ctx *UsrSvrCntx) online_req_isvalid(head *comm.MesgHeader, req *mesg.MesgOnlineReq) bool {
 	/* > TOKEN解码 */
 	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
 	token := crypt.Decode(cry, req.GetToken())
 	words := strings.Split(token, ":")
-	if 4 != len(words) {
+	if 3 != len(words) {
 		ctx.log.Error("Token format not right! token:%s", token)
 		return false
 	}
 
 	/* > 验证TOKEN合法性 */
-	uid, _ := strconv.ParseInt(words[1], 10, 64)
-	ttl, _ := strconv.ParseInt(words[3], 10, 64)
+	uid, _ := strconv.ParseInt(words[0], 10, 64)
+	ttl, _ := strconv.ParseInt(words[1], 10, 64)
+	sid, _ := strconv.ParseInt(words[2], 10, 64)
 	if ttl < time.Now().Unix() {
 		ctx.log.Error("Token is timeout!")
 		return false
-	} else if uint64(uid) != req.GetUid() {
-		ctx.log.Error("Token is invalid! uid:%d/%d", uid, req.GetUid())
+	} else if uint64(uid) != req.GetUid() || uint64(sid) != head.GetSid() {
+		ctx.log.Error("Token is invalid! uid:%d/%d sid:%d/%d",
+			uid, req.GetUid(), sid, head.GetSid())
 		return false
 	}
 
@@ -84,7 +88,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	}
 
 	/* > 校验协议合法性 */
-	if !ctx.online_req_isvalid(req) {
+	if !ctx.online_req_isvalid(head, req) {
 		return nil, nil
 	}
 
