@@ -132,7 +132,7 @@
 >       {"ipaddr":${ipaddr}, "port":${port}},<br>
 >       {"ipaddr":${ipaddr}, "port":${port}},<br>
 >       {"ipaddr":${ipaddr}, "port":${port}}],<br>
->   "token":"${token}"      // 字串 | 鉴权token(M) # 格式:${uid}:${rid}:${ttl}<br>
+>   "token":"${token}"      // 字串 | 鉴权token(M) # 格式:${uid}:${ttl}:${sid}<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
