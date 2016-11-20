@@ -19,6 +19,50 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+type OnlineToken struct {
+	uid uint64 /* 用户ID */
+	ttl int64  /* TTL */
+	sid uint64 /* 会话SID */
+}
+
+/******************************************************************************
+ **函数名称: online_token_decode
+ **功    能: 解码TOKEN
+ **输入参数:
+ **     token: TOKEN字串
+ **输出参数: NONE
+ **返    回: TOKEN字段
+ **实现描述: 解析token, 并提取有效数据.
+ **注意事项:
+ **     TOKEN的格式"${uid}:${ttl}:${sid}"
+ **     uid: 用户ID
+ **     ttl: 该token的最大生命时间
+ **     sid: 会话SID
+ **作    者: # Qifeng.zou # 2016.11.20 09:28:06 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) online_token_decode(token string) *OnlineToken {
+	tk := &OnlineToken{}
+
+	/* > TOKEN解码 */
+	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
+	orig_token := crypt.Decode(cry, token)
+	words := strings.Split(orig_token, ":")
+	if 3 != len(words) {
+		ctx.log.Error("Token format not right! token:%s orig:%s", token, orig_token)
+		return nil
+	}
+
+	/* > 验证TOKEN合法性 */
+	val, _ := strconv.ParseInt(words[0], 10, 64)
+	tk.uid = uint64(val)
+	val, _ = strconv.ParseInt(words[1], 10, 64)
+	tk.ttl = int64(val)
+	val, _ = strconv.ParseInt(words[2], 10, 64)
+	tk.sid = uint64(val)
+
+	return tk
+}
+
 /******************************************************************************
  **函数名称: online_req_isvalid
  **功    能: 判断ONLINE是否合法
@@ -36,25 +80,16 @@ import (
  **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_req_isvalid(head *comm.MesgHeader, req *mesg.MesgOnlineReq) bool {
-	/* > TOKEN解码 */
-	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
-	token := crypt.Decode(cry, req.GetToken())
-	words := strings.Split(token, ":")
-	if 3 != len(words) {
-		ctx.log.Error("Token format not right! token:%s", token)
+	token := ctx.online_token_decode(req.GetToken())
+	if nil == token {
+		ctx.log.Error("Decode token failed!")
 		return false
-	}
-
-	/* > 验证TOKEN合法性 */
-	uid, _ := strconv.ParseInt(words[0], 10, 64)
-	ttl, _ := strconv.ParseInt(words[1], 10, 64)
-	sid, _ := strconv.ParseInt(words[2], 10, 64)
-	if ttl < time.Now().Unix() {
+	} else if token.ttl < time.Now().Unix() {
 		ctx.log.Error("Token is timeout!")
 		return false
-	} else if uint64(uid) != req.GetUid() || uint64(sid) != head.GetSid() {
+	} else if uint64(token.uid) != req.GetUid() || uint64(token.sid) != head.GetSid() {
 		ctx.log.Error("Token is invalid! uid:%d/%d sid:%d/%d",
-			uid, req.GetUid(), sid, head.GetSid())
+			token.uid, req.GetUid(), token.sid, head.GetSid())
 		return false
 	}
 
