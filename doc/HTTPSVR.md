@@ -102,14 +102,21 @@
 ---
 **功能描述**: 设备注册接口<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/register?country=${country}<br>
+**接口路径**: /chat/register?uid=${uid}&nation=${nation}&city=${city}&town=${town}<br>
 **参数描述**:<br>
-> country: 国家编号(M)<br>
+> uid: 用户ID(M)<br>
+> nation: 国家编号(M)<br>
+> city: 地市编号(M)<br>
+> town: 城镇编号(M)<br>
 
 **返回结果**:<br>
 >{<br>
 >   "errno":${errno},       // 整型 | 错误码(M)<br>
+>   "uid":"${uid}",         // 整型 | 用户UID(M)<br>
 >   "sid":"${sid}",         // 整型 | 会话SID(M)<br>
+>   "nation":"${nation}",   // 整型 | 国家编号(M)<br>
+>   "city":"${city}",       // 整型 | 地市编号(M)<br>
+>   "town":"${town}",       // 整型 | 城镇编号(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
