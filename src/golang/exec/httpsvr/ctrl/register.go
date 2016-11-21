@@ -10,17 +10,19 @@ type HttpSvrRegister struct {
 }
 
 func (this *HttpSvrRegister) Get() {
-	ctx := ctrl.GetHttpCtx()
+	ctx := GetHttpCtx()
 
 	/* > 提取注册参数 */
-	uid := this.GetInt("uid")
-	nation := this.GetInt("nation")
-	city := this.GetInt("city")
-	town := this.GetInt("town")
+	uid, _ := this.GetInt("uid")
+	nation, _ := this.GetInt("nation")
+	city, _ := this.GetInt("city")
+	town, _ := this.GetInt("town")
 	if 0 == uid || 0 == nation {
 		ctx.log.Error("Register param invalid! uid:%d nation:%d", uid, nation)
 		return
 	}
+
+	ctx.log.Debug("Param list. uid:%d nation:%d city:%d town:%d", uid, nation, city, town)
 
 	/* > 申请会话ID */
 	sid, err := ctx.alloc_sid()
@@ -28,6 +30,8 @@ func (this *HttpSvrRegister) Get() {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
 		return
 	}
+
+	ctx.log.Debug("Alloc sid success! uid:%d sid:%d", uid, sid)
 
 	return
 }

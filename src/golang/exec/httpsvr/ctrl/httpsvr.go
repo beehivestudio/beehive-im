@@ -2,12 +2,12 @@ package ctrl
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
-	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/log"
 	"chat/src/golang/lib/rtmq"
 )
@@ -20,7 +20,7 @@ type HttpSvrCntx struct {
 	redis  *redis.Pool         /* REDIS连接池 */
 }
 
-var httsvr *HttpSvrCntx
+var httpsvr *HttpSvrCntx
 
 func GetHttpCtx() *HttpSvrCntx {
 	return httpsvr

@@ -1,4 +1,4 @@
-package controllers
+package ctrl
 
 import (
 	"github.com/astaxie/beego"

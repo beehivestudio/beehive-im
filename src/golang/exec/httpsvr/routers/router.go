@@ -2,6 +2,8 @@ package routers
 
 import (
 	"flag"
+	"fmt"
+	"runtime"
 
 	"github.com/astaxie/beego"
 
@@ -14,7 +16,7 @@ func router() {
 }
 
 func init() {
-	var conf HttpSvrConf
+	var conf ctrl.HttpSvrConf
 
 	flag.Parse()
 
@@ -27,7 +29,7 @@ func init() {
 	}
 
 	/* > 初始化HTTPSVR环境 */
-	ctx, err := HttpSvrInit(&conf)
+	ctx, err := ctrl.HttpSvrInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return
