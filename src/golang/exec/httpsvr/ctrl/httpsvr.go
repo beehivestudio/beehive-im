@@ -49,7 +49,7 @@ func HttpSvrInit(conf *HttpSvrConf) (ctx *HttpSvrCntx, err error) {
 	ctx.conf = conf
 
 	/* > 初始化日志 */
-	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "usrsvr.log")
+	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "httpsvr.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
 	}

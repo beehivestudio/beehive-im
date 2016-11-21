@@ -48,6 +48,7 @@ func (ctx *HttpSvrCntx) alloc_sid() (sid uint64, err error) {
 type HttpSvrConf struct {
 	Port      int32              // 端口号
 	NodeId    uint32             // 结点ID
+	Listen    string             // 侦听配置
 	WorkPath  string             // 工作路径(自动获取)
 	AppPath   string             // 程序路径(自动获取)
 	ConfPath  string             // 配置路径(自动获取)
@@ -55,6 +56,12 @@ type HttpSvrConf struct {
 	Cipher    string             // 私密密钥
 	Log       log.LogConf        // 日志配置
 	frwder    rtmq.RtmqProxyConf // RTMQ配置
+}
+
+/* 侦听配置 */
+type HttpSvrConfListenXmlData struct {
+	Name xml.Name `xml:"LISTEN"`  // 结点名
+	Ip   string   `xml:"IP,attr"` // 格式:"网卡IP:端口号"
 }
 
 /* 日志配置 */
@@ -85,6 +92,7 @@ type HttpSvrConfRtmqProxyXmlData struct {
 type HttpSvrConfXmlData struct {
 	Name      xml.Name                    `xml:"HTTPSVR"`    // 根结点名
 	Id        uint32                      `xml:"ID,attr"`    // 结点ID
+	Listen    HttpSvrConfListenXmlData    `xml:"LISTEN"`     // 侦听(网卡IP+端口)
 	RedisAddr string                      `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	Cipher    string                      `xml:"CIPHER"`     // 私密密钥
 	Log       HttpSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
@@ -106,7 +114,7 @@ func (conf *HttpSvrConf) LoadConf() (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "usrsvr.xml")
+	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "httpsvr.xml")
 
 	return conf.conf_parse()
 }
@@ -148,6 +156,12 @@ func (conf *HttpSvrConf) conf_parse() (err error) {
 	conf.NodeId = node.Id
 	if 0 == conf.NodeId {
 		return errors.New("Get node id failed!")
+	}
+
+	/* 侦听配置(IP:PORT) */
+	conf.Listen = node.Listen.Ip
+	if 0 == len(conf.Listen) {
+		return errors.New("Get listen failed!")
 	}
 
 	/* Redis地址(IP+PORT) */

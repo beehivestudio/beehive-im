@@ -1,5 +1,5 @@
 <HTTPSVR ID="34000"> <!-- ID: 结点ID -->
-  <BIND IP="" PORT="8000" /> <!-- IP:指定网卡IP PORT:侦听端口号 -->
+  <LISTEN IP=":8000" /> <!-- 指定网卡IP+端口号 -->
   <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
   <REDIS-ADDR>127.0.0.1:6379</REDIS-ADDR> <!-- REDIS地址(IP+PORT) -->
   <CIPHER>%b@e!e@h@i#v@e$s$tVu^d(i(o</CIPHER> <!-- 私密密钥 -->
