@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"syscall"
 
-	"chat/src/golang/exec/tasker/ctrl"
+	"chat/src/golang/exec/tasker/controllers"
 )
 
 func main() {
-	var conf ctrl.TaskerConf
+	var conf controllers.TaskerConf
 
 	flag.Parse()
 
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	/* > 初始化OLSVR环境 */
-	ctx, err := ctrl.TaskerInit(&conf)
+	ctx, err := controllers.TaskerInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

@@ -1,7 +1,8 @@
-package ctrl
+package controllers
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
@@ -11,16 +12,30 @@ import (
 	"chat/src/golang/lib/rtmq"
 )
 
-/* OLS上下文 */
-type MonCntx struct {
-	conf   *MonConf            /* 配置信息 */
-	log    *logs.BeeLogger     /* 日志对象 */
-	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis  *redis.Pool         /* REDIS连接池 */
+/* RID->NID映射表 */
+type MsgSvrRidToNidMap struct {
+	sync.RWMutex                     /* 读写锁 */
+	m            map[uint64][]uint32 /* RID->NID映射表 */
+}
+
+/* GID->NID映射表 */
+type MsgSvrGidToNidMap struct {
+	sync.RWMutex                     /* 读写锁 */
+	m            map[uint64][]uint32 /* GID->NID映射表 */
+}
+
+/* MSGSVR上下文 */
+type MsgSvrCntx struct {
+	conf           *MsgSvrConf         /* 配置信息 */
+	log            *logs.BeeLogger     /* 日志对象 */
+	frwder         *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis          *redis.Pool         /* REDIS连接池 */
+	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
+	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
 }
 
 /******************************************************************************
- **函数名称: MonInit
+ **函数名称: MsgSvrInit
  **功    能: 初始化对象
  **输入参数:
  **     conf: 配置信息
@@ -32,13 +47,13 @@ type MonCntx struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func MonInit(conf *MonConf) (ctx *MonCntx, err error) {
-	ctx = &MonCntx{}
+func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
+	ctx = &MsgSvrCntx{}
 
 	ctx.conf = conf
 
 	/* > 初始化日志 */
-	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "monitor.log")
+	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "msgsvr.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
 	}
@@ -79,10 +94,27 @@ func MonInit(conf *MonConf) (ctx *MonCntx, err error) {
  **注意事项: 请在调用Launch()前完成此函数调用
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *MonCntx) Register() {
-	/* > 运维消息 */
-	ctx.frwder.Register(comm.CMD_LSN_RPT, MonLsnRptHandler, ctx)
-	ctx.frwder.Register(comm.CMD_FRWD_LIST, MonFrwdRptHandler, ctx)
+func (ctx *MsgSvrCntx) Register() {
+	ctx.frwder.Register(comm.CMD_GROUP_MSG, MsgSvrGroupMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_MSG_ACK, MsgSvrGroupMsgAckHandler, ctx)
+
+	ctx.frwder.Register(comm.CMD_PRVT_MSG, MsgSvrPrvtMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_PRVT_MSG_ACK, MsgSvrPrvtMsgAckHandler, ctx)
+
+	ctx.frwder.Register(comm.CMD_BC_MSG, MsgSvrBcMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BC_MSG_ACK, MsgSvrBcMsgAckHandler, ctx)
+
+	//ctx.frwder.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
+
+	ctx.frwder.Register(comm.CMD_ROOM_MSG, MsgSvrRoomMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomMsgAckHandler, ctx)
+
+	ctx.frwder.Register(comm.CMD_ROOM_BC_MSG, MsgSvrRoomBcMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_BC_MSG_ACK, MsgSvrRoomBcMsgAckHandler, ctx)
+
+	ctx.frwder.Register(comm.CMD_SYNC_MSG, MsgSvrSyncMsgHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)
 }
 
 /******************************************************************************
@@ -95,6 +127,7 @@ func (ctx *MonCntx) Register() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *MonCntx) Launch() {
+func (ctx *MsgSvrCntx) Launch() {
+	go ctx.update()
 	ctx.frwder.Launch()
 }

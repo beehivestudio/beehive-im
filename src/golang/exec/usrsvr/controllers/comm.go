@@ -1,4 +1,4 @@
-package ctrl
+package controllers
 
 import (
 	"chat/src/golang/lib/comm"

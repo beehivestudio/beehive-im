@@ -1,37 +1,26 @@
-package ctrl
+package controllers
 
 import (
 	"errors"
-	"fmt"
-	"net/http"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
+	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/log"
 	"chat/src/golang/lib/rtmq"
 )
 
 /* OLS上下文 */
-type HttpSvrCntx struct {
-	conf   *HttpSvrConf        /* 配置信息 */
+type MonCntx struct {
+	conf   *MonConf            /* 配置信息 */
 	log    *logs.BeeLogger     /* 日志对象 */
 	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis  *redis.Pool         /* REDIS连接池 */
 }
 
-var httpsvr *HttpSvrCntx
-
-func GetHttpCtx() *HttpSvrCntx {
-	return httpsvr
-}
-
-func SetHttpCtx(ctx *HttpSvrCntx) {
-	httpsvr = ctx
-}
-
 /******************************************************************************
- **函数名称: HttpSvrInit
+ **函数名称: MonInit
  **功    能: 初始化对象
  **输入参数:
  **     conf: 配置信息
@@ -43,13 +32,13 @@ func SetHttpCtx(ctx *HttpSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func HttpSvrInit(conf *HttpSvrConf) (ctx *HttpSvrCntx, err error) {
-	ctx = &HttpSvrCntx{}
+func MonInit(conf *MonConf) (ctx *MonCntx, err error) {
+	ctx = &MonCntx{}
 
 	ctx.conf = conf
 
 	/* > 初始化日志 */
-	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "httpsvr.log")
+	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "monitor.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
 	}
@@ -77,8 +66,6 @@ func HttpSvrInit(conf *HttpSvrConf) (ctx *HttpSvrCntx, err error) {
 		return nil, err
 	}
 
-	SetHttpCtx(ctx)
-
 	return ctx, nil
 }
 
@@ -90,25 +77,24 @@ func HttpSvrInit(conf *HttpSvrConf) (ctx *HttpSvrCntx, err error) {
  **返    回: VOID
  **实现描述: 注册回调函数
  **注意事项: 请在调用Launch()前完成此函数调用
- **作    者: # Qifeng.zou # 2016.11.20 00:29:41 #
+ **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *HttpSvrCntx) Register() {
+func (ctx *MonCntx) Register() {
+	/* > 运维消息 */
+	ctx.frwder.Register(comm.CMD_LSN_RPT, MonLsnRptHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRWD_LIST, MonFrwdRptHandler, ctx)
 }
 
 /******************************************************************************
  **函数名称: Launch
- **功    能: 启动HTTPSVR服务
+ **功    能: 启动OLSVR服务
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.20 00:27:03 #
+ **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *HttpSvrCntx) Launch() {
-	conf := ctx.conf
+func (ctx *MonCntx) Launch() {
 	ctx.frwder.Launch()
-
-	ip_port := fmt.Sprintf(":%d", conf.Port)
-	http.ListenAndServe(ip_port, nil)
 }

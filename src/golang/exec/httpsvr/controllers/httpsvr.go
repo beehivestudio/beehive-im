@@ -1,26 +1,37 @@
-package ctrl
+package controllers
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
-	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/log"
 	"chat/src/golang/lib/rtmq"
 )
 
 /* OLS上下文 */
-type UsrSvrCntx struct {
-	conf   *UsrSvrConf         /* 配置信息 */
+type HttpSvrCntx struct {
+	conf   *HttpSvrConf        /* 配置信息 */
 	log    *logs.BeeLogger     /* 日志对象 */
 	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis  *redis.Pool         /* REDIS连接池 */
 }
 
+var httpsvr *HttpSvrCntx
+
+func GetHttpCtx() *HttpSvrCntx {
+	return httpsvr
+}
+
+func SetHttpCtx(ctx *HttpSvrCntx) {
+	httpsvr = ctx
+}
+
 /******************************************************************************
- **函数名称: UsrSvrInit
+ **函数名称: HttpSvrInit
  **功    能: 初始化对象
  **输入参数:
  **     conf: 配置信息
@@ -32,13 +43,13 @@ type UsrSvrCntx struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
-	ctx = &UsrSvrCntx{}
+func HttpSvrInit(conf *HttpSvrConf) (ctx *HttpSvrCntx, err error) {
+	ctx = &HttpSvrCntx{}
 
 	ctx.conf = conf
 
 	/* > 初始化日志 */
-	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "usrsvr.log")
+	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "httpsvr.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
 	}
@@ -66,6 +77,8 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		return nil, err
 	}
 
+	SetHttpCtx(ctx)
+
 	return ctx, nil
 }
 
@@ -77,29 +90,25 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
  **返    回: VOID
  **实现描述: 注册回调函数
  **注意事项: 请在调用Launch()前完成此函数调用
- **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
+ **作    者: # Qifeng.zou # 2016.11.20 00:29:41 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) Register() {
-	/* > 业务消息 */
-	ctx.frwder.Register(comm.CMD_ONLINE_REQ, UsrSvrOnlineReqHandler, ctx)
-	ctx.frwder.Register(comm.CMD_OFFLINE_REQ, UsrSvrOfflineReqHandler, ctx)
-
-	ctx.frwder.Register(comm.CMD_JOIN_REQ, UsrSvrJoinReqHandler, ctx)
-	ctx.frwder.Register(comm.CMD_UNJOIN_REQ, UsrSvrUnjoinReqHandler, ctx)
-
-	ctx.frwder.Register(comm.CMD_PING, UsrSvrPingHandler, ctx)
+func (ctx *HttpSvrCntx) Register() {
 }
 
 /******************************************************************************
  **函数名称: Launch
- **功    能: 启动OLSVR服务
+ **功    能: 启动HTTPSVR服务
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
+ **作    者: # Qifeng.zou # 2016.11.20 00:27:03 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) Launch() {
+func (ctx *HttpSvrCntx) Launch() {
+	conf := ctx.conf
 	ctx.frwder.Launch()
+
+	ip_port := fmt.Sprintf(":%d", conf.Port)
+	http.ListenAndServe(ip_port, nil)
 }

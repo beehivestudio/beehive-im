@@ -1,4 +1,4 @@
-package ctrl
+package controllers
 
 import (
 	"encoding/binary"

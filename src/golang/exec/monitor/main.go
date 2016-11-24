@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"syscall"
 
-	"chat/src/golang/exec/monitor/ctrl"
+	"chat/src/golang/exec/monitor/controllers"
 )
 
 func main() {
-	var conf ctrl.MonConf
+	var conf controllers.MonConf
 
 	flag.Parse()
 
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	/* > 初始化OLSVR环境 */
-	ctx, err := ctrl.MonInit(&conf)
+	ctx, err := controllers.MonInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

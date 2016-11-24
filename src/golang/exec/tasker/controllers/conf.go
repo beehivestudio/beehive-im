@@ -1,4 +1,4 @@
-package ctrl
+package controllers
 
 import (
 	"encoding/xml"
@@ -12,7 +12,7 @@ import (
 )
 
 /* 在线中心配置 */
-type MsgSvrConf struct {
+type TaskerConf struct {
 	NodeId    uint32             // 结点ID
 	WorkPath  string             // 工作路径(自动获取)
 	AppPath   string             // 程序路径(自动获取)
@@ -24,23 +24,23 @@ type MsgSvrConf struct {
 }
 
 /* 日志配置 */
-type MsgSvrConfLogXmlData struct {
+type TaskerConfLogXmlData struct {
 	Name  xml.Name `xml:"LOG"`        // 结点名
 	Level string   `xml:"LEVEL,attr"` // 日志级别
-	Path  string   `xml:"PATH,attr"`  // 日志目录
+	Path  string   `xml:"PATH,attr"`  // 日志路径
 }
 
 /* 鉴权配置 */
-type MsgSvrConfRtmqAuthXmlData struct {
+type TaskerConfRtmqAuthXmlData struct {
 	Name   xml.Name `xml:"AUTH"`        // 结点名
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
-type MsgSvrConfRtmqProxyXmlData struct {
+type TaskerConfRtmqProxyXmlData struct {
 	Name        xml.Name                  `xml:"FRWDER"`        // 结点名
-	Auth        MsgSvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
+	Auth        TaskerConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
 	RemoteAddr  string                    `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
 	WorkerNum   uint32                    `xml:"WORKER-NUM"`    // 协程数
 	SendChanLen uint32                    `xml:"SEND-CHAN-LEN"` // 发送队列长度
@@ -48,13 +48,13 @@ type MsgSvrConfRtmqProxyXmlData struct {
 }
 
 /* 在线中心XML配置 */
-type MsgSvrConfXmlData struct {
+type TaskerConfXmlData struct {
 	Name      xml.Name                   `xml:"MSGSVR"`     // 根结点名
 	Id        uint32                     `xml:"ID,attr"`    // 结点ID
 	RedisAddr string                     `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	Cipher    string                     `xml:"CIPHER"`     // 私密密钥
-	Log       MsgSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
-	Frwder    MsgSvrConfRtmqProxyXmlData `xml:"FRWDER"`     // RTMQ PROXY配置
+	Log       TaskerConfLogXmlData       `xml:"LOG"`        // 日志配置
+	Frwder    TaskerConfRtmqProxyXmlData `xml:"FRWDER"`     // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -68,11 +68,11 @@ type MsgSvrConfXmlData struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *MsgSvrConf) LoadConf() (err error) {
+func (conf *TaskerConf) LoadConf() (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "msgsvr.xml")
+	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "tasker.xml")
 
 	return conf.conf_parse()
 }
@@ -88,7 +88,7 @@ func (conf *MsgSvrConf) LoadConf() (err error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *MsgSvrConf) conf_parse() (err error) {
+func (conf *TaskerConf) conf_parse() (err error) {
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)
 	if nil != err {
@@ -102,7 +102,7 @@ func (conf *MsgSvrConf) conf_parse() (err error) {
 		return err
 	}
 
-	node := MsgSvrConfXmlData{}
+	node := TaskerConfXmlData{}
 
 	err = xml.Unmarshal(data, &node)
 	if nil != err {
@@ -125,7 +125,7 @@ func (conf *MsgSvrConf) conf_parse() (err error) {
 	/* > 私密密钥 */
 	conf.Cipher = node.Cipher
 	if 0 == len(conf.Cipher) {
-		return errors.New("Get cipher failed!")
+		return errors.New("Get chiper failed!")
 	}
 
 	/* 日志配置 */

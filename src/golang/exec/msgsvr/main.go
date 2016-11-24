@@ -8,11 +8,11 @@ import (
 	"runtime"
 	"syscall"
 
-	"chat/src/golang/exec/msgsvr/ctrl"
+	"chat/src/golang/exec/msgsvr/controllers"
 )
 
 func main() {
-	var conf ctrl.MsgSvrConf
+	var conf controllers.MsgSvrConf
 
 	flag.Parse()
 
@@ -25,7 +25,7 @@ func main() {
 	}
 
 	/* > 初始化OLSVR环境 */
-	ctx, err := ctrl.MsgSvrInit(&conf)
+	ctx, err := controllers.MsgSvrInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

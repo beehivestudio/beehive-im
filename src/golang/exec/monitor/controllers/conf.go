@@ -1,4 +1,4 @@
-package ctrl
+package controllers
 
 import (
 	"encoding/xml"
@@ -12,49 +12,47 @@ import (
 )
 
 /* 在线中心配置 */
-type UsrSvrConf struct {
+type MonConf struct {
 	NodeId    uint32             // 结点ID
 	WorkPath  string             // 工作路径(自动获取)
 	AppPath   string             // 程序路径(自动获取)
 	ConfPath  string             // 配置路径(自动获取)
 	RedisAddr string             // Redis地址(IP+PORT)
-	Cipher    string             // 私密密钥
 	Log       log.LogConf        // 日志配置
 	frwder    rtmq.RtmqProxyConf // RTMQ配置
 }
 
 /* 日志配置 */
-type UsrSvrConfLogXmlData struct {
+type MonConfLogXmlData struct {
 	Name  xml.Name `xml:"LOG"`        // 结点名
 	Level string   `xml:"LEVEL,attr"` // 日志级别
 	Path  string   `xml:"PATH,attr"`  // 日志路径
 }
 
 /* 鉴权配置 */
-type UsrSvrConfRtmqAuthXmlData struct {
+type MonConfRtmqAuthXmlData struct {
 	Name   xml.Name `xml:"AUTH"`        // 结点名
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
-type UsrSvrConfRtmqProxyXmlData struct {
-	Name        xml.Name                  `xml:"FRWDER"`        // 结点名
-	Auth        UsrSvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
-	RemoteAddr  string                    `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
-	WorkerNum   uint32                    `xml:"WORKER-NUM"`    // 协程数
-	SendChanLen uint32                    `xml:"SEND-CHAN-LEN"` // 发送队列长度
-	RecvChanLen uint32                    `xml:"RECV-CHAN-LEN"` // 接收队列长度
+type MonConfRtmqProxyXmlData struct {
+	Name        xml.Name               `xml:"FRWDER"`        // 结点名
+	Auth        MonConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
+	RemoteAddr  string                 `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
+	WorkerNum   uint32                 `xml:"WORKER-NUM"`    // 协程数
+	SendChanLen uint32                 `xml:"SEND-CHAN-LEN"` // 发送队列长度
+	RecvChanLen uint32                 `xml:"RECV-CHAN-LEN"` // 接收队列长度
 }
 
 /* 在线中心XML配置 */
-type UsrSvrConfXmlData struct {
-	Name      xml.Name                   `xml:"USRSVR"`     // 根结点名
-	Id        uint32                     `xml:"ID,attr"`    // 结点ID
-	RedisAddr string                     `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
-	Cipher    string                     `xml:"CIPHER"`     // 私密密钥
-	Log       UsrSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
-	Frwder    UsrSvrConfRtmqProxyXmlData `xml:"FRWDER"`     // RTMQ PROXY配置
+type MonConfXmlData struct {
+	Name      xml.Name                `xml:"MONITOR"`    // 根结点名
+	Id        uint32                  `xml:"ID,attr"`    // 结点ID
+	RedisAddr string                  `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
+	Log       MonConfLogXmlData       `xml:"LOG"`        // 日志配置
+	Frwder    MonConfRtmqProxyXmlData `xml:"FRWDER"`     // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -68,11 +66,11 @@ type UsrSvrConfXmlData struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *UsrSvrConf) LoadConf() (err error) {
+func (conf *MonConf) LoadConf() (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "usrsvr.xml")
+	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "monitor.xml")
 
 	return conf.conf_parse()
 }
@@ -88,7 +86,7 @@ func (conf *UsrSvrConf) LoadConf() (err error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *UsrSvrConf) conf_parse() (err error) {
+func (conf *MonConf) conf_parse() (err error) {
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)
 	if nil != err {
@@ -102,7 +100,7 @@ func (conf *UsrSvrConf) conf_parse() (err error) {
 		return err
 	}
 
-	node := UsrSvrConfXmlData{}
+	node := MonConfXmlData{}
 
 	err = xml.Unmarshal(data, &node)
 	if nil != err {
@@ -120,12 +118,6 @@ func (conf *UsrSvrConf) conf_parse() (err error) {
 	conf.RedisAddr = node.RedisAddr
 	if 0 == len(conf.RedisAddr) {
 		return errors.New("Get redis addr failed!")
-	}
-
-	/* > 私密密钥 */
-	conf.Cipher = node.Cipher
-	if 0 == len(conf.Cipher) {
-		return errors.New("Get chiper failed!")
 	}
 
 	/* 日志配置 */
