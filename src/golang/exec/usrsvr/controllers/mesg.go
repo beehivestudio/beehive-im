@@ -11,7 +11,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
-	"chat/src/golang/lib/chat"
 	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/crypt"
 	"chat/src/golang/lib/mesg"
@@ -214,11 +213,11 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *mesg.MesgOnlineReq) int {
+func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnlineReq) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
-		Sid:      proto.Uint64(sid),
+		Sid:      proto.Uint64(head.GetSid()),
 		App:      proto.String(req.GetApp()),
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
@@ -252,19 +251,17 @@ func (ctx *UsrSvrCntx) send_online_ack(sid uint64, head *comm.MesgHeader, req *m
 }
 
 /******************************************************************************
- **函数名称: online_update
- **功    能: 更新数据库
+ **函数名称: online_handler
+ **功    能: 上线处理
  **输入参数:
- **     head: 头部数据
- **     req: 上线请求数据
- **     sid: 会话ID
+ **     req: 上线请求
  **输出参数: NONE
- **返    回: true:成功 false:失败
+ **返    回: 异常信息
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.02 19:17:01 #
+ **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnlineReq, sid uint64) bool {
+func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (err error) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -274,48 +271,20 @@ func (ctx *UsrSvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnline
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 
 	/* 记录SID集合 */
-	pl.Send("ZADD", comm.CHAT_KEY_SID_ZSET, ttl, sid)
+	pl.Send("ZADD", comm.CHAT_KEY_SID_ZSET, ttl, head.GetSid())
 
 	/* 记录UID集合 */
 	pl.Send("ZADD", comm.CHAT_KEY_UID_ZSET, ttl, req.GetUid())
 
 	/* 记录SID->UID/NID */
-	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, sid)
+	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, head.GetSid())
 	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
 	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_SID_SET, req.GetUid())
-	pl.Send("SADD", key, sid)
+	pl.Send("SADD", key, head.GetSid())
 
-	return true
-}
-
-/******************************************************************************
- **函数名称: online_handler
- **功    能: 上线处理
- **输入参数:
- **     req: 上线请求
- **输出参数: NONE
- **返    回:
- **     sid: 会话ID
- **     err: 异常信息
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
- ******************************************************************************/
-func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (sid uint64, err error) {
-	/* > 申请会话SID */
-	sid, err = chat.AllocSid(ctx.redis)
-	if nil != err {
-		return 0, err
-	}
-
-	/* > 更新数据库 */
-	if !ctx.online_update(head, req, sid) {
-		return 0, errors.New("Update database failed!")
-	}
-
-	return sid, err
+	return err
 }
 
 /******************************************************************************
@@ -358,7 +327,7 @@ func UsrSvrOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32,
 	}
 
 	/* 2. > 初始化上线环境 */
-	sid, err := ctx.online_handler(head, req)
+	err := ctx.online_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Online handler failed!")
 		ctx.send_err_online_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
@@ -366,7 +335,7 @@ func UsrSvrOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32,
 	}
 
 	/* 3. > 发送上线应答 */
-	ctx.send_online_ack(sid, head, req)
+	ctx.send_online_ack(head, req)
 
 	return 0
 }
