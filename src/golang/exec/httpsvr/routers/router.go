@@ -12,7 +12,8 @@ import (
 
 /* > 设置路由回调 */
 func router() {
-	beego.Router("/chat/register", &controllers.HttpSvrRegister{})
+	beego.Router("/chat/register", &controllers.HttpSvrRegisterCtrl{})
+	beego.Router("/chat/iplist", &controllers.HttpSvrIpListCtrl{})
 }
 
 func init() {
