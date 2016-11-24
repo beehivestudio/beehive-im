@@ -64,7 +64,7 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 		MaxActive: 12000,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", conf.RedisAddr)
-			if err != nil {
+			if nil != err {
 				panic(err.Error())
 			}
 			return c, err
