@@ -2,6 +2,8 @@ package controllers
 
 import (
 	_ "github.com/astaxie/beego"
+
+	"chat/src/golang/lib/chat"
 )
 
 /* 注册处理 */
@@ -25,7 +27,7 @@ func (this *HttpSvrRegister) Get() {
 	ctx.log.Debug("Param list. uid:%d nation:%d city:%d town:%d", uid, nation, city, town)
 
 	/* > 申请会话ID */
-	sid, err := ctx.alloc_sid()
+	sid, err := chat.AllocSid(ctx.redis)
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
 		return

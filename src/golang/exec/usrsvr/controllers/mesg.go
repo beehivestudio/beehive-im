@@ -11,6 +11,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
+	"chat/src/golang/lib/chat"
 	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/crypt"
 	"chat/src/golang/lib/mesg"
@@ -304,7 +305,7 @@ func (ctx *UsrSvrCntx) online_update(head *comm.MesgHeader, req *mesg.MesgOnline
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (sid uint64, err error) {
 	/* > 申请会话SID */
-	sid, err = ctx.alloc_sid()
+	sid, err = chat.AllocSid(ctx.redis)
 	if nil != err {
 		return 0, err
 	}
