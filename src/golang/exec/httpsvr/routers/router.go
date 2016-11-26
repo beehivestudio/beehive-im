@@ -11,9 +11,13 @@ import (
 )
 
 /* > 设置路由回调 */
+//  beego.Router("/api/list",&RestController{},"*:ListFood")
+//  beego.Router("/api/create",&RestController{},"post:CreateFood")
+//  beego.Router("/api/update",&RestController{},"put:UpdateFood")
+//  beego.Router("/api/delete",&RestController{},"delete:DeleteFood")
 func router() {
-	beego.Router("/chat/register", &controllers.HttpSvrRegisterCtrl{})
-	beego.Router("/chat/iplist", &controllers.HttpSvrIpListCtrl{})
+	beego.Router("/chat/register", &controllers.HttpSvrRegisterCtrl{}, "get:Register")
+	beego.Router("/chat/iplist", &controllers.HttpSvrIpListCtrl{}, "get:IpList")
 }
 
 func init() {

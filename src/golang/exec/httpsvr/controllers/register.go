@@ -22,10 +22,40 @@ type HttpSvrReigsterParam struct {
 	town   uint64 // 县城ID
 }
 
-func (this *HttpSvrRegisterCtrl) Get() {
-	var param HttpSvrReigsterParam
-
+func (this *HttpSvrRegisterCtrl) Register() {
 	ctx := GetHttpCtx()
+
+	/* > 提取参数 */
+	param, err := this.parse_param()
+	if nil != err {
+		ctx.log.Error("Parse register failed! uid:%d nation:%d city:%d town:%d",
+			param.uid, param.nation, param.city, param.town)
+		this.response_fail(param, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		return
+	}
+
+	ctx.log.Debug("Register param list. uid:%d nation:%d city:%d town:%d",
+		param.uid, param.nation, param.city, param.town)
+
+	this.handler(param)
+
+	return
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 解析参数
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **     param: 注册参数
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.25 10:30:09 #
+ ******************************************************************************/
+func (this *HttpSvrRegisterCtrl) parse_param() (*HttpSvrReigsterParam, error) {
+	var param *HttpSvrReigsterParam
 
 	/* > 提取注册参数 */
 	str := this.GetString("uid")
@@ -47,30 +77,25 @@ func (this *HttpSvrRegisterCtrl) Get() {
 	/* > 校验参数合法性 */
 	if 0 == param.uid || 0 == param.nation {
 		ctx.log.Error("Register param invalid! uid:%d nation:%d", param.uid, param.nation)
-		return
+		return param, errors.New("Register param invalied!")
 	}
 
-	ctx.log.Debug("Register param list. uid:%d nation:%d city:%d town:%d",
-		param.uid, param.nation, param.city, param.town)
-
-	this.Register(&param)
-
-	return
+	return param, nil
 }
 
 /* 注册应答 */
 type HttpSvrRegisterRsp struct {
-	Uid    uint64 `json:"uid,omitempty"` // 用户ID
-	Sid    uint64 `json:"sid"`           // 会话ID
-	Nation uint64 `json:"nation"`        // 国家ID(国)
-	City   uint64 `json:"city"`          // 城市ID(市)
-	Town   uint64 `json:"town"`          // 城镇ID(县)
-	Errno  int    `json:"errno"`         // 错误码
-	ErrMsg string `json:"errmsg"`        // 错误描述
+	Uid    uint64 `json:"uid"`    // 用户ID
+	Sid    uint64 `json:"sid"`    // 会话ID
+	Nation uint64 `json:"nation"` // 国家ID(国)
+	City   uint64 `json:"city"`   // 城市ID(市)
+	Town   uint64 `json:"town"`   // 城镇ID(县)
+	Errno  int    `json:"errno"`  // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
 }
 
 /******************************************************************************
- **函数名称: Register
+ **函数名称: handler
  **功    能: 注册处理
  **输入参数:
  **     param: 注册参数
@@ -80,14 +105,14 @@ type HttpSvrRegisterRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:34:27 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) Register(param *HttpSvrReigsterParam) {
+func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrReigsterParam) {
 	ctx := GetHttpCtx()
 
 	/* > 申请会话ID */
 	sid, err := chat.AllocSid(ctx.redis)
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
-		this.response_error(param, comm.ERR_SYS_RPC, err.Error())
+		this.response_fail(param, comm.ERR_SYS_RPC, err.Error())
 		return
 	}
 
@@ -99,7 +124,7 @@ func (this *HttpSvrRegisterCtrl) Register(param *HttpSvrReigsterParam) {
 }
 
 /******************************************************************************
- **函数名称: response_error
+ **函数名称: response_fail
  **功    能: 应答错误信息
  **输入参数:
  **     param: 注册参数
@@ -111,7 +136,7 @@ func (this *HttpSvrRegisterCtrl) Register(param *HttpSvrReigsterParam) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:29 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) response_error(param *HttpSvrReigsterParam, errno int, errmsg string) {
+func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrReigsterParam, errno int, errmsg string) {
 	var resp HttpSvrRegisterRsp
 
 	resp.Uid = param.uid
