@@ -1,5 +1,8 @@
 <!-- 代理服务配置信息 -->
 <LISTEND ID="10001" WORKDIR="../.temp/listend/">
+    <!-- 运营商配置 -->
+    <OPERATOR COUNTRY="CN" NAME="中国电信" />
+
     <!-- 分发队列配置 -->
     <DISTQ NUM="8" MAX="4096" SIZE="4KB" />
 
