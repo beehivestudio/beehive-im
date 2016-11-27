@@ -4,20 +4,30 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
+	"chat/src/golang/lib/comm"
 	"chat/src/golang/lib/log"
 	"chat/src/golang/lib/rtmq"
 )
 
+/* 侦听层列表 */
+type httpsvr_lsn_list struct {
+	sync.RWMutex                                  /* 读写锁 */
+	list         map[string](map[string][]string) /* 侦听层列表:map[国家/地区]运营商名称 */
+}
+
 /* OLS上下文 */
 type HttpSvrCntx struct {
-	conf   *HttpSvrConf        /* 配置信息 */
-	log    *logs.BeeLogger     /* 日志对象 */
-	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis  *redis.Pool         /* REDIS连接池 */
+	conf    *HttpSvrConf        /* 配置信息 */
+	log     *logs.BeeLogger     /* 日志对象 */
+	ipdict  *comm.IpDict        /* IP字典 */
+	lsnlist httpsvr_lsn_list    /* 侦听层列表:map[国家/地区]运营商名称 */
+	frwder  *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis   *redis.Pool         /* REDIS连接池 */
 }
 
 var httpsvr *HttpSvrCntx
@@ -52,6 +62,12 @@ func HttpSvrInit(conf *HttpSvrConf) (ctx *HttpSvrCntx, err error) {
 	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "httpsvr.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
+	}
+
+	/* > 加载IP字典 */
+	ctx.ipdict, err = comm.LoadIpDict("../conf/ipdict.txt")
+	if nil != err {
+		return nil, err
 	}
 
 	/* > REDIS连接池 */

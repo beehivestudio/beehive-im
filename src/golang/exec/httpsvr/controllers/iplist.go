@@ -1,9 +1,15 @@
 package controllers
 
 import (
+	"errors"
+	"fmt"
+	"math/rand"
+	"time"
+
 	_ "github.com/astaxie/beego"
 
 	"chat/src/golang/lib/comm"
+	"chat/src/golang/lib/crypt"
 )
 
 /* 获取IP列表 */
@@ -22,7 +28,7 @@ func (this *HttpSvrIpListCtrl) IpList() {
 	ctx := GetHttpCtx()
 
 	/* > 提取注册参数 */
-	param, err := parse_param()
+	param, err := this.parse_param(ctx)
 	if nil != err {
 		ctx.log.Error("Parse param failed! uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
@@ -33,7 +39,7 @@ func (this *HttpSvrIpListCtrl) IpList() {
 	ctx.log.Debug("Param list. uid:%d sid:%d clientip:%s", param.uid, param.sid, param.clientip)
 
 	/* > 获取IP列表 */
-	this.handler()
+	this.handler(ctx, param)
 
 	return
 }
@@ -41,7 +47,8 @@ func (this *HttpSvrIpListCtrl) IpList() {
 /******************************************************************************
  **函数名称: parse_param
  **功    能: 解析参数
- **输入参数: NONE
+ **输入参数:
+ **     ctx: 上下文
  **输出参数: NONE
  **返    回:
  **     param: 注册参数
@@ -50,19 +57,23 @@ func (this *HttpSvrIpListCtrl) IpList() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:17:52 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) parse_param() (*HttpSvrReigsterParam, error) {
+func (this *HttpSvrIpListCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrIpListParam, error) {
 	var param *HttpSvrIpListParam
 
 	/* > 提取注册参数 */
-	param.uid, _ = this.GetInt("uid")
-	param.sid, _ = this.GetInt("sid")
+	id, _ := this.GetInt64("uid")
+	param.uid = uint64(id)
+
+	id, _ = this.GetInt64("sid")
+	param.sid = uint64(id)
+
 	param.clientip = this.GetString("client")
 
 	/* > 校验参数合法性 */
 	if 0 == param.uid || 0 == param.sid || "" == param.clientip {
-		ctx.log.Error("Miss paramter. uid:%d sid:%d clientip:%s",
+		ctx.log.Error("Paramter is invalid. uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
-		return
+		return nil, errors.New("Paramter is invalid!")
 	}
 
 	return param, nil
@@ -70,19 +81,20 @@ func (this *HttpSvrIpListCtrl) parse_param() (*HttpSvrReigsterParam, error) {
 
 /* IP列表应答 */
 type HttpSvrIpListRsp struct {
-	Uid    string   `json:"uid"`    // 用户ID
+	Uid    uint64   `json:"uid"`    // 用户ID
 	Sid    uint64   `json:"sid"`    // 会话ID
-	Token  uint64   `json:"token"`  // 鉴权TOKEN
-	Len    uint64   `json:"len"`    // 列表长度
+	Token  string   `json:"token"`  // 鉴权TOKEN
+	Len    int      `json:"len"`    // 列表长度
 	List   []string `json:"list"`   // IP列表
-	Errno  uint64   `json:"errno"`  // 错误码
-	ErrMsg uint64   `json:"errmsg"` // 错误描述
+	Errno  int      `json:"errno"`  // 错误码
+	ErrMsg string   `json:"errmsg"` // 错误描述
 }
 
 /******************************************************************************
  **函数名称: handler
  **功    能: 获取IP列表
  **输入参数:
+ **     ctx: 上下文
  **     param: URL参数
  **输出参数:
  **返    回: NONE
@@ -90,12 +102,8 @@ type HttpSvrIpListRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:00:07 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) handler(param *HttpSvrIpListParam) {
-	var resp HttpSvrIpListRsp
-
-	ctx := GetHttpCtx()
-
-	iplist := this.get_iplist(param.clientip)
+func (this *HttpSvrIpListCtrl) handler(ctx *HttpSvrCntx, param *HttpSvrIpListParam) {
+	iplist := this.get_iplist(ctx, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
 		this.response_fail(param, comm.ERR_SYS_SYSTEM, "Get ip list failed!")
@@ -125,9 +133,6 @@ func (this *HttpSvrIpListCtrl) response_fail(param *HttpSvrIpListParam, errno in
 
 	resp.Uid = param.uid
 	resp.Sid = 0
-	resp.Nation = param.nation
-	resp.City = param.city
-	resp.Town = param.town
 	resp.Errno = errno
 	resp.ErrMsg = errmsg
 
@@ -151,7 +156,7 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
 	var resp HttpSvrIpListRsp
 
 	resp.Uid = param.uid
-	resp.Sid = sid
+	resp.Sid = param.sid
 	resp.Token = this.gen_token(param)
 	resp.Len = len(iplist)
 	resp.List = iplist
@@ -177,6 +182,7 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
  **作    者: # Qifeng.zou # 2016.11.25 23:54:27 #
  ******************************************************************************/
 func (this *HttpSvrIpListCtrl) gen_token(param *HttpSvrIpListParam) string {
+	ctx := GetHttpCtx()
 	ttl := time.Now().Unix() + 3*comm.TIME_DAY
 
 	/* > 原始TOKEN */
@@ -186,4 +192,76 @@ func (this *HttpSvrIpListCtrl) gen_token(param *HttpSvrIpListParam) string {
 	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
 
 	return crypt.Encode(cry, token)
+}
+
+/******************************************************************************
+ **函数名称: get_iplist
+ **功    能: 获取IP列表
+ **输入参数:
+ **     ctx: 上下文
+ **     clientip: 客户端IP
+ **输出参数: NONE
+ **返    回: IP列表
+ **实现描述:
+ **注意事项: 加读锁
+ **作    者: # Qifeng.zou # 2016.11.27 07:42:54 #
+ ******************************************************************************/
+func (this *HttpSvrIpListCtrl) get_iplist(ctx *HttpSvrCntx, clientip string) []string {
+	item := ctx.ipdict.Query(clientip)
+	if nil == item {
+		ctx.lsnlist.RLock()
+		defer ctx.lsnlist.RUnlock()
+		return this.def_get_iplist(ctx)
+	}
+
+	ctx.lsnlist.RLock()
+	defer ctx.lsnlist.RUnlock()
+
+	/* > 获取国家/地区下辖的运营商列表 */
+	operators, ok := ctx.lsnlist.list[item.GetNation()]
+	if nil == operators || !ok {
+		return this.def_get_iplist(ctx)
+	}
+
+	/* > 获取运营商下辖的侦听层列表 */
+	lsn_list, ok := operators[item.GetOperator()]
+	if nil == lsn_list || !ok {
+		return this.def_get_iplist(ctx)
+	}
+
+	items := make([]string, 0)
+	items = append(items, lsn_list[rand.Intn(len(lsn_list))])
+	return items
+}
+
+/******************************************************************************
+ **函数名称: def_get_iplist
+ **功    能: 获取默认IP列表
+ **输入参数:
+ **     ctx: 上下文
+ **     clientip: 客户端IP
+ **输出参数: NONE
+ **返    回: IP列表
+ **实现描述:
+ **注意事项: 外部已经加读锁
+ **作    者: # Qifeng.zou # 2016.11.27 19:33:49 #
+ ******************************************************************************/
+func (this *HttpSvrIpListCtrl) def_get_iplist(ctx *HttpSvrCntx) []string {
+	var ok bool
+
+	/* > 获取"默认"国家/地区下辖的运营商列表 */
+	operators, ok := ctx.lsnlist.list["DEF"]
+	if nil == operators || !ok {
+		return nil
+	}
+
+	/* > 获取"默认"运营商下辖的侦听层列表 */
+	lsn_list, ok := operators["DEF"]
+	if nil == lsn_list || 0 == len(lsn_list) || !ok {
+		return nil
+	}
+
+	items := make([]string, 0)
+	items = append(items, lsn_list[rand.Intn(len(lsn_list))])
+	return items
 }

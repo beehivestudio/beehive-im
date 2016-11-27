@@ -26,10 +26,10 @@ type IpDict struct {
 
 /* IP项 */
 type IpDictItem struct {
-	StartIp  uint32 // 起始IP
-	EndIp    uint32 // 结束IP
-	Country  string // 国家或地区名
-	Operator string // 运营商名称
+	start_ip uint32 // 起始IP
+	end_ip   uint32 // 结束IP
+	nation   string // 国家或地区名
+	operator string // 运营商名称
 }
 
 /******************************************************************************
@@ -106,17 +106,17 @@ func LoadIpDict(path string) (dict *IpDict, err error) {
 
 		var item IpDictItem
 
-		item.StartIp = Ipv4Str2Uint32(segment[IP_DICT_START_IP_IDX]) /* 起始IP */
-		item.EndIp = Ipv4Str2Uint32(segment[IP_DICT_END_IP_IDX])     /* 结束IP */
-		item.Country = segment[IP_DICT_COUNTRY_IDX]                  /* 国家或地区 */
-		item.Operator = segment[len(segment)-1]                      /* 运营商名称 */
-		if 0 == item.StartIp || 0 == item.EndIp ||
-			"" == item.Country || "" == item.Operator {
+		item.start_ip = Ipv4Str2Uint32(segment[IP_DICT_START_IP_IDX]) /* 起始IP */
+		item.end_ip = Ipv4Str2Uint32(segment[IP_DICT_END_IP_IDX])     /* 结束IP */
+		item.nation = segment[IP_DICT_COUNTRY_IDX]                    /* 国家或地区 */
+		item.operator = segment[len(segment)-1]                       /* 运营商名称 */
+		if 0 == item.start_ip || 0 == item.end_ip ||
+			"" == item.nation || "" == item.operator {
 			errmsg := fmt.Sprintf("Data isn't right! line:%d", idx)
 			return nil, errors.New(errmsg)
 		} else if idx > 1 {
-			//fmt.Printf("idx:%d len:%d ip:%d\n", idx, len(dict.items), dict.items[idx-2].EndIp)
-			if item.StartIp <= dict.items[idx-2].EndIp { /* 检测IP是否存在乱序的情况 */
+			//fmt.Printf("idx:%d len:%d ip:%d\n", idx, len(dict.items), dict.items[idx-2].end_ip)
+			if item.start_ip <= dict.items[idx-2].end_ip { /* 检测IP是否存在乱序的情况 */
 				errmsg := fmt.Sprintf("Ip addr less than last line! line:%d", idx)
 				return nil, errors.New(errmsg)
 			}
@@ -157,20 +157,30 @@ func (dict *IpDict) Query(ipv4 string) *IpDictItem {
 	high = dict.num - 1
 	for low <= high {
 		mid = (low + high) / 2
-		if (dict.items[mid].StartIp <= ip_int) && (dict.items[mid].EndIp >= ip_int) {
+		if (dict.items[mid].start_ip <= ip_int) && (dict.items[mid].end_ip >= ip_int) {
 			return &dict.items[mid] // found
 		}
 
-		for ip_int < dict.items[mid].StartIp && low <= high {
+		for ip_int < dict.items[mid].start_ip && low <= high {
 			high = mid - 1
 			mid = (low + high) / 2
 		}
 
-		for dict.items[mid].EndIp < ip_int && low <= high {
+		for dict.items[mid].end_ip < ip_int && low <= high {
 			low = mid + 1
 			mid = (low + high) / 2
 		}
 	}
 
 	return nil
+}
+
+/* 获取国家或地区 */
+func (item *IpDictItem) GetNation() string {
+	return item.nation
+}
+
+/* 获取运营商名 */
+func (item *IpDictItem) GetOperator() string {
+	return item.operator
 }
