@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"strconv"
+	"errors"
 
 	_ "github.com/astaxie/beego"
 
@@ -26,7 +26,7 @@ func (this *HttpSvrRegisterCtrl) Register() {
 	ctx := GetHttpCtx()
 
 	/* > 提取参数 */
-	param, err := this.parse_param()
+	param, err := this.parse_param(ctx)
 	if nil != err {
 		ctx.log.Error("Parse register failed! uid:%d nation:%d city:%d town:%d",
 			param.uid, param.nation, param.city, param.town)
@@ -54,24 +54,20 @@ func (this *HttpSvrRegisterCtrl) Register() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 10:30:09 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) parse_param() (*HttpSvrReigsterParam, error) {
+func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrReigsterParam, error) {
 	var param *HttpSvrReigsterParam
 
 	/* > 提取注册参数 */
-	str := this.GetString("uid")
-	id, _ := strconv.ParseInt(str, 10, 64)
+	id, _ := this.GetInt64("uid")
 	param.uid = uint64(id)
 
-	str = this.GetString("nation")
-	id, _ = strconv.ParseInt(str, 10, 64)
+	id, _ = this.GetInt64("nation")
 	param.nation = uint64(id)
 
-	str = this.GetString("city")
-	id, _ = strconv.ParseInt(str, 10, 64)
+	id, _ = this.GetInt64("city")
 	param.city = uint64(id)
 
-	str = this.GetString("town")
-	id, _ = strconv.ParseInt(str, 10, 64)
+	id, _ = this.GetInt64("town")
 	param.town = uint64(id)
 
 	/* > 校验参数合法性 */
