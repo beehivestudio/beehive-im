@@ -125,6 +125,8 @@ func (ctx *HttpSvrCntx) Launch() {
 	conf := ctx.conf
 	ctx.frwder.Launch()
 
+	go ctx.start_task()
+
 	ip_port := fmt.Sprintf(":%d", conf.Port)
 	http.ListenAndServe(ip_port, nil)
 }
