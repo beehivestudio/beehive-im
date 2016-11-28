@@ -139,6 +139,11 @@ type RtmqProxyCntx struct {
 	server [RTMQ_SSVR_NUM]*RtmqProxyServer /* 服务对象 */
 }
 
+/* 获取日志对象 */
+func (pxy *RtmqProxyCntx) GetLog() *logs.BeeLogger {
+	return pxy.log
+}
+
 /******************************************************************************
  **函数名称: OnDial
  **功    能: 连接远端服务
@@ -254,9 +259,12 @@ func ProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
 		ctx.server[idx] = ctx.server_new()
 		if nil == ctx.server[idx] {
+			log.Error("Init rtmq proxy failed!")
 			return nil
 		}
 	}
+
+	ctx.reg = make(map[uint32]*RtmqRegItem, 0)
 
 	return ctx
 }
@@ -847,8 +855,7 @@ func (c *RtmqProxyConn) mesg_handler(cmd uint32, p *RtmqRecvPacket) bool {
 	case RTMQ_CMD_LINK_AUTH_RSP:
 		return c.auth_rsp_handler(p)
 	case RTMQ_CMD_KPALIVE_RSP:
-		c.kpalive_times = 0
-		c.kpalive_stat = RTMQ_KPALIVE_STAT_SUCC
+		return c.keepalive_rsp_handler(p)
 	}
 	return true
 }
@@ -878,5 +885,27 @@ func (c *RtmqProxyConn) auth_rsp_handler(p *RtmqRecvPacket) bool {
 	log.Debug("Auth success! usr:%s passwd:%s", conf.Usr, conf.Passwd)
 
 	c.is_auth = true
+	return true
+}
+
+/******************************************************************************
+ **函数名称: keepalive_rsp_handler
+ **功    能: 保活应答处理
+ **输入参数:
+ **     p: 数据包对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
+ ******************************************************************************/
+func (c *RtmqProxyConn) keepalive_rsp_handler(p *RtmqRecvPacket) bool {
+	log := c.svr.log
+
+	c.kpalive_times = 0
+	c.kpalive_stat = RTMQ_KPALIVE_STAT_SUCC
+
+	log.Debug("Keepalive success!")
+
 	return true
 }
