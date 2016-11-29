@@ -258,11 +258,10 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
             break;
         }
 
-        /* > 初始化帧听模块 */
-        protocol.args = (void *)ctx;
-        ctx->access = acc_init(&protocol, &conf->access, log);
-        if (NULL == ctx->access) {
-            log_error(log, "Initialize access failed!");
+        /* > 初始化chat表 */
+        ctx->chat_tab = chat_tab_init(1024, log);
+        if (NULL == ctx->chat_tab) {
+            log_error(log, "Initialize chat table failed!");
             break;
         }
 
@@ -270,6 +269,14 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         ctx->frwder = rtmq_proxy_init(&conf->frwder, log);
         if (NULL == ctx->frwder) {
             log_error(log, "Initialize real-time-transport-protocol failed!");
+            break;
+        }
+
+        /* > 初始化帧听模块 */
+        protocol.args = (void *)ctx;
+        ctx->access = acc_init(&protocol, &conf->access, log);
+        if (NULL == ctx->access) {
+            log_error(log, "Initialize access failed!");
             break;
         }
 
