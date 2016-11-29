@@ -538,8 +538,10 @@ static int sdk_send_mgr_trav_timeout_cb(sdk_send_item_t *item, list_t *list)
 }
 
 /* 计算下一次遍历发送管理表的时间 */
-static int sdk_send_mgr_find_timeout_cb(sdk_send_item_t *item, time_t *next_trav_tm)
+static int sdk_send_mgr_update_next_trav_tm_cb(sdk_send_item_t *item, time_t *next_trav_tm)
 {
+    fprintf(stderr, "Call %s() cmd:%d len:%d stat:%d ctm:%lu ttl:%lu trav:%lu!\n",
+            __func__, item->cmd, item->len, item->stat, time(NULL), item->ttl, *next_trav_tm);
     *next_trav_tm = (*next_trav_tm < item->ttl)? *next_trav_tm : item->ttl;
     return 0;
 }
@@ -580,12 +582,14 @@ int sdk_send_mgr_trav(sdk_cntx_t *ctx)
             break;
         }
 
+        log_debug(ctx->log, "Clean timeout item! cmd:%d seq:%d", item->cmd, item->seq);
+
         sdk_send_item_clean_timeout_hdl(ctx, item);
     }
     list_destroy(list, NULL, mem_dummy_dealloc);
 
     /* > 查找下一个超时时间 */
-    rbt_trav(mgr->tab, (trav_cb_t)sdk_send_mgr_find_timeout_cb, (void *)&mgr->next_trav_tm);
+    rbt_trav(mgr->tab, (trav_cb_t)sdk_send_mgr_update_next_trav_tm_cb, (void *)&mgr->next_trav_tm);
 
     pthread_rwlock_unlock(&mgr->lock);
 
@@ -688,26 +692,25 @@ bool sdk_send_mgr_empty(sdk_cntx_t *ctx)
  ******************************************************************************/
 int sdk_send_succ_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
 {
-    uint16_t cmd;
     void *data;
-    uint32_t seq;
     sdk_send_item_t *item;
-    mesg_header_t *head = (mesg_header_t *)addr;
+    mesg_header_t *head = (mesg_header_t *)addr, hhead;
 
-    cmd = ntohs(head->type);
-    seq = ntohl(head->serial);
 
-    log_debug(ctx->log, "Send success! cmd:%d seq:%d", cmd, seq);
+    MESG_HEAD_NTOH(head, &hhead);
 
-    item = sdk_send_mgr_query(ctx, seq, WRLOCK);
+    log_debug(ctx->log, "Send success! type:%d serial:%d", hhead.type, hhead.serial);
+
+    item = sdk_send_mgr_query(ctx, hhead.serial, WRLOCK);
     if (NULL == item) {
+        log_error(ctx->log, "Not found! type:%d serial:%d", hhead.type, hhead.serial);
         return 0;
     }
 
     item->stat = SDK_STAT_SEND_SUCC;
     if (item->cb) {
         data = (void *)(head + 1);
-        item->cb(cmd, data, item->len, NULL, 0, item->stat, item->param);
+        item->cb(hhead.type, data, item->len, NULL, 0, item->stat, item->param);
     }
 
     sdk_send_mgr_unlock(ctx, WRLOCK);

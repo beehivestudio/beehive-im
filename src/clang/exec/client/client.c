@@ -2,6 +2,7 @@
 #include "redo.h"
 #include "cmd_list.h"
 
+/* > 设置配置信息 */
 void client_set_conf(sdk_conf_t *conf)
 {
     memset(conf, 0, sizeof(sdk_conf_t));
@@ -26,6 +27,14 @@ void client_set_conf(sdk_conf_t *conf)
     return;
 }
 
+/* > 应答消息PONG的处理 */
+int sdk_cmd_pong_handler(int cmd, uint64_t from, char *data, size_t len, void *param)
+{
+    fprintf(stderr, "Call %s() cmd:%d\n", __func__, cmd);
+    return 0;
+}
+
+/* > 发送结果回调 */
 int sdk_send_cb(uint16_t cmd, const void *orig, size_t size,
         char *ack, size_t ack_len, sdk_send_stat_e stat, void *param)
 {
@@ -46,12 +55,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    //sdk_register(ctx, );
-    //sdk_register(ctx, );
-    //sdk_register(ctx, );
-    //sdk_register(ctx, );
-    //sdk_register(ctx, );
+    sdk_register(ctx, CMD_PONG, (sdk_reg_cb_t)sdk_cmd_pong_handler, NULL);
 
+    sdk_launch(ctx);
 
     while (1) {
         sdk_async_send(ctx, CMD_PING, NULL, 0, 3, (sdk_send_cb_t)sdk_send_cb, NULL);

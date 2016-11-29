@@ -38,7 +38,7 @@ typedef struct
     uint32_t seq;                       /* 序列号 */
     sdk_send_stat_e stat;               /* 处理状态 */
 
-    uint16_t cmd;                            /* 命令类型 */
+    uint16_t cmd;                       /* 命令类型 */
     int len;                            /* 报体长度 */
     time_t ttl;                         /* 超时时间 */
     void *data;                         /* 发送数据 */

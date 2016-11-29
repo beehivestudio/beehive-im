@@ -1068,6 +1068,10 @@ static size_t sdk_ssvr_write_conn_info(void *ptr, size_t size, size_t nmemb, voi
  ******************************************************************************/
 static int sdk_ssvr_http_conn_info(sdk_cntx_t *ctx, char *conn_info_str)
 {
+#if defined(__SDK_DEBUG__)
+    sprintf(conn_info_str, "{\"code\": \"0\", \"data\": { \"expire\":200, \"token\": \"testtoken\", \"ipList\": [ \"127.0.0.1:9002\" ], \"sessionid\": 3 } }");
+    return 0;
+#else /*__SDK_DEBUG__*/
     CURL *curl;
     CURLcode ret = -1;
     sdk_conf_t *conf = &ctx->conf;
@@ -1127,6 +1131,7 @@ static int sdk_ssvr_http_conn_info(sdk_cntx_t *ctx, char *conn_info_str)
     log_debug(ctx->log, "data:%s", conn_info_str);
 
     return ret;
+#endif /*__SDK_DEBUG__*/
 }
 
 /******************************************************************************
