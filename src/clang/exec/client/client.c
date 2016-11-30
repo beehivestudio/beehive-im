@@ -38,7 +38,33 @@ int sdk_cmd_pong_handler(int cmd, uint64_t from, char *data, size_t len, void *p
 int sdk_send_cb(uint16_t cmd, const void *orig, size_t size,
         char *ack, size_t ack_len, sdk_send_stat_e stat, void *param)
 {
-    fprintf(stderr, "Call %s() cmd:%d stat:%d\n", __func__, cmd, stat);
+    switch (stat) {
+        case SDK_STAT_IN_SENDQ: /* 发送队列中... */
+            fprintf(stderr, "Call %s() cmd:%d is in sendq.\n", __func__, cmd);
+            break;
+        case SDK_STAT_SENDING:  /* 正在发送... */
+            fprintf(stderr, "Call %s() cmd:%d is sending.\n", __func__, cmd);
+            break;
+        case SDK_STAT_SEND_SUCC:   /* 发送成功 */
+            fprintf(stderr, "Call %s() cmd:%d is send success.\n", __func__, cmd);
+            break;
+        case SDK_STAT_SEND_FAIL:  /* 发送失败 */
+            fprintf(stderr, "Call %s() cmd:%d is send fail.\n", __func__, cmd);
+            break;
+        case SDK_STAT_SEND_TIMEOUT:  /* 发送超时 */
+            fprintf(stderr, "Call %s() cmd:%d is send timeout.\n", __func__, cmd);
+            break;
+        case SDK_STAT_ACK_SUCC:     /* 应答成功 */
+            fprintf(stderr, "Call %s() cmd:%d is ack success.\n", __func__, cmd);
+            break;
+        case SDK_STAT_ACK_TIMEOUT:   /* 应答超时 */
+            fprintf(stderr, "Call %s() cmd:%d is ack timeout.\n", __func__, cmd);
+            break;
+        case SDK_STAT_UNKNOWN:      /* 未知状态 */
+        default:
+            fprintf(stderr, "Call %s() cmd:%d is unknown.\n", __func__, cmd);
+            break;
+    }
     return 0;
 }
 

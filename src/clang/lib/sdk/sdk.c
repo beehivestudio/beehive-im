@@ -263,11 +263,12 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
     head->length = size;
     head->sid = ctx->sid;
     head->serial = seq;
+    head->chksum = MSG_CHKSUM_VAL;
 
     memcpy(head+1, data, size);
 
-    log_debug(ctx->log, "Head type:%d sid:%d length:%d flag:%d seq:%d!",
-            head->type, head->sid, head->length, head->flag, head->serial);
+    log_debug(ctx->log, "Head type:0x%02X sid:%d length:%d flag:%d serial:%lu chksum:0x%08X!",
+            head->type, head->sid, head->length, head->flag, head->serial, head->chksum);
 
     /* > 设置发送单元 */
     item = (sdk_send_item_t *)calloc(1, sizeof(sdk_send_item_t));

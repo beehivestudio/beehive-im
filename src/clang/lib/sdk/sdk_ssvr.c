@@ -597,8 +597,8 @@ static int sdk_ssvr_data_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
         /* 2.2 校验合法性 */
         if (!MESG_CHKSUM_ISVALID(head)) {
             ++ssvr->err_total;
-            log_error(ssvr->log, "Header is invalid! cmd:%d len:%d flag:%d",
-                  head->type, head->length, head->flag);
+            log_error(ssvr->log, "Header is invalid! cmd:0x%04X len:%d flag:%d chksum:0x%08X",
+                  head->type, head->length, head->flag, head->chksum);
             return SDK_ERR;
         }
 

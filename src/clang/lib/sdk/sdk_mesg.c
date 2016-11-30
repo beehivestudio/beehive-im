@@ -57,6 +57,7 @@ int sdk_mesg_send_ping_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head->length = 0;
     head->flag = 0;
     head->sid = info->sessionid;
+    head->chksum = MSG_CHKSUM_VAL;
 
     /* 3. 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
