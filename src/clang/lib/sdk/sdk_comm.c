@@ -1,4 +1,5 @@
 #include "sdk.h"
+#include "mesg.h"
 #include "redo.h"
 #include "rb_tree.h"
 
@@ -735,19 +736,16 @@ int sdk_send_succ_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
  ******************************************************************************/
 int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
 {
-    uint16_t cmd;
     void *data;
-    uint64_t serial;
     sdk_send_item_t *item;
-    mesg_header_t *head = (mesg_header_t *)addr;
+    mesg_header_t *head = (mesg_header_t *)addr, hhead;
 
-    cmd = ntohs(head->type);
-    serial = ntohl(head->serial);
+    MESG_HEAD_NTOH(head, &hhead);
 
-    log_debug(ctx->log, "Send fail! cmd:%d serial:%d", cmd, serial);
+    log_debug(ctx->log, "Send fail! cmd:%d serial:%d", hhead.type, hhead.serial);
 
     /* > 更新发送状态 */
-    item = sdk_send_mgr_query(ctx, serial, WRLOCK);
+    item = sdk_send_mgr_query(ctx, hhead.serial, WRLOCK);
     if (NULL == item) {
         return 0;
     }
@@ -755,13 +753,13 @@ int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
     item->stat = SDK_STAT_SEND_FAIL;
     if (item->cb) {
         data = (void *)(head + 1);
-        item->cb(cmd, data, item->len, NULL, 0, item->stat, item->param);
+        item->cb(hhead.type, data, item->len, NULL, 0, item->stat, item->param);
     }
 
     sdk_send_mgr_unlock(ctx, WRLOCK);
 
     /* > 删除失败数据 */
-    sdk_send_mgr_delete(ctx, serial);
+    sdk_send_mgr_delete(ctx, hhead.serial);
 
     return 0;
 }
@@ -829,17 +827,19 @@ bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint64_t serial, void *ack)
 
     ack_item = avl_query(ctx->cmd, &ack_key);
     if (NULL == ack_item) {
-        log_debug(ctx->log, "Didn't find request command!");
+        log_error(ctx->log, "Didn't find request command! serial:%lu", serial);
         return false;
     }
+
+    log_debug(ctx->log, "Found request command! serial:%lu", serial);
 
     key.serial = serial;
 
     pthread_rwlock_wrlock(&mgr->lock);
     item = rbt_query(mgr->tab, (void *)&key);
     if (NULL == item) {
-        log_debug(ctx->log, "Didn't find serial! serial:%d", serial);
         pthread_rwlock_unlock(&mgr->lock);
+        log_debug(ctx->log, "Didn't find serial! serial:%d", serial);
         return false;
     }
     else if (item->cmd == ack_item->req) {

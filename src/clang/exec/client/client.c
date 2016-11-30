@@ -82,7 +82,6 @@ int main(int argc, char *argv[])
     }
 
     sdk_cmd_add(ctx, CMD_PING, CMD_PONG);
-    sdk_cmd_add(ctx, CMD_PONG, CMD_PING);
 
     sdk_register(ctx, CMD_PONG, (sdk_reg_cb_t)sdk_cmd_pong_handler, NULL);
 

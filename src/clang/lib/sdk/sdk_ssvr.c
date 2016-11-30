@@ -592,13 +592,14 @@ static int sdk_ssvr_data_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
         /* 2.1 转化字节序 */
         MESG_HEAD_NTOH(head, head);
 
-        log_trace(ssvr->log, "cmd:%d len:%d flag:%d", head->type, head->length, head->flag);
+        log_trace(ssvr->log, "cmd:0x%04X serial:%lu len:%d flag:%d",
+                head->type, head->serial, head->length, head->flag);
 
         /* 2.2 校验合法性 */
         if (!MESG_CHKSUM_ISVALID(head)) {
             ++ssvr->err_total;
-            log_error(ssvr->log, "Header is invalid! cmd:0x%04X len:%d flag:%d chksum:0x%08X",
-                  head->type, head->length, head->flag, head->chksum);
+            log_error(ssvr->log, "Header is invalid! cmd:0x%04X serial:%lu len:%d flag:%d chksum:0x%08X",
+                  head->type, head->serial, head->length, head->flag, head->chksum);
             return SDK_ERR;
         }
 
@@ -760,6 +761,9 @@ static int sdk_ssvr_wiov_add(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
         }
 
         len = sizeof(mesg_header_t) + head->length;
+
+        log_trace(ssvr->log, "cmd:0x%04X serial:%lu len:%d flag:%d",
+                head->type, head->serial, head->length, head->flag);
 
         MESG_HEAD_HTON(head, head);
 

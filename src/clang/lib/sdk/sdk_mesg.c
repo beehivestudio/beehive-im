@@ -34,7 +34,6 @@ int sdk_mesg_send_ping_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     int size = sizeof(mesg_header_t);
     sdk_sck_t *sck = &ssvr->sck;
     wiov_t *send = &ssvr->sck.send;
-    sdk_conn_info_t *info = &ssvr->conn_info;
 
     /* 1. 上次发送保活请求之后 仍未收到应答 */
     if ((sck->fd < 0) || (sck->kpalive_times > 3)) {
@@ -54,9 +53,10 @@ int sdk_mesg_send_ping_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head = (mesg_header_t *)addr;
 
     head->type = CMD_PING;
-    head->length = 0;
     head->flag = 0;
-    head->sid = info->sessionid;
+    head->length = 0;
+    head->sid = ctx->sid;
+    head->serial = sdk_gen_serial(ctx);
     head->chksum = MSG_CHKSUM_VAL;
 
     /* 3. 加入发送列表 */

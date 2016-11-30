@@ -30,8 +30,7 @@ endif
 
 # 调试相关宏
 ifeq (__ON__, $(strip $(CONFIG_DEBUG_SUPPORT)))
-	OPTIONS += __XD_DEBUG__
-	OPTIONS += __INVTD_DEBUG__
+	OPTIONS += __SDK_DEBUG__
 endif
 
 # 内存泄露检测
