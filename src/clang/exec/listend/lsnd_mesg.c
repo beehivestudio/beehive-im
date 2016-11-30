@@ -445,6 +445,8 @@ int chat_mesg_ping_req_hdl(chat_conn_extra_t *conn, int type, void *data, int le
     log_debug(lsnd->log, "cid:%lu sid:%lu serial:%lu len:%d chksum:0x%08X!",
             conn->cid, head->sid, head->serial, len, head->chksum);
 
+    head->type = CMD_PONG;
+
     /* > 发送PONG应答 */
     MESG_HEAD_HTON(head, head);
 
