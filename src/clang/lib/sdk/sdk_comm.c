@@ -327,7 +327,7 @@ bool sdk_queue_empty(sdk_queue_t *q)
 /* 比较回调 */
 static int sdk_send_mgr_cmp_cb(sdk_send_item_t *item1, sdk_send_item_t *item2)
 {
-    return item1->seq - item2->seq;
+    return item1->serial - item2->serial;
 }
 
 /******************************************************************************
@@ -345,7 +345,7 @@ int sdk_send_mgr_init(sdk_cntx_t *ctx)
 {
     sdk_send_mgr_t *mgr = &ctx->mgr;
 
-    mgr->seq = 0;
+    mgr->serial = 0;
     pthread_rwlock_init(&mgr->lock, NULL);
     mgr->tab = rbt_creat(NULL, (cmp_cb_t)sdk_send_mgr_cmp_cb);
     if (NULL == mgr->tab) {
@@ -356,7 +356,7 @@ int sdk_send_mgr_init(sdk_cntx_t *ctx)
 }
 
 /******************************************************************************
- **函数名称: sdk_gen_seq
+ **函数名称: sdk_gen_serial
  **功    能: 生成序列号
  **输入参数:
  **     ctx: 全局对象
@@ -366,16 +366,16 @@ int sdk_send_mgr_init(sdk_cntx_t *ctx)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 17:52:58 #
  ******************************************************************************/
-uint32_t sdk_gen_seq(sdk_cntx_t *ctx)
+uint64_t sdk_gen_serial(sdk_cntx_t *ctx)
 {
-    uint32_t seq;
+    uint64_t serial;
     sdk_send_mgr_t *mgr = &ctx->mgr;
 
     pthread_rwlock_wrlock(&mgr->lock);
-    seq = ++mgr->seq;
+    serial = ++mgr->serial;
     pthread_rwlock_unlock(&mgr->lock);
 
-    return seq;
+    return serial;
 }
 
 /******************************************************************************
@@ -395,6 +395,8 @@ int sdk_send_mgr_insert(sdk_cntx_t *ctx, sdk_send_item_t *item)
     int ret;
     sdk_send_mgr_t *mgr = &ctx->mgr;
 
+    log_error(ctx->log, "serial:%u", item->serial);
+
     pthread_rwlock_wrlock(&mgr->lock);
     ret = rbt_insert(mgr->tab, item);
     pthread_rwlock_unlock(&mgr->lock);
@@ -407,19 +409,19 @@ int sdk_send_mgr_insert(sdk_cntx_t *ctx, sdk_send_item_t *item)
  **功    能: 删除发送项
  **输入参数:
  **     ctx: 全局对象
- **     set: 序列号
+ **     serial: 序列号
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.10 10:09:45 #
  ******************************************************************************/
-int sdk_send_mgr_delete(sdk_cntx_t *ctx, uint32_t seq)
+int sdk_send_mgr_delete(sdk_cntx_t *ctx, uint64_t serial)
 {
     sdk_send_item_t key, *item;
     sdk_send_mgr_t *mgr = &ctx->mgr;
 
-    key.seq = seq;
+    key.serial = serial;
 
     pthread_rwlock_wrlock(&mgr->lock);
     rbt_delete(mgr->tab, (void *)&key, (void **)&item);
@@ -456,7 +458,7 @@ static int sdk_send_item_clean_timeout_hdl(sdk_cntx_t *ctx, sdk_send_item_t *ite
 
     switch (item->stat) {
         case SDK_STAT_IN_SENDQ: /* 依然在发送队列 */
-            key.seq = item->seq;
+            key.serial = item->serial;
             rbt_delete(mgr->tab, (void *)&key, (void **)&temp);
             sdk_queue_remove(&ctx->sendq, item->data);
             item->stat = SDK_STAT_SEND_TIMEOUT; /* 发送超时 */
@@ -469,7 +471,7 @@ static int sdk_send_item_clean_timeout_hdl(sdk_cntx_t *ctx, sdk_send_item_t *ite
         case SDK_STAT_SENDING:  /* 正在发送中...(无法撤回) */
             return SDK_OK;
         case SDK_STAT_SEND_SUCC: /* 已发送成功 */
-            key.seq = item->seq;
+            key.serial = item->serial;
             rbt_delete(mgr->tab, (void *)&key, (void **)&temp);
             item->stat = SDK_STAT_ACK_TIMEOUT;
             if (item->cb) {
@@ -479,7 +481,7 @@ static int sdk_send_item_clean_timeout_hdl(sdk_cntx_t *ctx, sdk_send_item_t *ite
             FREE(item);
             return SDK_OK;
         case SDK_STAT_SEND_FAIL:
-            key.seq = item->seq;
+            key.serial = item->serial;
             rbt_delete(mgr->tab, (void *)&key, (void **)&temp);
             if (item->cb) {
                 item->cb(item->cmd, data, item->len, NULL, 0, item->stat, item->param);
@@ -489,7 +491,7 @@ static int sdk_send_item_clean_timeout_hdl(sdk_cntx_t *ctx, sdk_send_item_t *ite
             return SDK_OK;
         case SDK_STAT_UNKNOWN:
         case SDK_STAT_SEND_TIMEOUT:
-            key.seq = item->seq;
+            key.serial = item->serial;
             rbt_delete(mgr->tab, (void *)&key, (void **)&temp);
             if (item->cb) {
                 item->cb(item->cmd, data, item->len, NULL, 0, item->stat, item->param);
@@ -498,7 +500,7 @@ static int sdk_send_item_clean_timeout_hdl(sdk_cntx_t *ctx, sdk_send_item_t *ite
             FREE(item);
             return SDK_OK;
         case SDK_STAT_ACK_SUCC:
-            key.seq = item->seq;
+            key.serial = item->serial;
             rbt_delete(mgr->tab, (void *)&key, (void **)&temp);
             if (item->cb) {
                 item->cb(item->cmd, data, item->len, NULL, 0, item->stat, item->param);
@@ -507,7 +509,7 @@ static int sdk_send_item_clean_timeout_hdl(sdk_cntx_t *ctx, sdk_send_item_t *ite
             FREE(item);
             return SDK_OK;
         case SDK_STAT_ACK_TIMEOUT:
-            key.seq = item->seq;
+            key.serial = item->serial;
             rbt_delete(mgr->tab, (void *)&key, (void **)&temp);
             if (item->cb) {
                 item->cb(item->cmd, data, item->len, NULL, 0, item->stat, item->param);
@@ -582,7 +584,7 @@ int sdk_send_mgr_trav(sdk_cntx_t *ctx)
             break;
         }
 
-        log_debug(ctx->log, "Clean timeout item! cmd:%d seq:%d", item->cmd, item->seq);
+        log_debug(ctx->log, "Clean timeout item! cmd:%d serial:%d", item->cmd, item->serial);
 
         sdk_send_item_clean_timeout_hdl(ctx, item);
     }
@@ -601,19 +603,19 @@ int sdk_send_mgr_trav(sdk_cntx_t *ctx)
  **功    能: 更新发送项
  **输入参数:
  **     ctx: 全局对象
- **     set: 序列号
+ **     serial: 序列号
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.10 10:09:45 #
  ******************************************************************************/
-sdk_send_item_t *sdk_send_mgr_query(sdk_cntx_t *ctx, uint32_t seq, lock_e lock)
+sdk_send_item_t *sdk_send_mgr_query(sdk_cntx_t *ctx, uint64_t serial, lock_e lock)
 {
     sdk_send_item_t key, *item;
     sdk_send_mgr_t *mgr = &ctx->mgr;
 
-    key.seq = seq;
+    key.serial = serial;
 
     if (RDLOCK == lock) {
         pthread_rwlock_rdlock(&mgr->lock);
@@ -734,17 +736,17 @@ int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
 {
     uint16_t cmd;
     void *data;
-    uint32_t seq;
+    uint64_t serial;
     sdk_send_item_t *item;
     mesg_header_t *head = (mesg_header_t *)addr;
 
     cmd = ntohs(head->type);
-    seq = ntohl(head->serial);
+    serial = ntohl(head->serial);
 
-    log_debug(ctx->log, "Send fail! cmd:%d seq:%d", cmd, seq);
+    log_debug(ctx->log, "Send fail! cmd:%d serial:%d", cmd, serial);
 
     /* > 更新发送状态 */
-    item = sdk_send_mgr_query(ctx, seq, WRLOCK);
+    item = sdk_send_mgr_query(ctx, serial, WRLOCK);
     if (NULL == item) {
         return 0;
     }
@@ -758,7 +760,7 @@ int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
     sdk_send_mgr_unlock(ctx, WRLOCK);
 
     /* > 删除失败数据 */
-    sdk_send_mgr_delete(ctx, seq);
+    sdk_send_mgr_delete(ctx, serial);
 
     return 0;
 }
@@ -804,14 +806,14 @@ bool sdk_send_timeout_hdl(sdk_cntx_t *ctx, void *addr)
  **功    能: 应答成功的处理
  **输入参数:
  **     ctx: 全局对象
- **     seq: 序列号
+ **     serial: 序列号
  **输出参数: NONE
  **返    回: true:已处理 false:未处理
  **实现描述: 
  **注意事项: 此时协议头依然为网络字节序
  **作    者: # Qifeng.zou # 2016.11.10 11:48:21 #
  ******************************************************************************/
-bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint32_t seq, void *ack)
+bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint64_t serial, void *ack)
 {
     void *data;
     sdk_send_item_t key, *item;
@@ -827,12 +829,12 @@ bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint32_t seq, void *ack)
         return false;
     }
 
-    key.seq = seq;
+    key.serial = serial;
 
     pthread_rwlock_wrlock(&mgr->lock);
     item = rbt_query(mgr->tab, (void *)&key);
     if (NULL == item) {
-        log_debug(ctx->log, "Didn't find seq! seq:%d", seq);
+        log_debug(ctx->log, "Didn't find serial! serial:%d", serial);
         pthread_rwlock_unlock(&mgr->lock);
         return false;
     }

@@ -35,7 +35,7 @@ typedef int (*sdk_send_cb_t)(uint16_t cmd, const void *orig, size_t size,
 /* 发送单元 */
 typedef struct
 {
-    uint32_t seq;                       /* 序列号 */
+    uint64_t serial;                    /* 序列号 */
     sdk_send_stat_e stat;               /* 处理状态 */
 
     uint16_t cmd;                       /* 命令类型 */
@@ -51,7 +51,7 @@ typedef struct
 {
     time_t next_trav_tm;                /* 下一次遍历时间 */
     pthread_rwlock_t lock;              /* 读写锁 */
-    uint32_t seq;                       /* 序列号 */
+    uint64_t serial;                    /* 序列号 */
     rbt_tree_t *tab;                    /* 管理表 */
 } sdk_send_mgr_t;
 
@@ -127,19 +127,19 @@ int sdk_mesg_pong_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck);
 int sdk_mesg_ping_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck);
 int sdk_mesg_online_ack_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck, void *addr);
 
-uint32_t sdk_gen_seq(sdk_cntx_t *ctx);
+uint64_t sdk_gen_serial(sdk_cntx_t *ctx);
 int sdk_send_mgr_init(sdk_cntx_t *ctx);
 int sdk_send_mgr_insert(sdk_cntx_t *ctx, sdk_send_item_t *item);
-int sdk_send_mgr_delete(sdk_cntx_t *ctx, uint32_t seq);
+int sdk_send_mgr_delete(sdk_cntx_t *ctx, uint64_t serial);
 bool sdk_send_mgr_empty(sdk_cntx_t *ctx);
-sdk_send_item_t *sdk_send_mgr_query(sdk_cntx_t *ctx, uint32_t seq, lock_e lock);
+sdk_send_item_t *sdk_send_mgr_query(sdk_cntx_t *ctx, uint64_t serial, lock_e lock);
 int sdk_send_mgr_unlock(sdk_cntx_t *ctx, lock_e lock);
 int sdk_send_mgr_trav(sdk_cntx_t *ctx);
 
 int sdk_send_succ_hdl(sdk_cntx_t *ctx, void *addr, size_t len);
 int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len);
 bool sdk_send_timeout_hdl(sdk_cntx_t *ctx, void *addr);
-bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint32_t seq, void *ack);
+bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint64_t serial, void *ack);
 
 int sdk_queue_init(sdk_queue_t *q);
 int sdk_queue_length(sdk_queue_t *q);

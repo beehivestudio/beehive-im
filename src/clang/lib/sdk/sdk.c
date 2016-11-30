@@ -231,8 +231,9 @@ int sdk_register(sdk_cntx_t *ctx, uint16_t cmd, sdk_reg_cb_t proc, void *param)
 uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd, 
         const void *data, size_t size, int timeout, sdk_send_cb_t cb, void *param)
 {
+    int ret;
     void *addr;
-    uint32_t seq;
+    uint64_t serial;
     mesg_header_t *head;
     sdk_send_item_t *item;
     sdk_ssvr_t *ssvr = ctx->ssvr;
@@ -244,7 +245,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
         return -1; /* 网络已断开 */
     }
 
-    seq = sdk_gen_seq(ctx);
+    serial = sdk_gen_serial(ctx);
 
     /* > 申请内存空间 */
     addr = (void *)calloc(1, sizeof(mesg_header_t)+size);
@@ -262,7 +263,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
     head->flag = 0;
     head->length = size;
     head->sid = ctx->sid;
-    head->serial = seq;
+    head->serial = serial;
     head->chksum = MSG_CHKSUM_VAL;
 
     memcpy(head+1, data, size);
@@ -279,7 +280,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
         return SDK_ERR;
     }
 
-    item->seq = seq;
+    item->serial = serial;
     item->stat = SDK_STAT_IN_SENDQ;
     item->cmd = cmd;
     item->len = size;
@@ -289,9 +290,10 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
     item->param = param;
 
     /* > 放入管理表 */
-    if (sdk_send_mgr_insert(ctx, item)) {
+    ret = sdk_send_mgr_insert(ctx, item);
+    if (0 != ret) {
         cb(cmd, data, size, NULL, 0, SDK_STAT_SEND_FAIL, param);
-        log_error(ctx->log, "Insert send mgr tab failed!");
+        log_error(ctx->log, "Insert send mgr tab failed! ret:%d", ret);
         FREE(addr);
         FREE(item);
         return -1;
@@ -303,7 +305,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
     /* > 通知发送线程 */
     sdk_cli_cmd_send_req(ctx);
 
-    return seq;
+    return serial;
 }
 
 /******************************************************************************
