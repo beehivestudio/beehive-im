@@ -61,6 +61,12 @@ sdk_cntx_t *sdk_init(const sdk_conf_t *conf)
             break;
         }
 
+        /* > 发送单元管理表 */
+        if (sdk_send_mgr_init(ctx)) {
+            log_fatal(log, "Send mgr table failed!");
+            break;
+        }
+
         /* > 创建通信套接字 */
         if (sdk_creat_cmd_usck(ctx)) {
             log_fatal(log, "Create cmd socket failed!");
@@ -76,12 +82,6 @@ sdk_cntx_t *sdk_init(const sdk_conf_t *conf)
         /* > 创建发送队列 */
         if (sdk_queue_init(&ctx->sendq)) {
             log_fatal(log, "Create send queue failed!");
-            break;
-        }
-
-        /* > 发送单元管理表 */
-        if (sdk_send_mgr_init(ctx)) {
-            log_fatal(log, "Send mgr table failed!");
             break;
         }
 
@@ -248,7 +248,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
     serial = sdk_gen_serial(ctx);
 
     /* > 申请内存空间 */
-    addr = (void *)calloc(1, sizeof(mesg_header_t)+size);
+    addr = (void *)calloc(1, sizeof(mesg_header_t)+size+Random()%20);
     if (NULL == addr) {
         cb(cmd, data, size, NULL, 0, SDK_STAT_SEND_FAIL, param);
         log_error(ctx->log, "Alloc memory [%d] failed! errmsg:[%d] %s!",
@@ -276,7 +276,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
     if (NULL == item) {
         cb(cmd, data, size, NULL, 0, SDK_STAT_SEND_FAIL, param);
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
-        FREE(head);
+        FREE(addr);
         return SDK_ERR;
     }
 
@@ -289,9 +289,12 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
     item->data = (void *)addr;
     item->param = param;
 
+    fprintf(stderr, "serial:%lu item:%p addr:%p\n", serial, item, addr);
+
     /* > 放入管理表 */
-    ret = sdk_send_mgr_insert(ctx, item);
+    ret = sdk_send_mgr_insert(ctx, item, WRLOCK);
     if (0 != ret) {
+        sdk_send_mgr_unlock(ctx, WRLOCK);
         cb(cmd, data, size, NULL, 0, SDK_STAT_SEND_FAIL, param);
         log_error(ctx->log, "Insert send mgr tab failed! ret:%d", ret);
         FREE(addr);
@@ -301,6 +304,8 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd,
 
     /* > 放入发送队列 */
     sdk_queue_rpush(&ctx->sendq, (void *)addr);
+
+    sdk_send_mgr_unlock(ctx, WRLOCK);
 
     /* > 通知发送线程 */
     sdk_cli_cmd_send_req(ctx);

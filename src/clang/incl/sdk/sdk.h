@@ -129,7 +129,7 @@ int sdk_mesg_online_ack_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sc
 
 uint64_t sdk_gen_serial(sdk_cntx_t *ctx);
 int sdk_send_mgr_init(sdk_cntx_t *ctx);
-int sdk_send_mgr_insert(sdk_cntx_t *ctx, sdk_send_item_t *item);
+int sdk_send_mgr_insert(sdk_cntx_t *ctx, sdk_send_item_t *item, lock_e lock);
 int sdk_send_mgr_delete(sdk_cntx_t *ctx, uint64_t serial);
 bool sdk_send_mgr_empty(sdk_cntx_t *ctx);
 sdk_send_item_t *sdk_send_mgr_query(sdk_cntx_t *ctx, uint64_t serial, lock_e lock);
