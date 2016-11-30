@@ -310,6 +310,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, chat_mesg_offline_req_hdl, ctx);
     LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_mesg_join_req_hdl, ctx);
     LSND_ACC_REG_CB(ctx, CMD_UNJOIN_REQ, chat_mesg_unjoin_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_PING, chat_mesg_ping_req_hdl, ctx);
 
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
