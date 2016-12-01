@@ -328,8 +328,6 @@ bool sdk_queue_empty(sdk_queue_t *q)
 /* 比较回调 */
 static int sdk_send_mgr_cmp_cb(sdk_send_item_t *item1, sdk_send_item_t *item2)
 {
-    fprintf(stderr, "item1:%p item2:%p stat:%d serial1:%lu serial2:%lu\n",
-            item1, item2, item1->stat, item1->serial, item2->serial);
     return item1->serial - item2->serial;
 }
 
@@ -398,8 +396,6 @@ int sdk_send_mgr_insert(sdk_cntx_t *ctx, sdk_send_item_t *item, lock_e lock)
 {
     sdk_send_mgr_t *mgr = &ctx->mgr;
 
-    fprintf(stderr, "Call %s()! serial:%lu\n", __func__, item->serial);
-
     pthread_rwlock_wrlock(&mgr->lock);
 
     return rbt_insert(mgr->tab, item);
@@ -421,6 +417,8 @@ int sdk_send_mgr_delete(sdk_cntx_t *ctx, uint64_t serial)
 {
     sdk_send_item_t key, *item;
     sdk_send_mgr_t *mgr = &ctx->mgr;
+
+    memset(&key, 0, sizeof(key));
 
     key.serial = serial;
 
@@ -454,6 +452,8 @@ static int sdk_send_item_clean_timeout_hdl(sdk_cntx_t *ctx, sdk_send_item_t *ite
     void *data;
     sdk_send_item_t key, *temp;
     sdk_send_mgr_t *mgr = &ctx->mgr;
+
+    memset(&key, 0, sizeof(key));
 
     data = (void *)(item->data + sizeof(mesg_header_t));
 
@@ -544,8 +544,6 @@ static int sdk_send_mgr_trav_timeout_cb(sdk_send_item_t *item, list_t *list)
 /* 计算下一次遍历发送管理表的时间 */
 static int sdk_send_mgr_update_next_trav_tm_cb(sdk_send_item_t *item, time_t *next_trav_tm)
 {
-    fprintf(stderr, "Call %s() item:%p serial:%lu cmd:%d len:%d stat:%d ctm:%lu ttl:%lu trav:%lu!\n",
-            __func__, item, item->serial, item->cmd, item->len, item->stat, time(NULL), item->ttl, *next_trav_tm);
     *next_trav_tm = (*next_trav_tm < item->ttl)? *next_trav_tm : item->ttl;
     return 0;
 }
@@ -616,6 +614,8 @@ sdk_send_item_t *sdk_send_mgr_query(sdk_cntx_t *ctx, uint64_t serial, lock_e loc
 {
     sdk_send_item_t key, *item;
     sdk_send_mgr_t *mgr = &ctx->mgr;
+
+    memset(&key, 0, sizeof(key));
 
     key.serial = serial;
 
@@ -708,6 +708,7 @@ int sdk_send_succ_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
     item = sdk_send_mgr_query(ctx, hhead.serial, WRLOCK);
     if (NULL == item) {
         log_error(ctx->log, "Not found! type:%d serial:%d", hhead.type, hhead.serial);
+        assert(0);
         return 0;
     }
 
@@ -747,6 +748,7 @@ int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
     /* > 更新发送状态 */
     item = sdk_send_mgr_query(ctx, hhead.serial, WRLOCK);
     if (NULL == item) {
+        assert(0);
         return 0;
     }
 
@@ -832,6 +834,8 @@ bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint64_t serial, void *ack)
     }
 
     log_debug(ctx->log, "Found request command! serial:%lu", serial);
+
+    memset(&key, 0, sizeof(key));
 
     key.serial = serial;
 

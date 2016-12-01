@@ -24,7 +24,6 @@ sdk_cntx_t *sdk_init(const sdk_conf_t *conf)
 
     log = log_init(conf->log_level, conf->log_path);
     if (NULL == log) {
-        fprintf(stderr, "errmsg:[%d] %s!", errno, strerror(errno));
         return NULL;
     }
 
@@ -288,8 +287,6 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
     item->cb = cb;
     item->data = (void *)addr;
     item->param = param;
-
-    fprintf(stderr, "serial:%lu item:%p addr:%p\n", serial, item, addr);
 
     /* > 放入管理表 */
     ret = sdk_send_mgr_insert(ctx, item, WRLOCK);

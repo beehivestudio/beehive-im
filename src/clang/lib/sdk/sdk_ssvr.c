@@ -157,9 +157,7 @@ static int sdk_ssvr_get_timeout(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     if ((!SDK_SSVR_GET_ONLINE(ssvr) && (tm > ssvr->next_conn_tm))
         || (tm > mgr->next_trav_tm)
         || (tm > sck->next_kpalive_tm)) {
-        fprintf(stderr, "tm:%lu conn:%lu trav:%lu kpalive:%lu",
-                tm, ssvr->next_conn_tm, mgr->next_trav_tm, sck->next_kpalive_tm);
-        return 0; /* 立即 */
+        return 1; /* 立即 */
     }
 
 
@@ -257,9 +255,8 @@ void *sdk_ssvr_routine(void *_ctx)
         /* 3.2 等待事件通知 */
         sdk_ssvr_set_rwset(ssvr);
 
-        timeout.tv_sec = sdk_ssvr_get_timeout(ctx, ssvr)+1;
+        timeout.tv_sec = sdk_ssvr_get_timeout(ctx, ssvr);
         timeout.tv_usec = 0;
-        fprintf(stderr, "sec:%lu\n", timeout.tv_sec);
         ret = select(ssvr->max+1, &ssvr->rset, &ssvr->wset, NULL, &timeout);
         if (ret < 0) {
             if (EINTR == errno) { continue; }
@@ -1047,8 +1044,6 @@ static int sdk_ssvr_cmd_proc_all_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
  ******************************************************************************/
 static size_t sdk_ssvr_write_conn_info(void *ptr, size_t size, size_t nmemb, void *stream)
 {
-    fprintf(stderr, "Call %s()! size:%lu nmemb:%lu", __func__, size, nmemb);
-
     if (strlen((char *)stream) + strlen((char *)ptr) > SDK_CONN_INFO_MAX_LEN) {
         return 0;
     }
