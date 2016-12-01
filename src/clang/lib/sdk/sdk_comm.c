@@ -391,7 +391,7 @@ uint64_t sdk_gen_serial(sdk_cntx_t *ctx)
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
- **注意事项:
+ **注意事项: 外部需要主动调用sdk_send_mgr_unlock()进行解锁操作
  **作    者: # Qifeng.zou # 2016.11.10 10:09:45 #
  ******************************************************************************/
 int sdk_send_mgr_insert(sdk_cntx_t *ctx, sdk_send_item_t *item, lock_e lock)
@@ -765,18 +765,18 @@ int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
 }
 
 /******************************************************************************
- **函数名称: sdk_send_timeout_hdl
+ **函数名称: sdk_send_data_is_timeout_and_hdl
  **功    能: 发送超时的处理
  **输入参数:
  **     ctx: 全局对象
- **     addr: 处理数据(头+体)
+ **     addr: 将要被发送的数据(头+体)
  **输出参数: NONE
  **返    回: true:已超时 false:未超时
  **实现描述: 
  **注意事项: 此时协议头依然为主机字节序
  **作    者: # Qifeng.zou # 2016.11.10 11:48:21 #
  ******************************************************************************/
-bool sdk_send_timeout_hdl(sdk_cntx_t *ctx, void *addr)
+bool sdk_send_data_is_timeout_and_hdl(sdk_cntx_t *ctx, void *addr)
 {
     void *data;
     sdk_send_item_t *item;
@@ -786,12 +786,12 @@ bool sdk_send_timeout_hdl(sdk_cntx_t *ctx, void *addr)
     if (NULL == item) {
         return true;
     }
-    else if (time(NULL) >= item->ttl) {
+    else if (time(NULL) >= item->ttl) { /* 判断是否超时 */
+        item->stat = SDK_STAT_SEND_TIMEOUT;
         if (item->cb) {
             data = (void *)(head + 1);
-            item->cb(head->type, data, head->length, NULL, 0, SDK_STAT_SEND_TIMEOUT, item->param);
+            item->cb(head->type, data, head->length, NULL, 0, item->stat, item->param);
         }
-        item->stat = SDK_STAT_SEND_TIMEOUT;
         sdk_send_mgr_unlock(ctx, WRLOCK);
 
         sdk_send_mgr_delete(ctx, head->serial);

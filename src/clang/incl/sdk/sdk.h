@@ -29,7 +29,7 @@ typedef enum
  *  len: 数据长度
  *  reason: 回调原因(0:发送成功 -1:发送失败 -2:超时未发送 -3:发送后超时未应答)
  * 作用: 发送成功还是失败都会调用此回调 */
-typedef int (*sdk_send_cb_t)(uint16_t cmd, const void *orig, size_t size,
+typedef int (*sdk_send_cb_t)(uint32_t cmd, const void *orig, size_t size,
         char *ack, size_t ack_len, sdk_send_stat_e stat, void *param);
 
 /* 发送单元 */
@@ -38,7 +38,7 @@ typedef struct
     uint64_t serial;                    /* 序列号 */
     sdk_send_stat_e stat;               /* 处理状态 */
 
-    uint16_t cmd;                       /* 命令类型 */
+    uint32_t cmd;                       /* 命令类型 */
     int len;                            /* 报体长度 */
     time_t ttl;                         /* 超时时间 */
     void *data;                         /* 发送数据 */
@@ -138,7 +138,7 @@ int sdk_send_mgr_trav(sdk_cntx_t *ctx);
 
 int sdk_send_succ_hdl(sdk_cntx_t *ctx, void *addr, size_t len);
 int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len);
-bool sdk_send_timeout_hdl(sdk_cntx_t *ctx, void *addr);
+bool sdk_send_data_is_timeout_and_hdl(sdk_cntx_t *ctx, void *addr);
 bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint64_t serial, void *ack);
 
 int sdk_queue_init(sdk_queue_t *q);
@@ -149,10 +149,10 @@ bool sdk_queue_empty(sdk_queue_t *q);
 
 /* 对外接口 */
 sdk_cntx_t *sdk_init(const sdk_conf_t *conf);
-int sdk_cmd_add(sdk_cntx_t *ctx, uint16_t cmd, uint16_t ack);
-int sdk_register(sdk_cntx_t *ctx, uint16_t cmd, sdk_reg_cb_t proc, void *args);
+int sdk_cmd_add(sdk_cntx_t *ctx, uint32_t cmd, uint32_t ack);
+int sdk_register(sdk_cntx_t *ctx, uint32_t cmd, sdk_reg_cb_t proc, void *args);
 int sdk_launch(sdk_cntx_t *ctx);
-uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd, const void *data, size_t size, int timeout, sdk_send_cb_t cb, void *param);
+uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd, const void *data, size_t size, int timeout, sdk_send_cb_t cb, void *param);
 int sdk_network_switch(sdk_cntx_t *ctx, int status);
 
 #endif /*__SDK_H__*/

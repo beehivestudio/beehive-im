@@ -132,8 +132,8 @@ static inline int sdk_reg_cmp_cb(const sdk_reg_t *reg1, const sdk_reg_t *reg2)
 /* 命令项 */
 typedef struct
 {
-    uint16_t ack;                           /* "应答"命令 */
-    uint16_t req;                           /* 对应的"请求"命令 */
+    uint32_t ack;                           /* "应答"命令 */
+    uint32_t req;                           /* 对应的"请求"命令 */
 } sdk_cmd_ack_t;
 
 /******************************************************************************

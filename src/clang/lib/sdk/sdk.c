@@ -146,7 +146,7 @@ int sdk_launch(sdk_cntx_t *ctx)
  **注意事项: 不允许重复注册
  **作    者: # Qifeng.zou # 2016.11.10 16:50:18 #
  ******************************************************************************/
-int sdk_cmd_add(sdk_cntx_t *ctx, uint16_t req, uint16_t ack)
+int sdk_cmd_add(sdk_cntx_t *ctx, uint32_t req, uint32_t ack)
 {
     sdk_cmd_ack_t *item;
 
@@ -184,7 +184,7 @@ int sdk_cmd_add(sdk_cntx_t *ctx, uint16_t req, uint16_t ack)
  **     2. 不允许重复注册
  **作    者: # Qifeng.zou # 2015.05.19 #
  ******************************************************************************/
-int sdk_register(sdk_cntx_t *ctx, uint16_t cmd, sdk_reg_cb_t proc, void *param)
+int sdk_register(sdk_cntx_t *ctx, uint32_t cmd, sdk_reg_cb_t proc, void *param)
 {
     sdk_reg_t *item;
 
@@ -228,7 +228,7 @@ int sdk_register(sdk_cntx_t *ctx, uint16_t cmd, sdk_reg_cb_t proc, void *param)
  **     3. 只要SSVR未处于未上线成功的状态, 则认为联网失败.
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-uint32_t sdk_async_send(sdk_cntx_t *ctx, uint16_t cmd, 
+uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd, 
         const void *data, size_t size, int timeout, sdk_send_cb_t cb, void *param)
 {
     int ret;

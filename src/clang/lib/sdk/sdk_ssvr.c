@@ -24,7 +24,7 @@ static int sdk_ssvr_recv_cmd(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr);
 static int sdk_ssvr_recv_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr);
 
 static int sdk_ssvr_data_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck);
-static bool sdk_is_sys_mesg(uint16_t cmd);
+static bool sdk_is_sys_mesg(uint32_t cmd);
 static int sdk_sys_mesg_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck, void *addr);
 static int sdk_exp_mesg_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck, void *addr);
 
@@ -257,7 +257,7 @@ void *sdk_ssvr_routine(void *_ctx)
         /* 3.2 等待事件通知 */
         sdk_ssvr_set_rwset(ssvr);
 
-        timeout.tv_sec = sdk_ssvr_get_timeout(ctx, ssvr);
+        timeout.tv_sec = sdk_ssvr_get_timeout(ctx, ssvr)+1;
         timeout.tv_usec = 0;
         fprintf(stderr, "sec:%lu\n", timeout.tv_sec);
         ret = select(ssvr->max+1, &ssvr->rset, &ssvr->wset, NULL, &timeout);
@@ -756,7 +756,7 @@ static int sdk_ssvr_wiov_add(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
             break;
         }
         /* > 判断是否超时 */
-        else if (sdk_send_timeout_hdl(ctx, (void *)head)) {
+        else if (sdk_send_data_is_timeout_and_hdl(ctx, (void *)head)) {
             continue;
         }
 
@@ -873,7 +873,7 @@ static int sdk_ssvr_clear_mesg(sdk_ssvr_t *ssvr)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 14:25:41 #
  ******************************************************************************/
-static bool sdk_is_sys_mesg(uint16_t cmd)
+static bool sdk_is_sys_mesg(uint32_t cmd)
 {
     switch (cmd) {
         case CMD_PING:
