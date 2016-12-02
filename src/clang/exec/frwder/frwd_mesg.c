@@ -80,7 +80,7 @@ static int frwd_mesg_from_fw_def_hdl(int type, int orig, char *data, size_t len,
     /* > 发送数据 */
     nid = rtmq_sub_query(ctx->backend, type);
     if (-1 == nid) {
-        log_error(ctx->log, "No module sub type! type:%u", type);
+        log_error(ctx->log, "No module sub type! type:0x%04X", type);
         return 0;
     }
 
