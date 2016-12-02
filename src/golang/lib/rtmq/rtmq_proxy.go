@@ -443,33 +443,13 @@ func (svr *RtmqProxyServer) Stop() {
 func rtmq_head_ntoh(p *RtmqRecvPacket) *RtmqHeader {
 	head := &RtmqHeader{}
 
-	head.cmd = p.get_cmd()       /* CMD */
-	head.nid = p.get_nid()       /* NID */
-	head.flag = p.get_flag()     /* FLAG */
-	head.length = p.get_len()    /* LENGTH */
-	head.chksum = p.get_chksum() /* CHKSUM */
+	head.cmd = binary.BigEndian.Uint32(p.head[0:4])      /* CMD */
+	head.nid = binary.BigEndian.Uint32(p.head[4:8])      /* NID */
+	head.flag = binary.BigEndian.Uint32(p.head[8:12])    /* FLAG */
+	head.length = binary.BigEndian.Uint32(p.head[12:16]) /* LENGTH */
+	head.chksum = binary.BigEndian.Uint32(p.head[16:20]) /* CHKSUM */
 
 	return head
-}
-
-func (p *RtmqRecvPacket) get_cmd() uint32 {
-	return binary.BigEndian.Uint32(p.head[0:4])
-}
-
-func (p *RtmqRecvPacket) get_nid() uint32 {
-	return binary.BigEndian.Uint32(p.head[4:8])
-}
-
-func (p *RtmqRecvPacket) get_flag() uint32 {
-	return binary.BigEndian.Uint32(p.head[8:12])
-}
-
-func (p *RtmqRecvPacket) get_len() uint32 {
-	return binary.BigEndian.Uint32(p.head[12:16])
-}
-
-func (p *RtmqRecvPacket) get_chksum() uint32 {
-	return binary.BigEndian.Uint32(p.head[16:20])
 }
 
 /* "主机->网络"字节序 */
@@ -655,7 +635,7 @@ func (c *RtmqProxyConn) send_routine() {
 				return
 			}
 
-		case <-time.After(5 * time.Second): /* 保活消息 */
+		case <-time.After(30 * time.Second): /* 保活消息 */
 			if c.kpalive_times > 3 &&
 				RTMQ_KPALIVE_STAT_SENT == c.kpalive_stat {
 				return
