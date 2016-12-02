@@ -120,6 +120,8 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head->length = size - sizeof(mesg_header_t);
     head->flag = 0;
     head->sid = info->sessionid;
+    head->serial = sdk_gen_serial(ctx);
+    head->chksum = MSG_CHKSUM_VAL;
 
     mesg_online_req__pack(&online, addr+sizeof(mesg_header_t));
 

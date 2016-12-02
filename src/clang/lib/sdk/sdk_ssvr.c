@@ -759,8 +759,8 @@ static int sdk_ssvr_wiov_add(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
 
         len = sizeof(mesg_header_t) + head->length;
 
-        log_trace(ssvr->log, "cmd:0x%04X serial:%lu len:%d flag:%d",
-                head->type, head->serial, head->length, head->flag);
+        log_trace(ssvr->log, "cmd:0x%04X serial:%lu len:%d flag:%d head:%d",
+                head->type, head->serial, head->length, head->flag, sizeof(mesg_header_t));
 
         MESG_HEAD_HTON(head, head);
 

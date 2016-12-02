@@ -82,6 +82,10 @@ func (head *MesgHeader) GetCmd() uint32 {
 	return head.Cmd
 }
 
+func (head *MesgHeader) GetFlag() uint32 {
+	return head.Flag
+}
+
 func (head *MesgHeader) GetLength() uint32 {
 	return head.Length
 }

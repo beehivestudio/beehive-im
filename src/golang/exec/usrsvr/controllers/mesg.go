@@ -111,8 +111,12 @@ func (ctx *UsrSvrCntx) online_req_isvalid(head *comm.MesgHeader, req *mesg.MesgO
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgOnlineReq) {
+
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+
+	ctx.log.Debug("Online request header! cmd:0x%X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
+		head.GetCmd(), head.GetFlag(), head.GetLength(), head.GetChkSum(), head.GetSid(), head.GetNid(), head.GetSerial(), comm.MESG_HEAD_SIZE)
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgOnlineReq{}
@@ -316,7 +320,7 @@ func UsrSvrOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Recv online request!")
+	ctx.log.Debug("Recv online request! cmd:0x%04X orig:%d length:%d", cmd, orig, length)
 
 	/* 1. > 解析上线请求 */
 	head, req := ctx.online_parse(data)
@@ -807,7 +811,7 @@ func UsrSvrJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, p
 		return -1
 	}
 
-	ctx.log.Debug("Recv join request!")
+	ctx.log.Debug("Recv join request! cmd:0x%04X orig:%d length:%d", cmd, orig, length)
 
 	/* 1. > 解析JOIN请求 */
 	head, req := ctx.join_parse(data)

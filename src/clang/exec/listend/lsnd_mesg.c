@@ -37,19 +37,19 @@ static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_ex
  **输出参数:
  **返    回: 0:成功 !0:失败
  **实现描述: 直接将消息转发给上游服务.
- **注意事项: 需要将协议头转换为网络字节序
+ **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
 int chat_mesg_def_hdl(chat_conn_extra_t *conn, unsigned int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
-    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
-
-    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            head->sid, head->serial, len, head->body);
+    mesg_header_t hhead, *head = (mesg_header_t *)data; /* 消息头 */
 
     /* > 转换字节序 */
-    MESG_HEAD_HTON(head, head);
+    MESG_HEAD_HTON(head, &hhead);
+
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            hhead.sid, hhead.serial, len, hhead.body);
 
     /* > 转发数据 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -78,19 +78,22 @@ int chat_mesg_def_hdl(chat_conn_extra_t *conn, unsigned int type, void *data, in
  **        optional string version = 4;     // M|APP版本|字串|
  **        optional uint32 terminal = 5;    // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
  **     }
- **注意事项: 需要将协议头转换为网络字节序
+ **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
 int chat_mesg_online_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
-    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
-
-    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            head->sid, head->serial, len, head->body);
+    lsnd_conf_t *conf = &lsnd->conf;
+    mesg_header_t *head = (mesg_header_t *)data, hhead; /* 消息头 */
 
     /* > 转换字节序 */
-    MESG_HEAD_HTON(head, head);
+    MESG_HEAD_NTOH(head, &hhead);
+
+    head->nid = ntohl(conf->nid);
+
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            hhead.sid, hhead.serial, len, hhead.body);
 
     /* > 转发ONLINE请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -226,17 +229,23 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
  **输出参数:
  **返    回: 0:成功 !0:失败(注: 该函数始终返回-1)
  **实现描述: 修改连接状态 + 并释放相关资源.
- **注意事项: 需要将协议头转换为网络字节序
+ **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.10.01 09:15:01 #
  ******************************************************************************/
 int chat_mesg_offline_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     chat_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
-    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
+    lsnd_conf_t *conf = &lsnd->conf;
+    mesg_header_t *head = (mesg_header_t *)data, hhead; /* 消息头 */
+
+    /* > 转换字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    head->nid = ntohl(conf->nid);
 
     log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            head->sid, head->serial, len, head->body);
+            hhead.sid, hhead.serial, len, hhead.body);
 
     /* > 查找扩展数据 */
     key.sid = head->sid;
@@ -250,9 +259,6 @@ int chat_mesg_offline_req_hdl(chat_conn_extra_t *conn, int type, void *data, int
     extra->stat = CHAT_CONN_STAT_OFFLINE;
 
     hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
-
-    /* > 转换字节序 */
-    MESG_HEAD_HTON(head, head);
 
     /* > 转发下线请求 */
     rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -275,19 +281,22 @@ int chat_mesg_offline_req_hdl(chat_conn_extra_t *conn, int type, void *data, int
  **输出参数:
  **返    回: 0:成功 !0:失败
  **实现描述: 请求数据的内存结构: 流水信息 + 消息头 + 消息体
- **注意事项: 需要将协议头转换为网络字节序
+ **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
 int chat_mesg_join_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
-    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
-
-    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            head->sid, head->serial, len, head->body);
+    lsnd_conf_t *conf = &lsnd->conf;
+    mesg_header_t *head = (mesg_header_t *)data, hhead; /* 消息头 */
 
     /* > 转换字节序 */
-    MESG_HEAD_HTON(head, head);
+    MESG_HEAD_NTOH(head, &hhead);
+
+    head->nid = ntohl(conf->nid);
+
+    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
+            hhead.sid, hhead.serial, len, hhead.body);
 
     /* > 转发JOIN请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -391,19 +400,22 @@ int chat_mesg_join_ack_hdl(int type, int orig, char *data, size_t len, void *arg
  **     optional uint64 uid = 1;    // M|用户ID|数字|
  **     optional uint64 rid = 2;    // M|聊天室ID|数字|
  **  }
- **注意事项: 需要将协议头转换为网络字节序
+ **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
 int chat_mesg_unjoin_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    lsnd_conf_t *conf = &lsnd->conf;
     mesg_header_t hhead, *head = (mesg_header_t *)data; /* 消息头 */
 
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, &hhead);
 
+    head->nid = ntohl(conf->nid);
+
     log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            head->sid, head->serial, len, head->body);
+            hhead.sid, hhead.serial, len, hhead.body);
 
     /* > 从聊天室中删除此会话 */
     chat_del_session(lsnd->chat_tab, hhead.sid);
@@ -431,12 +443,13 @@ int chat_mesg_unjoin_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
  **     optional uint64 uid = 1;    // M|用户ID|数字|
  **     optional uint64 rid = 2;    // M|聊天室ID|数字|
  **  }
- **注意事项: 需要将协议头转换为网络字节序
+ **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
 int chat_mesg_ping_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    lsnd_conf_t *conf = &lsnd->conf;
     mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
     /* > 转换字节序 */
@@ -445,6 +458,7 @@ int chat_mesg_ping_req_hdl(chat_conn_extra_t *conn, int type, void *data, int le
     log_debug(lsnd->log, "cid:%lu sid:%lu serial:%lu len:%d chksum:0x%08X!",
             conn->cid, head->sid, head->serial, len, head->chksum);
 
+    head->nid = conf->nid;
     head->type = CMD_PONG;
 
     /* > 发送PONG应答 */

@@ -833,7 +833,7 @@ bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint64_t serial, void *ack)
         return false;
     }
 
-    log_debug(ctx->log, "Found request command! serial:%lu", serial);
+    log_debug(ctx->log, "Found request command! serial:%lu head:%d", serial, sizeof(mesg_header_t));
 
     memset(&key, 0, sizeof(key));
 
