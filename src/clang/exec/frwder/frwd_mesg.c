@@ -66,16 +66,14 @@ static int frwd_mesg_from_fw_def_hdl(int type, int orig, char *data, size_t len,
 {
     int nid;
     frwd_cntx_t *ctx = (frwd_cntx_t *)args;
-    mesg_header_t *head = (mesg_header_t *)data;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
 
-    /* > 转换字节序 */
-    MESG_HEAD_NTOH(head, head);
+    /* > 字节序转化 */
+    MESG_HEAD_NTOH(head, &hhead);
 
-    log_trace(ctx->log, "sid:%lu serial:%lu type:%d len:%d flag:%d chksum:[0x%X/0x%X]",
-            head->sid, head->serial, head->type,
-            head->length, head->flag, head->chksum, MSG_CHKSUM_VAL);
-
-    MESG_HEAD_HTON(head, head);
+    log_trace(ctx->log, "type:0x%04X sid:%lu serial:%lu len:%d flag:%d chksum:[0x%X/0x%X]",
+            hhead.type, hhead.sid, hhead.serial,
+            hhead.length, hhead.flag, hhead.chksum, MSG_CHKSUM_VAL);
 
     /* > 发送数据 */
     nid = rtmq_sub_query(ctx->backend, type);
@@ -104,17 +102,16 @@ static int frwd_mesg_from_fw_def_hdl(int type, int orig, char *data, size_t len,
  ******************************************************************************/
 static int frwd_mesg_from_bc_def_hdl(int type, int orig, char *data, size_t len, void *args)
 {
-    serial_t serial;
     frwd_cntx_t *ctx = (frwd_cntx_t *)args;
-    mesg_header_t *head = (mesg_header_t *)data;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
 
-    MESG_HEAD_NTOH(head, head);
+    /* > 字节序转化 */
+    MESG_HEAD_NTOH(head, &hhead);
 
-    serial.serial = head->serial;
-    log_trace(ctx->log, "serial:%lu", head->serial);
-
-    MESG_HEAD_HTON(head, head);
+    log_trace(ctx->log, "type:0x%04X sid:%lu serial:%lu nid:%d len:%d flag:%d chksum:[0x%X/0x%X]",
+            hhead.type, hhead.sid, hhead.serial, hhead.nid,
+            hhead.length, hhead.flag, hhead.chksum, MSG_CHKSUM_VAL);
 
     /* > 发送数据 */
-    return rtmq_async_send(ctx->forward, type, serial.nid, data, len);
+    return rtmq_async_send(ctx->forward, type, hhead.nid, data, len);
 }
