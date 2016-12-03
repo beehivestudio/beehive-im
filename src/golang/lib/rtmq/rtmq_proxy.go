@@ -3,6 +3,7 @@ package rtmq
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"math/rand"
 	"net"
@@ -349,6 +350,7 @@ func (ctx *RtmqProxyCntx) AsyncSend(cmd uint32, data []byte, length uint32) int 
 
 	select {
 	case ctx.server[idx].send_chan <- p:
+		fmt.Printf("Send data success")
 		return 0
 	case <-time.After(3 * time.Second): /* 超时则丢弃 */
 		return -1
