@@ -100,6 +100,7 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
 
     /* > 设置ONLINE字段 */
     online.uid = conf->uid;
+    online.sid = info->sessionid;
     online.app = conf->app;
     online.version = conf->version;
     online.token = info->token;

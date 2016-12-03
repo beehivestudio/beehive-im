@@ -85,15 +85,23 @@ int chat_mesg_online_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
-    mesg_header_t *head = (mesg_header_t *)data, hhead; /* 消息头 */
+    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
     /* > 转换字节序 */
-    MESG_HEAD_NTOH(head, &hhead);
+    MESG_HEAD_NTOH(head, head);
+    if (!MESG_CHKSUM_ISVALID(head)) {
+        log_error(lsnd->log, "Head is invalid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
+                head->sid, head->serial, len, head->chksum);
+        return -1;
+    }
 
-    head->nid = ntohl(conf->nid);
+    head->sid = conn->cid;
+    head->nid = conf->nid;
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            hhead.sid, hhead.serial, len, hhead.body);
+    log_debug(lsnd->log, "Head is invalid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
+            head->sid, head->serial, len, head->chksum);
+
+    MESG_HEAD_NTOH(head, head);
 
     /* > 转发ONLINE请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -190,8 +198,8 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
 
     cid = hhead.sid;
 
+    MESG_HEAD_PRINT(lsnd->log, head)
     MESG_HEAD_PRINT(lsnd->log, &hhead)
-    log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取有效信息 */
     ack = mesg_online_ack__unpack(NULL, hhead.length, (void *)(head + 1));
