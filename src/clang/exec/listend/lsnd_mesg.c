@@ -101,7 +101,7 @@ int chat_mesg_online_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
     log_debug(lsnd->log, "Head is invalid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
             head->sid, head->serial, len, head->chksum);
 
-    MESG_HEAD_NTOH(head, head);
+    MESG_HEAD_HTON(head, head);
 
     /* > 转发ONLINE请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -111,6 +111,9 @@ int chat_mesg_online_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
  **函数名称: chat_mesg_online_ack_logic_hdl
  **功    能: ONLINE应答逻辑处理
  **输入参数:
+ **     lsnd: 全局对象
+ **     ack: 上线应答
+ **     cid: 连接ID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
@@ -136,7 +139,7 @@ static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack,
     else if (0 == ack->sid) { /* SID分配失败 */
         extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
         hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
-        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu", cid);
+        log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu errmsg:%s", cid, ack->errmsg);
         acc_async_kick(lsnd->access, cid);
         return -1;
     }
