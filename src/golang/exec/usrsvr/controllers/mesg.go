@@ -64,12 +64,12 @@ func (ctx *UsrSvrCntx) online_token_decode(token string) *OnlineToken {
 }
 
 /******************************************************************************
- **函数名称: online_req_isvalid
- **功    能: 判断ONLINE是否合法
+ **函数名称: online_req_check
+ **功    能: 检验ONLINE请求合法性
  **输入参数:
  **     req: ONLINE请求
  **输出参数: NONE
- **返    回: true:合法 false:非法
+ **返    回: 异常信息
  **实现描述: 计算TOKEN合法性
  **注意事项:
  **     1.TOKEN的格式"${uid}:${ttl}:${sid}"
@@ -79,21 +79,21 @@ func (ctx *UsrSvrCntx) online_token_decode(token string) *OnlineToken {
  **     2.头部数据(MesgHeader)中的SID此时表示的是客户端的连接CID.
  **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
+func (ctx *UsrSvrCntx) online_req_check(req *mesg.MesgOnlineReq) error {
 	token := ctx.online_token_decode(req.GetToken())
 	if nil == token {
 		ctx.log.Error("Decode token failed!")
-		return false
+		return errors.New("Decode token failed!")
 	} else if token.ttl < time.Now().Unix() {
 		ctx.log.Error("Token is timeout!")
-		return false
+		return errors.New("Token is timeout!")
 	} else if uint64(token.uid) != req.GetUid() || uint64(token.sid) != req.GetSid() {
 		ctx.log.Error("Token is invalid! uid:%d/%d sid:%d/%d",
 			token.uid, req.GetUid(), token.sid, req.GetSid())
-		return false
+		return errors.New("Token is invalid!!")
 	}
 
-	return true
+	return nil
 }
 
 /******************************************************************************
@@ -105,22 +105,22 @@ func (ctx *UsrSvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
  **返    回:
  **     head: 通用协议头
  **     req: 协议体内容
+ **     err: 错误描述
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgOnlineReq) {
+	head *comm.MesgHeader, req *mesg.MesgOnlineReq, err error) {
 
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !comm.MesgHeadIsValid(head) {
-		ctx.log.Error("Header of Online request is invalid!")
-		ctx.log.Error("cmd:0x%04X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
+		ctx.log.Error("Header of Online request is invalid! cmd:0x%04X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
 			head.GetCmd(), head.GetFlag(), head.GetLength(),
 			head.GetChkSum(), head.GetSid(), head.GetNid(),
 			head.GetSerial(), comm.MESG_HEAD_SIZE)
-		return nil, nil
+		return nil, nil, errors.New("Header of online request is invalied!")
 	}
 
 	ctx.log.Debug("Online request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
@@ -130,18 +130,19 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgOnlineReq{}
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal online request failed! errmsg:%s", err.Error())
-		return head, nil
+		return head, nil, errors.New("Unmarshal online request failed!")
 	}
 
 	/* > 校验协议合法性 */
-	if !ctx.online_req_isvalid(req) {
-		return head, nil
+	err = ctx.online_req_check(req)
+	if nil != err {
+		return head, nil, err
 	}
 
-	return head, req
+	return head, req, nil
 }
 
 /******************************************************************************
@@ -333,18 +334,18 @@ func UsrSvrOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32,
 	ctx.log.Debug("Recv online request! cmd:0x%04X orig:%d length:%d", cmd, orig, length)
 
 	/* 1. > 解析上线请求 */
-	head, req := ctx.online_parse(data)
+	head, req, err := ctx.online_parse(data)
 	if nil == head {
 		ctx.log.Error("Parse online request failed! Header is invalid.")
 		return -1
 	} else if nil == req {
 		ctx.log.Error("Parse online request failed! Request is invalid.")
-		ctx.send_err_online_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse online request failed!")
+		ctx.send_err_online_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return -1
 	}
 
 	/* 2. > 初始化上线环境 */
-	err := ctx.online_handler(head, req)
+	err = ctx.online_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Online handler failed!")
 		ctx.send_err_online_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
