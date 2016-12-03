@@ -32,8 +32,8 @@ struct  _MesgOnlineAck
   char *version;
   protobuf_c_boolean has_terminal;
   uint32_t terminal;
-  protobuf_c_boolean has_errnum;
-  uint32_t errnum;
+  protobuf_c_boolean has_code;
+  uint32_t code;
   char *errmsg;
 };
 #define MESG_ONLINE_ACK__INIT \

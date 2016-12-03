@@ -3,6 +3,6 @@ message mesg_join_ack
     required uint64 uid = 1;    // M|用户ID|数字|
     required uint64 rid = 2;    // M|聊天室ID|数字|
     required uint32 gid = 3;    // M|分组ID|数字|
-    optional uint32 errnum = 4; // M|错误码|数字|
-    optional string errmsg = 5; // M|错误描述|字串|
+    required uint32 code = 4;   // M|错误码|数字|
+    required string errmsg = 5; // M|错误描述|字串|
 }

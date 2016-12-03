@@ -905,7 +905,6 @@ static int sdk_sys_mesg_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck, 
             return sdk_mesg_ping_handler(ctx, ssvr, sck);
         case CMD_ONLINE_ACK:
             if (!sdk_mesg_online_ack_handler(ctx, ssvr, sck, addr)) {
-                return sdk_mesg_send_sync_req(ctx, ssvr, sck);
             }
             return SDK_ERR;
     }

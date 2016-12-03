@@ -40,8 +40,8 @@
 >   required string app = 3;        // M|APP名|字串|<br>
 >   required string version = 4;    // M|APP版本|字串|<br>
 >   optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
->   optional uint32 errnum = 6;     // M|错误码|数字|<br>
->   optional string errmsg = 7;     // M|错误描述|字串|<br>
+>   required uint32 code = 6;       // M|错误码|数字|<br>
+>   required string errmsg = 7;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -72,8 +72,8 @@
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
 >   required uint32 gid = 3;        // M|分组ID|数字|<br>
->   optional uint32 errnum = 4;     // M|错误码|数字|<br>
->   optional string errmsg = 5;     // M|错误描述|字串|<br>
+>   required uint32 code = 4;       // M|错误码|数字|<br>
+>   required string errmsg = 5;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -114,8 +114,8 @@
 协议格式:<br>
 >{<br>
 >   required uint32 sub = 1;        // M|订阅的数据|数字|<br>
->   optional uint32 errnum = 2;     // M|错误码|数字|<br>
->   optional string errmsg = 3;     // M|错误描述|字串|<br>
+>   required uint32 code = 2;       // M|错误码|数字|<br>
+>   required string errmsg = 3;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -132,8 +132,8 @@
 协议格式:<br>
 >{<br>
 >   required uint32 sub = 1;        // M|取消订阅的数据|数字|<br>
->   optional uint32 errnum = 2;     // M|错误码|数字|<br>
->   optional string errmsg = 3;     // M|错误描述|字串|<br>
+>   required uint32 code = 2;       // M|错误码|数字|<br>
+>   required string errmsg = 3;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -158,8 +158,8 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 私聊消息应答(PRVG-MSG-ACK)<br>
 协议格式:
 >{<br>
->   optional uint32 errnum = 1;     // M|错误码|数字|<br>
->   optional string errmsg = 2;     // M|错误描述|字串|<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -201,8 +201,8 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 聊天室消息应答(ROOM-MSG-ACK)<br>
 协议格式: NONE<br>
 >{<br>
->   optional uint32 errnum = 1;     // M|错误码<br>
->   optional string errmsg = 2;     // M|错误描述<br>
+>   required uint32 code = 1;       // M|错误码<br>
+>   required string errmsg = 2;     // M|错误描述<br>
 >}
 
 ---
@@ -220,7 +220,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 通用异常消息(UNUSUAL)<br>
 协议格式:<br>
 >{<br>
->   required uint32 errnum = 1;     // M|错误码|数字|<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
 >   required string errmsg = 2;     // M|错误描述|字串|<br>
 >}
 

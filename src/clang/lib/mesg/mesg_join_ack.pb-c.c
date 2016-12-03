@@ -89,12 +89,12 @@ static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "errnum",
+    "code",
     4,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(MesgJoinAck, has_errnum),
-    offsetof(MesgJoinAck, errnum),
+    offsetof(MesgJoinAck, has_code),
+    offsetof(MesgJoinAck, code),
     NULL,
     NULL,
     0,             /* flags */
@@ -114,8 +114,8 @@ static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
   },
 };
 static const unsigned mesg_join_ack__field_indices_by_name[] = {
+  3,   /* field[3] = code */
   4,   /* field[4] = errmsg */
-  3,   /* field[3] = errnum */
   2,   /* field[2] = gid */
   1,   /* field[1] = rid */
   0,   /* field[0] = uid */

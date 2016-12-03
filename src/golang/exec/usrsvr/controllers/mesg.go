@@ -178,7 +178,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 		App:      proto.String(req.GetApp()),
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
-		ErrNum:   proto.Uint32(errno),
+		Code:     proto.Uint32(errno),
 		ErrMsg:   proto.String(errmsg),
 	}
 
@@ -235,7 +235,7 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
 		App:      proto.String(req.GetApp()),
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
-		ErrNum:   proto.Uint32(0),
+		Code:     proto.Uint32(0),
 		ErrMsg:   proto.String("Ok"),
 	}
 
@@ -590,7 +590,7 @@ func (ctx *UsrSvrCntx) send_err_join_ack(head *comm.MesgHeader,
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Gid:    proto.Uint32(0),
-		ErrNum: proto.Uint32(errno),
+		Code:   proto.Uint32(errno),
 		ErrMsg: proto.String(errmsg),
 	}
 
@@ -643,7 +643,7 @@ func (ctx *UsrSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinRe
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Gid:    proto.Uint32(gid),
-		ErrNum: proto.Uint32(0),
+		Code:   proto.Uint32(0),
 		ErrMsg: proto.String("Ok"),
 	}
 
@@ -898,7 +898,7 @@ func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
 	rsp := &mesg.MesgUnjoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
-		ErrNum: proto.Uint32(errno),
+		Code:   proto.Uint32(errno),
 		ErrMsg: proto.String(errmsg),
 	}
 
@@ -984,7 +984,7 @@ func (ctx *UsrSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjo
 	rsp := &mesg.MesgUnjoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
-		ErrNum: proto.Uint32(0),
+		Code:   proto.Uint32(0),
 		ErrMsg: proto.String("Ok"),
 	}
 

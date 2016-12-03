@@ -179,13 +179,13 @@ static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack,
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
  ** {
- **     optional uint64 uid = 1;        // M|用户ID|数字|
- **     optional uint64 sid = 2;        // M|会话ID|数字|
- **     optional string app = 3;        // M|APP名|字串|
- **     optional string version = 4;    // M|APP版本|字串|
+ **     required uint64 uid = 1;        // M|用户ID|数字|
+ **     required uint64 sid = 2;        // M|会话ID|数字|
+ **     required string app = 3;        // M|APP名|字串|
+ **     required string version = 4;    // M|APP版本|字串|
  **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
- **     optional uint32 errnum = 6;     // M|错误码|数字|
- **     optional string errmsg = 7;     // M|错误描述|字串|
+ **     required uint32 code = 6;     // M|错误码|数字|
+ **     required string errmsg = 7;     // M|错误描述|字串|
  ** }
  **注意事项: 此时head.sid为cid.
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #

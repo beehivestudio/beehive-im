@@ -265,22 +265,24 @@ int sdk_mesg_online_ack_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sc
     MesgOnlineAck *ack;
     mesg_header_t *head = (mesg_header_t *)addr;
 
+    /* > 提取上线应答数据*/
     ack = mesg_online_ack__unpack(NULL, head->length, (void *)(head + 1));
     if (NULL == ack) {
         log_error(ctx->log, "Unpack online ack failed!");
         return SDK_ERR;
     }
 
-    if (!ack->has_errnum) {
+    if (!ack->has_code) {
         SDK_SSVR_SET_ONLINE(ssvr, true);
+        sdk_mesg_send_sync_req(ctx, ssvr, sck); /* 发送同步请求 */
+        log_error(ctx->log, "code:0 errmsg:%s", ack->code, ack->errmsg);
     }
     else {
-        SDK_SSVR_SET_ONLINE(ssvr, (0 == ack->errnum)? true : false);
+        SDK_SSVR_SET_ONLINE(ssvr, !ack->code);
+        log_error(ctx->log, "code:%d errmsg:%s", ack->code, ack->errmsg);
     }
-
-    log_debug(ctx->log, "errnum:%d errmsg:%s", ack->errnum, ack->errmsg);
 
     mesg_online_ack__free_unpacked(ack, NULL);
 
-    return SDK_OK;
+    return SDK_SSVR_GET_ONLINE(ssvr)? SDK_OK : SDK_ERR;
 }
