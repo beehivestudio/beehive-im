@@ -434,6 +434,9 @@ static int sdk_ssvr_timeout_hdl(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
 
     /* 如果网路已断开, 则进行重连 */
     if (sck->fd < 0) {
+        if (tm < ssvr->next_conn_tm) {
+            return 0;
+        }
         return sdk_ssvr_reconn(ctx, ssvr);
     }
 
@@ -903,10 +906,8 @@ static int sdk_sys_mesg_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck, 
             return sdk_mesg_pong_handler(ctx, ssvr, sck);
         case CMD_PING:      /* 保活请求 */
             return sdk_mesg_ping_handler(ctx, ssvr, sck);
-        case CMD_ONLINE_ACK:
-            if (!sdk_mesg_online_ack_handler(ctx, ssvr, sck, addr)) {
-            }
-            return SDK_ERR;
+        case CMD_ONLINE_ACK: /* 上线应答 */
+            return sdk_mesg_online_ack_handler(ctx, ssvr, sck, addr);
     }
 
     log_error(ssvr->log, "Unknown type [%d]!", head->type);
