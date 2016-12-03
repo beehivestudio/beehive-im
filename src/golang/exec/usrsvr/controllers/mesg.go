@@ -67,19 +67,19 @@ func (ctx *UsrSvrCntx) online_token_decode(token string) *OnlineToken {
  **函数名称: online_req_isvalid
  **功    能: 判断ONLINE是否合法
  **输入参数:
- **     head: 协议头
  **     req: ONLINE请求
  **输出参数: NONE
  **返    回: true:合法 false:非法
  **实现描述: 计算TOKEN合法性
  **注意事项:
- **     TOKEN的格式"${uid}:${ttl}:${sid}"
- **     uid: 用户ID
- **     ttl: 该token的最大生命时间
- **     sid: 会话SID
+ **     1.TOKEN的格式"${uid}:${ttl}:${sid}"
+ **         uid: 用户ID
+ **         ttl: 该token的最大生命时间
+ **         sid: 会话SID
+ **     2.头部数据(MesgHeader)中的SID此时表示的是客户端的连接CID.
  **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) online_req_isvalid(head *comm.MesgHeader, req *mesg.MesgOnlineReq) bool {
+func (ctx *UsrSvrCntx) online_req_isvalid(req *mesg.MesgOnlineReq) bool {
 	token := ctx.online_token_decode(req.GetToken())
 	if nil == token {
 		ctx.log.Error("Decode token failed!")
@@ -87,9 +87,9 @@ func (ctx *UsrSvrCntx) online_req_isvalid(head *comm.MesgHeader, req *mesg.MesgO
 	} else if token.ttl < time.Now().Unix() {
 		ctx.log.Error("Token is timeout!")
 		return false
-	} else if uint64(token.uid) != req.GetUid() || uint64(token.sid) != head.GetSid() {
+	} else if uint64(token.uid) != req.GetUid() || uint64(token.sid) != req.GetSid() {
 		ctx.log.Error("Token is invalid! uid:%d/%d sid:%d/%d",
-			token.uid, req.GetUid(), token.sid, head.GetSid())
+			token.uid, req.GetUid(), token.sid, req.GetSid())
 		return false
 	}
 
@@ -114,21 +114,31 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		ctx.log.Error("Header of Online request is invalid!")
+		ctx.log.Error("cmd:0x%04X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
+			head.GetCmd(), head.GetFlag(), head.GetLength(),
+			head.GetChkSum(), head.GetSid(), head.GetNid(),
+			head.GetSerial(), comm.MESG_HEAD_SIZE)
+		return nil, nil
+	}
 
-	ctx.log.Debug("Online request header! cmd:0x%X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
-		head.GetCmd(), head.GetFlag(), head.GetLength(), head.GetChkSum(), head.GetSid(), head.GetNid(), head.GetSerial(), comm.MESG_HEAD_SIZE)
+	ctx.log.Debug("Online request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
+		head.GetCmd(), head.GetFlag(), head.GetLength(),
+		head.GetChkSum(), head.GetSid(), head.GetNid(),
+		head.GetSerial(), comm.MESG_HEAD_SIZE)
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgOnlineReq{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal online request failed! errmsg:%s", err.Error())
-		return nil, nil
+		return head, nil
 	}
 
 	/* > 校验协议合法性 */
-	if !ctx.online_req_isvalid(head, req) {
-		return nil, nil
+	if !ctx.online_req_isvalid(req) {
+		return head, nil
 	}
 
 	return head, req
@@ -193,8 +203,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
 
-	return 0
-
+	ctx.log.Debug("Send online ack succ!")
 	return 0
 }
 
@@ -305,11 +314,12 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
  **实现描述:
  **请求协议:
  **     {
- **        required uint64 uid = 1;    // M|用户ID|数字|
- **        required string token = 2;  // M|鉴权TOKEN|字串|
- **        required string app = 3;    // M|APP名|字串|
- **        required string version = 4;    // M|APP版本|字串|
- **        optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+ **        required uint64 uid = 1;         // M|用户ID|数字|
+ **        required uint64 sid = 2;         // M|会话ID|数字|
+ **        required string token = 3;       // M|鉴权TOKEN|字串|
+ **        required string app = 4;         // M|APP名|字串|
+ **        required string version = 5;     // M|APP版本|字串|
+ **        optional uint32 terminal = 6;    // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
  **     }
  **注意事项: 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
@@ -324,8 +334,11 @@ func UsrSvrOnlineReqHandler(cmd uint32, orig uint32, data []byte, length uint32,
 
 	/* 1. > 解析上线请求 */
 	head, req := ctx.online_parse(data)
-	if nil == head || nil != req {
-		ctx.log.Error("Parse online request failed!")
+	if nil == head {
+		ctx.log.Error("Parse online request failed! Header is invalid.")
+		return -1
+	} else if nil == req {
+		ctx.log.Error("Parse online request failed! Request is invalid.")
 		ctx.send_err_online_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse online request failed!")
 		return -1
 	}
