@@ -132,20 +132,21 @@ static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack,
         log_error(lsnd->log, "Didn't find socket from cid table! cid:%lu", cid);
         return -1;
     }
-    else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
+
+    extra->loc &= ~CHAT_EXTRA_LOC_CID_TAB;
+
+    if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
         log_error(lsnd->log, "Connection status isn't establish! cid:%lu", cid);
         return -1;
     }
     else if (0 == ack->sid) { /* SID分配失败 */
-        extra->loc = CHAT_EXTRA_LOC_KICK_TAB;
-        hash_tab_insert(lsnd->conn_kick_tab, extra, WRLOCK);
+        lsnd_kick_insert(lsnd, extra);
         log_error(lsnd->log, "Alloc sid failed! kick this connection! cid:%lu errmsg:%s", cid, ack->errmsg);
-        acc_async_kick(lsnd->access, cid);
-        return -1;
+        return 0;
     }
 
     extra->sid = ack->sid;
-    extra->loc = CHAT_EXTRA_LOC_SID_TAB;
+    extra->loc |= CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
     snprintf(extra->app_name, sizeof(extra->app_name), "%s", ack->app);
@@ -156,7 +157,7 @@ static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack,
     if (hash_tab_insert(lsnd->conn_sid_tab, extra, WRLOCK)) {
         log_error(lsnd->log, "Connection is in sid table!");
         assert(0);
-        return -1;
+        return 0;
     }
 
     return 0;
@@ -671,7 +672,7 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
         return -1;
     }
 
-    extra->loc = CHAT_EXTRA_LOC_CID_TAB;
+    extra->loc |= CHAT_EXTRA_LOC_CID_TAB;
 
     return 0;
 }
@@ -689,6 +690,7 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
  **注意事项:
  **     1. 释放extra对象内存的所有空间, 但是请勿释放extra对象本身.
  **     2. 释放extra前, 必须将该对象从其他各表中删除, 否则存在多线程同时操作一块的风险.
+ **     3. 对象extra的内存空间由access模块框架释放
  **作    者: # Qifeng.zou # 2016.09.20 21:43:13 #
  ******************************************************************************/
 static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra)
@@ -698,30 +700,32 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
     extra->stat = CHAT_CONN_STAT_CLOSED;
     chat_del_session(lsnd->chat_tab, extra->sid);
 
-    switch (extra->loc) {
-        case CHAT_EXTRA_LOC_CID_TAB:
-            key.cid = extra->cid;
-            item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
-            if (item != extra) {
-                assert(0);
-            }
-            break;
-        case CHAT_EXTRA_LOC_SID_TAB:
-            key.sid = extra->sid;
-            item = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
-            if (item != extra) {
-                assert(0);
-            }
-            break;
-        case CHAT_EXTRA_LOC_KICK_TAB:
-            key.sck = sck;
-            item = hash_tab_delete(lsnd->conn_kick_tab, &key, WRLOCK);
-            if (item != extra) {
-                assert(0);
-            }
-            break;
-        default:
+    if (extra->loc & CHAT_EXTRA_LOC_CID_TAB) {
+        key.cid = extra->cid;
+        item = hash_tab_delete(lsnd->conn_cid_tab, &key, WRLOCK);
+        if (item != extra) {
             assert(0);
+        }
+        extra->loc &= ~CHAT_EXTRA_LOC_CID_TAB;
+    }
+
+    if (extra->loc & CHAT_EXTRA_LOC_SID_TAB) {
+        key.sid = extra->sid;
+        item = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
+        if (item != extra) {
+            assert(0);
+        }
+        extra->loc &= ~CHAT_EXTRA_LOC_SID_TAB;
+    }
+
+    if (extra->loc & CHAT_EXTRA_LOC_KICK_TAB) {
+        key.sck = sck;
+        item = hash_tab_delete(lsnd->conn_kick_list, &key, WRLOCK);
+        if (item != extra) {
+            assert(0);
+        }
+
+        extra->loc &= ~CHAT_EXTRA_LOC_KICK_TAB;
     }
 
     return 0;

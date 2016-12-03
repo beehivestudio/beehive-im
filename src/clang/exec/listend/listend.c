@@ -244,16 +244,16 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         ctx->conn_sid_tab = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
                 (hash_cb_t)lsnd_conn_sid_hash_cb,
                 (cmp_cb_t)lsnd_conn_sid_cmp_cb, NULL);
-        if (NULL == ctx->conn_cid_tab) {
+        if (NULL == ctx->conn_sid_tab) {
             log_error(log, "Initialize conn sid table failed!");
             break;
         }
 
         /* > 初始化KICK管理表 */
-        ctx->conn_kick_tab = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
+        ctx->conn_kick_list = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
                 (hash_cb_t)lsnd_conn_kick_hash_cb,
                 (cmp_cb_t)lsnd_conn_kick_cmp_cb, NULL);
-        if (NULL == ctx->conn_kick_tab) {
+        if (NULL == ctx->conn_kick_list) {
             log_error(log, "Initialize conn kick table failed!");
             break;
         }
@@ -269,6 +269,13 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         ctx->frwder = rtmq_proxy_init(&conf->frwder, log);
         if (NULL == ctx->frwder) {
             log_error(log, "Initialize real-time-transport-protocol failed!");
+            break;
+        }
+
+        /* > 创建踢人线程池 */
+        ctx->conn_kick_tp = thread_pool_init(1, NULL, (void *)ctx);
+        if (NULL == ctx->conn_kick_tp) {
+            log_error(log, "Initialize kick thread pool failed!");
             break;
         }
 
@@ -347,6 +354,12 @@ static int lsnd_launch(lsnd_cntx_t *ctx)
     /* > 启动代理服务 */
     if (rtmq_proxy_launch(ctx->frwder)) {
         log_error(ctx->log, "Startup invertd upstream failed!");
+        return LSND_ERR;
+    }
+
+    /* > 启动踢人线程 */
+    if (thread_pool_add_worker(ctx->conn_kick_tp, lsnd_kick_timeout_handler, ctx)) {
+        log_error(ctx->log, "Add kick timeout handler failed!");
         return LSND_ERR;
     }
 

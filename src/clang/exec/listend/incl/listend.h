@@ -9,9 +9,11 @@
 #include "rb_tree.h"
 #include "avl_tree.h"
 #include "lsnd_conf.h"
+#include "thread_pool.h"
 
 #define LSND_DEF_CONF_PATH      "../conf/listend.xml"     /* 默认配置路径 */
 #define LSND_CONN_HASH_TAB_LEN  (999999)    /* 哈希表长度 */
+#define LSND_KICK_TTL           (5)
 
 #define CHAT_APP_NAME_LEN       (64)        /* APP名长度 */
 #define CHAT_APP_VERS_LEN       (32)        /* APP版本长度 */
@@ -48,13 +50,10 @@ typedef enum
 } chat_terminal_type_e;
 
 /* 会话数据由哪个表维护 */
-typedef enum
-{
-    CHAT_EXTRA_LOC_UNKNOWN          /* 未知 */
-    , CHAT_EXTRA_LOC_CID_TAB        /* CID表 */
-    , CHAT_EXTRA_LOC_SID_TAB        /* SID表 */
-    , CHAT_EXTRA_LOC_KICK_TAB       /* KICK表 */
-} chat_extra_loc_tab_e;
+#define CHAT_EXTRA_LOC_UNKNOWN      (0)      /* 未知 */
+#define CHAT_EXTRA_LOC_CID_TAB      (0x0001) /* CID表 */
+#define CHAT_EXTRA_LOC_SID_TAB      (0x0002) /* SID表 */
+#define CHAT_EXTRA_LOC_KICK_TAB     (0x0004) /* KICK表 */
 
 /* 连接状态 */
 typedef enum
@@ -78,12 +77,13 @@ typedef struct
     uint64_t cid;                   /* 连接ID */
     uint64_t uid;                   /* 用户ID */
     chat_conn_stat_e stat;          /* 连接状态 */
-    chat_extra_loc_tab_e  loc;      /* 用户数据由哪个表维护 */
+    uint32_t  loc;                  /* 用户数据由哪个表维护(CHAT_EXTRA_LOC_UNKNOWN~) */
 
     time_t create_time;             /* 创建时间 */
     time_t recv_time;               /* 最近接收数据时间 */
     time_t send_time;               /* 最近发送数据时间 */
     time_t keepalive_time;          /* 保活时间 */
+    time_t kick_ttl;                /* 踢除TTL */
 
     char app_name[CHAT_APP_NAME_LEN]; /* 应用名 */
     char app_vers[CHAT_APP_VERS_LEN]; /* 应用版本 */
@@ -108,6 +108,13 @@ typedef struct
     rbt_tree_t *sid_list;           /* 该用户相关的SID列表(以SID为主键) */
 } chat_uid_item_t;
 
+/* 被踢连接 */
+typedef struct
+{
+    uint64_t cid;                   /* 连接ID */
+    time_t ttl;                     /* 被踢时间 */
+} chat_kick_item_t;
+
 /* 全局对象 */
 typedef struct _lsnd_cntx_t
 {
@@ -124,12 +131,16 @@ typedef struct _lsnd_cntx_t
     /* 注意: 以下三个表互斥, 共同个管理类为chat_conn_extra_t的数据  */
     hash_tab_t *conn_sid_tab;       /* 连接管理表(以SID为主键, 数据:chat_conn_extra_t) */
     hash_tab_t *conn_cid_tab;       /* 连接管理表(以CID为主键, 数据:chat_conn_extra_t) */
-    hash_tab_t *conn_kick_tab;      /* 被踢管理表(以SCK为主键, 数据:chat_conn_extra_t) */
+    hash_tab_t *conn_kick_list;     /* 被踢管理表(以SCK为主键, 数据:chat_conn_extra_t) */
+
+    thread_pool_t *conn_kick_tp;    /* 踢人线程池 */
 } lsnd_cntx_t;
 
 int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt);
 int lsnd_usage(const char *exec);
 int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args);
 uint64_t lsnd_gen_cid(lsnd_cntx_t *ctx);
+void *lsnd_kick_timeout_handler(void *_ctx);
+int lsnd_kick_insert(lsnd_cntx_t *ctx, chat_conn_extra_t *conn);
 
 #endif /*__LISTEND_H__*/
