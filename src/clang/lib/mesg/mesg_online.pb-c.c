@@ -50,7 +50,7 @@ void   mesg_online_req__free_unpacked
   assert(message->base.descriptor == &mesg_online_req__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
+static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[6] =
 {
   {
     "uid",
@@ -65,8 +65,20 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "token",
+    "sid",
     2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgOnlineReq, sid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "token",
+    3,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -78,7 +90,7 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   },
   {
     "app",
-    3,
+    4,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -90,7 +102,7 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   },
   {
     "version",
-    4,
+    5,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -102,7 +114,7 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   },
   {
     "terminal",
-    5,
+    6,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
     offsetof(MesgOnlineReq, has_terminal),
@@ -114,16 +126,17 @@ static const ProtobufCFieldDescriptor mesg_online_req__field_descriptors[5] =
   },
 };
 static const unsigned mesg_online_req__field_indices_by_name[] = {
-  2,   /* field[2] = app */
-  4,   /* field[4] = terminal */
-  1,   /* field[1] = token */
+  3,   /* field[3] = app */
+  1,   /* field[1] = sid */
+  5,   /* field[5] = terminal */
+  2,   /* field[2] = token */
   0,   /* field[0] = uid */
-  3,   /* field[3] = version */
+  4,   /* field[4] = version */
 };
 static const ProtobufCIntRange mesg_online_req__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 5 }
+  { 0, 6 }
 };
 const ProtobufCMessageDescriptor mesg_online_req__descriptor =
 {
@@ -133,7 +146,7 @@ const ProtobufCMessageDescriptor mesg_online_req__descriptor =
   "MesgOnlineReq",
   "",
   sizeof(MesgOnlineReq),
-  5,
+  6,
   mesg_online_req__field_descriptors,
   mesg_online_req__field_indices_by_name,
   1,  mesg_online_req__number_ranges,

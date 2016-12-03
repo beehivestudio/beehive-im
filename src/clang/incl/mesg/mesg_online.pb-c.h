@@ -27,6 +27,7 @@ struct  _MesgOnlineReq
 {
   ProtobufCMessage base;
   uint64_t uid;
+  uint64_t sid;
   char *token;
   char *app;
   char *version;
@@ -35,7 +36,7 @@ struct  _MesgOnlineReq
 };
 #define MESG_ONLINE_REQ__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_online_req__descriptor) \
-    , 0, NULL, NULL, NULL, 0,0 }
+    , 0, 0, NULL, NULL, NULL, 0,0 }
 
 
 /* MesgOnlineReq methods */

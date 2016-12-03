@@ -3,10 +3,11 @@ package mesg;
 message mesg_online_req
 {
     required uint64 Uid = 1;        // M|用户ID|数字|
-    required string Token = 2;      // M|鉴权TOKEN|字串|
-    required string App = 3;        // M|APP名|字串|
-    required string Version = 4;    // M|APP版本|字串|
-    optional uint32 Terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+    required uint64 Sid = 2;        // M|会话ID|数字|
+    required string Token = 3;      // M|鉴权TOKEN|字串|
+    required string App = 4;        // M|APP名|字串|
+    required string Version = 5;    // M|APP版本|字串|
+    optional uint32 Terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
 }
 
 message mesg_online_ack
