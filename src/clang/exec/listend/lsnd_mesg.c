@@ -198,7 +198,6 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
 
     cid = hhead.sid;
 
-    MESG_HEAD_PRINT(lsnd->log, head)
     MESG_HEAD_PRINT(lsnd->log, &hhead)
 
     /* > 提取有效信息 */
