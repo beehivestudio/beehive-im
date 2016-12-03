@@ -141,7 +141,7 @@ int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.03 16:24:05 #
  ******************************************************************************/
-static int lsnd_kick_trav_cb(chat_kick_item_t *item, list_t *timeout_list)
+static int lsnd_kick_trav_cb(lsnd_kick_item_t *item, list_t *timeout_list)
 {
     time_t ctm = time(NULL);
 
@@ -170,7 +170,7 @@ void *lsnd_kick_timeout_handler(void *_ctx)
     void *addr;
     uint64_t cid;
     list_t *timeout_list;
-    chat_kick_item_t *item, key;
+    lsnd_kick_item_t *item, key;
     lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
 
     timeout_list = list_creat(NULL);
@@ -214,7 +214,7 @@ void *lsnd_kick_timeout_handler(void *_ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.03 18:05:31 #
  ******************************************************************************/
-int lsnd_kick_insert(lsnd_cntx_t *ctx, chat_conn_extra_t *conn)
+int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 {
     conn->loc |= CHAT_EXTRA_LOC_KICK_TAB;
     conn->kick_ttl = time(NULL) + LSND_KICK_TTL;

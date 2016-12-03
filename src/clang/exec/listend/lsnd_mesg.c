@@ -19,15 +19,15 @@
 #include "mesg_online_ack.pb-c.h"
 #include "mesg_join_ack.pb-c.h"
 
-static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
-static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra);
-static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra, void *in, int len);
+static int lsnd_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra);
+static int lsnd_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra);
+static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra, void *in, int len);
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //
 /******************************************************************************
- **函数名称: chat_mesg_def_hdl
+ **函数名称: lsnd_mesg_def_hdl
  **功    能: 消息默认处理
  **输入参数:
  **     type: 全局对象
@@ -40,7 +40,7 @@ static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_ex
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_mesg_def_hdl(chat_conn_extra_t *conn, unsigned int type, void *data, int len, void *args)
+int lsnd_mesg_def_hdl(lsnd_conn_extra_t *conn, unsigned int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t hhead, *head = (mesg_header_t *)data; /* 消息头 */
@@ -59,7 +59,7 @@ int chat_mesg_def_hdl(chat_conn_extra_t *conn, unsigned int type, void *data, in
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_mesg_online_req_hdl
+ **函数名称: lsnd_mesg_online_req_hdl
  **功    能: ONLINE请求处理
  **输入参数:
  **     conn: 连接信息
@@ -81,7 +81,7 @@ int chat_mesg_def_hdl(chat_conn_extra_t *conn, unsigned int type, void *data, in
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_mesg_online_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_online_req_hdl(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -108,7 +108,7 @@ int chat_mesg_online_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
 }
 
 /******************************************************************************
- **函数名称: chat_mesg_online_ack_logic_hdl
+ **函数名称: lsnd_mesg_online_ack_logic_hdl
  **功    能: ONLINE应答逻辑处理
  **输入参数:
  **     lsnd: 全局对象
@@ -120,9 +120,9 @@ int chat_mesg_online_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.01 21:06:07 #
  ******************************************************************************/
-static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t cid)
+static int lsnd_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t cid)
 {
-    chat_conn_extra_t *extra, key;
+    lsnd_conn_extra_t *extra, key;
 
     /* > 查找扩展数据 */
     key.cid = cid;
@@ -167,7 +167,7 @@ static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_mesg_online_ack_hdl
+ **函数名称: lsnd_mesg_online_ack_hdl
  **功    能: ONLINE应答处理
  **输入参数:
  **     type: 数据类型
@@ -190,7 +190,7 @@ static int chat_mesg_online_ack_logic_hdl(lsnd_cntx_t *lsnd, MesgOnlineAck *ack,
  **注意事项: 此时head.sid为cid.
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
  ******************************************************************************/
-int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
+int lsnd_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     uint64_t cid;
     MesgOnlineAck *ack;
@@ -211,9 +211,8 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
         return -1;
     }
 
-    if (chat_mesg_online_ack_logic_hdl(lsnd, ack, cid)) {
+    if (lsnd_mesg_online_ack_logic_hdl(lsnd, ack, cid)) {
         mesg_online_ack__free_unpacked(ack, NULL);
-        log_error(lsnd->log, "Miss required field!");
         return -1;
     }
 
@@ -229,7 +228,7 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_mesg_offline_req_hdl
+ **函数名称: lsnd_mesg_offline_req_hdl
  **功    能: 下线请求处理
  **输入参数:
  **     conn: 连接信息
@@ -243,9 +242,9 @@ int chat_mesg_online_ack_hdl(int type, int orig, char *data, size_t len, void *a
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.10.01 09:15:01 #
  ******************************************************************************/
-int chat_mesg_offline_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_offline_req_hdl(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
-    chat_conn_extra_t *extra, key;
+    lsnd_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
     mesg_header_t *head = (mesg_header_t *)data, hhead; /* 消息头 */
@@ -281,7 +280,7 @@ int chat_mesg_offline_req_hdl(chat_conn_extra_t *conn, int type, void *data, int
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_mesg_join_req_hdl
+ **函数名称: lsnd_mesg_join_req_hdl
  **功    能: JOIN请求处理
  **输入参数:
  **     conn: 连接信息
@@ -295,7 +294,7 @@ int chat_mesg_offline_req_hdl(chat_conn_extra_t *conn, int type, void *data, int
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_mesg_join_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_join_req_hdl(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -317,7 +316,7 @@ int chat_mesg_join_req_hdl(chat_conn_extra_t *conn, int type, void *data, int le
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_mesg_join_ack_hdl
+ **函数名称: lsnd_mesg_join_ack_hdl
  **功    能: JOIN应答处理
  **输入参数:
  **     type: 数据类型
@@ -331,12 +330,12 @@ int chat_mesg_join_req_hdl(chat_conn_extra_t *conn, int type, void *data, int le
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.20 23:40:12 #
  ******************************************************************************/
-int chat_mesg_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
+int lsnd_mesg_join_ack_hdl(int type, int orig, char *data, size_t len, void *args)
 {
     uint32_t gid;
     uint64_t cid;
     MesgJoinAck *ack;
-    chat_conn_extra_t *extra, key;
+    lsnd_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
@@ -396,7 +395,7 @@ int chat_mesg_join_ack_hdl(int type, int orig, char *data, size_t len, void *arg
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_mesg_unjoin_req_hdl
+ **函数名称: lsnd_mesg_unjoin_req_hdl
  **功    能: UNJOIN请求处理(退出聊天室)
  **输入参数:
  **     conn: 连接信息
@@ -414,7 +413,7 @@ int chat_mesg_join_ack_hdl(int type, int orig, char *data, size_t len, void *arg
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_mesg_unjoin_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_unjoin_req_hdl(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -439,7 +438,7 @@ int chat_mesg_unjoin_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_mesg_ping_req_hdl
+ **函数名称: lsnd_mesg_ping_req_hdl
  **功    能: PING请求处理(心跳)
  **输入参数:
  **     conn: 连接信息
@@ -457,7 +456,7 @@ int chat_mesg_unjoin_req_hdl(chat_conn_extra_t *conn, int type, void *data, int 
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int chat_mesg_ping_req_hdl(chat_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_ping_req_hdl(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -484,7 +483,7 @@ int chat_mesg_ping_req_hdl(chat_conn_extra_t *conn, int type, void *data, int le
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_room_mesg_trav_send_hdl
+ **函数名称: lsnd_room_mesg_trav_send_hdl
  **功    能: 依次针对各SESSION下发聊天室消息
  **输入参数:
  **     sid: 会话ID
@@ -501,12 +500,12 @@ typedef struct
     size_t length;              // 被发数据长度
     lsnd_cntx_t *lsnd;          // 帧听层对象
     mesg_header_t *hhead;       // 主机套接字
-} chat_room_mesg_param_t;
+} lsnd_room_mesg_param_t;
 
-static int chat_room_mesg_trav_send_hdl(uint64_t *sid, chat_room_mesg_param_t *param)
+static int lsnd_room_mesg_trav_send_hdl(uint64_t *sid, lsnd_room_mesg_param_t *param)
 {
     uint64_t cid;
-    chat_conn_extra_t *extra, key;
+    lsnd_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = param->lsnd;
     mesg_header_t *head = param->hhead;
 
@@ -529,7 +528,7 @@ static int chat_room_mesg_trav_send_hdl(uint64_t *sid, chat_room_mesg_param_t *p
 }
 
 /******************************************************************************
- **函数名称: chat_mesg_room_mesg_hdl
+ **函数名称: lsnd_mesg_room_mesg_hdl
  **功    能: 下发聊天室消息
  **输入参数:
  **     conn: 连接信息
@@ -544,11 +543,11 @@ static int chat_room_mesg_trav_send_hdl(uint64_t *sid, chat_room_mesg_param_t *p
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.25 01:24:45 #
  ******************************************************************************/
-int chat_mesg_room_mesg_hdl(chat_conn_extra_t *conn, int type, int orig, void *data, size_t len, void *args)
+int lsnd_mesg_room_mesg_hdl(lsnd_conn_extra_t *conn, int type, int orig, void *data, size_t len, void *args)
 {
     uint32_t gid;
     MesgRoom *mesg;
-    chat_room_mesg_param_t param;
+    lsnd_room_mesg_param_t param;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
@@ -574,7 +573,7 @@ int chat_mesg_room_mesg_hdl(chat_conn_extra_t *conn, int type, int orig, void *d
     param.hhead = &hhead;
 
     chat_room_trav(lsnd->chat_tab, mesg->rid, gid,
-            (trav_cb_t)chat_room_mesg_trav_send_hdl, (void *)&param);
+            (trav_cb_t)lsnd_room_mesg_trav_send_hdl, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
     mesg_room__free_unpacked(mesg, NULL);
@@ -586,7 +585,7 @@ int chat_mesg_room_mesg_hdl(chat_conn_extra_t *conn, int type, int orig, void *d
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: chat_callback
+ **函数名称: lsnd_callback
  **功    能: CHAT处理回调
  **输入参数:
  **     acc: Access
@@ -602,21 +601,21 @@ int chat_mesg_room_mesg_hdl(chat_conn_extra_t *conn, int type, int orig, void *d
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.20 22:03:02 #
  ******************************************************************************/
-int chat_callback(acc_cntx_t *acc,
+int lsnd_callback(acc_cntx_t *acc,
         socket_t *sck, int reason, void *user, void *in, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
-    chat_conn_extra_t *extra = (chat_conn_extra_t *)user;
+    lsnd_conn_extra_t *extra = (lsnd_conn_extra_t *)user;
 
     switch (reason) {
         case ACC_CALLBACK_SCK_CREAT:
-            return chat_callback_creat_hdl(lsnd, sck, extra);
+            return lsnd_callback_creat_hdl(lsnd, sck, extra);
         case ACC_CALLBACK_SCK_CLOSED:
             return 0;
         case ACC_CALLBACK_SCK_DESTROY:
-            return chat_callback_destroy_hdl(lsnd, sck, extra);
+            return lsnd_callback_destroy_hdl(lsnd, sck, extra);
         case ACC_CALLBACK_RECEIVE:
-            return chat_callback_recv_hdl(lsnd, sck, extra, in, len);
+            return lsnd_callback_recv_hdl(lsnd, sck, extra, in, len);
         case ACC_CALLBACK_WRITEABLE:
         default:
             break;
@@ -625,19 +624,19 @@ int chat_callback(acc_cntx_t *acc,
 }
 
 /* 聊天室ID哈希回调 */
-static uint64_t chat_rid_list_hash_cb(uint64_t *rid)
+static uint64_t lsnd_rid_list_hash_cb(uint64_t *rid)
 {
     return (uint64_t)rid;
 }
 
 /* 聊天室ID比较回调 */
-static int chat_rid_list_cmp_cb(uint64_t *rid1, uint64_t *rid2)
+static int lsnd_rid_list_cmp_cb(uint64_t *rid1, uint64_t *rid2)
 {
     return (int)((uint64_t)rid1 - (uint64_t)rid2);
 }
 
 /******************************************************************************
- **函数名称: chat_callback_creat_hdl
+ **函数名称: lsnd_callback_creat_hdl
  **功    能: 连接创建的处理
  **输入参数:
  **     lsnd: 全局对象
@@ -649,7 +648,7 @@ static int chat_rid_list_cmp_cb(uint64_t *rid1, uint64_t *rid2)
  **注意事项: 将新建连接放入CONN_CID_TAB维护起来, 待分配了SID后再转移到CONN_SID_TAB中.
  **作    者: # Qifeng.zou # 2016.09.20 21:30:53 #
  ******************************************************************************/
-static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra)
+static int lsnd_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra)
 {
     time_t ctm = time(NULL);
 
@@ -678,7 +677,7 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
 }
 
 /******************************************************************************
- **函数名称: chat_callback_destroy_hdl
+ **函数名称: lsnd_callback_destroy_hdl
  **功    能: 连接销毁的处理
  **输入参数:
  **     lsnd: 全局对象
@@ -693,9 +692,9 @@ static int chat_callback_creat_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_e
  **     3. 对象extra的内存空间由access模块框架释放
  **作    者: # Qifeng.zou # 2016.09.20 21:43:13 #
  ******************************************************************************/
-static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn_extra_t *extra)
+static int lsnd_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra)
 {
-    chat_conn_extra_t key, *item;
+    lsnd_conn_extra_t key, *item;
 
     extra->stat = CHAT_CONN_STAT_CLOSED;
     chat_del_session(lsnd->chat_tab, extra->sid);
@@ -732,7 +731,7 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
 }
 
 /******************************************************************************
- **函数名称: chat_callback_recv_hdl
+ **函数名称: lsnd_callback_recv_hdl
  **功    能: 接收数据的处理
  **输入参数:
  **     lsnd: 全局对象
@@ -748,8 +747,8 @@ static int chat_callback_destroy_hdl(lsnd_cntx_t *lsnd, socket_t *sck, chat_conn
  **     2. 本函数收到的数据是一条完整的数据, 且其内容网络字节序.
  **作    者: # Qifeng.zou # 2016.09.20 21:44:40 #
  ******************************************************************************/
-static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd,
-    socket_t *sck, chat_conn_extra_t *conn, void *in, int len)
+static int lsnd_callback_recv_hdl(lsnd_cntx_t *lsnd,
+    socket_t *sck, lsnd_conn_extra_t *conn, void *in, int len)
 {
     lsnd_reg_t *reg, key;
     mesg_header_t *head = (mesg_header_t *)in;
@@ -765,7 +764,7 @@ static int chat_callback_recv_hdl(lsnd_cntx_t *lsnd,
             return 0;
         }
         log_warn(lsnd->log, "Forward unknown data! type:0x%X", key.type);
-        return chat_mesg_def_hdl(conn, key.type, in, len, (void *)lsnd);
+        return lsnd_mesg_def_hdl(conn, key.type, in, len, (void *)lsnd);
     }
 
     return reg->proc(conn, reg->type, in, len, reg->args);

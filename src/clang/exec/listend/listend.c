@@ -150,37 +150,37 @@ static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
 }
 
 /* CID哈希回调 */
-static uint64_t lsnd_conn_cid_hash_cb(chat_conn_extra_t *extra)
+static uint64_t lsnd_conn_cid_hash_cb(lsnd_conn_extra_t *extra)
 {
     return extra->cid;
 }
 
 /* CID比较回调 */
-static int lsnd_conn_cid_cmp_cb(chat_conn_extra_t *extra1, chat_conn_extra_t *extra2)
+static int lsnd_conn_cid_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
 {
     return (int)(extra1->cid - extra2->cid);
 }
 
 /* SID哈希回调 */
-static uint64_t lsnd_conn_sid_hash_cb(chat_conn_extra_t *extra)
+static uint64_t lsnd_conn_sid_hash_cb(lsnd_conn_extra_t *extra)
 {
     return extra->sid;
 }
 
 /* SID比较回调 */
-static int lsnd_conn_sid_cmp_cb(chat_conn_extra_t *extra1, chat_conn_extra_t *extra2)
+static int lsnd_conn_sid_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
 {
     return (int)(extra1->sid - extra2->sid);
 }
 
 /* KICK哈希回调 */
-static uint64_t lsnd_conn_kick_hash_cb(chat_conn_extra_t *extra)
+static uint64_t lsnd_conn_kick_hash_cb(lsnd_conn_extra_t *extra)
 {
     return (uint64_t)extra->sck;
 }
 
 /* KICK比较回调 */
-static int lsnd_conn_kick_cmp_cb(chat_conn_extra_t *extra1, chat_conn_extra_t *extra2)
+static int lsnd_conn_kick_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
 {
     return (int)(extra1->sck - extra2->sck);
 }
@@ -201,10 +201,10 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
 {
     lsnd_cntx_t *ctx;
     static acc_protocol_t protocol = {
-        chat_callback,
+        lsnd_callback,
         sizeof(mesg_header_t),
         (acc_get_packet_body_size_cb_t)lsnd_mesg_body_length,
-        sizeof(chat_conn_extra_t)
+        sizeof(lsnd_conn_extra_t)
     };
 
     /* > 加进程锁 */
@@ -313,11 +313,11 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, chat_mesg_online_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, chat_mesg_offline_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, chat_mesg_join_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_UNJOIN_REQ, chat_mesg_unjoin_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_PING, chat_mesg_ping_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, lsnd_mesg_online_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, lsnd_mesg_offline_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, lsnd_mesg_join_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_UNJOIN_REQ, lsnd_mesg_unjoin_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_PING, lsnd_mesg_ping_req_hdl, ctx);
 
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
@@ -325,9 +325,9 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, chat_mesg_online_ack_hdl, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, chat_mesg_join_ack_hdl, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, chat_mesg_room_mesg_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_mesg_online_ack_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, lsnd_mesg_join_ack_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, lsnd_mesg_room_mesg_hdl, ctx);
 
     return LSND_OK;
 }
