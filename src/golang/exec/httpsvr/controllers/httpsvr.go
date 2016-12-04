@@ -30,14 +30,16 @@ type HttpSvrCntx struct {
 	redis   *redis.Pool         /* REDIS连接池 */
 }
 
-var httpsvr *HttpSvrCntx
+var g_httpsvr *HttpSvrCntx /* 全局对象 */
 
+/* 获取全局对象 */
 func GetHttpCtx() *HttpSvrCntx {
-	return httpsvr
+	return g_httpsvr
 }
 
+/* 设置全局对象 */
 func SetHttpCtx(ctx *HttpSvrCntx) {
-	httpsvr = ctx
+	g_httpsvr = ctx
 }
 
 /******************************************************************************
