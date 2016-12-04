@@ -29,13 +29,12 @@ struct  _MesgJoinAck
   uint64_t uid;
   uint64_t rid;
   uint32_t gid;
-  protobuf_c_boolean has_code;
   uint32_t code;
   char *errmsg;
 };
 #define MESG_JOIN_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_join_ack__descriptor) \
-    , 0, 0, 0, 0,0, NULL }
+    , 0, 0, 0, 0, NULL }
 
 
 /* MesgJoinAck methods */

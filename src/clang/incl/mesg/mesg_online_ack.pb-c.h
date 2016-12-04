@@ -32,13 +32,12 @@ struct  _MesgOnlineAck
   char *version;
   protobuf_c_boolean has_terminal;
   uint32_t terminal;
-  protobuf_c_boolean has_code;
   uint32_t code;
   char *errmsg;
 };
 #define MESG_ONLINE_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_online_ack__descriptor) \
-    , 0, 0, NULL, NULL, 0,0, 0,0, NULL }
+    , 0, 0, NULL, NULL, 0,0, 0, NULL }
 
 
 /* MesgOnlineAck methods */

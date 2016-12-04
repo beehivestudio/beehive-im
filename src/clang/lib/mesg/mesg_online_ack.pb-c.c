@@ -115,9 +115,9 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   {
     "code",
     6,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(MesgOnlineAck, has_code),
+    0,   /* quantifier_offset */
     offsetof(MesgOnlineAck, code),
     NULL,
     NULL,
@@ -127,7 +127,7 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   {
     "errmsg",
     7,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(MesgOnlineAck, errmsg),

@@ -91,9 +91,9 @@ static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
   {
     "code",
     4,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(MesgJoinAck, has_code),
+    0,   /* quantifier_offset */
     offsetof(MesgJoinAck, code),
     NULL,
     NULL,
@@ -103,7 +103,7 @@ static const ProtobufCFieldDescriptor mesg_join_ack__field_descriptors[5] =
   {
     "errmsg",
     5,
-    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
     offsetof(MesgJoinAck, errmsg),
