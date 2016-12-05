@@ -8,7 +8,7 @@
 #include "rtmq_proxy.h"
 #include "rtmq_proxy_ssvr.h"
 
-#define FRWD_CMD_PATH "../temp/frwder/cmd.usck"
+#define FRWD_CMD_PATH "../.temp/frwder/cmd.usck"
 
 typedef enum
 {
