@@ -228,13 +228,13 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 ////////////////////////////////////////////////////////////////////////////////
 
 /* 比较回调 */
-static int lsnd_timer_task_cmp_cb(lsnd_task_item_t *item1, lsnd_task_item_t *item2)
+static int lsnd_task_cmp_cb(lsnd_task_item_t *item1, lsnd_task_item_t *item2)
 {
     return item1->seq - item2->seq;
 }
 
 /******************************************************************************
- **函数名称: lsnd_timer_task_init
+ **函数名称: lsnd_task_init
  **功    能: 初始化定时任务表
  **输入参数:
  **     ctx: 全局信息
@@ -244,13 +244,13 @@ static int lsnd_timer_task_cmp_cb(lsnd_task_item_t *item1, lsnd_task_item_t *ite
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 22:34:25 #
  ******************************************************************************/
-int lsnd_timer_task_init(lsnd_cntx_t *ctx)
+int lsnd_task_init(lsnd_cntx_t *ctx)
 {
-    lsnd_timer_task_t *task = &ctx->timer_task;
+    lsnd_task_t *task = &ctx->task;
 
     task->seq = 0;
     pthread_rwlock_init(&task->lock, NULL);
-    task->list = rbt_creat(NULL, (cmp_cb_t)lsnd_timer_task_cmp_cb);
+    task->list = rbt_creat(NULL, (cmp_cb_t)lsnd_task_cmp_cb);
     if (NULL == task->list) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return -1;
@@ -260,7 +260,7 @@ int lsnd_timer_task_init(lsnd_cntx_t *ctx)
 }
 
 /******************************************************************************
- **函数名称: lsnd_timer_task_add
+ **函数名称: lsnd_task_add
  **功    能: 增加定时任务
  **输入参数:
  **     ctx: 全局信息
@@ -274,10 +274,10 @@ int lsnd_timer_task_init(lsnd_cntx_t *ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 21:57:30 #
  ******************************************************************************/
-int lsnd_timer_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, int interval, int times, void *param)
+int lsnd_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, int interval, int times, void *param)
 {
     lsnd_task_item_t *item;
-    lsnd_timer_task_t *task = &ctx->timer_task;
+    lsnd_task_t *task = &ctx->task;
 
     item = (lsnd_task_item_t *)calloc(1, sizeof(lsnd_task_item_t));
     if (NULL == item) {
@@ -308,7 +308,7 @@ int lsnd_timer_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, 
 }
 
 /******************************************************************************
- **函数名称: lsnd_timer_task_exec_cb
+ **函数名称: lsnd_task_exec_cb
  **功    能: 执行定时任务
  **输入参数:
  **     ctx: 全局信息
@@ -319,7 +319,7 @@ int lsnd_timer_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, 
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 21:57:30 #
  ******************************************************************************/
-static int lsnd_timer_task_exec_cb(lsnd_task_item_t *item, list_t *timeout_list)
+static int lsnd_task_exec_cb(lsnd_task_item_t *item, list_t *timeout_list)
 {
     time_t ctm = time(NULL);
 
@@ -338,7 +338,7 @@ static int lsnd_timer_task_exec_cb(lsnd_task_item_t *item, list_t *timeout_list)
 }
 
 /******************************************************************************
- **函数名称: lsnd_timer_task_handler
+ **函数名称: lsnd_task_handler
  **功    能: 定时任务处理
  **输入参数:
  **     _ctx: 全局信息
@@ -348,13 +348,13 @@ static int lsnd_timer_task_exec_cb(lsnd_task_item_t *item, list_t *timeout_list)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 21:57:30 #
  ******************************************************************************/
-void *lsnd_timer_task_handler(void *_ctx)
+void *lsnd_task_handler(void *_ctx)
 {
     void *addr;
     list_t *timeout_list;
     lsnd_task_item_t *item, key;
     lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
-    lsnd_timer_task_t *task = &ctx->timer_task;
+    lsnd_task_t *task = &ctx->task;
 
     timeout_list = list_creat(NULL);
     if (NULL == timeout_list) {
@@ -365,7 +365,7 @@ void *lsnd_timer_task_handler(void *_ctx)
     for (;;) {
         /* > 执行定时任务 */
         pthread_rwlock_rdlock(&task->lock);
-        rbt_trav(task->list, (trav_cb_t)lsnd_timer_task_exec_cb, (void *)timeout_list);
+        rbt_trav(task->list, (trav_cb_t)lsnd_task_exec_cb, (void *)timeout_list);
         pthread_rwlock_unlock(&task->lock);
 
         /* > 清理定时任务 */

@@ -259,7 +259,7 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         }
 
         /* > 初始化定时任务表 */
-        if (lsnd_timer_task_init(ctx)) {
+        if (lsnd_task_init(ctx)) {
             log_error(log, "Initialize timer task failed!");
             break;
         }
@@ -338,8 +338,8 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, lsnd_mesg_room_mesg_hdl, ctx);
 
     /* 注册定时任务回调 */
-    lsnd_timer_task_add(ctx, lsnd_timer_kick_handler, 5, 5, 0, (void *)ctx);
-    lsnd_timer_task_add(ctx, lsnd_timer_report_handler, 5, 5, 0, (void *)ctx);
+    lsnd_task_add(ctx, lsnd_timer_kick_handler, 5, 5, 0, (void *)ctx);
+    lsnd_task_add(ctx, lsnd_timer_report_handler, 5, 5, 0, (void *)ctx);
 
     return LSND_OK;
 }
@@ -370,7 +370,7 @@ static int lsnd_launch(lsnd_cntx_t *ctx)
     }
 
     /* > 启动定时任务 */
-    if (thread_pool_add_worker(ctx->timer_task_tp, lsnd_timer_task_handler, ctx)) {
+    if (thread_pool_add_worker(ctx->timer_task_tp, lsnd_task_handler, ctx)) {
         log_error(ctx->log, "Add timeout handler failed!");
         return LSND_ERR;
     }

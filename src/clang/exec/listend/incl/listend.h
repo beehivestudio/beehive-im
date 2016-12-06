@@ -135,7 +135,7 @@ typedef struct
     uint64_t seq;                   /* 序列号 */
     pthread_rwlock_t lock;          /* 读写锁 */
     rbt_tree_t *list;               /* 定时任务表 */
-} lsnd_timer_task_t;
+} lsnd_task_t;
 
 /* 全局对象 */
 typedef struct _lsnd_cntx_t
@@ -147,8 +147,8 @@ typedef struct _lsnd_cntx_t
     acc_cntx_t *access;             /* 帧听层模块 */
     rtmq_proxy_t *frwder;           /* FRWDER服务 */
 
+    lsnd_task_t task;               /* 定时任务表 */
     chat_tab_t *chat_tab;           /* 聊天室组织表 */
-    lsnd_timer_task_t timer_task;   /* 定时任务表 */
     hash_tab_t *uid_sid_tab;        /* 用户ID管理表(以UID为主键, 数据:lsnd_uid_item_t) */
 
     /* 注意: 以下三个表互斥, 共同个管理类为lsnd_conn_extra_t的数据  */
@@ -164,9 +164,9 @@ int lsnd_usage(const char *exec);
 int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args);
 uint64_t lsnd_gen_cid(lsnd_cntx_t *ctx);
 
-int lsnd_timer_task_init(lsnd_cntx_t *ctx);
-int lsnd_timer_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, int interval, int times, void *param);
-void *lsnd_timer_task_handler(void *_ctx);
+int lsnd_task_init(lsnd_cntx_t *ctx);
+int lsnd_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, int interval, int times, void *param);
+void *lsnd_task_handler(void *_ctx);
 
 int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
 
