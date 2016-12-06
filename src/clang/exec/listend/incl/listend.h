@@ -133,14 +133,14 @@ typedef struct _lsnd_cntx_t
     hash_tab_t *conn_cid_tab;       /* 连接管理表(以CID为主键, 数据:lsnd_conn_extra_t) */
     hash_tab_t *conn_kick_list;     /* 被踢管理表(以SCK为主键, 数据:lsnd_conn_extra_t) */
 
-    thread_pool_t *conn_kick_tp;    /* 踢人线程池 */
+    thread_pool_t *timer_task_tp;   /* 定时任务线程池 */
 } lsnd_cntx_t;
 
 int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt);
 int lsnd_usage(const char *exec);
 int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args);
 uint64_t lsnd_gen_cid(lsnd_cntx_t *ctx);
-void *lsnd_kick_timeout_handler(void *_ctx);
+void *lsnd_timer_task_handler(void *_ctx);
 int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
 
 #endif /*__LISTEND_H__*/

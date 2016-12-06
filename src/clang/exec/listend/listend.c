@@ -272,10 +272,10 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
             break;
         }
 
-        /* > 创建踢人线程池 */
-        ctx->conn_kick_tp = thread_pool_init(1, NULL, (void *)ctx);
-        if (NULL == ctx->conn_kick_tp) {
-            log_error(log, "Initialize kick thread pool failed!");
+        /* > 定时任务线程池 */
+        ctx->timer_task_tp = thread_pool_init(1, NULL, (void *)ctx);
+        if (NULL == ctx->timer_task_tp) {
+            log_error(log, "Initialize timer task thread pool failed!");
             break;
         }
 
@@ -357,9 +357,9 @@ static int lsnd_launch(lsnd_cntx_t *ctx)
         return LSND_ERR;
     }
 
-    /* > 启动踢人线程 */
-    if (thread_pool_add_worker(ctx->conn_kick_tp, lsnd_kick_timeout_handler, ctx)) {
-        log_error(ctx->log, "Add kick timeout handler failed!");
+    /* > 启动定时任务 */
+    if (thread_pool_add_worker(ctx->timer_task_tp, lsnd_timer_task_handler, ctx)) {
+        log_error(ctx->log, "Add timeout handler failed!");
         return LSND_ERR;
     }
 

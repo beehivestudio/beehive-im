@@ -165,7 +165,7 @@ static int lsnd_kick_trav_cb(lsnd_kick_item_t *item, list_t *timeout_list)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.03 16:24:05 #
  ******************************************************************************/
-void *lsnd_kick_timeout_handler(void *_ctx)
+void lsnd_kick_timeout_handler(void *_ctx)
 {
     void *addr;
     uint64_t cid;
@@ -176,8 +176,7 @@ void *lsnd_kick_timeout_handler(void *_ctx)
     timeout_list = list_creat(NULL);
     if (NULL == timeout_list) {
         log_error(ctx->log, "Initialize kick timeout list failed!");
-        abort();
-        return 0;
+        return;
     }
 
     while (1) {
@@ -200,7 +199,7 @@ void *lsnd_kick_timeout_handler(void *_ctx)
         }
         Sleep(30);
     }
-    return 0;
+    return;
 }
 
 /******************************************************************************
@@ -222,4 +221,27 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
     hash_tab_insert(ctx->conn_kick_list, conn, WRLOCK);
 
     return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsnd_timer_task_handler
+ **功    能: 定时任务处理
+ **输入参数:
+ **     _ctx: 全局信息
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.12.0 21:57:30 #
+ ******************************************************************************/
+void *lsnd_timer_task_handler(void *_ctx)
+{
+    lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
+
+    lsnd_kick_timeout_handler((void *)ctx);
+
+    return NULL;
 }
