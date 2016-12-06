@@ -73,7 +73,7 @@ func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrReigster
 	/* > 校验参数合法性 */
 	if 0 == param.uid || 0 == param.nation {
 		ctx.log.Error("Register param invalid! uid:%d nation:%d", param.uid, param.nation)
-		return &param, errors.New("Register param invalied!")
+		return &param, errors.New("Register param invalid!")
 	}
 
 	return &param, nil
