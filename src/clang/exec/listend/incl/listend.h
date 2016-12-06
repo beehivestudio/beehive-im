@@ -115,6 +115,28 @@ typedef struct
     time_t ttl;                     /* 被踢时间 */
 } lsnd_kick_item_t;
 
+/* 定时任务项 */
+typedef struct
+{
+    uint64_t seq;                   /* 序列号 */
+
+    int interval;                   /* 每次执行的间隔 */
+    bool is_limit;                  /* 执行次数是否有限制 */
+    int times;                      /* 执行次数 */
+    time_t last;                    /* 上一次执行的时间 */
+
+    void (*proc)(void *param);      /* 处理回调 */
+    void *param;                    /* 附加参数 */
+} lsnd_task_item_t;
+
+/* 定时任务 */
+typedef struct
+{
+    uint64_t seq;                   /* 序列号 */
+    pthread_rwlock_t lock;          /* 读写锁 */
+    rbt_tree_t *list;               /* 定时任务表 */
+} lsnd_timer_task_t;
+
 /* 全局对象 */
 typedef struct _lsnd_cntx_t
 {
@@ -126,6 +148,7 @@ typedef struct _lsnd_cntx_t
     rtmq_proxy_t *frwder;           /* FRWDER服务 */
 
     chat_tab_t *chat_tab;           /* 聊天室组织表 */
+    lsnd_timer_task_t timer_task;   /* 定时任务表 */
     hash_tab_t *uid_sid_tab;        /* 用户ID管理表(以UID为主键, 数据:lsnd_uid_item_t) */
 
     /* 注意: 以下三个表互斥, 共同个管理类为lsnd_conn_extra_t的数据  */
@@ -140,7 +163,14 @@ int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt);
 int lsnd_usage(const char *exec);
 int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args);
 uint64_t lsnd_gen_cid(lsnd_cntx_t *ctx);
+
+int lsnd_timer_task_init(lsnd_cntx_t *ctx);
+int lsnd_timer_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, int interval, int times, void *param);
 void *lsnd_timer_task_handler(void *_ctx);
+
 int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
+
+void lsnd_timer_kick_handler(void *_ctx);
+void lsnd_timer_report_handler(void *_ctx);
 
 #endif /*__LISTEND_H__*/

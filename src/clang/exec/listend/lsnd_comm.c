@@ -129,6 +129,9 @@ int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args)
     return 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /******************************************************************************
  **函数名称: lsnd_kick_trav_cb
  **功    能: 编历被踢连接是否到达执行踢除的时间
@@ -155,8 +158,8 @@ static int lsnd_kick_trav_cb(lsnd_kick_item_t *item, list_t *timeout_list)
 }
 
 /******************************************************************************
- **函数名称: lsnd_kick_timeout_handler
- **功    能: 清理踢人列表中的连接
+ **函数名称: lsnd_timer_kick_handler
+ **功    能: 定时踢除连接
  **输入参数:
  **     ctx: 全局信息
  **输出参数:
@@ -165,7 +168,7 @@ static int lsnd_kick_trav_cb(lsnd_kick_item_t *item, list_t *timeout_list)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.03 16:24:05 #
  ******************************************************************************/
-void lsnd_kick_timeout_handler(void *_ctx)
+void lsnd_timer_kick_handler(void *_ctx)
 {
     void *addr;
     uint64_t cid;
@@ -179,26 +182,24 @@ void lsnd_kick_timeout_handler(void *_ctx)
         return;
     }
 
-    while (1) {
-        /* > 获取已经的被踢连接CID列表 */
-        hash_tab_trav(ctx->conn_kick_list, (trav_cb_t)lsnd_kick_trav_cb, timeout_list, RDLOCK);
+    /* > 获取已经的被踢连接CID列表 */
+    hash_tab_trav(ctx->conn_kick_list, (trav_cb_t)lsnd_kick_trav_cb, timeout_list, RDLOCK);
 
-        /* > 依次执行踢除连接的操作 */
-        while (NULL != (addr = list_lpop(timeout_list))) {
-            cid = (uint64_t)addr;
+    /* > 依次执行踢除连接的操作 */
+    while (NULL != (addr = list_lpop(timeout_list))) {
+        cid = (uint64_t)addr;
 
-            key.cid = cid;
-            item = hash_tab_delete(ctx->conn_kick_list, &key, WRLOCK);
-            if (NULL == item) {
-                continue;
-            }
-
-            free(item);
-
-            acc_async_kick(ctx->access, (uint64_t)cid);
+        key.cid = cid;
+        item = hash_tab_delete(ctx->conn_kick_list, &key, WRLOCK);
+        if (NULL == item) {
+            continue;
         }
-        Sleep(30);
+
+        free(item);
+
+        acc_async_kick(ctx->access, (uint64_t)cid);
     }
+
     return;
 }
 
@@ -226,6 +227,116 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/* 比较回调 */
+static int lsnd_timer_task_cmp_cb(lsnd_task_item_t *item1, lsnd_task_item_t *item2)
+{
+    return item1->seq - item2->seq;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_timer_task_init
+ **功    能: 初始化定时任务表
+ **输入参数:
+ **     ctx: 全局信息
+ **输出参数:
+ **返    回: 0:成功 !0:失败
+ **实现描述: 初始化读写锁、创建红黑树
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.12.06 22:34:25 #
+ ******************************************************************************/
+int lsnd_timer_task_init(lsnd_cntx_t *ctx)
+{
+    lsnd_timer_task_t *task = &ctx->timer_task;
+
+    task->seq = 0;
+    pthread_rwlock_init(&task->lock, NULL);
+    task->list = rbt_creat(NULL, (cmp_cb_t)lsnd_timer_task_cmp_cb);
+    if (NULL == task->list) {
+        log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        return -1;
+    }
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_timer_task_add
+ **功    能: 增加定时任务
+ **输入参数:
+ **     ctx: 全局信息
+ **     proc: 任务回调
+ **     start: 第一次执行的间隔
+ **     interval: 执行执行的间隔
+ **     param: 附件参数
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.12.06 21:57:30 #
+ ******************************************************************************/
+int lsnd_timer_task_add(lsnd_cntx_t *ctx, void (*proc)(void *param), int start, int interval, int times, void *param)
+{
+    lsnd_task_item_t *item;
+    lsnd_timer_task_t *task = &ctx->timer_task;
+
+    item = (lsnd_task_item_t *)calloc(1, sizeof(lsnd_task_item_t));
+    if (NULL == item) {
+        log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        return -1;
+    }
+
+    item->interval = interval;
+    item->is_limit = (0 == times)? false : true;
+    item->times = times;
+    item->last = (0 == start)? 0 : time(NULL);
+
+    item->proc = proc;
+    item->param = param;
+
+    /* 插入定时任务表 */
+    pthread_rwlock_wrlock(&task->lock);
+    item->seq = ++task->seq;
+    if (rbt_insert(task->list, item)) {
+        pthread_rwlock_unlock(&task->lock);
+        log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        free(item);
+        return 0;
+    }
+    pthread_rwlock_unlock(&task->lock);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_timer_task_exec_cb
+ **功    能: 执行定时任务
+ **输入参数:
+ **     ctx: 全局信息
+ **     timeout_list: 超时列表
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.12.06 21:57:30 #
+ ******************************************************************************/
+static int lsnd_timer_task_exec_cb(lsnd_task_item_t *item, list_t *timeout_list)
+{
+    time_t ctm = time(NULL);
+
+    if ((ctm - item->last) >= item->interval) {
+        item->proc(item->param); // 执行任务
+        item->last = ctm;
+        if (item->is_limit) {
+            --item->times;
+            if (0 == item->times) {
+                list_rpush(timeout_list, (void *)item->seq);
+            }
+        }
+    }
+
+    return 0;
+}
+
 /******************************************************************************
  **函数名称: lsnd_timer_task_handler
  **功    能: 定时任务处理
@@ -235,13 +346,66 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
  **返    回: VOID
  **实现描述: 
  **注意事项: 
- **作    者: # Qifeng.zou # 2016.12.0 21:57:30 #
+ **作    者: # Qifeng.zou # 2016.12.06 21:57:30 #
  ******************************************************************************/
 void *lsnd_timer_task_handler(void *_ctx)
 {
+    void *addr;
+    list_t *timeout_list;
+    lsnd_task_item_t *item, key;
     lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
+    lsnd_timer_task_t *task = &ctx->timer_task;
 
-    lsnd_kick_timeout_handler((void *)ctx);
+    timeout_list = list_creat(NULL);
+    if (NULL == timeout_list) {
+        log_error(ctx->log, "Create timeout list failed!");
+        return (void *)-1;
+    }
+
+    for (;;) {
+        /* > 执行定时任务 */
+        pthread_rwlock_rdlock(&task->lock);
+        rbt_trav(task->list, (trav_cb_t)lsnd_timer_task_exec_cb, (void *)timeout_list);
+        pthread_rwlock_unlock(&task->lock);
+
+        /* > 清理定时任务 */
+        pthread_rwlock_wrlock(&task->lock);
+        for (;;) {
+            addr = (void *)list_lpop(timeout_list);
+            if (NULL == addr) {
+                break;
+            }
+
+            key.seq = (uint64_t)((uint64_t *)addr);
+
+            rbt_delete(task->list, (void *)&key, (void **)&item);
+            if (NULL == item) {
+                continue;
+            }
+            free(item);
+        }
+        pthread_rwlock_unlock(&task->lock);
+        Sleep(1);
+    }
 
     return NULL;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsnd_timer_report_handler
+ **功    能: 侦听层定时上报
+ **输入参数:
+ **     _ctx: 全局信息
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.12.06 23:23:51 #
+ ******************************************************************************/
+void lsnd_timer_report_handler(void *_ctx)
+{
+    return;
 }

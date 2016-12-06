@@ -258,6 +258,12 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
             break;
         }
 
+        /* > 初始化定时任务表 */
+        if (lsnd_timer_task_init(ctx)) {
+            log_error(log, "Initialize timer task failed!");
+            break;
+        }
+
         /* > 初始化chat表 */
         ctx->chat_tab = chat_tab_init(1024, log);
         if (NULL == ctx->chat_tab) {
@@ -307,7 +313,8 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
  ******************************************************************************/
 static int lsnd_set_reg(lsnd_cntx_t *ctx)
 {
-#define LSND_ACC_REG_CB(lsnd, type, proc, args) /* 注册代理数据回调 */\
+    /* 注册代理数据回调 */
+#define LSND_ACC_REG_CB(lsnd, type, proc, args) \
     if (lsnd_acc_reg_add(lsnd, type, (lsnd_reg_cb_t)proc, (void *)args)) { \
         log_error((lsnd)->log, "Register type [0x%0X] failed!", type); \
         return LSND_ERR; \
@@ -319,7 +326,8 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_ACC_REG_CB(ctx, CMD_UNJOIN_REQ, lsnd_mesg_unjoin_req_hdl, ctx);
     LSND_ACC_REG_CB(ctx, CMD_PING, lsnd_mesg_ping_req_hdl, ctx);
 
-#define LSND_RTQ_REG_CB(lsnd, type, proc, args) /* 注册队列数据回调 */\
+    /* 注册队列数据回调 */
+#define LSND_RTQ_REG_CB(lsnd, type, proc, args) \
     if (rtmq_proxy_reg_add((lsnd)->frwder, type, (rtmq_reg_cb_t)proc, (void *)args)) { \
         log_error((lsnd)->log, "Register type [0x%0X] failed!", type); \
         return LSND_ERR; \
@@ -328,6 +336,10 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_mesg_online_ack_hdl, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, lsnd_mesg_join_ack_hdl, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, lsnd_mesg_room_mesg_hdl, ctx);
+
+    /* 注册定时任务回调 */
+    lsnd_timer_task_add(ctx, lsnd_timer_kick_handler, 5, 5, 0, (void *)ctx);
+    lsnd_timer_task_add(ctx, lsnd_timer_report_handler, 5, 5, 0, (void *)ctx);
 
     return LSND_OK;
 }
