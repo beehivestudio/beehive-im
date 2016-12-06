@@ -191,15 +191,6 @@ static int lsnd_conf_parse_access_connections(
 
     conf->connections.timeout = str_to_num(node->value.str);
 
-    /* > 获取侦听端口 */
-    node = xml_search(xml, fix, "PORT");
-    if (NULL == node) {
-        log_error(log, "Get port of connection failed!");
-        return -1;
-    }
-
-    conf->connections.port = str_to_num(node->value.str);
-
     return 0;
 }
 
@@ -273,13 +264,38 @@ static int lsnd_conf_parse_access_queue(xml_tree_t *xml, acc_conf_t *conf, log_c
  ******************************************************************************/
 static int lsnd_conf_load_access(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t *log)
 {
-    xml_node_t *node;
+    xml_node_t *node, *fix;
     acc_conf_t *conf = &lcf->access;
 
     snprintf(conf->path, sizeof(conf->path), "%s/access/", lcf->wdir); /* 工作路径 */
 
     /* > 加载结点ID */
     conf->nid = lcf->nid;
+
+    /* > 定位侦听配置 */
+    fix = xml_query(xml, ".LISTEND.ACCESS");
+    if (NULL == fix) {
+        log_error(log, "Didn't configure access!");
+        return -1;
+    }
+
+    /* -> 外网IP */
+    node = xml_search(xml, fix, "IP");
+    if (NULL == node || 0 == strlen(node->value.str)) {
+        log_error(log, "Get ip of access failed!");
+        return -1;
+    }
+
+    snprintf(conf->ipaddr, sizeof(conf->ipaddr), "%s", node->value.str);
+
+    /* -> 端口号 */
+    node = xml_search(xml, fix, "PORT");
+    if (NULL == node) {
+        log_error(log, "Get port of access failed!");
+        return -1;
+    }
+
+    conf->port = str_to_num(node->value.str);
 
     /* > 加载连接配置 */
     if (lsnd_conf_parse_access_connections(xml, conf, log)) {
