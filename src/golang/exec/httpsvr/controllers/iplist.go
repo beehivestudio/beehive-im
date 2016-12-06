@@ -8,8 +8,8 @@ import (
 
 	_ "github.com/astaxie/beego"
 
-	"chat/src/golang/lib/comm"
-	"chat/src/golang/lib/crypt"
+	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/crypt"
 )
 
 /* 获取IP列表 */

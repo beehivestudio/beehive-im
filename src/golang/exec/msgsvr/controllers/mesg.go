@@ -5,8 +5,8 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
-	"chat/src/golang/lib/comm"
-	"chat/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/mesg"
 )
 
 ////////////////////////////////////////////////////////////////////////////////

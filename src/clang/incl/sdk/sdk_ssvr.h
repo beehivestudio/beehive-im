@@ -53,7 +53,7 @@ typedef struct
 #define SDK_TOKEN_MAX_LEN   (128)
     char token[SDK_TOKEN_MAX_LEN];      /* 鉴权TOKEN */
     list_t *iplist;                     /* IP列表(数据类型ip_port_t) */
-    uint64_t sessionid;                 /* 会话ID */
+    uint64_t sid;                       /* 会话ID */
 } sdk_conn_info_t;
 
 /* SND线程上下文 */

@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"chat/src/golang/lib/log"
-	"chat/src/golang/lib/rtmq"
+	"beehive-im/src/golang/lib/log"
+	"beehive-im/src/golang/lib/rtmq"
 )
 
 /* 在线中心配置 */

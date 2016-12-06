@@ -1068,7 +1068,7 @@ static size_t sdk_ssvr_write_conn_info(void *ptr, size_t size, size_t nmemb, voi
 static int sdk_ssvr_http_conn_info(sdk_cntx_t *ctx, char *conn_info_str)
 {
 #if defined(__SDK_DEBUG__)
-    sprintf(conn_info_str, "{\"code\": \"0\", \"data\": { \"expire\":200, \"token\": \"testtoken\", \"ipList\": [ \"127.0.0.1:9002\" ], \"sessionid\": 3 } }");
+    sprintf(conn_info_str, "{\"code\": \"0\", \"data\": { \"expire\":200, \"token\": \"testtoken\", \"ipList\": [ \"127.0.0.1:9002\" ], \"sid\": 3 } }");
     return 0;
 #else /*__SDK_DEBUG__*/
     CURL *curl;
@@ -1152,7 +1152,7 @@ static int sdk_ssvr_parse_conn_info(
     int ret = -1, ip_list_len;
     ip_port_t *item, ip_item;
     sdk_conn_info_t *conn_info = &ssvr->conn_info;
-    cJSON *info, *code, *data, *expire, *token, *iplist, *ip, *sessionid;
+    cJSON *info, *code, *data, *expire, *token, *iplist, *ip, *sid;
 
     /* > 解析JSON数据 */
     info = cJSON_Parse(conn_info_str);
@@ -1229,19 +1229,19 @@ static int sdk_ssvr_parse_conn_info(
         }
 
         /* > 解析数据信息-SESSIONID */
-        sessionid = cJSON_GetObjectItem(data, "sessionid");
-        if (NULL == sessionid || 0 == sessionid->valueint) {
-            log_error(ctx->log, "Get sessionid failed! info:%s", conn_info_str);
+        sid = cJSON_GetObjectItem(data, "sid");
+        if (NULL == sid || 0 == sid->valueint) {
+            log_error(ctx->log, "Get sid failed! info:%s", conn_info_str);
             break;
         }
-        conn_info->sessionid = (uint64_t)sessionid->valuedouble;
+        conn_info->sid = (uint64_t)sid->valuedouble;
         ret = 0;
     } while(0);
 
     cJSON_Delete(info);
 
     log_debug(ctx->log, "expire:%d token:%s sid:%lu",
-            conn_info->expire - ctm, conn_info->token, conn_info->sessionid);
+            conn_info->expire - ctm, conn_info->token, conn_info->sid);
 
     return ret;
 }
@@ -1271,7 +1271,7 @@ static int sdk_ssvr_update_conn_info(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     /* > 重置连接信息 */
     info->expire = 0;
     memset(info->token, 0, sizeof(info->token));
-    info->sessionid = 0;
+    info->sid = 0;
 
     do {
         item = list_rpop(info->iplist);

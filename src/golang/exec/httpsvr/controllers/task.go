@@ -6,7 +6,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
-	"chat/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/comm"
 )
 
 /******************************************************************************
@@ -75,7 +75,7 @@ func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
 
 	/* > 获取"国家/地区"列表 */
 	nations, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-		comm.CHAT_KEY_LSN_NATION_ZSET, ctm, "+inf"))
+		comm.IM_KEY_LSN_NATION_ZSET, ctm, "+inf"))
 	if nil != err {
 		ctx.log.Error("Get nation list failed! errmsg:%s", err.Error())
 		return nil
@@ -84,7 +84,7 @@ func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
 	nation_num := len(nations)
 	for m := 0; m < nation_num; m += 1 {
 		/* > 获取"国家/地区"对应的"运营商"列表 */
-		key := fmt.Sprintf(comm.CHAT_KEY_LSN_OP_ZSET, nations[m])
+		key := fmt.Sprintf(comm.IM_KEY_LSN_OP_ZSET, nations[m])
 		operators, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 		if nil != err {
 			ctx.log.Error("Get operator list by nation failed! errmsg:%s", err.Error())
@@ -96,7 +96,7 @@ func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
 		operator_num := len(operators)
 		for n := 0; n < operator_num; n += 1 {
 			/* > 获取"运营商"对应的"IP+PORT"列表 */
-			key := fmt.Sprintf(comm.CHAT_KEY_LSN_IP_ZSET, nations[m], operators[n])
+			key := fmt.Sprintf(comm.IM_KEY_LSN_IP_ZSET, nations[m], operators[n])
 			iplist, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 			if nil != err {
 				ctx.log.Error("Get operator list by nation failed! errmsg:%s", err.Error())

@@ -7,8 +7,8 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
-	"chat/src/golang/lib/comm"
-	"chat/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/mesg"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,12 +85,12 @@ func (ctx *MonCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err er
 	defer rds.Close()
 
 	addr := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
-	ok, err := redis.Bool(rds.Do("HEXISTS", comm.CHAT_KEY_LSN_ADDR_TO_NID, addr))
+	ok, err := redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSN_ADDR_TO_NID, addr))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
 		return false, err
 	} else if true == ok {
-		nid, err := redis.Int(rds.Do("HGET", comm.CHAT_KEY_LSN_ADDR_TO_NID, addr))
+		nid, err := redis.Int(rds.Do("HGET", comm.IM_KEY_LSN_ADDR_TO_NID, addr))
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
@@ -100,12 +100,12 @@ func (ctx *MonCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err er
 		}
 	}
 
-	ok, err = redis.Bool(rds.Do("HEXISTS", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+	ok, err = redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
 		return
 	} else if true == ok {
-		_addr, err := redis.String(rds.Do("HGET", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+		_addr, err := redis.String(rds.Do("HGET", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
@@ -148,13 +148,13 @@ func (ctx *MonCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnRpt)
 	}
 
 	addr := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
-	pl.Send("HSETNX", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid(), addr)
-	pl.Send("HSETNX", comm.CHAT_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
+	pl.Send("HSETNX", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid(), addr)
+	pl.Send("HSETNX", comm.IM_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
 
 	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
-	pl.Send("ZADD", comm.CHAT_KEY_LSN_OP_ZSET, ttl, req.GetOp())
+	pl.Send("ZADD", comm.IM_KEY_LSN_OP_ZSET, ttl, req.GetOp())
 
-	key := fmt.Sprintf(comm.CHAT_KEY_LSN_OP_TO_NID_ZSET, req.GetOp())
+	key := fmt.Sprintf(comm.IM_KEY_LSN_OP_TO_NID_ZSET, req.GetOp())
 	pl.Send("ZADD", key, ttl, req.GetNid())
 
 	return
@@ -276,12 +276,12 @@ func (ctx *MonCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, err 
 	defer rds.Close()
 
 	addr := fmt.Sprintf("%s:%d:%d", req.GetIpaddr(), req.GetForwardPort(), req.GetBackendPort())
-	ok, err := redis.Bool(rds.Do("HEXISTS", comm.CHAT_KEY_FRWD_ADDR_TO_NID, addr))
+	ok, err := redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_FRWD_ADDR_TO_NID, addr))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
 		return false, err
 	} else if true == ok {
-		nid, err := redis.Int(rds.Do("HGET", comm.CHAT_KEY_FRWD_ADDR_TO_NID, addr))
+		nid, err := redis.Int(rds.Do("HGET", comm.IM_KEY_FRWD_ADDR_TO_NID, addr))
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
@@ -291,12 +291,12 @@ func (ctx *MonCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, err 
 		}
 	}
 
-	ok, err = redis.Bool(rds.Do("HEXISTS", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+	ok, err = redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
 		return
 	} else if true == ok {
-		_addr, err := redis.String(rds.Do("HGET", comm.CHAT_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+		_addr, err := redis.String(rds.Do("HGET", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
@@ -339,11 +339,11 @@ func (ctx *MonCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrwdRp
 	}
 
 	addr := fmt.Sprintf("%s:%d:%d", req.GetIpaddr(), req.GetForwardPort(), req.GetBackendPort())
-	pl.Send("HSETNX", comm.CHAT_KEY_FRWD_NID_TO_ADDR, req.GetNid(), addr)
-	pl.Send("HSETNX", comm.CHAT_KEY_FRWD_ADDR_TO_NID, addr, req.GetNid())
+	pl.Send("HSETNX", comm.IM_KEY_FRWD_NID_TO_ADDR, req.GetNid(), addr)
+	pl.Send("HSETNX", comm.IM_KEY_FRWD_ADDR_TO_NID, addr, req.GetNid())
 
 	ttl := time.Now().Unix() + comm.CHAT_NID_TTL
-	pl.Send("ZADD", comm.CHAT_KEY_FRWD_NID_ZSET, ttl, req.GetNid())
+	pl.Send("ZADD", comm.IM_KEY_FRWD_NID_ZSET, ttl, req.GetNid())
 
 	return
 }

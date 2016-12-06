@@ -11,9 +11,9 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
-	"chat/src/golang/lib/comm"
-	"chat/src/golang/lib/log"
-	"chat/src/golang/lib/rtmq"
+	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/log"
+	"beehive-im/src/golang/lib/rtmq"
 )
 
 /* HTTPSVR配置 */

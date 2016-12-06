@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"chat/src/golang/exec/tasker/controllers"
+	"beehive-im/src/golang/exec/tasker/controllers"
 )
 
 func main() {

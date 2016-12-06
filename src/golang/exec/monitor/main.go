@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"chat/src/golang/exec/monitor/controllers"
+	"beehive-im/src/golang/exec/monitor/controllers"
 )
 
 func main() {

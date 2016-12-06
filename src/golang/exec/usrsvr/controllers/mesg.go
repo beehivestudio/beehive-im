@@ -11,9 +11,9 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
-	"chat/src/golang/lib/comm"
-	"chat/src/golang/lib/crypt"
-	"chat/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/crypt"
+	"beehive-im/src/golang/lib/mesg"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -285,17 +285,17 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 
 	/* 记录SID集合 */
-	pl.Send("ZADD", comm.CHAT_KEY_SID_ZSET, ttl, head.GetSid())
+	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
 
 	/* 记录UID集合 */
-	pl.Send("ZADD", comm.CHAT_KEY_UID_ZSET, ttl, req.GetUid())
+	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, req.GetUid())
 
 	/* 记录SID->UID/NID */
-	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, head.GetSid())
+	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
 	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
-	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_SID_SET, req.GetUid())
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetUid())
 	pl.Send("SADD", key, head.GetSid())
 
 	return err
@@ -404,7 +404,7 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
 	}()
 
 	// 获取SID -> (UID/NID)的映射
-	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, head.GetSid())
+	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
 
 	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
 	if nil != err {
@@ -433,10 +433,10 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
 	}
 
 	/* 删除SID集合 */
-	pl.Send("ZREM", comm.CHAT_KEY_SID_ZSET, head.GetSid())
+	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, head.GetSid())
 
 	/* 记录UID->SID集合 */
-	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_SID_SET, uid)
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, uid)
 	pl.Send("SREM", key, head.GetSid())
 
 	return nil
@@ -1125,7 +1125,7 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
 	}()
 
 	/* 获取SID->UID/NID */
-	key := fmt.Sprintf(comm.CHAT_KEY_SID_ATTR, head.GetSid())
+	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
 	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
 	if nil != err {
 		ctx.log.Error("Get uid by sid [%d] failed!", head.GetSid())
@@ -1144,8 +1144,8 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
 	}
 
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
-	pl.Send("ZADD", comm.CHAT_KEY_SID_ZSET, ttl, head.GetSid())
-	pl.Send("ZADD", comm.CHAT_KEY_UID_ZSET, ttl, uid)
+	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
+	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, uid)
 }
 
 /******************************************************************************

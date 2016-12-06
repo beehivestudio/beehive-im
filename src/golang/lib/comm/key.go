@@ -1,13 +1,13 @@
 package comm
 
-//#聊天室系统REDIS键值定义列表
+//#IM系统REDIS键值定义列表
 const (
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
-	CHAT_KEY_SID_ZSET       = "chat:sid:zset"          //*| ZSET | 会话SID集合 | 成员:SID 分值:TTL |
-	CHAT_KEY_UID_ZSET       = "chat:uid:zset"          //| ZSET | 用户UID集合 | 成员:UID 分值:TTL |
-	CHAT_KEY_SID_INCR       = "chat:sid:incr"          //*| STRING | 会话SID增量器 | 只增不减 注意:sid不能为0 |
-	CHAT_KEY_SID_ATTR       = "chat:sid:%d:attr"       //*| HASH | 会话SID属性 | 包含UID/NID |
-	CHAT_KEY_UID_TO_SID_SET = "chat:uid:%d:to:sid:set" //| SET | 用户UID对应的会话SID集合 | SID集合 |
+	IM_KEY_SID_ZSET       = "im:sid:zset"          //*| ZSET | 会话SID集合 | 成员:SID 分值:TTL |
+	IM_KEY_UID_ZSET       = "im:uid:zset"          //| ZSET | 用户UID集合 | 成员:UID 分值:TTL |
+	IM_KEY_SID_INCR       = "im:sid:incr"          //*| STRING | 会话SID增量器 | 只增不减 注意:sid不能为0 |
+	IM_KEY_SID_ATTR       = "im:sid:%d:attr"       //*| HASH | 会话SID属性 | 包含UID/NID |
+	IM_KEY_UID_TO_SID_SET = "im:uid:%d:to:sid:set" //| SET | 用户UID对应的会话SID集合 | SID集合 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//聊天室
 	CHAT_KEY_RID_ZSET             = "chat:rid:zset"               //*| ZSET | 聊天室RID集合 | 成员:RID 分值:TTL |
@@ -29,17 +29,17 @@ const (
 	CHAT_KEY_GID_TO_UID_ZSET     = "chat:gid:%d:to:uid:zset"     //| ZSET | 某群在线用户列表 | 成员:UID 分值:TTL |
 	CHAT_KEY_GID_TO_SID_ZSET     = "chat:gid:%d:to:sid:zset"     //| ZSET | 某群SID列表 | 成员:SID 分值:TTL |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
-	CHAT_KEY_LSN_NATION_ZSET    = "chat:lsn:nation:zset"          //| ZSET | 帧听层"地区/国家"集合 | 成员:"国家/地区" 分值:TTL |
-	CHAT_KEY_LSN_OP_ZSET        = "chat:lsn:nation:%s:op:zset"    //| ZSET | 帧听层"地区/国家"对应的运营商集合 | 成员:运营商ID 分值:TTL |
-	CHAT_KEY_LSN_IP_ZSET        = "chat:lsn:nation:%s:op:%s:zset" //| ZSET | 帧听层"地区/国家"-运营商对应的IP集合 | 成员:IP 分值:TTL |
-	CHAT_KEY_LSN_OP_TO_NID_ZSET = "chat:lsn:op:%d:to:nid:zset"    //| ZSET | 运营商帧听层NID集合 | 成员:NID 分值:TTL |
-	CHAT_KEY_LSN_NID_ZSET       = "chat:lsn:nid:zset"             //| ZSET | 帧听层NID集合 | 成员:NID 分值:TTL |
-	CHAT_KEY_LSN_NID_TO_ADDR    = "chat:lsn:nid:to:addr"          //| HASH | 帧听层NID->地址 | 键:NID/值:外网IP+端口 |
-	CHAT_KEY_LSN_ADDR_TO_NID    = "chat:lsn:addr:to:nid"          //| HASH | 帧听层地址->NID | 键:外网IP+端口/值:NID |
-	CHAT_KEY_FRWD_NID_ZSET      = "chat:frwd:nid:zset"            //| ZSET | 转发层NID集合 | 成员:NID 分值:TTL |
-	CHAT_KEY_FRWD_NID_TO_ADDR   = "chat:frwd:nid:to:addr"         //| HASH | 转发层NID->地址 | 键:NID/值:内网IP+端口 |
-	CHAT_KEY_FRWD_ADDR_TO_NID   = "chat:frwd:addr:to:nid"         //| HASH | 转发层地址->NID | 键:内网IP+端口/值:NID |
-	CHAT_KEY_PREC_RNUM_ZSET     = "chat:prec:rnum:zset"           //| ZSET | 人数统计精度 | 成员:prec 分值:记录条数 |
-	CHAT_KEY_PREC_USR_MAX_NUM   = "chat:prec:%d:usr:max:num"      //| HASH | 某统计精度最大人数 | 键:时间/值:最大人数 |
-	CHAT_KEY_PREC_USR_MIN_NUM   = "chat:prec:%d:usr:min:num"      //| HASH | 某统计精度最少人数 | 键:时间/值:最少人数 |
+	IM_KEY_LSN_NATION_ZSET    = "im:lsn:nation:zset"          //| ZSET | 帧听层"地区/国家"集合 | 成员:"国家/地区" 分值:TTL |
+	IM_KEY_LSN_OP_ZSET        = "im:lsn:nation:%s:op:zset"    //| ZSET | 帧听层"地区/国家"对应的运营商集合 | 成员:运营商ID 分值:TTL |
+	IM_KEY_LSN_IP_ZSET        = "im:lsn:nation:%s:op:%s:zset" //| ZSET | 帧听层"地区/国家"-运营商对应的IP集合 | 成员:IP 分值:TTL |
+	IM_KEY_LSN_OP_TO_NID_ZSET = "im:lsn:op:%d:to:nid:zset"    //| ZSET | 运营商帧听层NID集合 | 成员:NID 分值:TTL |
+	IM_KEY_LSN_NID_ZSET       = "im:lsn:nid:zset"             //| ZSET | 帧听层NID集合 | 成员:NID 分值:TTL |
+	IM_KEY_LSN_NID_TO_ADDR    = "im:lsn:nid:to:addr"          //| HASH | 帧听层NID->地址 | 键:NID/值:外网IP+端口 |
+	IM_KEY_LSN_ADDR_TO_NID    = "im:lsn:addr:to:nid"          //| HASH | 帧听层地址->NID | 键:外网IP+端口/值:NID |
+	IM_KEY_FRWD_NID_ZSET      = "im:frwd:nid:zset"            //| ZSET | 转发层NID集合 | 成员:NID 分值:TTL |
+	IM_KEY_FRWD_NID_TO_ADDR   = "im:frwd:nid:to:addr"         //| HASH | 转发层NID->地址 | 键:NID/值:内网IP+端口 |
+	IM_KEY_FRWD_ADDR_TO_NID   = "im:frwd:addr:to:nid"         //| HASH | 转发层地址->NID | 键:内网IP+端口/值:NID |
+	IM_KEY_PREC_RNUM_ZSET     = "im:prec:rnum:zset"           //| ZSET | 人数统计精度 | 成员:prec 分值:记录条数 |
+	IM_KEY_PREC_USR_MAX_NUM   = "im:prec:%d:usr:max:num"      //| HASH | 某统计精度最大人数 | 键:时间/值:最大人数 |
+	IM_KEY_PREC_USR_MIN_NUM   = "im:prec:%d:usr:min:num"      //| HASH | 某统计精度最少人数 | 键:时间/值:最少人数 |
 )

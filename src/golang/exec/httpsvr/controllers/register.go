@@ -5,8 +5,8 @@ import (
 
 	_ "github.com/astaxie/beego"
 
-	"chat/src/golang/lib/chat"
-	"chat/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/im"
 )
 
 /* 注册处理 */
@@ -105,7 +105,7 @@ func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrReigsterParam) {
 	ctx := GetHttpCtx()
 
 	/* > 申请会话ID */
-	sid, err := chat.AllocSid(ctx.redis)
+	sid, err := im.AllocSid(ctx.redis)
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
 		this.response_fail(param, comm.ERR_SYS_RPC, err.Error())

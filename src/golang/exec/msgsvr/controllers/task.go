@@ -3,10 +3,7 @@ package controllers
 import (
 	"time"
 
-	_ "github.com/garyburd/redigo/redis"
-
-	"chat/src/golang/lib/chat"
-	_ "chat/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/chat"
 )
 
 /******************************************************************************

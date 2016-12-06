@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"syscall"
 
-	"chat/src/golang/exec/msgsvr/controllers"
+	"beehive-im/src/golang/exec/msgsvr/controllers"
 )
 
 func main() {

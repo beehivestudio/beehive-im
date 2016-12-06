@@ -7,8 +7,8 @@ import (
 
 	"github.com/astaxie/beego"
 
-	"chat/src/golang/exec/httpsvr/controllers"
-	"chat/src/golang/exec/httpsvr/routers"
+	"beehive-im/src/golang/exec/httpsvr/controllers"
+	"beehive-im/src/golang/exec/httpsvr/routers"
 )
 
 /* 设置BEEGO配置 */

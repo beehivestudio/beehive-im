@@ -7,7 +7,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
-	"chat/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/comm"
 )
 
 /******************************************************************************
