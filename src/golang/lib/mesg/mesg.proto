@@ -51,21 +51,13 @@ message mesg_unjoin_ack
     required string ErrMsg = 4; // M|错误描述|字串|
 }
 
-// 运营商ID
-enum OpId
-{
-    OP_UNKNOWN = 0;     // 未知运营商
-    OP_CN_BGP = 1;      // 中国-BGP运营商
-    OP_CN_UNICOM = 2;   // 中国-联通
-    OP_CN_TELCOM = 3;   // 中国-电信
-}
-
 message mesg_lsn_rpt
 {
     required uint64 nid = 1;    // M|结点ID|数字|<br>
-    required OpId op = 2 [default = OP_UNKNOWN];   // M|运营商ID|数字|<br>
-    required string ipaddr = 3; // M|IP地址|字串|<br>
-    required uint32 port = 4;   // M|端口号|数字|<br>
+    required string nation = 2; // M|所属国家|字串|<br>
+    required string name = 3;   // M|运营商名称|字串|<br>
+    required string ipaddr = 4; // M|IP地址|字串|<br>
+    required uint32 port = 5;   // M|端口号|数字|<br>
 }
 
 message mesg_frwd_rpt

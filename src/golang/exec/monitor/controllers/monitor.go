@@ -12,7 +12,7 @@ import (
 )
 
 /* OLS上下文 */
-type MonCntx struct {
+type MonSvrCntx struct {
 	conf   *MonConf            /* 配置信息 */
 	log    *logs.BeeLogger     /* 日志对象 */
 	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
@@ -32,8 +32,8 @@ type MonCntx struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func MonInit(conf *MonConf) (ctx *MonCntx, err error) {
-	ctx = &MonCntx{}
+func MonInit(conf *MonConf) (ctx *MonSvrCntx, err error) {
+	ctx = &MonSvrCntx{}
 
 	ctx.conf = conf
 
@@ -79,7 +79,7 @@ func MonInit(conf *MonConf) (ctx *MonCntx, err error) {
  **注意事项: 请在调用Launch()前完成此函数调用
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *MonCntx) Register() {
+func (ctx *MonSvrCntx) Register() {
 	/* > 运维消息 */
 	ctx.frwder.Register(comm.CMD_LSN_RPT, MonLsnRptHandler, ctx)
 	ctx.frwder.Register(comm.CMD_FRWD_LIST, MonFrwdRptHandler, ctx)
@@ -95,6 +95,6 @@ func (ctx *MonCntx) Register() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func (ctx *MonCntx) Launch() {
+func (ctx *MonSvrCntx) Launch() {
 	ctx.frwder.Launch()
 }

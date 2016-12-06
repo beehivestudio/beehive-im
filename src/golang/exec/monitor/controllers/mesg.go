@@ -25,10 +25,11 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 08:38:48 #
  ******************************************************************************/
-func (ctx *MonCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
-	if 0 == req.GetOp() ||
-		0 == req.GetNid() ||
+func (ctx *MonSvrCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
+	if 0 == req.GetNid() ||
 		0 == req.GetPort() ||
+		0 == len(req.GetNation()) ||
+		0 == len(req.GetName()) ||
 		0 == len(req.GetIpaddr()) {
 		return false
 	}
@@ -48,7 +49,7 @@ func (ctx *MonCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 08:14:10 #
  ******************************************************************************/
-func (ctx *MonCntx) lsn_rpt_parse(data []byte) (
+func (ctx *MonSvrCntx) lsn_rpt_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -80,7 +81,7 @@ func (ctx *MonCntx) lsn_rpt_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 10:34:00 #
  ******************************************************************************/
-func (ctx *MonCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err error) {
+func (ctx *MonSvrCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -130,7 +131,7 @@ func (ctx *MonCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err er
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 08:41:18 #
  ******************************************************************************/
-func (ctx *MonCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
+func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -151,10 +152,15 @@ func (ctx *MonCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnRpt)
 	pl.Send("HSETNX", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid(), addr)
 	pl.Send("HSETNX", comm.IM_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
 
+	/* 国家集合 */
 	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
-	pl.Send("ZADD", comm.IM_KEY_LSN_OP_ZSET, ttl, req.GetOp())
+	pl.Send("ZADD", comm.IM_KEY_LSN_NATION_ZSET, ttl, req.GetNation())
 
-	key := fmt.Sprintf(comm.IM_KEY_LSN_OP_TO_NID_ZSET, req.GetOp())
+	/* 各国家下的运营商列表 */
+	key := fmt.Sprintf(comm.IM_KEY_LSN_OP_ZSET, req.GetNation())
+	pl.Send("ZADD", key, ttl, req.GetName())
+
+	key = fmt.Sprintf(comm.IM_KEY_LSN_OP_TO_NID_ZSET, req.GetNation(), req.GetName())
 	pl.Send("ZADD", key, ttl, req.GetNid())
 
 	return
@@ -175,15 +181,16 @@ func (ctx *MonCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnRpt)
  **协议格式:
  **     {
  **        required uint64 nid = 1;    // M|结点ID|数字|<br>
- **        required OpId op = 2;       // M|运营商ID|数字|<br>
- **        required string ipaddr = 3; // M|IP地址|字串|<br>
- **        required uint32 port = 4;   // M|端口号|数字|<br>
+ **        required string nation = 2; // M|所属国家|字串|<br>
+ **        required string name = 3;   // M|运营商名称|字串|<br>
+ **        required string ipaddr = 4; // M|IP地址|字串|<br>
+ **        required uint32 port = 5;   // M|端口号|数字|<br>
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 06:32:03 #
  ******************************************************************************/
 func MonLsnRptHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*MonCntx)
+	ctx, ok := param.(*MonSvrCntx)
 	if false == ok {
 		return -1
 	}
@@ -217,7 +224,7 @@ func MonLsnRptHandler(cmd uint32, orig uint32, data []byte, length uint32, param
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:05:03 #
  ******************************************************************************/
-func (ctx *MonCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdRpt) bool {
+func (ctx *MonSvrCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdRpt) bool {
 	if 0 == req.GetForwardPort() ||
 		0 == req.GetBackendPort() ||
 		0 == len(req.GetIpaddr()) {
@@ -239,7 +246,7 @@ func (ctx *MonCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdRpt) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:57 #
  ******************************************************************************/
-func (ctx *MonCntx) frwd_rpt_parse(data []byte) (
+func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgFrwdRpt) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -271,7 +278,7 @@ func (ctx *MonCntx) frwd_rpt_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:49 #
  ******************************************************************************/
-func (ctx *MonCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, err error) {
+func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -321,7 +328,7 @@ func (ctx *MonCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, err 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:42 #
  ******************************************************************************/
-func (ctx *MonCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrwdRpt) {
+func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrwdRpt) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -371,7 +378,7 @@ func (ctx *MonCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrwdRp
  **作    者: # Qifeng.zou # 2016.11.04 11:04:36 #
  ******************************************************************************/
 func MonFrwdRptHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*MonCntx)
+	ctx, ok := param.(*MonSvrCntx)
 	if false == ok {
 		return -1
 	}
