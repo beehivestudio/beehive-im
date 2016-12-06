@@ -3,9 +3,7 @@ package controllers
 import (
 	"encoding/xml"
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"sync"
@@ -20,9 +18,8 @@ import (
 
 /* HTTPSVR配置 */
 type HttpSvrConf struct {
-	Port      int32              // 端口号
+	Port      int                // 端口号
 	NodeId    uint32             // 结点ID
-	Listen    string             // 侦听配置
 	WorkPath  string             // 工作路径(自动获取)
 	AppPath   string             // 程序路径(自动获取)
 	ConfPath  string             // 配置路径(自动获取)
@@ -142,13 +139,9 @@ func (ctx *HttpSvrCntx) Register() {
  **作    者: # Qifeng.zou # 2016.11.20 00:27:03 #
  ******************************************************************************/
 func (ctx *HttpSvrCntx) Launch() {
-	conf := ctx.conf
 	ctx.frwder.Launch()
 
 	go ctx.start_task()
-
-	ip_port := fmt.Sprintf(":%d", conf.Port)
-	http.ListenAndServe(ip_port, nil)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,7 +181,7 @@ type HttpSvrConfRtmqProxyXmlData struct {
 type HttpSvrConfXmlData struct {
 	Name      xml.Name                    `xml:"HTTPSVR"`    // 根结点名
 	Id        uint32                      `xml:"ID,attr"`    // 结点ID
-	Listen    HttpSvrConfListenXmlData    `xml:"LISTEN"`     // 侦听(网卡IP+端口)
+	Port      int                         `xml:"PORT"`       // 侦听端口
 	RedisAddr string                      `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	Cipher    string                      `xml:"CIPHER"`     // 私密密钥
 	Log       HttpSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
@@ -254,10 +247,10 @@ func (conf *HttpSvrConf) conf_parse() (err error) {
 		return errors.New("Get node id failed!")
 	}
 
-	/* 侦听配置(IP:PORT) */
-	conf.Listen = node.Listen.Ip
-	if 0 == len(conf.Listen) {
-		return errors.New("Get listen failed!")
+	/* 侦听端口(PORT) */
+	conf.Port = node.Port
+	if 0 == conf.Port {
+		return errors.New("Get listen port failed!")
 	}
 
 	/* Redis地址(IP+PORT) */

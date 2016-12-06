@@ -26,4 +26,7 @@ type MainController struct {
 }
 
 func (c *MainController) Get() {
+	c.Data["WebSite"] = "beehivestudio.com"
+	c.Data["Email"] = "Qifeng.zou.job@hotmail.com"
+	c.Data["Name"] = "Qifeng.zou"
 }
