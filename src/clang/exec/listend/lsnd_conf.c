@@ -116,6 +116,30 @@ static int lsnd_conf_load_comm(xml_tree_t *xml, lsnd_conf_t *conf, log_cycle_t *
 
     snprintf(conf->wdir, sizeof(conf->wdir), "%s/%d", node->value.str, conf->nid);  /* 工作路径 */
 
+    /* > 运营商配置 */
+    fix = xml_query(xml, ".LISTEND.OPERATOR");
+    if (NULL == fix) {
+        log_error(log, "Didn't configure operator information!");
+        return -1;
+    }
+
+    node = xml_search(xml, fix, "NATION"); /* 所属国家 */
+    if (NULL == node || 0 == strlen(node->value.str)) {
+        log_error(log, "Get nation of operator failed!");
+        return -1;
+    }
+
+    snprintf(conf->operator.nation, sizeof(conf->operator.nation), "%s", node->value.str);
+
+
+    node = xml_search(xml, fix, "NAME"); /* 运营商名称 */
+    if (NULL == node || 0 == strlen(node->value.str)) {
+        log_error(log, "Get name of operator failed!");
+        return -1;
+    }
+
+    snprintf(conf->operator.name, sizeof(conf->operator.name), "%s", node->value.str);
+
     /* > 分发队列配置 */
     fix = xml_query(xml, ".LISTEND.DISTQ");
     if (NULL == fix) {
