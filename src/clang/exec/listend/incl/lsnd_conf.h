@@ -12,8 +12,8 @@ typedef struct
     char wdir[FILE_PATH_MAX_LEN];   /* 工作路径 */
 
     struct {
-        char nation[32];            /* 所属国家 */
-        char name[32];              /* 运营商名称 */
+        char nation[NAME_MAX_LEN];  /* 所属国家 */
+        char name[NAME_MAX_LEN];    /* 运营商名称 */
     } operator;                     /* 运营商 */
 
     struct {
