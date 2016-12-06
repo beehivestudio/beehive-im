@@ -86,7 +86,7 @@ type HttpSvrRegisterRsp struct {
 	Nation uint64 `json:"nation"` // 国家ID(国)
 	City   uint64 `json:"city"`   // 城市ID(市)
 	Town   uint64 `json:"town"`   // 城镇ID(县)
-	Errno  int    `json:"errno"`  // 错误码
+	Code   int    `json:"code"`   // 错误码
 	ErrMsg string `json:"errmsg"` // 错误描述
 }
 
@@ -124,7 +124,7 @@ func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrReigsterParam) {
  **功    能: 应答错误信息
  **输入参数:
  **     param: 注册参数
- **     errno: 错误码
+ **     code: 错误码
  **     errmsg: 错误描述
  **输出参数:
  **返    回: NONE
@@ -132,7 +132,7 @@ func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrReigsterParam) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:29 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrReigsterParam, errno int, errmsg string) {
+func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrReigsterParam, code int, errmsg string) {
 	var resp HttpSvrRegisterRsp
 
 	resp.Uid = param.uid
@@ -140,7 +140,7 @@ func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrReigsterParam, errn
 	resp.Nation = param.nation
 	resp.City = param.city
 	resp.Town = param.town
-	resp.Errno = errno
+	resp.Code = code
 	resp.ErrMsg = errmsg
 
 	this.Data["json"] = &resp
@@ -167,7 +167,7 @@ func (this *HttpSvrRegisterCtrl) response_success(param *HttpSvrReigsterParam, s
 	resp.Nation = param.nation
 	resp.City = param.city
 	resp.Town = param.town
-	resp.Errno = 0
+	resp.Code = 0
 	resp.ErrMsg = "OK"
 
 	this.Data["json"] = &resp

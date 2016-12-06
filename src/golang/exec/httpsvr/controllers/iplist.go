@@ -86,7 +86,7 @@ type HttpSvrIpListRsp struct {
 	Token  string   `json:"token"`  // 鉴权TOKEN
 	Len    int      `json:"len"`    // 列表长度
 	List   []string `json:"list"`   // IP列表
-	Errno  int      `json:"errno"`  // 错误码
+	Code   int      `json:"code"`   // 错误码
 	ErrMsg string   `json:"errmsg"` // 错误描述
 }
 
@@ -120,7 +120,7 @@ func (this *HttpSvrIpListCtrl) handler(ctx *HttpSvrCntx, param *HttpSvrIpListPar
  **功    能: 应答错误信息
  **输入参数:
  **     param: 注册参数
- **     errno: 错误码
+ **     code: 错误码
  **     errmsg: 错误描述
  **输出参数:
  **返    回: NONE
@@ -128,12 +128,12 @@ func (this *HttpSvrIpListCtrl) handler(ctx *HttpSvrCntx, param *HttpSvrIpListPar
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:13:09 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) response_fail(param *HttpSvrIpListParam, errno int, errmsg string) {
+func (this *HttpSvrIpListCtrl) response_fail(param *HttpSvrIpListParam, code int, errmsg string) {
 	var resp HttpSvrIpListRsp
 
 	resp.Uid = param.uid
 	resp.Sid = 0
-	resp.Errno = errno
+	resp.Code = code
 	resp.ErrMsg = errmsg
 
 	this.Data["json"] = &resp
@@ -160,7 +160,7 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
 	resp.Token = this.gen_token(param)
 	resp.Len = len(iplist)
 	resp.List = iplist
-	resp.Errno = 0
+	resp.Code = 0
 	resp.ErrMsg = "OK"
 
 	this.Data["json"] = &resp
