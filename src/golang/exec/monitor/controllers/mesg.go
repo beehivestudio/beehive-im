@@ -156,10 +156,11 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
 	pl.Send("ZADD", comm.IM_KEY_LSN_NATION_ZSET, ttl, req.GetNation())
 
-	/* 各国家下的运营商列表 */
+	/* 国家 -> 运营商列表 */
 	key := fmt.Sprintf(comm.IM_KEY_LSN_OP_ZSET, req.GetNation())
 	pl.Send("ZADD", key, ttl, req.GetName())
 
+	/* 国家+运营商 -> 结点列表 */
 	key = fmt.Sprintf(comm.IM_KEY_LSN_OP_TO_NID_ZSET, req.GetNation(), req.GetName())
 	pl.Send("ZADD", key, ttl, req.GetNid())
 
