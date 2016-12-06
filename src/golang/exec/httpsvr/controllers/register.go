@@ -15,7 +15,7 @@ type HttpSvrRegisterCtrl struct {
 }
 
 /* 注册参数 */
-type HttpSvrReigsterParam struct {
+type HttpSvrRegisterParam struct {
 	uid    uint64 // 用户ID
 	nation uint64 // 国际ID
 	city   uint64 // 地市ID
@@ -54,8 +54,8 @@ func (this *HttpSvrRegisterCtrl) Register() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 10:30:09 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrReigsterParam, error) {
-	var param HttpSvrReigsterParam
+func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrRegisterParam, error) {
+	var param HttpSvrRegisterParam
 
 	/* > 提取注册参数 */
 	id, _ := this.GetInt64("uid")
@@ -101,7 +101,7 @@ type HttpSvrRegisterRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:34:27 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrReigsterParam) {
+func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrRegisterParam) {
 	ctx := GetHttpCtx()
 
 	/* > 申请会话ID */
@@ -132,7 +132,7 @@ func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrReigsterParam) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:29 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrReigsterParam, code int, errmsg string) {
+func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrRegisterParam, code int, errmsg string) {
 	var resp HttpSvrRegisterRsp
 
 	resp.Uid = param.uid
@@ -159,7 +159,7 @@ func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrReigsterParam, code
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:22 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) response_success(param *HttpSvrReigsterParam, sid uint64) {
+func (this *HttpSvrRegisterCtrl) response_success(param *HttpSvrRegisterParam, sid uint64) {
 	var resp HttpSvrRegisterRsp
 
 	resp.Uid = param.uid
