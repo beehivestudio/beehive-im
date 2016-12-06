@@ -55,7 +55,7 @@ func (this *HttpSvrRegisterCtrl) Register() {
  **作    者: # Qifeng.zou # 2016.11.25 10:30:09 #
  ******************************************************************************/
 func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrReigsterParam, error) {
-	var param *HttpSvrReigsterParam
+	var param HttpSvrReigsterParam
 
 	/* > 提取注册参数 */
 	id, _ := this.GetInt64("uid")
@@ -73,10 +73,10 @@ func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrReigster
 	/* > 校验参数合法性 */
 	if 0 == param.uid || 0 == param.nation {
 		ctx.log.Error("Register param invalid! uid:%d nation:%d", param.uid, param.nation)
-		return param, errors.New("Register param invalied!")
+		return &param, errors.New("Register param invalied!")
 	}
 
-	return param, nil
+	return &param, nil
 }
 
 /* 注册应答 */
