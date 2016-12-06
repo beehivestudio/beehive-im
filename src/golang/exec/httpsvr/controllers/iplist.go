@@ -58,7 +58,7 @@ func (this *HttpSvrIpListCtrl) IpList() {
  **作    者: # Qifeng.zou # 2016.11.25 23:17:52 #
  ******************************************************************************/
 func (this *HttpSvrIpListCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrIpListParam, error) {
-	var param *HttpSvrIpListParam
+	var param HttpSvrIpListParam
 
 	/* > 提取注册参数 */
 	id, _ := this.GetInt64("uid")
@@ -67,16 +67,16 @@ func (this *HttpSvrIpListCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrIpListPara
 	id, _ = this.GetInt64("sid")
 	param.sid = uint64(id)
 
-	param.clientip = this.GetString("client")
+	param.clientip = this.GetString("clientip")
 
 	/* > 校验参数合法性 */
 	if 0 == param.uid || 0 == param.sid || "" == param.clientip {
 		ctx.log.Error("Paramter is invalid. uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
-		return nil, errors.New("Paramter is invalid!")
+		return &param, errors.New("Paramter is invalid!")
 	}
 
-	return param, nil
+	return &param, nil
 }
 
 /* IP列表应答 */
