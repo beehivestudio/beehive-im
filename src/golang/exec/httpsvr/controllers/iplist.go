@@ -76,6 +76,9 @@ func (this *HttpSvrIpListCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrIpListPara
 		return &param, errors.New("Paramter is invalid!")
 	}
 
+	ctx.log.Debug("Get ip list param. uid:%d sid:%d clientip:%s",
+		param.uid, param.sid, param.clientip)
+
 	return &param, nil
 }
 
@@ -84,6 +87,7 @@ type HttpSvrIpListRsp struct {
 	Uid    uint64   `json:"uid"`    // 用户ID
 	Sid    uint64   `json:"sid"`    // 会话ID
 	Token  string   `json:"token"`  // 鉴权TOKEN
+	Expire int      `json:"expire"` // 过期时长
 	Len    int      `json:"len"`    // 列表长度
 	List   []string `json:"list"`   // IP列表
 	Code   int      `json:"code"`   // 错误码
@@ -158,6 +162,7 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
 	resp.Uid = param.uid
 	resp.Sid = param.sid
 	resp.Token = this.gen_token(param)
+	resp.Expire = comm.TIME_DAY
 	resp.Len = len(iplist)
 	resp.List = iplist
 	resp.Code = 0
@@ -172,7 +177,9 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
  **功    能: 生成TOKEN字串
  **输入参数:
  **输出参数: NONE
- **返    回: 加密TOKEN
+ **返    回:
+ **     token: 加密TOKEN
+ **     expire: 过期时间
  **实现描述:
  **注意事项:
  **     TOKEN的格式"${uid}:${ttl}:${sid}"
@@ -183,7 +190,7 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
  ******************************************************************************/
 func (this *HttpSvrIpListCtrl) gen_token(param *HttpSvrIpListParam) string {
 	ctx := GetHttpCtx()
-	ttl := time.Now().Unix() + 3*comm.TIME_DAY
+	ttl := time.Now().Unix() + comm.TIME_DAY
 
 	/* > 原始TOKEN */
 	token := fmt.Sprintf("%d:%d:%d", param.uid, ttl, param.sid)
