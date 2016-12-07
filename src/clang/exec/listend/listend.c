@@ -320,11 +320,11 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, lsnd_mesg_online_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, lsnd_mesg_offline_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, lsnd_mesg_join_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_UNJOIN_REQ, lsnd_mesg_unjoin_req_hdl, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_PING, lsnd_mesg_ping_req_hdl, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, lsnd_mesg_online_req_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, lsnd_mesg_offline_req_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_JOIN_REQ, lsnd_mesg_join_req_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_UNJOIN_REQ, lsnd_mesg_unjoin_req_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_PING, lsnd_mesg_ping_req_handler, ctx);
 
     /* 注册队列数据回调 */
 #define LSND_RTQ_REG_CB(lsnd, type, proc, args) \
@@ -333,9 +333,9 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_mesg_online_ack_hdl, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, lsnd_mesg_join_ack_hdl, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, lsnd_mesg_room_mesg_hdl, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_mesg_online_ack_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, lsnd_mesg_join_ack_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, lsnd_mesg_room_mesg_handler, ctx);
 
     /* 注册定时任务回调 */
     lsnd_task_add(ctx, lsnd_timer_kick_handler, 5, 5, 0, (void *)ctx);

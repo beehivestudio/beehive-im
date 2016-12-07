@@ -1,6 +1,9 @@
 #include "mesg.h"
 #include "redo.h"
 #include "listend.h"
+#include "cmd_list.h"
+
+#include "mesg_lsn_rpt.pb-c.h"
 
 /******************************************************************************
  **函数名称: lsnd_getopt 
@@ -401,11 +404,57 @@ void *lsnd_task_handler(void *_ctx)
  **     _ctx: 全局信息
  **输出参数:
  **返    回: VOID
- **实现描述: 
+ **实现描述: 使用PB协议组装接入层上报数据
+ **     {
+ **         required uint64 nid = 1;    // M|结点ID|数字|<br>
+ **         required string nation = 2; // M|所属国家|字串|<br>
+ **         required string name = 3;   // M|运营商名称|字串|<br>
+ **         required string ipaddr = 4; // M|IP地址|字串|<br>
+ **         required uint32 port = 5;   // M|端口号|数字|<br>
+ **     }
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 23:23:51 #
  ******************************************************************************/
 void lsnd_timer_report_handler(void *_ctx)
 {
+    void *addr;
+    unsigned int len;
+    mesg_header_t *head;
+    lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
+    lsnd_conf_t *conf = &ctx->conf;
+    MesgLsnRpt report = MESG_LSN_RPT__INIT;
+
+    /* > 设置上报数据 */
+    report.nid = conf->nid;
+    report.nation = conf->operator.nation;
+    report.name = conf->operator.name;
+    report.ipaddr = conf->access.ipaddr;
+    report.port = conf->access.port;
+
+    /* > 组装PB协议 */
+    len = mesg_lsn_rpt__get_packed_size(&report);
+
+    addr = (void *)calloc(1, sizeof(mesg_header_t) + len);
+    if (NULL == addr) {
+        log_error(ctx->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+        return;
+    }
+
+    head = (mesg_header_t *)addr;
+
+    head->type = CMD_LSN_RPT;
+    head->flag = MSG_FLAG_USR;
+    head->length = len;
+    head->chksum = MSG_CHKSUM_VAL;
+    head->nid = conf->nid;
+
+    MESG_HEAD_HTON(head, head);
+
+    mesg_lsn_rpt__pack(&report, addr + sizeof(mesg_header_t)); /* 组装PB协议 */
+
+    /* > 发送数据 */
+    rtmq_proxy_async_send(ctx->frwder, CMD_LSN_RPT, addr, sizeof(mesg_header_t) + len);
+
+    free(addr);
     return;
 }

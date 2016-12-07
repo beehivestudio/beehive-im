@@ -9,6 +9,7 @@ LIST=$LIST" mesg_online_ack.proto"
 LIST=$LIST" mesg_join.proto"
 LIST=$LIST" mesg_join_ack.proto"
 LIST=$LIST" mesg_unjoin.proto"
+LIST=$LIST" mesg_lsn_rpt.proto"
 
 for ITEM in $LIST;
 do
