@@ -326,7 +326,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 帧听层上报(LSN-RPT)<br>
 协议格式: <br>
 >{<br>
->   required uint64 nid = 1;        // M|结点ID|数字|<br>
+>   required uint32 nid = 1;        // M|结点ID|数字|<br>
 >   required uint32 op = 2;         // M|运营商ID|数字|<br>
 >   required string ipaddr = 3;     // M|IP地址|字串|<br>
 >   required uint32 port = 4;       // M|IP地址|字串|<br>
@@ -342,7 +342,7 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 转发层上报 (FRWD-RPT)<br>
 协议格式: <br>
 >{<br>
->   required uint64 nid = 1;        // M|结点ID|数字|<br>
+>   required uint32 nid = 1;        // M|结点ID|数字|<br>
 >   required string ipaddr = 2;     // M|IP地址|字串|<br>
 >   required uint32 forward_port = 3;    // M|前端口号|数字|<br>
 >   required uint32 backend_port = 4;    // M|后端口号|数字|<br>
