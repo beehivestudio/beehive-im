@@ -164,6 +164,11 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 	key = fmt.Sprintf(comm.IM_KEY_LSN_OP_TO_NID_ZSET, req.GetNation(), req.GetName())
 	pl.Send("ZADD", key, ttl, req.GetNid())
 
+	/* 国家+运营商 -> 侦听层IP列表 */
+	key = fmt.Sprintf(comm.IM_KEY_LSN_IP_ZSET, req.GetNation(), req.GetName())
+	val := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
+	pl.Send("ZADD", key, ttl, val)
+
 	return
 }
 
