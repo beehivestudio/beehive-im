@@ -14,10 +14,7 @@
 #include "cmd_list.h"
 #include "lsnd_mesg.h"
 
-#include "mesg_room.pb-c.h"
-#include "mesg_online.pb-c.h"
-#include "mesg_online_ack.pb-c.h"
-#include "mesg_join_ack.pb-c.h"
+#include "mesg.pb-c.h"
 
 static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra);
 static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra);

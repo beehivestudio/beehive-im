@@ -1,7 +1,0 @@
-message mesg_room
-{
-    required uint64 rid = 1;            // 聊天室ID
-    required uint32 gid = 2;            // 分组ID
-    required uint32 level = 3;          // 消息级别
-    required bytes data = 4;            // 透传数据
-}

@@ -1,6 +1,0 @@
-message mesg_join_req
-{
-    required uint64 uid = 1;    // M|用户ID|数字|
-    required uint64 rid = 2;    // M|聊天室ID|数字|
-    required string token = 3;  // M|鉴权TOKEN|字串|
-}

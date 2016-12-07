@@ -1,5 +1,0 @@
-message mesg_unjoin_req
-{
-    required uint64 uid = 1;    // M|用户ID|数字|
-    required uint64 rid = 2;    // M|聊天室ID|数字|
-}

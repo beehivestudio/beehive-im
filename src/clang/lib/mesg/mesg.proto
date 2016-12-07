@@ -1,0 +1,78 @@
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/* 上线请求 */
+message mesg_online_req
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 sid = 2;        // M|会话ID|数字|
+    required string token = 3;      // M|鉴权TOKEN|字串|
+    required string app = 4;        // M|APP名|字串|
+    required string version = 5;    // M|APP版本|字串|
+    optional uint32 terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+}
+
+/* 上线应答 */
+message mesg_online_ack
+{
+   required uint64 uid = 1;         // M|用户ID|数字|<br>
+   required uint64 sid = 2;         // M|会话ID|数字|内部使用<br>
+   required string app = 3;         // M|APP名|字串|<br>
+   required string version = 4;     // M|APP版本|字串|<br>
+   optional uint32 terminal = 5;    // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
+   required uint32 code = 6;        // M|错误码|数字|<br>
+   required string errmsg = 7;      // M|错误描述|字串|<br>
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/* 加入聊天室请求 */
+message mesg_join_req
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+    required string token = 3;      // M|鉴权TOKEN|字串|
+}
+
+/* 加入聊天室应答 */
+message mesg_join_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+    required uint32 gid = 3;        // M|分组ID|数字|
+    required uint32 code = 4;       // M|错误码|数字|
+    required string errmsg = 5;     // M|错误描述|字串|
+}
+
+/* 退出聊天室请求 */
+message mesg_unjoin_req
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+}
+
+/* 聊天室消息 */
+message mesg_room
+{
+    required uint64 rid = 1;        // 聊天室ID
+    required uint32 gid = 2;        // 分组ID
+    required uint32 level = 3;      // 消息级别
+    required bytes data = 4;        // 透传数据
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/* 侦听层状态上报 */
+message mesg_lsn_rpt
+{
+    required uint32 nid = 1;        // M|结点ID|数字|<br>
+    required string nation = 2;     // M|所属国家|字串|<br>
+    required string name = 3;       // M|运营商名称|字串|<br>
+    required string ipaddr = 4;     // M|IP地址|字串|<br>
+    required uint32 port = 5;       // M|端口号|数字|<br>
+}
+
+

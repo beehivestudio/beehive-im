@@ -3,7 +3,7 @@
 #include "listend.h"
 #include "cmd_list.h"
 
-#include "mesg_lsn_rpt.pb-c.h"
+#include "mesg.pb-c.h"
 
 /******************************************************************************
  **函数名称: lsnd_getopt 
@@ -430,6 +430,9 @@ void lsnd_timer_report_handler(void *_ctx)
     report.name = conf->operator.name;
     report.ipaddr = conf->access.ipaddr;
     report.port = conf->access.port;
+
+    log_debug(ctx->log, "Listen report! nid:%d nation:%s name:%s ipaddr:%s port:%d",
+            report.nid, report.nation, report.name, report.ipaddr, report.port);
 
     /* > 组装PB协议 */
     len = mesg_lsn_rpt__get_packed_size(&report);

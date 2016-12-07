@@ -15,11 +15,7 @@ LIBS_PATH = -L$(PROJ)/lib
 LIBS = -lpthread -lm -dl -lprotobuf-c
 LIBS += $(SHARED_LIB)
 
-SRC_LIST = mesg_room.pb-c.c \
-			mesg_online.pb-c.c \
-			mesg_online_ack.pb-c.c \
-			mesg_join_ack.pb-c.c \
-			mesg_lsn_rpt.pb-c.c
+SRC_LIST = mesg.pb-c.c
 
 OBJS = $(subst .c,.o, $(SRC_LIST))
 HEADS = $(call func_get_dep_head_list, $(SRC_LIST))
