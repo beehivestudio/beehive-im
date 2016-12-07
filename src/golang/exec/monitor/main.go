@@ -18,20 +18,23 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	/* > 加载OLS配置 */
+	/* > 加载监控配置 */
 	if err := conf.LoadConf(); nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}
 
-	/* > 初始化OLSVR环境 */
+	/* > 初始化环境 */
 	ctx, err := controllers.MonInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return
 	}
 
-	/* > 启动OLSVR服务 */
+	/* > 注册回调函数 */
+	ctx.Register()
+
+	/* > 启动监控服务 */
 	ctx.Launch()
 
 	/* > 捕捉中断信号 */
