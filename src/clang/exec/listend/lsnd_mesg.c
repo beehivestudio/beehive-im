@@ -104,6 +104,9 @@ int lsnd_mesg_online_req_handler(lsnd_conn_extra_t *conn, int type, void *data, 
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /******************************************************************************
  **函数名称: lsnd_mesg_online_ack_logic_handler
  **功    能: ONLINE应答逻辑处理
@@ -134,6 +137,7 @@ static int lsnd_mesg_online_ack_logic_handler(lsnd_cntx_t *lsnd, MesgOnlineAck *
 
     if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
         log_error(lsnd->log, "Connection status isn't establish! cid:%lu", cid);
+        lsnd_kick_insert(lsnd, extra);
         return -1;
     }
     else if (0 == ack->sid) { /* SID分配失败 */
