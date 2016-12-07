@@ -250,14 +250,20 @@ func (this *HttpSvrIpListCtrl) def_get_iplist(ctx *HttpSvrCntx) []string {
 	var ok bool
 
 	/* > 获取"默认"国家/地区下辖的运营商列表 */
-	operators, ok := ctx.lsnlist.list["DEF"]
-	if nil == operators || !ok {
+	operators, ok := ctx.lsnlist.list["CN"]
+	if nil == operators || 0 == len(operators) || !ok {
+		ctx.log.Error("Get default iplist by nation failed!")
 		return nil
 	}
 
+	for k, v := range operators {
+		ctx.log.Debug("k:%s v:%s", k, v)
+	}
+
 	/* > 获取"默认"运营商下辖的侦听层列表 */
-	lsn_list, ok := operators["DEF"]
+	lsn_list, ok := operators["中国电信"]
 	if nil == lsn_list || 0 == len(lsn_list) || !ok {
+		ctx.log.Error("Get default iplist by operator failed!")
 		return nil
 	}
 

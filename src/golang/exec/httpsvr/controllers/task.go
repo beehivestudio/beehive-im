@@ -66,12 +66,11 @@ func (ctx *HttpSvrCntx) update_lsn_list() {
  **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
  ******************************************************************************/
 func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
-	var list map[string](map[string][]string)
-
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
+	list := make(map[string](map[string][]string))
 
 	/* > 获取"国家/地区"列表 */
 	nations, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
@@ -83,6 +82,7 @@ func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
 
 	nation_num := len(nations)
 	for m := 0; m < nation_num; m += 1 {
+		ctx.log.Debug("Nation:%s", nations[m])
 		/* > 获取"国家/地区"对应的"运营商"列表 */
 		key := fmt.Sprintf(comm.IM_KEY_LSN_OP_ZSET, nations[m])
 		operators, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
@@ -95,6 +95,7 @@ func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
 
 		operator_num := len(operators)
 		for n := 0; n < operator_num; n += 1 {
+			ctx.log.Debug("    Operator:%s", operators[n])
 			/* > 获取"运营商"对应的"IP+PORT"列表 */
 			key := fmt.Sprintf(comm.IM_KEY_LSN_IP_ZSET, nations[m], operators[n])
 			iplist, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
@@ -105,6 +106,7 @@ func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
 
 			iplist_num := len(iplist)
 			for k := 0; k < iplist_num; k += 1 {
+				ctx.log.Debug("    iplist:%s", iplist[k])
 				operator_set[operators[n]] = append(operator_set[operators[n]], iplist[k])
 			}
 		}
