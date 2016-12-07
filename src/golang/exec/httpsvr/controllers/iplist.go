@@ -182,7 +182,7 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
  **     expire: 过期时间
  **实现描述:
  **注意事项:
- **     TOKEN的格式"${uid}:${ttl}:${sid}"
+ **     TOKEN的格式"uid:${uid}:ttl:${ttl}:sid:${sid}:end"
  **     uid: 用户ID
  **     ttl: 该token的最大生命时间
  **     sid: 会话UID
@@ -193,7 +193,7 @@ func (this *HttpSvrIpListCtrl) gen_token(param *HttpSvrIpListParam) string {
 	ttl := time.Now().Unix() + comm.TIME_DAY
 
 	/* > 原始TOKEN */
-	token := fmt.Sprintf("%d:%d:%d", param.uid, ttl, param.sid)
+	token := fmt.Sprintf("uid:%d:ttl:%d:sid:%d:end", param.uid, ttl, param.sid)
 
 	/* > 加密TOKEN */
 	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)

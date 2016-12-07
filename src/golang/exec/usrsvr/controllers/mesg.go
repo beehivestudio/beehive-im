@@ -34,7 +34,7 @@ type OnlineToken struct {
  **返    回: TOKEN字段
  **实现描述: 解析token, 并提取有效数据.
  **注意事项:
- **     TOKEN的格式"${uid}:${ttl}:${sid}"
+ **     TOKEN的格式"uid:${uid}:ttl:${ttl}:sid:${sid}:end"
  **     uid: 用户ID
  **     ttl: 该token的最大生命时间
  **     sid: 会话SID
@@ -47,20 +47,25 @@ func (ctx *UsrSvrCntx) online_token_decode(token string) *OnlineToken {
 	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
 	orig_token := crypt.Decode(cry, token)
 	words := strings.Split(orig_token, ":")
-	if 3 != len(words) {
+	if 7 != len(words) {
 		ctx.log.Error("Token format not right! token:%s orig:%s", token, orig_token)
 		return nil
 	}
 
-	ctx.log.Debug("Orig token is [%s]", orig_token)
+	ctx.log.Debug("token:%s orig:%s", token, orig_token)
 
 	/* > 验证TOKEN合法性 */
-	val, _ := strconv.ParseInt(words[0], 10, 64)
-	tk.uid = uint64(val)
-	val, _ = strconv.ParseInt(words[1], 10, 64)
-	tk.ttl = int64(val)
-	val, _ = strconv.ParseInt(words[2], 10, 64)
-	tk.sid = uint64(val)
+	uid, _ := strconv.ParseInt(words[1], 10, 64)
+	tk.uid = uint64(uid)
+	ctx.log.Debug("words[1]:%s uid:%d", words[1], tk.uid)
+
+	ttl, _ := strconv.ParseInt(words[3], 10, 64)
+	tk.ttl = int64(ttl)
+	ctx.log.Debug("words[3]:%s ttl:%d", words[3], tk.ttl)
+
+	sid, _ := strconv.ParseInt(words[5], 10, 64)
+	tk.sid = uint64(sid)
+	ctx.log.Debug("words[5]:%s sid:%d sid:%d", words[5], sid, tk.sid)
 
 	return tk
 }
@@ -87,7 +92,7 @@ func (ctx *UsrSvrCntx) online_req_check(req *mesg.MesgOnlineReq) error {
 		ctx.log.Error("Decode token failed!")
 		return errors.New("Decode token failed!")
 	} else if token.ttl < time.Now().Unix() {
-		ctx.log.Error("Token is timeout!")
+		ctx.log.Error("Token is timeout! uid:%d sid:%d ttl:%d", token.uid, token.sid, token.ttl)
 		return errors.New("Token is timeout!")
 	} else if uint64(token.uid) != req.GetUid() || uint64(token.sid) != req.GetSid() {
 		ctx.log.Error("Token is invalid! uid:%d/%d sid:%d/%d ttl:%d",

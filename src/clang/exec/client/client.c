@@ -9,8 +9,8 @@ void client_set_conf(sdk_conf_t *conf)
 
     conf->nid = 0; /* 设备ID: 唯一值 */
     snprintf(conf->path, sizeof(conf->path), "."); /* 工作路径 */
-    conf->uid = 1234;                 /* 用户ID */
-    conf->sid = 10000;                 /* 会话ID(备选) */
+    conf->uid = 2234;                 /* 用户ID */
+    conf->sid = 10001;                 /* 会话ID(备选) */
     conf->terminal = 1;                /* 终端类型 */
     snprintf(conf->app, sizeof(conf->app), "beehive chat");
     snprintf(conf->version, sizeof(conf->version), "1.0.0");    /* 客户端自身版本号(留做统计用) */
