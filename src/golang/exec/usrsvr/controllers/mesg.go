@@ -52,6 +52,8 @@ func (ctx *UsrSvrCntx) online_token_decode(token string) *OnlineToken {
 		return nil
 	}
 
+	ctx.log.Debug("Orig token is [%s]", orig_token)
+
 	/* > 验证TOKEN合法性 */
 	val, _ := strconv.ParseInt(words[0], 10, 64)
 	tk.uid = uint64(val)
@@ -88,8 +90,8 @@ func (ctx *UsrSvrCntx) online_req_check(req *mesg.MesgOnlineReq) error {
 		ctx.log.Error("Token is timeout!")
 		return errors.New("Token is timeout!")
 	} else if uint64(token.uid) != req.GetUid() || uint64(token.sid) != req.GetSid() {
-		ctx.log.Error("Token is invalid! uid:%d/%d sid:%d/%d",
-			token.uid, req.GetUid(), token.sid, req.GetSid())
+		ctx.log.Error("Token is invalid! uid:%d/%d sid:%d/%d ttl:%d",
+			token.uid, req.GetUid(), token.sid, req.GetSid(), token.ttl)
 		return errors.New("Token is invalid!!")
 	}
 
