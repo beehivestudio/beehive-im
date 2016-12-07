@@ -9,15 +9,15 @@ void client_set_conf(sdk_conf_t *conf)
 
     conf->nid = 0; /* 设备ID: 唯一值 */
     snprintf(conf->path, sizeof(conf->path), "."); /* 工作路径 */
-    conf->uid = 10000;                   /* 用户ID */
-    conf->sessionid = 10000;             /* 会话ID(备选) */
-    conf->terminal = 1;                   /* 终端类型 */
+    conf->uid = 1234;                 /* 用户ID */
+    conf->sid = 10000;                 /* 会话ID(备选) */
+    conf->terminal = 1;                /* 终端类型 */
     snprintf(conf->app, sizeof(conf->app), "beehive chat");
     snprintf(conf->version, sizeof(conf->version), "1.0.0");    /* 客户端自身版本号(留做统计用) */
 
     conf->log_level = LOG_LEVEL_DEBUG;                      /* 日志级别 */
     snprintf(conf->log_path, sizeof(conf->log_path), "client.log");   /* 日志路径(路径+文件名) */
-    snprintf(conf->httpsvr, sizeof(conf->httpsvr), "127.0.0.1:8080/client/query");      /* HTTP端(IP+端口/域名) */
+    snprintf(conf->httpsvr, sizeof(conf->httpsvr), "127.0.0.1:8000");      /* HTTP端(IP+端口) */
 
     conf->work_thd_num = 1;  /* 工作线程数 */
     conf->recv_buff_size = 1024 * 1024;  /* 接收缓存大小 */
