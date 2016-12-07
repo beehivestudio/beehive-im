@@ -53,7 +53,7 @@ message mesg_unjoin_ack
 
 message mesg_lsn_rpt
 {
-    required uint64 nid = 1;    // M|结点ID|数字|<br>
+    required uint32 nid = 1;    // M|结点ID|数字|<br>
     required string nation = 2; // M|所属国家|字串|<br>
     required string name = 3;   // M|运营商名称|字串|<br>
     required string ipaddr = 4; // M|IP地址|字串|<br>
@@ -62,7 +62,7 @@ message mesg_lsn_rpt
 
 message mesg_frwd_rpt
 {
-    required uint64 nid = 1;    // M|结点ID|数字|<br>
+    required uint32 nid = 1;    // M|结点ID|数字|<br>
     required string ipaddr = 2; // M|IP地址|字串|<br>
     required uint32 forward_port = 3;   // M|端口号|数字|<br>
     required uint32 backend_port = 4;   // M|端口号|数字|<br>

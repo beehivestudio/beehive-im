@@ -406,7 +406,7 @@ void *lsnd_task_handler(void *_ctx)
  **返    回: VOID
  **实现描述: 使用PB协议组装接入层上报数据
  **     {
- **         required uint64 nid = 1;    // M|结点ID|数字|<br>
+ **         required uint32 nid = 1;    // M|结点ID|数字|<br>
  **         required string nation = 2; // M|所属国家|字串|<br>
  **         required string name = 3;   // M|运营商名称|字串|<br>
  **         required string ipaddr = 4; // M|IP地址|字串|<br>
