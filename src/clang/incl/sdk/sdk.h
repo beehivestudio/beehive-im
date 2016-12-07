@@ -63,7 +63,7 @@ typedef struct
 
     struct {
         uint64_t uid;                   /* 用户ID */
-        uint64_t sessionid;             /* 会话ID(备选) */
+        uint64_t sid;             /* 会话ID(备选) */
         int terminal;                   /* 终端类型 */
         char app[SDK_APP_KEY_LEN];      /* 应用名称 */
         char version[SDK_CLIENT_ID_LEN];    /* 客户端自身版本号(留做统计用) */

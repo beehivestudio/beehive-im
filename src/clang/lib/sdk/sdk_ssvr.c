@@ -1067,10 +1067,6 @@ static size_t sdk_ssvr_write_conn_info(void *ptr, size_t size, size_t nmemb, voi
  ******************************************************************************/
 static int sdk_ssvr_http_conn_info(sdk_cntx_t *ctx, char *conn_info_str)
 {
-#if defined(__SDK_DEBUG__)
-    sprintf(conn_info_str, "{\"code\": \"0\", \"data\": { \"expire\":200, \"token\": \"testtoken\", \"ipList\": [ \"127.0.0.1:9002\" ], \"sid\": 3 } }");
-    return 0;
-#else /*__SDK_DEBUG__*/
     CURL *curl;
     CURLcode ret = -1;
     sdk_conf_t *conf = &ctx->conf;
@@ -1107,8 +1103,8 @@ static int sdk_ssvr_http_conn_info(sdk_cntx_t *ctx, char *conn_info_str)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, conn_info_str);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 3);
 
-    snprintf(url, sizeof(url), "%s/client/login?uid=%lu&app=%s&vlink=1",
-            conf->httpsvr, conf->uid, conf->app);
+    snprintf(url, sizeof(url), "%s/im/iplist?uid=%lu&sid=%lu&clientip=1.0.1.3",
+            conf->httpsvr, conf->uid, conf->sid);
     log_debug(ctx->log, "url: %s!", url);
     curl_easy_setopt(curl, CURLOPT_URL, url);
     //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
@@ -1130,7 +1126,6 @@ static int sdk_ssvr_http_conn_info(sdk_cntx_t *ctx, char *conn_info_str)
     log_debug(ctx->log, "data:%s", conn_info_str);
 
     return ret;
-#endif /*__SDK_DEBUG__*/
 }
 
 /******************************************************************************
@@ -1152,7 +1147,7 @@ static int sdk_ssvr_parse_conn_info(
     int ret = -1, ip_list_len;
     ip_port_t *item, ip_item;
     sdk_conn_info_t *conn_info = &ssvr->conn_info;
-    cJSON *info, *code, *data, *expire, *token, *iplist, *ip, *sid;
+    cJSON *info, *code, *expire, *token, *iplist, *ip, *sid;
 
     /* > 解析JSON数据 */
     info = cJSON_Parse(conn_info_str);
@@ -1164,20 +1159,13 @@ static int sdk_ssvr_parse_conn_info(
     do {
         /* > 解析错误码 */
         code = cJSON_GetObjectItem(info, "code");
-        if (NULL == code || 0 != atoi(code->valuestring)) {
+        if (NULL == code || 0 != code->valueint) {
             log_error(ctx->log, "Get conn info failed! info:%s", conn_info_str);
             break;
         }
 
-        /* > 解析数据信息 */
-        data = cJSON_GetObjectItem(info, "data");
-        if (NULL == data) {
-            log_error(ctx->log, "Get data failed! info:%s", conn_info_str);
-            break;
-        }
-
         /* > 解析数据信息-TOKEN超时时间 */
-        expire = cJSON_GetObjectItem(data, "expire");
+        expire = cJSON_GetObjectItem(info, "expire");
         if (NULL == expire || 0 == expire->valueint) {
             log_error(ctx->log, "Get expire failed! info:%s", conn_info_str);
             break;
@@ -1186,7 +1174,7 @@ static int sdk_ssvr_parse_conn_info(
         conn_info->expire = ctm + expire->valueint;
 
         /* > 解析数据信息-TOKEN */
-        token = cJSON_GetObjectItem(data, "token");
+        token = cJSON_GetObjectItem(info, "token");
         if (NULL == token || 0 == strlen(token->valuestring)) {
             log_error(ctx->log, "Get token failed! info:%s", conn_info_str);
             break;
@@ -1195,7 +1183,7 @@ static int sdk_ssvr_parse_conn_info(
         snprintf(conn_info->token, sizeof(conn_info->token), "%s", token->valuestring);
 
         /* > 解析数据信息-IPLIST */
-        iplist = cJSON_GetObjectItem(data, "ipList");
+        iplist = cJSON_GetObjectItem(info, "list");
         if (NULL == iplist) {
             log_error(ctx->log, "Get expire info failed! info:%s", conn_info_str);
             break;
@@ -1229,7 +1217,7 @@ static int sdk_ssvr_parse_conn_info(
         }
 
         /* > 解析数据信息-SESSIONID */
-        sid = cJSON_GetObjectItem(data, "sid");
+        sid = cJSON_GetObjectItem(info, "sid");
         if (NULL == sid || 0 == sid->valueint) {
             log_error(ctx->log, "Get sid failed! info:%s", conn_info_str);
             break;
