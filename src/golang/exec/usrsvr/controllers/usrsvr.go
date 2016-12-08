@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
@@ -11,12 +12,32 @@ import (
 	"beehive-im/src/golang/lib/rtmq"
 )
 
-/* OLS上下文 */
+/* 侦听层列表 */
+type httpsvr_lsn_list struct {
+	sync.RWMutex                                  /* 读写锁 */
+	list         map[string](map[string][]string) /* 侦听层列表:map[国家/地区]运营商名称 */
+}
+
+/* 用户中心上下文 */
 type UsrSvrCntx struct {
-	conf   *UsrSvrConf         /* 配置信息 */
-	log    *logs.BeeLogger     /* 日志对象 */
-	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis  *redis.Pool         /* REDIS连接池 */
+	conf    *UsrSvrConf         /* 配置信息 */
+	log     *logs.BeeLogger     /* 日志对象 */
+	ipdict  *comm.IpDict        /* IP字典 */
+	frwder  *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis   *redis.Pool         /* REDIS连接池 */
+	lsnlist httpsvr_lsn_list    /* 侦听层列表:map[国家/地区]运营商名称 */
+}
+
+var g_usrsvr *UsrSvrCntx /* 全局对象 */
+
+/* 获取全局对象 */
+func GetUsrSvrCtx() *UsrSvrCntx {
+	return g_usrsvr
+}
+
+/* 设置全局对象 */
+func SetUsrSvrCtx(ctx *UsrSvrCntx) {
+	g_usrsvr = ctx
 }
 
 /******************************************************************************
@@ -43,6 +64,12 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		return nil, errors.New("Initialize log failed!")
 	}
 
+	/* > 加载IP字典 */
+	ctx.ipdict, err = comm.LoadIpDict("../conf/ipdict.txt")
+	if nil != err {
+		return nil, err
+	}
+
 	/* > REDIS连接池 */
 	ctx.redis = &redis.Pool{
 		MaxIdle:   80,
@@ -65,6 +92,8 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	if nil == ctx.frwder {
 		return nil, err
 	}
+
+	SetUsrSvrCtx(ctx)
 
 	return ctx, nil
 }
@@ -102,4 +131,6 @@ func (ctx *UsrSvrCntx) Register() {
  ******************************************************************************/
 func (ctx *UsrSvrCntx) Launch() {
 	ctx.frwder.Launch()
+
+	go ctx.start_task()
 }

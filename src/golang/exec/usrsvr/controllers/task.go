@@ -19,7 +19,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 08:20:07 #
  ******************************************************************************/
-func (ctx *HttpSvrCntx) start_task() {
+func (ctx *UsrSvrCntx) start_task() {
 	for {
 		ctx.update_lsn_list()
 
@@ -41,7 +41,7 @@ func (ctx *HttpSvrCntx) start_task() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:11:08 #
  ******************************************************************************/
-func (ctx *HttpSvrCntx) update_lsn_list() {
+func (ctx *UsrSvrCntx) update_lsn_list() {
 	list := ctx.get_lsn_list()
 	if nil == list {
 		ctx.log.Error("Get listen list failed!")
@@ -65,7 +65,7 @@ func (ctx *HttpSvrCntx) update_lsn_list() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
  ******************************************************************************/
-func (ctx *HttpSvrCntx) get_lsn_list() map[string](map[string][]string) {
+func (ctx *UsrSvrCntx) get_lsn_list() map[string](map[string][]string) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 

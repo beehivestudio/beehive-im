@@ -13,19 +13,19 @@ import (
 )
 
 /* 获取IP列表 */
-type HttpSvrIpListCtrl struct {
+type UsrSvrIpListCtrl struct {
 	BaseController
 }
 
 /* 注册参数 */
-type HttpSvrIpListParam struct {
+type UsrSvrIpListParam struct {
 	uid      uint64 // 用户ID
 	sid      uint64 // 会话ID
 	clientip string // 客户端IP
 }
 
-func (this *HttpSvrIpListCtrl) IpList() {
-	ctx := GetHttpCtx()
+func (this *UsrSvrIpListCtrl) IpList() {
+	ctx := GetUsrSvrCtx()
 
 	/* > 提取注册参数 */
 	param, err := this.parse_param(ctx)
@@ -57,8 +57,8 @@ func (this *HttpSvrIpListCtrl) IpList() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:17:52 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrIpListParam, error) {
-	var param HttpSvrIpListParam
+func (this *UsrSvrIpListCtrl) parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListParam, error) {
+	var param UsrSvrIpListParam
 
 	/* > 提取注册参数 */
 	id, _ := this.GetInt64("uid")
@@ -83,7 +83,7 @@ func (this *HttpSvrIpListCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrIpListPara
 }
 
 /* IP列表应答 */
-type HttpSvrIpListRsp struct {
+type UsrSvrIpListRsp struct {
 	Uid    uint64   `json:"uid"`    // 用户ID
 	Sid    uint64   `json:"sid"`    // 会话ID
 	Token  string   `json:"token"`  // 鉴权TOKEN
@@ -106,7 +106,7 @@ type HttpSvrIpListRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:00:07 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) handler(ctx *HttpSvrCntx, param *HttpSvrIpListParam) {
+func (this *UsrSvrIpListCtrl) handler(ctx *UsrSvrCntx, param *UsrSvrIpListParam) {
 	iplist := this.get_iplist(ctx, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
@@ -132,8 +132,8 @@ func (this *HttpSvrIpListCtrl) handler(ctx *HttpSvrCntx, param *HttpSvrIpListPar
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:13:09 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) response_fail(param *HttpSvrIpListParam, code int, errmsg string) {
-	var resp HttpSvrIpListRsp
+func (this *UsrSvrIpListCtrl) response_fail(param *UsrSvrIpListParam, code int, errmsg string) {
+	var resp UsrSvrIpListRsp
 
 	resp.Uid = param.uid
 	resp.Sid = 0
@@ -156,8 +156,8 @@ func (this *HttpSvrIpListCtrl) response_fail(param *HttpSvrIpListParam, code int
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:13:02 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplist []string) {
-	var resp HttpSvrIpListRsp
+func (this *UsrSvrIpListCtrl) response_success(param *UsrSvrIpListParam, iplist []string) {
+	var resp UsrSvrIpListRsp
 
 	resp.Uid = param.uid
 	resp.Sid = param.sid
@@ -188,8 +188,8 @@ func (this *HttpSvrIpListCtrl) response_success(param *HttpSvrIpListParam, iplis
  **     sid: 会话UID
  **作    者: # Qifeng.zou # 2016.11.25 23:54:27 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) gen_token(param *HttpSvrIpListParam) string {
-	ctx := GetHttpCtx()
+func (this *UsrSvrIpListCtrl) gen_token(param *UsrSvrIpListParam) string {
+	ctx := GetUsrSvrCtx()
 	ttl := time.Now().Unix() + comm.TIME_DAY
 
 	/* > 原始TOKEN */
@@ -213,7 +213,7 @@ func (this *HttpSvrIpListCtrl) gen_token(param *HttpSvrIpListParam) string {
  **注意事项: 加读锁
  **作    者: # Qifeng.zou # 2016.11.27 07:42:54 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) get_iplist(ctx *HttpSvrCntx, clientip string) []string {
+func (this *UsrSvrIpListCtrl) get_iplist(ctx *UsrSvrCntx, clientip string) []string {
 	item := ctx.ipdict.Query(clientip)
 	if nil == item {
 		ctx.lsnlist.RLock()
@@ -253,7 +253,7 @@ func (this *HttpSvrIpListCtrl) get_iplist(ctx *HttpSvrCntx, clientip string) []s
  **注意事项: 外部已经加读锁
  **作    者: # Qifeng.zou # 2016.11.27 19:33:49 #
  ******************************************************************************/
-func (this *HttpSvrIpListCtrl) def_get_iplist(ctx *HttpSvrCntx) []string {
+func (this *UsrSvrIpListCtrl) def_get_iplist(ctx *UsrSvrCntx) []string {
 	var ok bool
 
 	/* > 获取"默认"国家/地区下辖的运营商列表 */

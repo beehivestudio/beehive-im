@@ -10,20 +10,20 @@ import (
 )
 
 /* 注册处理 */
-type HttpSvrRegisterCtrl struct {
+type UsrSvrRegisterCtrl struct {
 	BaseController
 }
 
 /* 注册参数 */
-type HttpSvrRegisterParam struct {
+type UsrSvrRegisterParam struct {
 	uid    uint64 // 用户ID
 	nation uint64 // 国际ID
 	city   uint64 // 地市ID
 	town   uint64 // 县城ID
 }
 
-func (this *HttpSvrRegisterCtrl) Register() {
-	ctx := GetHttpCtx()
+func (this *UsrSvrRegisterCtrl) Register() {
+	ctx := GetUsrSvrCtx()
 
 	/* > 提取参数 */
 	param, err := this.parse_param(ctx)
@@ -54,8 +54,8 @@ func (this *HttpSvrRegisterCtrl) Register() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 10:30:09 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrRegisterParam, error) {
-	var param HttpSvrRegisterParam
+func (this *UsrSvrRegisterCtrl) parse_param(ctx *UsrSvrCntx) (*UsrSvrRegisterParam, error) {
+	var param UsrSvrRegisterParam
 
 	/* > 提取注册参数 */
 	id, _ := this.GetInt64("uid")
@@ -80,7 +80,7 @@ func (this *HttpSvrRegisterCtrl) parse_param(ctx *HttpSvrCntx) (*HttpSvrRegister
 }
 
 /* 注册应答 */
-type HttpSvrRegisterRsp struct {
+type UsrSvrRegisterRsp struct {
 	Uid    uint64 `json:"uid"`    // 用户ID
 	Sid    uint64 `json:"sid"`    // 会话ID
 	Nation uint64 `json:"nation"` // 国家ID(国)
@@ -101,8 +101,8 @@ type HttpSvrRegisterRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:34:27 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrRegisterParam) {
-	ctx := GetHttpCtx()
+func (this *UsrSvrRegisterCtrl) handler(param *UsrSvrRegisterParam) {
+	ctx := GetUsrSvrCtx()
 
 	/* > 申请会话ID */
 	sid, err := im.AllocSid(ctx.redis)
@@ -132,8 +132,8 @@ func (this *HttpSvrRegisterCtrl) handler(param *HttpSvrRegisterParam) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:29 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrRegisterParam, code int, errmsg string) {
-	var resp HttpSvrRegisterRsp
+func (this *UsrSvrRegisterCtrl) response_fail(param *UsrSvrRegisterParam, code int, errmsg string) {
+	var resp UsrSvrRegisterRsp
 
 	resp.Uid = param.uid
 	resp.Sid = 0
@@ -159,8 +159,8 @@ func (this *HttpSvrRegisterCtrl) response_fail(param *HttpSvrRegisterParam, code
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:22 #
  ******************************************************************************/
-func (this *HttpSvrRegisterCtrl) response_success(param *HttpSvrRegisterParam, sid uint64) {
-	var resp HttpSvrRegisterRsp
+func (this *UsrSvrRegisterCtrl) response_success(param *UsrSvrRegisterParam, sid uint64) {
+	var resp UsrSvrRegisterRsp
 
 	resp.Uid = param.uid
 	resp.Sid = sid

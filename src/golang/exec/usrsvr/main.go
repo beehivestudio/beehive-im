@@ -3,45 +3,73 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
-	"os/signal"
 	"runtime"
-	"syscall"
+
+	"github.com/astaxie/beego"
 
 	"beehive-im/src/golang/exec/usrsvr/controllers"
+	"beehive-im/src/golang/exec/usrsvr/routers"
 )
 
-func main() {
+/* 设置BEEGO配置 */
+func set_bconf(conf *controllers.UsrSvrConf) {
+	beego.BConfig.AppName = "beehive-im"
+	beego.BConfig.Listen.EnableHTTP = true
+	beego.BConfig.Listen.HTTPAddr = ""
+	beego.BConfig.Listen.HTTPPort = int(conf.Port)
+	beego.BConfig.RouterCaseSensitive = true
+}
+
+/* 初始化 */
+func _init() *controllers.UsrSvrCntx {
 	var conf controllers.UsrSvrConf
 
 	flag.Parse()
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	/* > 加载OLS配置 */
+	/* > 加载HTTPSVR配置 */
 	if err := conf.LoadConf(); nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
-		return
+		return nil
 	}
 
-	/* > 初始化OLSVR环境 */
+	set_bconf(&conf)
+
+	/* > 初始化HTTPSVR环境 */
 	ctx, err := controllers.UsrSvrInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
+		return nil
+	}
+
+	return ctx
+}
+
+/* 注册回调 */
+func register(ctx *controllers.UsrSvrCntx) {
+	ctx.Register()
+	routers.Router()
+}
+
+/* 启动服务 */
+func launch(ctx *controllers.UsrSvrCntx) {
+	ctx.Launch()
+	beego.Run()
+}
+
+/* 主函数 */
+func main() {
+	/* > 初始化 */
+	ctx := _init()
+	if nil == ctx {
+		fmt.Printf("Initialize context failed!\n")
 		return
 	}
 
-	/* > 注册处理回调 */
-	ctx.Register()
+	/* > 注册回调 */
+	register(ctx)
 
-	/* > 启动用户服务 */
-	ctx.Launch()
-
-	/* > 捕捉中断信号 */
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
-
-	<-ch
-
-	return
+	/* > 启动服务 */
+	launch(ctx)
 }

@@ -14,6 +14,7 @@ import (
 /* 在线中心配置 */
 type UsrSvrConf struct {
 	NodeId    uint32             // 结点ID
+	Port      int16              // HTTP侦听端口
 	WorkPath  string             // 工作路径(自动获取)
 	AppPath   string             // 程序路径(自动获取)
 	ConfPath  string             // 配置路径(自动获取)
@@ -51,6 +52,7 @@ type UsrSvrConfRtmqProxyXmlData struct {
 type UsrSvrConfXmlData struct {
 	Name      xml.Name                   `xml:"USRSVR"`     // 根结点名
 	Id        uint32                     `xml:"ID,attr"`    // 结点ID
+	Port      int16                      `xml:"PORT"`       // HTTP侦听端口
 	RedisAddr string                     `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
 	Cipher    string                     `xml:"CIPHER"`     // 私密密钥
 	Log       UsrSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
@@ -114,6 +116,12 @@ func (conf *UsrSvrConf) conf_parse() (err error) {
 	conf.NodeId = node.Id
 	if 0 == conf.NodeId {
 		return errors.New("Get node id failed!")
+	}
+
+	/* HTTP侦听端口(PORT) */
+	conf.Port = node.Port
+	if 0 == conf.Port {
+		return errors.New("Get listen port failed!")
 	}
 
 	/* Redis地址(IP+PORT) */
