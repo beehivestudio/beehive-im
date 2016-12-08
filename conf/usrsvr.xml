@@ -1,4 +1,5 @@
 <USRSVR ID="30000"> <!-- ID: 结点ID -->
+  <PORT>8000</PORT>  <!-- 端口号 -->
   <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
   <REDIS-ADDR>127.0.0.1:6379</REDIS-ADDR> <!-- REDIS地址(IP+PORT) -->
   <CIPHER>%b@e!e@h@i#v@e$s$tVu^d(i(o</CIPHER> <!-- 私密密钥 -->
