@@ -88,9 +88,11 @@ int frwd_getopt(int argc, char **argv, frwd_opt_t *opt)
  ******************************************************************************/
 int frwd_usage(const char *exec)
 {
-    printf("\nUsage: %s [-h] [-d] -n <name>\n", exec);
+    printf("\nUsage: %s [-h] [-d] -c <configuration path> -l <log level>\n", exec);
     printf("\t-h\tShow help\n"
-           "\t-n\tNode name\n\n");
+           "\t-d\tRun as daemon\n"
+           "\t-l\tLog level. range:[error|warn|info|debug|trace]\n"
+           "\t-c\tConfiguration path\n\n");
     return FRWD_OK;
 }
 
