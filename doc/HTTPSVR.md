@@ -5,7 +5,7 @@
 ---
 **功能描述**: 全员广播消息<br>
 **接口类型**: POST<br>
-**接口路径**: /chat/push?dim=broadcast<br>
+**接口路径**: /im/push?dim=broadcast<br>
 **参数描述**:<br>
 > dim: 推送维度, 此时为broadcast.(M)<br>
 
@@ -20,7 +20,7 @@
 ---
 **功能描述**: 群组广播消息<br>
 **接口类型**: POST<br>
-**接口路径**: /chat/push?dim=group&gid=${gid}<br>
+**接口路径**: /im/push?dim=group&gid=${gid}<br>
 **参数描述**:<br>
 > dim: 推送维度, 此时为group.(M)<br>
 > gid: 群组ID(M)<br>
@@ -36,7 +36,7 @@
 ---
 **功能描述**: 聊天室广播消息<br>
 **接口类型**: POST<br>
-**接口路径**: /chat/push?dim=room&rid=${rid}<br>
+**接口路径**: /im/push?dim=room&rid=${rid}<br>
 **参数描述**:<br>
 > dim: 推送维度, 此时为room.(M)<br>
 > rid: 聊天室ID(M)<br>
@@ -52,7 +52,7 @@
 ---
 **功能描述**: 指定给某设备下发消息<br>
 **接口类型**: POST<br>
-**接口路径**: /chat/push?dim=sid&sid=${sid}<br>
+**接口路径**: /im/push?dim=sid&sid=${sid}<br>
 **参数描述**:<br>
 > dim: 推送维度, 此时为sid.(M)<br>
 > sid: 会话SID(M)<br>
@@ -68,7 +68,7 @@
 ---
 **功能描述**: 指定给某人下发消息<br>
 **接口类型**: POST<br>
-**接口路径**: /chat/push?dim=uid&uid=${uid}<br>
+**接口路径**: /im/push?dim=uid&uid=${uid}<br>
 **参数描述**:<br>
 > dim: 推送维度, 此时为uid.(M)<br>
 > sid: 会话SID(M)<br>
@@ -84,7 +84,7 @@
 ---
 **功能描述**: 指定给应用ID下发消息<br>
 **接口类型**: POST<br>
-**接口路径**: /chat/push?dim=appid&appid=${appid}&version=${version}<br>
+**接口路径**: /im/push?dim=appid&appid=${appid}&version=${version}<br>
 **参数描述**:<br>
 > dim: 推送维度, 此时为appid.(M)<br>
 > appid: 应用ID(M)<br>
@@ -102,7 +102,7 @@
 ---
 **功能描述**: 设备注册接口<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/register?uid=${uid}&nation=${nation}&city=${city}&town=${town}<br>
+**接口路径**: /im/register?uid=${uid}&nation=${nation}&city=${city}&town=${town}<br>
 **参数描述**:<br>
 > uid: 用户ID(M)<br>
 > nation: 国家编号(M)<br>
@@ -124,7 +124,7 @@
 ---
 **功能描述**: 获取IPLIST接口<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/query?opt=iplist&uid=${uid}&sid=${sid}&clientip=${clientip}<br>
+**接口路径**: /im/query?opt=iplist&uid=${uid}&sid=${sid}&clientip=${clientip}<br>
 **参数描述**:<br>
 > opt: 固定为iplist(M)<br>
 > uid: 用户ID(M)<br>
@@ -147,7 +147,7 @@
 ---
 **功能描述**: 添加在线人数统计<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/config?opt=user-statis-add&prec=${prec}<br>
+**接口路径**: /im/config?opt=user-statis-add&prec=${prec}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为user-statis-add.(M)<br>
 > prec: 时间精度(M).可以有:300s, 600s, 1800s, 3600s(1h), 86400(1d), etc<br>
@@ -162,7 +162,7 @@
 ---
 **功能描述**: 删除在线人数统计<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/config?opt=user-statis-del&prec=${prec}<br>
+**接口路径**: /im/config?opt=user-statis-del&prec=${prec}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为user-statis-del.(M)<br>
 > prec: 时间精度(M).可以有:300s, 600s, 1800s, 3600s(1h), 86400(1d), etc<br>
@@ -177,7 +177,7 @@
 ---
 **功能描述**: 在线人数统计列表<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/config?opt=user-statis-list<br>
+**接口路径**: /im/config?opt=user-statis-list<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为user-statis-list.(M)<br>
 
@@ -195,7 +195,7 @@
 ---
 **功能描述**: 查询在线人数统计<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/query?opt=user-statis&prec=${prec}<br>
+**接口路径**: /im/query?opt=user-statis&prec=${prec}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为user-statis.(M)<br>
 > prec: 时间精度(M). 如:300s, 600s, 1800s, 3600s(1h), 86400(1d), 1m, 1y<br>
@@ -216,7 +216,7 @@
 ---
 **功能描述**: 查询人数分布<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/query?opt=user-dist<br>
+**接口路径**: /im/query?opt=user-dist<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为user-dist.(M)<br>
 
@@ -236,7 +236,7 @@
 ---
 **功能描述**: 查询某用户在线状态<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/query?opt=user-online<br>
+**接口路径**: /im/query?opt=user-online<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为user-online.(M)<br>
 
@@ -257,7 +257,7 @@
 ---
 **功能描述**: 将某人加入群组黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/config?opt=blacklist-add&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?opt=blacklist-add&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为blacklist-add.(M)<br>
 > gid: i群组ID(M)<br>
@@ -273,7 +273,7 @@
 ---
 **功能描述**: 将某人移除群组黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/config?opt=blacklist-del&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?opt=blacklist-del&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为blacklist-del.(M)<br>
 > gid: 群组ID(M)<br>
@@ -289,7 +289,7 @@
 ---
 **功能描述**: 禁止某人在群内发言<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/config?opt=ban-add&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?opt=ban-add&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为ban-add.(M)<br>
 > gid: 群组ID(M)<br>
@@ -305,7 +305,7 @@
 ---
 **功能描述**: 禁止某人在群组发言<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/config?opt=ban-del&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?opt=ban-del&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为ban-del.(M)<br>
 > gid: 群组ID(M)<br>
@@ -321,7 +321,7 @@
 ---
 **功能描述**: 关闭聊天室<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/config?opt=close&gid=${gid}<br>
+**接口路径**: /im/group/config?opt=close&gid=${gid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为close.(M)<br>
 > gid: 群组ID(M)<br>
@@ -336,7 +336,7 @@
 ---
 **功能描述**: 设置群组"最大人数"限制<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/config?opt=size&gid=${gid}&size=${size}<br>
+**接口路径**: /im/group/config?opt=size&gid=${gid}&size=${size}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为size.(M)<br>
 > gid: 群组ID(M)<br>
@@ -354,7 +354,7 @@
 ---
 **功能描述**: 查询群组"最大人数"限制<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/query?opt=size&gid=${gid}<br>
+**接口路径**: /im/group/query?opt=size&gid=${gid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为group-size.(M)<br>
 > gid: 群组ID(M)<br>
@@ -371,7 +371,7 @@
 ---
 **功能描述**: 查询各群组TOP排行<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/query?opt=top-list&num=${num}<br>
+**接口路径**: /im/group/query?opt=top-list&num=${num}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为top-list.(M)<br>
 > num: top-${num}排行(O). 如果未设置${num}, 则显示前top-10的排行.<br>
@@ -392,7 +392,7 @@
 ---
 **功能描述**: 查询各群组消息量TOP排行<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/group/query?opt=mesg-top-list&num=${num}<br>
+**接口路径**: /im/group/query?opt=mesg-top-list&num=${num}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为mesg-top-list.(M)<br>
 > num: top-${num}排行(O). 如果未设置${num}, 则显示前top-10的排行.<br>
@@ -414,7 +414,7 @@
 ---
 **功能描述**: 将某人加入聊天室黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/config?opt=blacklist-add&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?opt=blacklist-add&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为blacklist-add.(M)<br>
 > rid: 聊天室ID(M)<br>
@@ -430,7 +430,7 @@
 ---
 **功能描述**: 将某人移除聊天室黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/config?opt=blacklist-del&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?opt=blacklist-del&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为blacklist-del.(M)<br>
 > rid: 聊天室ID(M)<br>
@@ -446,7 +446,7 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/config?opt=ban-add&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?opt=ban-add&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为ban-add.(M)<br>
 > rid: 聊天室ID(M)<br>
@@ -462,7 +462,7 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/config?opt=ban-del&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?opt=ban-del&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为ban-del.(M)<br>
 > rid: 聊天室ID(M)<br>
@@ -478,7 +478,7 @@
 ---
 **功能描述**: 关闭聊天室<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/config?opt=close&rid=${rid}<br>
+**接口路径**: /im/room/config?opt=close&rid=${rid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为close.(M)<br>
 > rid: 聊天室ID(M)<br>
@@ -493,7 +493,7 @@
 ---
 **功能描述**: 设置聊天室分组大小<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/config?opt=group-size&rid=${rid}<br>
+**接口路径**: /im/room/config?opt=group-size&rid=${rid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为group-size.(M)<br>
 > rid: 聊天室ID(O).当未制定${rid}时, 则是修改默认分组人数; 指明聊天室ID, 则是指明某聊天室的分组人数<br>
@@ -510,7 +510,7 @@
 ---
 **功能描述**: 查询聊天室分组大小<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/query?opt=group-size&rid=${rid}<br>
+**接口路径**: /im/room/query?opt=group-size&rid=${rid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为group-size.(M)<br>
 > rid: 聊天室ID(O).当未制定${rid}时, 则是查询默认分组人数; 指明聊天室ID, 则是查询某聊天室的分组人数<br>
@@ -528,7 +528,7 @@
 ---
 **功能描述**: 查询各聊天室TOP排行<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/query?opt=top-list&num=${num}<br>
+**接口路径**: /im/room/query?opt=top-list&num=${num}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为top-list.(M)<br>
 > num: top-${num}排行(O). 如果未设置${num}, 则显示前top-10的排行.<br>
@@ -549,7 +549,7 @@
 ---
 **功能描述**: 查询某聊天室分组列表<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/room/query?opt=group-list&rid=${rid}<br>
+**接口路径**: /im/room/query?opt=group-list&rid=${rid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为group-list.(M)<br>
 > rid: 聊天室ID(M)<br>
@@ -572,7 +572,7 @@
 ---
 **功能描述**: 查询侦听层状态<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/query?opt=listen-list<br>
+**接口路径**: /im/query?opt=listen-list<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为listen-list.(M)<br>
 
@@ -592,7 +592,7 @@
 ---
 **功能描述**: 移除侦听层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/config?opt=listen-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?opt=listen-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为listen-add.(M)<br>
 > nid: 结点ID(M)<br>
@@ -609,7 +609,7 @@
 ---
 **功能描述**: 移除侦听层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/config?opt=listen-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?opt=listen-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为listen-del.(M)<br>
 > nid: 结点ID(M)<br>
@@ -626,7 +626,7 @@
 ---
 **功能描述**: 查询转发层状态<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/query?opt=frwder-list<br>
+**接口路径**: /im/query?opt=frwder-list<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为frwder-list.(M)<br>
 
@@ -652,7 +652,7 @@
 ---
 **功能描述**: 添加转发层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/config?opt=frwder-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?opt=frwder-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为frwder-add.(M)<br>
 > nid: 结点ID(M)<br>
@@ -669,7 +669,7 @@
 ---
 **功能描述**: 移除转发层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /chat/config?opt=frwder-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?opt=frwder-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为frwder-del.(M)<br>
 > nid: 结点ID(M)<br>
