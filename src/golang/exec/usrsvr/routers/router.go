@@ -13,5 +13,5 @@ import (
 //  beego.Router("/api/delete",&RestController{},"delete:DeleteFood")
 func Router() {
 	beego.Router("/im/register", &controllers.UsrSvrRegisterCtrl{}, "get:Register")
-	beego.Router("/im/iplist", &controllers.UsrSvrIpListCtrl{}, "get:IpList")
+	beego.Router("/im/query", &controllers.UsrSvrQueryCtrl{}, "get:Query")
 }

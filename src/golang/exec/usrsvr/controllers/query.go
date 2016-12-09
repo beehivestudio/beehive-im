@@ -13,9 +13,44 @@ import (
 )
 
 /* 获取IP列表 */
-type UsrSvrIpListCtrl struct {
+type UsrSvrQueryCtrl struct {
 	BaseController
 }
+
+func (this *UsrSvrQueryCtrl) Query() {
+	ctx := GetUsrSvrCtx()
+
+	opt := this.GetString("opt")
+	switch opt {
+	case "iplist":
+		this.query_iplist(ctx)
+		return
+	}
+
+	this.unsupport_option(opt)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+type UsrSvrUnsupportRsp struct {
+	Code   int    `json:"code"`   // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
+}
+
+/* 未知选项应答 */
+func (this *UsrSvrQueryCtrl) unsupport_option(opt string) {
+	var resp UsrSvrUnsupportRsp
+
+	resp.Code = comm.ERR_SVR_INVALID_PARAM
+	resp.ErrMsg = fmt.Sprintf("Unsupport option [%s].", opt)
+
+	this.Data["json"] = &resp
+	this.ServeJSON()
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 /* 注册参数 */
 type UsrSvrIpListParam struct {
@@ -24,28 +59,26 @@ type UsrSvrIpListParam struct {
 	clientip string // 客户端IP
 }
 
-func (this *UsrSvrIpListCtrl) IpList() {
-	ctx := GetUsrSvrCtx()
-
+func (this *UsrSvrQueryCtrl) query_iplist(ctx *UsrSvrCntx) {
 	/* > 提取注册参数 */
-	param, err := this.parse_param(ctx)
+	param, err := this.iplist_parse_param(ctx)
 	if nil != err {
 		ctx.log.Error("Parse param failed! uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
-		this.response_fail(param, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		this.iplist_fail(param, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return
 	}
 
 	ctx.log.Debug("Param list. uid:%d sid:%d clientip:%s", param.uid, param.sid, param.clientip)
 
 	/* > 获取IP列表 */
-	this.handler(ctx, param)
+	this.iplist_handler(ctx, param)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: iplist_parse_param
  **功    能: 解析参数
  **输入参数:
  **     ctx: 上下文
@@ -57,7 +90,7 @@ func (this *UsrSvrIpListCtrl) IpList() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:17:52 #
  ******************************************************************************/
-func (this *UsrSvrIpListCtrl) parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListParam, error) {
+func (this *UsrSvrQueryCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListParam, error) {
 	var param UsrSvrIpListParam
 
 	/* > 提取注册参数 */
@@ -95,7 +128,7 @@ type UsrSvrIpListRsp struct {
 }
 
 /******************************************************************************
- **函数名称: handler
+ **函数名称: iplist_handler
  **功    能: 获取IP列表
  **输入参数:
  **     ctx: 上下文
@@ -106,21 +139,21 @@ type UsrSvrIpListRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:00:07 #
  ******************************************************************************/
-func (this *UsrSvrIpListCtrl) handler(ctx *UsrSvrCntx, param *UsrSvrIpListParam) {
-	iplist := this.get_iplist(ctx, param.clientip)
+func (this *UsrSvrQueryCtrl) iplist_handler(ctx *UsrSvrCntx, param *UsrSvrIpListParam) {
+	iplist := this.iplist_get(ctx, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
-		this.response_fail(param, comm.ERR_SYS_SYSTEM, "Get ip list failed!")
+		this.iplist_fail(param, comm.ERR_SYS_SYSTEM, "Get ip list failed!")
 		return
 	}
 
-	this.response_success(param, iplist)
+	this.iplist_success(param, iplist)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: response_fail
+ **函数名称: iplist_fail
  **功    能: 应答错误信息
  **输入参数:
  **     param: 注册参数
@@ -132,7 +165,7 @@ func (this *UsrSvrIpListCtrl) handler(ctx *UsrSvrCntx, param *UsrSvrIpListParam)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:13:09 #
  ******************************************************************************/
-func (this *UsrSvrIpListCtrl) response_fail(param *UsrSvrIpListParam, code int, errmsg string) {
+func (this *UsrSvrQueryCtrl) iplist_fail(param *UsrSvrIpListParam, code int, errmsg string) {
 	var resp UsrSvrIpListRsp
 
 	resp.Uid = param.uid
@@ -145,7 +178,7 @@ func (this *UsrSvrIpListCtrl) response_fail(param *UsrSvrIpListParam, code int, 
 }
 
 /******************************************************************************
- **函数名称: response_success
+ **函数名称: iplist_success
  **功    能: 应答处理成功
  **输入参数:
  **     param: 注册参数
@@ -156,12 +189,12 @@ func (this *UsrSvrIpListCtrl) response_fail(param *UsrSvrIpListParam, code int, 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:13:02 #
  ******************************************************************************/
-func (this *UsrSvrIpListCtrl) response_success(param *UsrSvrIpListParam, iplist []string) {
+func (this *UsrSvrQueryCtrl) iplist_success(param *UsrSvrIpListParam, iplist []string) {
 	var resp UsrSvrIpListRsp
 
 	resp.Uid = param.uid
 	resp.Sid = param.sid
-	resp.Token = this.gen_token(param)
+	resp.Token = this.iplist_token(param)
 	resp.Expire = comm.TIME_DAY
 	resp.Len = len(iplist)
 	resp.List = iplist
@@ -173,7 +206,7 @@ func (this *UsrSvrIpListCtrl) response_success(param *UsrSvrIpListParam, iplist 
 }
 
 /******************************************************************************
- **函数名称: gen_token
+ **函数名称: iplist_token
  **功    能: 生成TOKEN字串
  **输入参数:
  **输出参数: NONE
@@ -188,7 +221,7 @@ func (this *UsrSvrIpListCtrl) response_success(param *UsrSvrIpListParam, iplist 
  **     sid: 会话UID
  **作    者: # Qifeng.zou # 2016.11.25 23:54:27 #
  ******************************************************************************/
-func (this *UsrSvrIpListCtrl) gen_token(param *UsrSvrIpListParam) string {
+func (this *UsrSvrQueryCtrl) iplist_token(param *UsrSvrIpListParam) string {
 	ctx := GetUsrSvrCtx()
 	ttl := time.Now().Unix() + comm.TIME_DAY
 
@@ -202,7 +235,7 @@ func (this *UsrSvrIpListCtrl) gen_token(param *UsrSvrIpListParam) string {
 }
 
 /******************************************************************************
- **函数名称: get_iplist
+ **函数名称: iplist_get
  **功    能: 获取IP列表
  **输入参数:
  **     ctx: 上下文
@@ -213,12 +246,12 @@ func (this *UsrSvrIpListCtrl) gen_token(param *UsrSvrIpListParam) string {
  **注意事项: 加读锁
  **作    者: # Qifeng.zou # 2016.11.27 07:42:54 #
  ******************************************************************************/
-func (this *UsrSvrIpListCtrl) get_iplist(ctx *UsrSvrCntx, clientip string) []string {
+func (this *UsrSvrQueryCtrl) iplist_get(ctx *UsrSvrCntx, clientip string) []string {
 	item := ctx.ipdict.Query(clientip)
 	if nil == item {
 		ctx.lsnlist.RLock()
 		defer ctx.lsnlist.RUnlock()
-		return this.def_get_iplist(ctx)
+		return this.iplist_get_def(ctx)
 	}
 
 	ctx.lsnlist.RLock()
@@ -227,13 +260,13 @@ func (this *UsrSvrIpListCtrl) get_iplist(ctx *UsrSvrCntx, clientip string) []str
 	/* > 获取国家/地区下辖的运营商列表 */
 	operators, ok := ctx.lsnlist.list[item.GetNation()]
 	if nil == operators || !ok {
-		return this.def_get_iplist(ctx)
+		return this.iplist_get_def(ctx)
 	}
 
 	/* > 获取运营商下辖的侦听层列表 */
 	lsn_list, ok := operators[item.GetOperator()]
 	if nil == lsn_list || !ok {
-		return this.def_get_iplist(ctx)
+		return this.iplist_get_def(ctx)
 	}
 
 	items := make([]string, 0)
@@ -242,7 +275,7 @@ func (this *UsrSvrIpListCtrl) get_iplist(ctx *UsrSvrCntx, clientip string) []str
 }
 
 /******************************************************************************
- **函数名称: def_get_iplist
+ **函数名称: iplist_get_def
  **功    能: 获取默认IP列表
  **输入参数:
  **     ctx: 上下文
@@ -253,7 +286,7 @@ func (this *UsrSvrIpListCtrl) get_iplist(ctx *UsrSvrCntx, clientip string) []str
  **注意事项: 外部已经加读锁
  **作    者: # Qifeng.zou # 2016.11.27 19:33:49 #
  ******************************************************************************/
-func (this *UsrSvrIpListCtrl) def_get_iplist(ctx *UsrSvrCntx) []string {
+func (this *UsrSvrQueryCtrl) iplist_get_def(ctx *UsrSvrCntx) []string {
 	var ok bool
 
 	/* > 获取"默认"国家/地区下辖的运营商列表 */
@@ -278,3 +311,6 @@ func (this *UsrSvrIpListCtrl) def_get_iplist(ctx *UsrSvrCntx) []string {
 	items = append(items, lsn_list[rand.Intn(len(lsn_list))])
 	return items
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
