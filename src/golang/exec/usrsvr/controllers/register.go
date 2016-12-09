@@ -26,24 +26,24 @@ func (this *UsrSvrRegisterCtrl) Register() {
 	ctx := GetUsrSvrCtx()
 
 	/* > 提取参数 */
-	param, err := this.parse_param(ctx)
+	param, err := this.register_parse_param(ctx)
 	if nil != err {
 		ctx.log.Error("Parse register failed! uid:%d nation:%d city:%d town:%d",
 			param.uid, param.nation, param.city, param.town)
-		this.response_fail(param, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		this.register_fail(param, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return
 	}
 
 	ctx.log.Debug("Register param list. uid:%d nation:%d city:%d town:%d",
 		param.uid, param.nation, param.city, param.town)
 
-	this.handler(param)
+	this.register_handler(param)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: register_parse_param
  **功    能: 解析参数
  **输入参数: NONE
  **输出参数: NONE
@@ -54,7 +54,7 @@ func (this *UsrSvrRegisterCtrl) Register() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 10:30:09 #
  ******************************************************************************/
-func (this *UsrSvrRegisterCtrl) parse_param(ctx *UsrSvrCntx) (*UsrSvrRegisterParam, error) {
+func (this *UsrSvrRegisterCtrl) register_parse_param(ctx *UsrSvrCntx) (*UsrSvrRegisterParam, error) {
 	var param UsrSvrRegisterParam
 
 	/* > 提取注册参数 */
@@ -91,7 +91,7 @@ type UsrSvrRegisterRsp struct {
 }
 
 /******************************************************************************
- **函数名称: handler
+ **函数名称: register_handler
  **功    能: 注册处理
  **输入参数:
  **     param: 注册参数
@@ -101,26 +101,26 @@ type UsrSvrRegisterRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:34:27 #
  ******************************************************************************/
-func (this *UsrSvrRegisterCtrl) handler(param *UsrSvrRegisterParam) {
+func (this *UsrSvrRegisterCtrl) register_handler(param *UsrSvrRegisterParam) {
 	ctx := GetUsrSvrCtx()
 
 	/* > 申请会话ID */
 	sid, err := im.AllocSid(ctx.redis)
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
-		this.response_fail(param, comm.ERR_SYS_RPC, err.Error())
+		this.register_fail(param, comm.ERR_SYS_RPC, err.Error())
 		return
 	}
 
 	ctx.log.Debug("Alloc sid success! uid:%d sid:%d", param.uid, sid)
 
-	this.response_success(param, sid)
+	this.register_success(param, sid)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: response_fail
+ **函数名称: register_fail
  **功    能: 应答错误信息
  **输入参数:
  **     param: 注册参数
@@ -132,7 +132,7 @@ func (this *UsrSvrRegisterCtrl) handler(param *UsrSvrRegisterParam) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:29 #
  ******************************************************************************/
-func (this *UsrSvrRegisterCtrl) response_fail(param *UsrSvrRegisterParam, code int, errmsg string) {
+func (this *UsrSvrRegisterCtrl) register_fail(param *UsrSvrRegisterParam, code int, errmsg string) {
 	var resp UsrSvrRegisterRsp
 
 	resp.Uid = param.uid
@@ -148,7 +148,7 @@ func (this *UsrSvrRegisterCtrl) response_fail(param *UsrSvrRegisterParam, code i
 }
 
 /******************************************************************************
- **函数名称: response_success
+ **函数名称: register_success
  **功    能: 应答处理成功
  **输入参数:
  **     param: 注册参数
@@ -159,7 +159,7 @@ func (this *UsrSvrRegisterCtrl) response_fail(param *UsrSvrRegisterParam, code i
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:22 #
  ******************************************************************************/
-func (this *UsrSvrRegisterCtrl) response_success(param *UsrSvrRegisterParam, sid uint64) {
+func (this *UsrSvrRegisterCtrl) register_success(param *UsrSvrRegisterParam, sid uint64) {
 	var resp UsrSvrRegisterRsp
 
 	resp.Uid = param.uid
@@ -173,3 +173,6 @@ func (this *UsrSvrRegisterCtrl) response_success(param *UsrSvrRegisterParam, sid
 	this.Data["json"] = &resp
 	this.ServeJSON()
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
