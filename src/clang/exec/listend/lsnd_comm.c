@@ -79,11 +79,11 @@ int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt)
 /* 显示启动参数帮助信息 */
 int lsnd_usage(const char *exec)
 {
-    printf("\nUsage: %s -l <log level> -L <log key path> -n <node name> [-h] [-d]\n", exec);
-    printf("\t-l: Log level\n"
-            "\t-n: Node name\n"
-            "\t-d: Run as daemon\n"
-            "\t-h: Show help\n\n");
+    printf("\nUsage: %s -c <configuration path> -l <log level> [-h] [-d]\n", exec);
+    printf("\t-c: Configuration path\n"
+            "\t-l: Log level. range:[error|warn|info|debug|trace]\n"
+            "\t-h: Show help\n"
+            "\t-d: Run as daemon\n\n");
     return 0;
 }
 
