@@ -332,38 +332,38 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###3.6 设置群组"最大人数"限制
+###3.6 设置群组"最大容量"限制
 ---
-**功能描述**: 设置群组"最大人数"限制<br>
+**功能描述**: 设置群组"最大容量"限制<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?opt=size&gid=${gid}&size=${size}<br>
+**接口路径**: /im/group/config?opt=capacity&gid=${gid}&capacity=${capacity}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为size.(M)<br>
+> opt: 操作选项, 此时为capacity.(M)<br>
 > gid: 群组ID(M)<br>
-> size: 群组大小(M)<br>
+> capacity: 群组容量(M)<br>
 
 **返回结果**:<br>
 >{<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
->  "size":${size},      // 整型 | 分组人数(M)<br>
+>  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###3.7 查询群组"最大人数"限制
+###3.7 查询群组"最大容量"限制
 ---
-**功能描述**: 查询群组"最大人数"限制<br>
+**功能描述**: 查询群组"最大容量"限制<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/query?opt=size&gid=${gid}<br>
+**接口路径**: /im/group/query?opt=capacity&gid=${gid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为group-size.(M)<br>
+> opt: 操作选项, 此时为group-capacity.(M)<br>
 > gid: 群组ID(M)<br>
 
 **返回结果**:<br>
 >{<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
->  "size":${size},      // 整型 | 分组人数(M)<br>
+>  "capacity":${capacity},      // 整型 | 群组容量(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
@@ -489,37 +489,37 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###4.6 设置聊天室分组大小
+###4.6 设置聊天室分组容量
 ---
-**功能描述**: 设置聊天室分组大小<br>
+**功能描述**: 设置聊天室分组容量<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?opt=group-size&rid=${rid}<br>
+**接口路径**: /im/room/config?opt=group-capacity&rid=${rid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为group-size.(M)<br>
-> rid: 聊天室ID(O).当未制定${rid}时, 则是修改默认分组人数; 指明聊天室ID, 则是指明某聊天室的分组人数<br>
+> opt: 操作选项, 此时为group-capacity.(M)<br>
+> rid: 聊天室ID(O).当未制定${rid}时, 则是修改默认分组容量; 指明聊天室ID, 则是指明某聊天室的分组容量<br>
 
 **返回结果**:<br>
 >{<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "rid":${rid},        // 整型 | 聊天室ID(O)<br>
->  "size":${size},      // 整型 | 分组人数(M)<br>
+>  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###4.7 查询聊天室分组大小
+###4.7 查询聊天室分组容量
 ---
-**功能描述**: 查询聊天室分组大小<br>
+**功能描述**: 查询聊天室分组容量<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/query?opt=group-size&rid=${rid}<br>
+**接口路径**: /im/room/query?opt=group-capacity&rid=${rid}<br>
 **参数描述**:<br>
-> opt: 操作选项, 此时为group-size.(M)<br>
-> rid: 聊天室ID(O).当未制定${rid}时, 则是查询默认分组人数; 指明聊天室ID, 则是查询某聊天室的分组人数<br>
+> opt: 操作选项, 此时为group-capacity.(M)<br>
+> rid: 聊天室ID(O).当未制定${rid}时, 则是查询默认分组容量; 指明聊天室ID, 则是查询某聊天室的分组容量<br>
 
 **返回结果**:<br>
 >{<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "rid":${rid},        // 整型 | 聊天室ID(O)<br>
->  "size":${size},      // 整型 | 分组人数(M)<br>
+>  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
