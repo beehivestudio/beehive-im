@@ -136,10 +136,10 @@
 >   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "iplist":[              // 数组 | IP列表<br>
->       {"ipaddr":${ipaddr}, "port":${port}},<br>
->       {"ipaddr":${ipaddr}, "port":${port}},<br>
->       {"ipaddr":${ipaddr}, "port":${port}}],<br>
->   "token":"${token}"      // 字串 | 鉴权token(M) # 格式:${uid}:${ttl}:${sid}<br>
+>       "${ipaddr:port}",<br>
+>       "${ipaddr:port}",<br>
+>       "${ipaddr:port}"],<br>
+>   "token":"${token}"      // 字串 | 鉴权token(M) # 格式:"uid:${uid}:ttl:${ttl}:sid:${sid}:end"<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -177,7 +177,7 @@
 ---
 **功能描述**: 在线人数统计列表<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?opt=user-statis-list<br>
+**接口路径**: /im/query?opt=user-statis-list<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为user-statis-list.(M)<br>
 
@@ -260,7 +260,7 @@
 **接口路径**: /im/group/config?opt=blacklist-add&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
 > opt: 操作选项, 此时为blacklist-add.(M)<br>
-> gid: i群组ID(M)<br>
+> gid: 群组ID(M)<br>
 > uid: 用户ID(M)<br>
 
 **返回结果**:<br>
