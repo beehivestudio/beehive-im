@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
+
+	"beehive-im/src/golang/lib/comm"
 )
 
 type ViewController struct {
@@ -19,6 +21,17 @@ func (this *BaseController) Prepare() {
 }
 
 func (c *BaseController) Get() {
+}
+
+/* 异常应答 */
+func (this *BaseController) Error(code int, errmsg string) {
+	var resp comm.HttpResp
+
+	resp.Code = code
+	resp.ErrMsg = errmsg
+
+	this.Data["json"] = &resp
+	this.ServeJSON()
 }
 
 type MainController struct {

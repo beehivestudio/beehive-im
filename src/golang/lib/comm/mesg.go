@@ -4,6 +4,11 @@ import (
 	"encoding/binary"
 )
 
+type HttpResp struct {
+	Code   int    `json:"code"`   // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
+}
+
 const (
 	CMD_UNKNOWN = 0 /* 未知消息 */
 

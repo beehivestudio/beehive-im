@@ -13,5 +13,13 @@ import (
 //  beego.Router("/api/delete",&RestController{},"delete:DeleteFood")
 func Router() {
 	beego.Router("/im/register", &controllers.UsrSvrRegisterCtrl{}, "get:Register")
+
 	beego.Router("/im/query", &controllers.UsrSvrQueryCtrl{}, "get:Query")
+	beego.Router("/im/config", &controllers.UsrSvrConfigCtrl{}, "get:Config")
+
+	//beego.Router("/im/group/query", &controllers.UsrSvrGroupQueryCtrl{}, "get:Query")
+	beego.Router("/im/group/config", &controllers.UsrSvrGroupConfigCtrl{}, "get:Config")
+
+	//beego.Router("/im/room/query", &controllers.UsrSvrRoomQueryCtrl{}, "get:Query")
+	beego.Router("/im/room/config", &controllers.UsrSvrRoomConfigCtrl{}, "get:Config")
 }

@@ -27,26 +27,7 @@ func (this *UsrSvrQueryCtrl) Query() {
 		return
 	}
 
-	this.unsupport_option(opt)
-}
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-type UsrSvrUnsupportRsp struct {
-	Code   int    `json:"code"`   // 错误码
-	ErrMsg string `json:"errmsg"` // 错误描述
-}
-
-/* 未知选项应答 */
-func (this *UsrSvrQueryCtrl) unsupport_option(opt string) {
-	var resp UsrSvrUnsupportRsp
-
-	resp.Code = comm.ERR_SVR_INVALID_PARAM
-	resp.ErrMsg = fmt.Sprintf("Unsupport option [%s].", opt)
-
-	this.Data["json"] = &resp
-	this.ServeJSON()
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", opt))
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -65,7 +46,7 @@ func (this *UsrSvrQueryCtrl) query_iplist(ctx *UsrSvrCntx) {
 	if nil != err {
 		ctx.log.Error("Parse param failed! uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
-		this.iplist_fail(param, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		this.Error(comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return
 	}
 
@@ -143,42 +124,17 @@ func (this *UsrSvrQueryCtrl) iplist_handler(ctx *UsrSvrCntx, param *UsrSvrIpList
 	iplist := this.iplist_get(ctx, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
-		this.iplist_fail(param, comm.ERR_SYS_SYSTEM, "Get ip list failed!")
+		this.Error(comm.ERR_SYS_SYSTEM, "Get ip list failed!")
 		return
 	}
 
-	this.iplist_success(param, iplist)
+	this.success(param, iplist)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: iplist_fail
- **功    能: 应答错误信息
- **输入参数:
- **     param: 注册参数
- **     code: 错误码
- **     errmsg: 错误描述
- **输出参数:
- **返    回: NONE
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.11.25 23:13:09 #
- ******************************************************************************/
-func (this *UsrSvrQueryCtrl) iplist_fail(param *UsrSvrIpListParam, code int, errmsg string) {
-	var resp UsrSvrIpListRsp
-
-	resp.Uid = param.uid
-	resp.Sid = 0
-	resp.Code = code
-	resp.ErrMsg = errmsg
-
-	this.Data["json"] = &resp
-	this.ServeJSON()
-}
-
-/******************************************************************************
- **函数名称: iplist_success
+ **函数名称: success
  **功    能: 应答处理成功
  **输入参数:
  **     param: 注册参数
@@ -189,7 +145,7 @@ func (this *UsrSvrQueryCtrl) iplist_fail(param *UsrSvrIpListParam, code int, err
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:13:02 #
  ******************************************************************************/
-func (this *UsrSvrQueryCtrl) iplist_success(param *UsrSvrIpListParam, iplist []string) {
+func (this *UsrSvrQueryCtrl) success(param *UsrSvrIpListParam, iplist []string) {
 	var resp UsrSvrIpListRsp
 
 	resp.Uid = param.uid

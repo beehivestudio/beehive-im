@@ -30,7 +30,7 @@ func (this *UsrSvrRegisterCtrl) Register() {
 	if nil != err {
 		ctx.log.Error("Parse register failed! uid:%d nation:%d city:%d town:%d",
 			param.uid, param.nation, param.city, param.town)
-		this.register_fail(param, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		this.Error(comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return
 	}
 
@@ -108,47 +108,19 @@ func (this *UsrSvrRegisterCtrl) register_handler(param *UsrSvrRegisterParam) {
 	sid, err := im.AllocSid(ctx.redis)
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
-		this.register_fail(param, comm.ERR_SYS_RPC, err.Error())
+		this.Error(comm.ERR_SYS_RPC, err.Error())
 		return
 	}
 
 	ctx.log.Debug("Alloc sid success! uid:%d sid:%d", param.uid, sid)
 
-	this.register_success(param, sid)
+	this.success(param, sid)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: register_fail
- **功    能: 应答错误信息
- **输入参数:
- **     param: 注册参数
- **     code: 错误码
- **     errmsg: 错误描述
- **输出参数:
- **返    回: NONE
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.11.24 19:13:29 #
- ******************************************************************************/
-func (this *UsrSvrRegisterCtrl) register_fail(param *UsrSvrRegisterParam, code int, errmsg string) {
-	var resp UsrSvrRegisterRsp
-
-	resp.Uid = param.uid
-	resp.Sid = 0
-	resp.Nation = param.nation
-	resp.City = param.city
-	resp.Town = param.town
-	resp.Code = code
-	resp.ErrMsg = errmsg
-
-	this.Data["json"] = &resp
-	this.ServeJSON()
-}
-
-/******************************************************************************
- **函数名称: register_success
+ **函数名称: success
  **功    能: 应答处理成功
  **输入参数:
  **     param: 注册参数
@@ -159,7 +131,7 @@ func (this *UsrSvrRegisterCtrl) register_fail(param *UsrSvrRegisterParam, code i
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 19:13:22 #
  ******************************************************************************/
-func (this *UsrSvrRegisterCtrl) register_success(param *UsrSvrRegisterParam, sid uint64) {
+func (this *UsrSvrRegisterCtrl) success(param *UsrSvrRegisterParam, sid uint64) {
 	var resp UsrSvrRegisterRsp
 
 	resp.Uid = param.uid
