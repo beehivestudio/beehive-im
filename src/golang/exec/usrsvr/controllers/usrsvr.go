@@ -79,15 +79,21 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		MaxIdle:   80,
 		MaxActive: 12000,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", conf.RedisAddr)
+			c, err := redis.Dial("tcp", conf.Redis.Addr)
 			if nil != err {
 				panic(err.Error())
+				return nil, err
+			}
+			if _, err := c.Do("AUTH", conf.Redis.Passwd); nil != err {
+				c.Close()
+				panic(err.Error())
+				return nil, err
 			}
 			return c, err
 		},
 	}
 	if nil == ctx.redis {
-		ctx.log.Error("Create redis pool failed! addr:%s", conf.RedisAddr)
+		ctx.log.Error("Create redis pool failed! addr:%s", conf.Redis.Addr)
 		return nil, errors.New("Create redis pool failed!")
 	}
 
@@ -142,50 +148,58 @@ func (ctx *UsrSvrCntx) Launch() {
 ////////////////////////////////////////////////////////////////////////////////
 /* 在线中心配置 */
 type UsrSvrConf struct {
-	NodeId    uint32             // 结点ID
-	Port      int16              // HTTP侦听端口
-	WorkPath  string             // 工作路径(自动获取)
-	AppPath   string             // 程序路径(自动获取)
-	ConfPath  string             // 配置路径(自动获取)
-	RedisAddr string             // Redis地址(IP+PORT)
-	Cipher    string             // 私密密钥
-	Log       log.LogConf        // 日志配置
-	frwder    rtmq.RtmqProxyConf // RTMQ配置
+	NodeId   uint32             // 结点ID
+	Port     int16              // HTTP侦听端口
+	WorkPath string             // 工作路径(自动获取)
+	AppPath  string             // 程序路径(自动获取)
+	ConfPath string             // 配置路径(自动获取)
+	Redis    UsrSvrRedisConf    // Redis配置
+	Cipher   string             // 私密密钥
+	Log      log.LogConf        // 日志配置
+	frwder   rtmq.RtmqProxyConf // RTMQ配置
 }
 
 /* 日志配置 */
-type UsrSvrConfLogXmlData struct {
+type UsrSvrLogConf struct {
 	Name  xml.Name `xml:"LOG"`        // 结点名
 	Level string   `xml:"LEVEL,attr"` // 日志级别
 	Path  string   `xml:"PATH,attr"`  // 日志路径
 }
 
+/* REDIS配置 */
+type UsrSvrRedisConf struct {
+	Name   xml.Name `xml:"REDIS"`       // 结点名
+	Addr   string   `xml:"Addr,attr"`   // 地址(IP+端口)
+	Usr    string   `xml:"USR,attr"`    // 用户名
+	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+}
+
 /* 鉴权配置 */
-type UsrSvrConfRtmqAuthXmlData struct {
+type UsrSvrRtmqAuthConf struct {
 	Name   xml.Name `xml:"AUTH"`        // 结点名
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
-type UsrSvrConfRtmqProxyXmlData struct {
-	Name        xml.Name                  `xml:"FRWDER"`        // 结点名
-	Auth        UsrSvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
-	RemoteAddr  string                    `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
-	WorkerNum   uint32                    `xml:"WORKER-NUM"`    // 协程数
-	SendChanLen uint32                    `xml:"SEND-CHAN-LEN"` // 发送队列长度
-	RecvChanLen uint32                    `xml:"RECV-CHAN-LEN"` // 接收队列长度
+type UsrSvrRtmqProxyConf struct {
+	Name        xml.Name           `xml:"FRWDER"`        // 结点名
+	Auth        UsrSvrRtmqAuthConf `xml:"AUTH"`          // 鉴权信息
+	RemoteAddr  string             `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
+	WorkerNum   uint32             `xml:"WORKER-NUM"`    // 协程数
+	SendChanLen uint32             `xml:"SEND-CHAN-LEN"` // 发送队列长度
+	RecvChanLen uint32             `xml:"RECV-CHAN-LEN"` // 接收队列长度
 }
 
 /* 在线中心XML配置 */
 type UsrSvrConfXmlData struct {
-	Name      xml.Name                   `xml:"USRSVR"`     // 根结点名
-	Id        uint32                     `xml:"ID,attr"`    // 结点ID
-	Port      int16                      `xml:"PORT"`       // HTTP侦听端口
-	RedisAddr string                     `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
-	Cipher    string                     `xml:"CIPHER"`     // 私密密钥
-	Log       UsrSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
-	Frwder    UsrSvrConfRtmqProxyXmlData `xml:"FRWDER"`     // RTMQ PROXY配置
+	Name   xml.Name            `xml:"USRSVR"`  // 根结点名
+	Id     uint32              `xml:"ID,attr"` // 结点ID
+	Port   int16               `xml:"PORT"`    // HTTP侦听端口
+	Redis  UsrSvrRedisConf     `xml:"REDIS"`   // Redis配置
+	Cipher string              `xml:"CIPHER"`  // 私密密钥
+	Log    UsrSvrLogConf       `xml:"LOG"`     // 日志配置
+	Frwder UsrSvrRtmqProxyConf `xml:"FRWDER"`  // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -253,10 +267,20 @@ func (conf *UsrSvrConf) conf_parse() (err error) {
 		return errors.New("Get listen port failed!")
 	}
 
-	/* Redis地址(IP+PORT) */
-	conf.RedisAddr = node.RedisAddr
-	if 0 == len(conf.RedisAddr) {
+	/* Redis配置 */
+	conf.Redis.Addr = node.Redis.Addr
+	if 0 == len(conf.Redis.Addr) {
 		return errors.New("Get redis addr failed!")
+	}
+
+	conf.Redis.Usr = node.Redis.Usr
+	if 0 == len(conf.Redis.Usr) {
+		return errors.New("Get user name of redis failed!")
+	}
+
+	conf.Redis.Passwd = node.Redis.Passwd
+	if 0 == len(conf.Redis.Passwd) {
+		return errors.New("Get password of redis failed!")
 	}
 
 	/* > 私密密钥 */
