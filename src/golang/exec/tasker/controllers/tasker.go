@@ -47,15 +47,24 @@ func TaskerInit(conf *TaskerConf) (ctx *TaskerCntx, err error) {
 		MaxIdle:   80,
 		MaxActive: 12000,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", conf.RedisAddr)
+			c, err := redis.Dial("tcp", conf.Redis.Addr)
 			if nil != err {
 				panic(err.Error())
+				return nil, err
+			}
+			if 0 != len(conf.Redis.Passwd) {
+				if _, err := c.Do("AUTH", conf.Redis.Passwd); nil != err {
+					c.Close()
+					panic(err.Error())
+					return nil, err
+				}
 			}
 			return c, err
 		},
 	}
 	if nil == ctx.redis {
-		ctx.log.Error("Create redis pool failed! addr:%s", conf.RedisAddr)
+		ctx.log.Error("Create redis pool failed! addr:%s passwd:%s",
+			conf.Redis.Addr, conf.Redis.Passwd)
 		return nil, errors.New("Create redis pool failed!")
 	}
 

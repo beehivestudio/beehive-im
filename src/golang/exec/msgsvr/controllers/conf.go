@@ -13,14 +13,14 @@ import (
 
 /* 在线中心配置 */
 type MsgSvrConf struct {
-	NodeId    uint32             // 结点ID
-	WorkPath  string             // 工作路径(自动获取)
-	AppPath   string             // 程序路径(自动获取)
-	ConfPath  string             // 配置路径(自动获取)
-	RedisAddr string             // Redis地址(IP+PORT)
-	Cipher    string             // 私密密钥
-	Log       log.LogConf        // 日志配置
-	frwder    rtmq.RtmqProxyConf // RTMQ配置
+	NodeId   uint32             // 结点ID
+	WorkPath string             // 工作路径(自动获取)
+	AppPath  string             // 程序路径(自动获取)
+	ConfPath string             // 配置路径(自动获取)
+	Redis    MsgSvrRedisConf    // Redis配置
+	Cipher   string             // 私密密钥
+	Log      log.LogConf        // 日志配置
+	frwder   rtmq.RtmqProxyConf // RTMQ配置
 }
 
 /* 日志配置 */
@@ -28,6 +28,22 @@ type MsgSvrConfLogXmlData struct {
 	Name  xml.Name `xml:"LOG"`        // 结点名
 	Level string   `xml:"LEVEL,attr"` // 日志级别
 	Path  string   `xml:"PATH,attr"`  // 日志目录
+}
+
+/* REDIS配置 */
+type MsgSvrRedisConf struct {
+	Name   xml.Name `xml:"REDIS"`       // 结点名
+	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string   `xml:"USR,attr"`    // 用户名
+	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+}
+
+/* MYSQL配置 */
+type MsgSvrMysqlConf struct {
+	Name   xml.Name `xml:"MYSQL"`       // 结点名
+	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string   `xml:"USR,attr"`    // 用户名
+	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* 鉴权配置 */
@@ -49,12 +65,12 @@ type MsgSvrConfRtmqProxyXmlData struct {
 
 /* 在线中心XML配置 */
 type MsgSvrConfXmlData struct {
-	Name      xml.Name                   `xml:"MSGSVR"`     // 根结点名
-	Id        uint32                     `xml:"ID,attr"`    // 结点ID
-	RedisAddr string                     `xml:"REDIS-ADDR"` // Redis地址(IP+PORT)
-	Cipher    string                     `xml:"CIPHER"`     // 私密密钥
-	Log       MsgSvrConfLogXmlData       `xml:"LOG"`        // 日志配置
-	Frwder    MsgSvrConfRtmqProxyXmlData `xml:"FRWDER"`     // RTMQ PROXY配置
+	Name   xml.Name                   `xml:"MSGSVR"`  // 根结点名
+	Id     uint32                     `xml:"ID,attr"` // 结点ID
+	Redis  MsgSvrRedisConf            `xml:"REDIS"`   // Redis配置
+	Cipher string                     `xml:"CIPHER"`  // 私密密钥
+	Log    MsgSvrConfLogXmlData       `xml:"LOG"`     // 日志配置
+	Frwder MsgSvrConfRtmqProxyXmlData `xml:"FRWDER"`  // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -117,9 +133,19 @@ func (conf *MsgSvrConf) conf_parse() (err error) {
 	}
 
 	/* Redis地址(IP+PORT) */
-	conf.RedisAddr = node.RedisAddr
-	if 0 == len(conf.RedisAddr) {
+	conf.Redis.Addr = node.Redis.Addr
+	if 0 == len(conf.Redis.Addr) {
 		return errors.New("Get redis addr failed!")
+	}
+
+	conf.Redis.Usr = node.Redis.Usr
+	if 0 == len(conf.Redis.Usr) {
+		return errors.New("Get user name of redis failed!")
+	}
+
+	conf.Redis.Passwd = node.Redis.Passwd
+	if 0 == len(conf.Redis.Passwd) {
+		return errors.New("Get password of redis failed!")
 	}
 
 	/* > 私密密钥 */

@@ -84,10 +84,12 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 				panic(err.Error())
 				return nil, err
 			}
-			if _, err := c.Do("AUTH", conf.Redis.Passwd); nil != err {
-				c.Close()
-				panic(err.Error())
-				return nil, err
+			if 0 != len(conf.Redis.Passwd) {
+				if _, err := c.Do("AUTH", conf.Redis.Passwd); nil != err {
+					c.Close()
+					panic(err.Error())
+					return nil, err
+				}
 			}
 			return c, err
 		},
