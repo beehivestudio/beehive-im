@@ -56,8 +56,8 @@ type MsgSvrConfRtmqAuthXmlData struct {
 /* RTMQ代理配置 */
 type MsgSvrConfRtmqProxyXmlData struct {
 	Name        xml.Name                  `xml:"FRWDER"`        // 结点名
+	RemoteAddr  string                    `xml:"ADDR,attr"`     // 对端IP(IP+PROT)
 	Auth        MsgSvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
-	RemoteAddr  string                    `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
 	WorkerNum   uint32                    `xml:"WORKER-NUM"`    // 协程数
 	SendChanLen uint32                    `xml:"SEND-CHAN-LEN"` // 发送队列长度
 	RecvChanLen uint32                    `xml:"RECV-CHAN-LEN"` // 接收队列长度

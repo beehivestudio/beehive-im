@@ -47,8 +47,8 @@ type MonConfRtmqAuthXmlData struct {
 /* RTMQ代理配置 */
 type MonConfRtmqProxyXmlData struct {
 	Name        xml.Name               `xml:"FRWDER"`        // 结点名
+	RemoteAddr  string                 `xml:"ADDR,attr"`     // 对端IP(IP+PROT)
 	Auth        MonConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
-	RemoteAddr  string                 `xml:"REMOTE-ADDR"`   // 对端IP(IP+PROT)
 	WorkerNum   uint32                 `xml:"WORKER-NUM"`    // 协程数
 	SendChanLen uint32                 `xml:"SEND-CHAN-LEN"` // 发送队列长度
 	RecvChanLen uint32                 `xml:"RECV-CHAN-LEN"` // 接收队列长度
@@ -149,17 +149,17 @@ func (conf *MonConf) conf_parse() (err error) {
 	/* FRWDER配置 */
 	conf.frwder.NodeId = conf.NodeId
 
+	/* 转发层(IP+PROT) */
+	conf.frwder.RemoteAddr = node.Frwder.RemoteAddr
+	if 0 == len(conf.frwder.RemoteAddr) {
+		return errors.New("Get frwder addr failed!")
+	}
+
 	/* 鉴权信息 */
 	conf.frwder.Usr = node.Frwder.Auth.Usr
 	conf.frwder.Passwd = node.Frwder.Auth.Passwd
 	if 0 == len(conf.frwder.Usr) || 0 == len(conf.frwder.Passwd) {
 		return errors.New("Get auth conf failed!")
-	}
-
-	/* 转发层(IP+PROT) */
-	conf.frwder.RemoteAddr = node.Frwder.RemoteAddr
-	if 0 == len(conf.frwder.RemoteAddr) {
-		return errors.New("Get frwder addr failed!")
 	}
 
 	/* 发送队列长度 */
