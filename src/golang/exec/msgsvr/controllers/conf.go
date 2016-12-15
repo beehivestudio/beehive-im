@@ -18,6 +18,8 @@ type MsgSvrConf struct {
 	AppPath  string             // 程序路径(自动获取)
 	ConfPath string             // 配置路径(自动获取)
 	Redis    MsgSvrRedisConf    // Redis配置
+	Mysql    MsgSvrMysqlConf    // Mysql配置
+	Mongo    MsgSvrMongoConf    // Mongo配置
 	Cipher   string             // 私密密钥
 	Log      log.LogConf        // 日志配置
 	frwder   rtmq.RtmqProxyConf // RTMQ配置
@@ -46,6 +48,14 @@ type MsgSvrMysqlConf struct {
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
+/* MONGO配置 */
+type MsgSvrMongoConf struct {
+	Name   xml.Name `xml:"MONGO"`       // 结点名
+	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string   `xml:"USR,attr"`    // 用户名
+	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+}
+
 /* 鉴权配置 */
 type MsgSvrConfRtmqAuthXmlData struct {
 	Name   xml.Name `xml:"AUTH"`        // 结点名
@@ -67,7 +77,9 @@ type MsgSvrConfRtmqProxyXmlData struct {
 type MsgSvrConfXmlData struct {
 	Name   xml.Name                   `xml:"MSGSVR"`  // 根结点名
 	Id     uint32                     `xml:"ID,attr"` // 结点ID
-	Redis  MsgSvrRedisConf            `xml:"REDIS"`   // Redis配置
+	Redis  MsgSvrRedisConf            `xml:"REDIS"`   // REDIS配置
+	Mysql  MsgSvrMysqlConf            `xml:"MYSQL"`   // MYsQL配置
+	Mongo  MsgSvrMongoConf            `xml:"MONGO"`   // MONGO配置
 	Cipher string                     `xml:"CIPHER"`  // 私密密钥
 	Log    MsgSvrConfLogXmlData       `xml:"LOG"`     // 日志配置
 	Frwder MsgSvrConfRtmqProxyXmlData `xml:"FRWDER"`  // RTMQ PROXY配置
@@ -146,6 +158,38 @@ func (conf *MsgSvrConf) conf_parse() (err error) {
 	conf.Redis.Passwd = node.Redis.Passwd
 	if 0 == len(conf.Redis.Passwd) {
 		return errors.New("Get password of redis failed!")
+	}
+
+	/* MYSQL配置 */
+	conf.Mysql.Addr = node.Mysql.Addr
+	if 0 == len(conf.Mysql.Addr) {
+		return errors.New("Get mysql addr failed!")
+	}
+
+	conf.Mysql.Usr = node.Mysql.Usr
+	if 0 == len(conf.Mysql.Usr) {
+		return errors.New("Get user name of mysql failed!")
+	}
+
+	conf.Mysql.Passwd = node.Mysql.Passwd
+	if 0 == len(conf.Mysql.Passwd) {
+		return errors.New("Get password of mysql failed!")
+	}
+
+	/* MONGO配置 */
+	conf.Mongo.Addr = node.Mongo.Addr
+	if 0 == len(conf.Mongo.Addr) {
+		return errors.New("Get mongo addr failed!")
+	}
+
+	conf.Mongo.Usr = node.Mongo.Usr
+	if 0 == len(conf.Mongo.Usr) {
+		return errors.New("Get user name of mongo failed!")
+	}
+
+	conf.Mongo.Passwd = node.Mongo.Passwd
+	if 0 == len(conf.Mongo.Passwd) {
+		return errors.New("Get password of mongo failed!")
 	}
 
 	/* > 私密密钥 */

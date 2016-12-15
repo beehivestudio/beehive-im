@@ -155,7 +155,9 @@ type UsrSvrConf struct {
 	WorkPath string             // 工作路径(自动获取)
 	AppPath  string             // 程序路径(自动获取)
 	ConfPath string             // 配置路径(自动获取)
-	Redis    UsrSvrRedisConf    // Redis配置
+	Redis    UsrSvrRedisConf    // REDIS配置
+	Mysql    UsrSvrMysqlConf    // MYSQL配置
+	Mongo    UsrSvrMongoConf    // MONGO配置
 	Cipher   string             // 私密密钥
 	Log      log.LogConf        // 日志配置
 	frwder   rtmq.RtmqProxyConf // RTMQ配置
@@ -171,6 +173,22 @@ type UsrSvrLogConf struct {
 /* REDIS配置 */
 type UsrSvrRedisConf struct {
 	Name   xml.Name `xml:"REDIS"`       // 结点名
+	Addr   string   `xml:"Addr,attr"`   // 地址(IP+端口)
+	Usr    string   `xml:"USR,attr"`    // 用户名
+	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+}
+
+/* MYSQL配置 */
+type UsrSvrMysqlConf struct {
+	Name   xml.Name `xml:"MYSQL"`       // 结点名
+	Addr   string   `xml:"Addr,attr"`   // 地址(IP+端口)
+	Usr    string   `xml:"USR,attr"`    // 用户名
+	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+}
+
+/* MONGO配置 */
+type UsrSvrMongoConf struct {
+	Name   xml.Name `xml:"MONGO"`       // 结点名
 	Addr   string   `xml:"Addr,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
@@ -199,6 +217,8 @@ type UsrSvrConfXmlData struct {
 	Id     uint32              `xml:"ID,attr"` // 结点ID
 	Port   int16               `xml:"PORT"`    // HTTP侦听端口
 	Redis  UsrSvrRedisConf     `xml:"REDIS"`   // Redis配置
+	Mysql  UsrSvrMysqlConf     `xml:"MYSQL"`   // Mysql配置
+	Mongo  UsrSvrMongoConf     `xml:"MONGO"`   // Mongo配置
 	Cipher string              `xml:"CIPHER"`  // 私密密钥
 	Log    UsrSvrLogConf       `xml:"LOG"`     // 日志配置
 	Frwder UsrSvrRtmqProxyConf `xml:"FRWDER"`  // RTMQ PROXY配置
@@ -283,6 +303,38 @@ func (conf *UsrSvrConf) conf_parse() (err error) {
 	conf.Redis.Passwd = node.Redis.Passwd
 	if 0 == len(conf.Redis.Passwd) {
 		return errors.New("Get password of redis failed!")
+	}
+
+	/* MYSQL配置 */
+	conf.Mysql.Addr = node.Mysql.Addr
+	if 0 == len(conf.Mysql.Addr) {
+		return errors.New("Get mysql addr failed!")
+	}
+
+	conf.Mysql.Usr = node.Mysql.Usr
+	if 0 == len(conf.Mysql.Usr) {
+		return errors.New("Get user name of mysql failed!")
+	}
+
+	conf.Mysql.Passwd = node.Mysql.Passwd
+	if 0 == len(conf.Mysql.Passwd) {
+		return errors.New("Get password of mysql failed!")
+	}
+
+	/* MONGO配置 */
+	conf.Mongo.Addr = node.Mongo.Addr
+	if 0 == len(conf.Mongo.Addr) {
+		return errors.New("Get mongo addr failed!")
+	}
+
+	conf.Mongo.Usr = node.Mongo.Usr
+	if 0 == len(conf.Mongo.Usr) {
+		return errors.New("Get user name of mongo failed!")
+	}
+
+	conf.Mongo.Passwd = node.Mongo.Passwd
+	if 0 == len(conf.Mongo.Passwd) {
+		return errors.New("Get password of mongo failed!")
 	}
 
 	/* > 私密密钥 */
