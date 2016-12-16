@@ -75,4 +75,9 @@ message mesg_lsn_rpt
     required uint32 port = 5;       // M|端口号|数字|<br>
 }
 
-
+/* 踢人下线 */
+message mesg_kick_req
+{
+    required uint32 code = 1;       // 错误码
+    required string errmsg = 2;     // 错误描述
+}

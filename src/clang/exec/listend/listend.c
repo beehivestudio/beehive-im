@@ -336,7 +336,8 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
 
     LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_mesg_online_ack_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_JOIN_ACK, lsnd_mesg_join_ack_handler, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_ROOM_MSG, lsnd_mesg_room_mesg_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_ROOM_MSG, lsnd_mesg_room_mesg_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_KICK_REQ, lsnd_mesg_kick_handler, ctx);
 
     /* 注册定时任务回调 */
     task_add(ctx->task, lsnd_timer_kick_handler, 5, 5, 0, (void *)ctx);

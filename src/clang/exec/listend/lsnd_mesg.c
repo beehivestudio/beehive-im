@@ -217,12 +217,10 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
         return -1;
     }
 
-    /* 下发应答请求 */
-    acc_async_send(lsnd->access, type, cid, data, len);
-
     mesg_online_ack__free_unpacked(ack, NULL);
 
-    return 0;
+    /* 下发应答请求 */
+    return acc_async_send(lsnd->access, type, cid, data, len);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -530,9 +528,8 @@ static int lsnd_room_mesg_trav_send_handler(uint64_t *sid, lsnd_room_mesg_param_
 
 /******************************************************************************
  **函数名称: lsnd_mesg_room_mesg_handler
- **功    能: 下发聊天室消息
+ **功    能: 下发聊天室消息(下行)
  **输入参数:
- **     conn: 连接信息
  **     type: 数据类型
  **     orig: 源结点ID
  **     data: 需要转发的数据
@@ -544,7 +541,7 @@ static int lsnd_room_mesg_trav_send_handler(uint64_t *sid, lsnd_room_mesg_param_
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.25 01:24:45 #
  ******************************************************************************/
-int lsnd_mesg_room_mesg_handler(lsnd_conn_extra_t *conn, int type, int orig, void *data, size_t len, void *args)
+int lsnd_mesg_room_mesg_handler(int type, int orig, void *data, size_t len, void *args)
 {
     uint32_t gid;
     MesgRoom *mesg;
@@ -578,6 +575,67 @@ int lsnd_mesg_room_mesg_handler(lsnd_conn_extra_t *conn, int type, int orig, voi
 
     /* > 释放PROTO-BUF空间 */
     mesg_room__free_unpacked(mesg, NULL);
+
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsnd_mesg_kick_handler
+ **功    能: 将某连接KICK下线(下行)
+ **输入参数:
+ **     type: 数据类型
+ **     orig: 源结点ID
+ **     data: 需要转发的数据
+ **     len: 数据长度
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
+ **作    者: # Qifeng.zou # 2016.12.17 06:27:21 #
+ ******************************************************************************/
+int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *args)
+{
+    uint64_t cid;
+    MesgKickReq *kick;
+    lsnd_conn_extra_t *conn, key;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
+
+    /* > 转化字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+
+    /* > 打印被踢原因 */
+    kick = mesg_kick_req__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == kick) {
+        log_error(lsnd->log, "Unpack kick command failed!");
+        return -1;
+    }
+
+    log_debug(lsnd->log, "Kick session [%d]! code:%d errmsg:%s", hhead.sid, kick->code, kick->errmsg);
+
+    mesg_kick_req__free_unpacked(kick, NULL);
+
+    /* > 查找对应的连接 */
+    key.sid = hhead.sid;
+
+    conn = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
+    if (NULL == conn) {
+        log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
+        return -1;
+    }
+
+    conn->loc &= ~CHAT_EXTRA_LOC_SID_TAB;
+
+    cid = conn->cid;
+    lsnd_kick_insert(lsnd, conn); /* 放入被踢列表 */
+
+    /* > 转发被踢原因 */
+    acc_async_send(lsnd->access, type, cid, data, len);
 
     return 0;
 }

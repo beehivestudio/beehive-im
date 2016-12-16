@@ -22,6 +22,7 @@ typedef struct _MesgJoinAck MesgJoinAck;
 typedef struct _MesgUnjoinReq MesgUnjoinReq;
 typedef struct _MesgRoom MesgRoom;
 typedef struct _MesgLsnRpt MesgLsnRpt;
+typedef struct _MesgKickReq MesgKickReq;
 
 
 /* --- enums --- */
@@ -124,6 +125,17 @@ struct  _MesgLsnRpt
 #define MESG_LSN_RPT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_lsn_rpt__descriptor) \
     , 0, NULL, NULL, NULL, 0 }
+
+
+struct  _MesgKickReq
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_KICK_REQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_kick_req__descriptor) \
+    , 0, NULL }
 
 
 /* MesgOnlineReq methods */
@@ -259,6 +271,25 @@ MesgLsnRpt *
 void   mesg_lsn_rpt__free_unpacked
                      (MesgLsnRpt *message,
                       ProtobufCAllocator *allocator);
+/* MesgKickReq methods */
+void   mesg_kick_req__init
+                     (MesgKickReq         *message);
+size_t mesg_kick_req__get_packed_size
+                     (const MesgKickReq   *message);
+size_t mesg_kick_req__pack
+                     (const MesgKickReq   *message,
+                      uint8_t             *out);
+size_t mesg_kick_req__pack_to_buffer
+                     (const MesgKickReq   *message,
+                      ProtobufCBuffer     *buffer);
+MesgKickReq *
+       mesg_kick_req__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_kick_req__free_unpacked
+                     (MesgKickReq *message,
+                      ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*MesgOnlineReq_Closure)
@@ -282,6 +313,9 @@ typedef void (*MesgRoom_Closure)
 typedef void (*MesgLsnRpt_Closure)
                  (const MesgLsnRpt *message,
                   void *closure_data);
+typedef void (*MesgKickReq_Closure)
+                 (const MesgKickReq *message,
+                  void *closure_data);
 
 /* --- services --- */
 
@@ -295,6 +329,7 @@ extern const ProtobufCMessageDescriptor mesg_join_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unjoin_req__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room__descriptor;
 extern const ProtobufCMessageDescriptor mesg_lsn_rpt__descriptor;
+extern const ProtobufCMessageDescriptor mesg_kick_req__descriptor;
 
 PROTOBUF_C__END_DECLS
 
