@@ -60,6 +60,8 @@ const (
 	CMD_LSN_RPT_ACK   = 0x0402 /* 帧听层上报应答 */
 	CMD_FRWD_LIST     = 0x0403 /* 转发层上报 */
 	CMD_FRWD_LIST_ACK = 0x0404 /* 转发层上报应答 */
+	CMD_KICK_REQ      = 0x0405 /* 踢人操作 */
+	CMD_KICK_ACK      = 0x0406 /* 踢人应答 */
 )
 
 const (

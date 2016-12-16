@@ -31,12 +31,13 @@ const (
 
 // 业务级错误码
 const (
-	ERR_SVR_ONLINE_REQ    = 20001 // Online request isn't right! | ONLINE请求有误 |
-	ERR_SVR_OFFLINE_REQ   = 20002 // Offline request isn't right! | OFFLINE请求有误 |
-	ERR_SVR_JOIN_REQ      = 20003 // Join request isn't right! | JOIN请求有误 |
-	ERR_SVR_UNJOIN_REQ    = 20004 // Unjoin request isn't right! | UNJOIN请求有误 |
-	ERR_SVR_PARSE_PARAM   = 20005 // Parse paramter | 解析参数错误 |
-	ERR_SVR_MISS_PARAM    = 20006 // Miss paramter | 缺失参数 |
-	ERR_SVR_INVALID_PARAM = 20007 // Invalid paramter | 非法参数 |
-	ERR_SVR_AUTH_FAIL     = 20008 // Auth failed | 鉴权失败 |
+	ERR_SVR_ONLINE_REQ     = 20001 // Online request isn't right! | ONLINE请求有误 |
+	ERR_SVR_OFFLINE_REQ    = 20002 // Offline request isn't right! | OFFLINE请求有误 |
+	ERR_SVR_JOIN_REQ       = 20003 // Join request isn't right! | JOIN请求有误 |
+	ERR_SVR_UNJOIN_REQ     = 20004 // Unjoin request isn't right! | UNJOIN请求有误 |
+	ERR_SVR_PARSE_PARAM    = 20005 // Parse paramter | 解析参数错误 |
+	ERR_SVR_MISS_PARAM     = 20006 // Miss paramter | 缺失参数 |
+	ERR_SVR_INVALID_PARAM  = 20007 // Invalid paramter | 非法参数 |
+	ERR_SVR_AUTH_FAIL      = 20008 // Auth failed | 鉴权失败 |
+	ERR_SVR_DATA_COLLISION = 20009 // Data collision | 数据冲突 |
 )

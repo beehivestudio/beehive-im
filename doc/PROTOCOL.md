@@ -352,3 +352,17 @@ TODO: 协议头中的to为用户ID(UID)
 命令ID: 0x0404<br>
 命令描述: 转发层上报应答(FRWD-RPT-ACK)<br>
 协议格式: NONE<br>
+
+---
+命令ID: 0x0405<br>
+命令描述: 踢连接下线(KICK)<br>
+协议格式: <br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
+
+---
+命令ID: 0x0406<br>
+命令描述: 踢连接下线应答(KICK-ACK)<br>
+协议格式: NONE<br>

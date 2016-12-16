@@ -95,7 +95,7 @@ func (ctx *MonSvrCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
-		} else if uint64(nid) != req.GetNid() {
+		} else if uint32(nid) != req.GetNid() {
 			ctx.log.Error("Node id conflict! nid:%d/%d", nid, req.GetNid())
 			return true, nil
 		}
@@ -298,7 +298,7 @@ func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, e
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
-		} else if uint64(nid) != req.GetNid() {
+		} else if uint32(nid) != req.GetNid() {
 			ctx.log.Error("Node id conflict! nid:%d/%d", nid, req.GetNid())
 			return true, nil
 		}

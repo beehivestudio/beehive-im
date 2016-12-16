@@ -158,7 +158,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
  **输入参数:
  **     head: 协议头
  **     req: 上线请求
- **     errno: 错误码
+ **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
  **返    回: VOID
@@ -177,7 +177,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
-	req *mesg.MesgOnlineReq, errno uint32, errmsg string) int {
+	req *mesg.MesgOnlineReq, code uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
@@ -185,7 +185,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 		App:      proto.String(req.GetApp()),
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
-		Code:     proto.Uint32(errno),
+		Code:     proto.Uint32(code),
 		ErrMsg:   proto.String(errmsg),
 	}
 
@@ -279,10 +279,17 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
  **输出参数: NONE
  **返    回: 异常信息
  **实现描述:
+ **     1. 校验是否SID上线信息是否存在冲突. 如果存在冲突, 则将之前的连接踢下线.
+ **     2. 更新数据库信息
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (err error) {
+	var key string
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -291,6 +298,26 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 
+	/* 获取SID -> (UID/NID)的映射 */
+	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
+
+	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
+	if nil != err {
+		ctx.log.Error("Get sid attribution failed! errmsg:%s", err)
+		return err
+	}
+
+	id, _ := strconv.ParseInt(vals[0], 10, 64)
+	uid := uint64(id)
+	id, _ = strconv.ParseInt(vals[1], 10, 32)
+	nid := uint32(id)
+
+	if nid != head.GetNid() {
+		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d]",
+			uid, head.GetSid(), nid, head.GetNid())
+		ctx.send_kick(head.GetSid(), nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
+	}
+
 	/* 记录SID集合 */
 	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
 
@@ -298,7 +325,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, req.GetUid())
 
 	/* 记录SID->UID/NID */
-	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
+	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
 	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
@@ -574,7 +601,7 @@ func (ctx *UsrSvrCntx) join_parse(data []byte) (
  **输入参数:
  **     head: 协议头
  **     req: 上线请求
- **     errno: 错误码
+ **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
  **返    回: VOID
@@ -591,13 +618,13 @@ func (ctx *UsrSvrCntx) join_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_join_ack(head *comm.MesgHeader,
-	req *mesg.MesgJoinReq, errno uint32, errmsg string) int {
+	req *mesg.MesgJoinReq, code uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Gid:    proto.Uint32(0),
-		Code:   proto.Uint32(errno),
+		Code:   proto.Uint32(code),
 		ErrMsg: proto.String(errmsg),
 	}
 
@@ -883,7 +910,7 @@ func (ctx *UsrSvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
  **输入参数:
  **     head: 协议头
  **     req: 上线请求
- **     errno: 错误码
+ **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
  **返    回: VOID
@@ -900,12 +927,12 @@ func (ctx *UsrSvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
  **作    者: # Qifeng.zou # 2016.11.03 21:20:34 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
-	req *mesg.MesgUnjoinReq, errno uint32, errmsg string) int {
+	req *mesg.MesgUnjoinReq, code uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgUnjoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
-		Code:   proto.Uint32(errno),
+		Code:   proto.Uint32(code),
 		ErrMsg: proto.String(errmsg),
 	}
 
@@ -1184,5 +1211,63 @@ func UsrSvrPingHandler(cmd uint32, orig uint32, data []byte, length uint32, para
 	/* 2. > PING请求处理 */
 	ctx.ping_handler(head)
 
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: send_kick
+ **功    能: 发送踢人操作
+ **输入参数:
+ **     sid: 会话ID
+ **     nid: 结点ID
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint64 sid = 1;        // M|会话ID|数字|
+ **     required uint32 nid = 2;        // M|结点ID|数字|
+ **     required int code = 3;          // M|错误码|数字|
+ **     required string errmsg = 4;     // M|错误描述|数字|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.16 20:49:02 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg string) int {
+	var head comm.MesgHeader
+
+	/* > 设置协议体 */
+	rsp := &mesg.MesgKickReq{
+		Code:   proto.Uint32(code),
+		ErrMsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+
+	head.Cmd = comm.CMD_KICK_REQ
+	head.Sid = sid
+	head.Nid = nid
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(&head, p)
+	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_KICK_REQ, p.Buff, uint32(len(p.Buff)))
+
+	ctx.log.Debug("Send kick command success!")
 	return 0
 }

@@ -100,3 +100,10 @@ message mesg_prvt_ack
     required uint32 Code = 1;       // 错误码
     required string ErrMsg = 2;     // 错误描述
 }
+
+/* 踢人下线 */
+message mesg_kick_req
+{
+    required uint32 Code = 1;       // 错误码
+    required string ErrMsg = 2;     // 错误描述
+}
