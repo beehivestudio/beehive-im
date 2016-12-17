@@ -186,7 +186,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
 		Code:     proto.Uint32(code),
-		ErrMsg:   proto.String(errmsg),
+		Errmsg:   proto.String(errmsg),
 	}
 
 	/* 生成PB数据 */
@@ -243,7 +243,7 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
 		Code:     proto.Uint32(0),
-		ErrMsg:   proto.String("Ok"),
+		Errmsg:   proto.String("Ok"),
 	}
 
 	/* 生成PB数据 */
@@ -625,7 +625,7 @@ func (ctx *UsrSvrCntx) send_err_join_ack(head *comm.MesgHeader,
 		Rid:    proto.Uint64(req.GetRid()),
 		Gid:    proto.Uint32(0),
 		Code:   proto.Uint32(code),
-		ErrMsg: proto.String(errmsg),
+		Errmsg: proto.String(errmsg),
 	}
 
 	/* 生成PB数据 */
@@ -678,7 +678,7 @@ func (ctx *UsrSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinRe
 		Rid:    proto.Uint64(req.GetRid()),
 		Gid:    proto.Uint32(gid),
 		Code:   proto.Uint32(0),
-		ErrMsg: proto.String("Ok"),
+		Errmsg: proto.String("Ok"),
 	}
 
 	/* 生成PB数据 */
@@ -933,7 +933,7 @@ func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Code:   proto.Uint32(code),
-		ErrMsg: proto.String(errmsg),
+		Errmsg: proto.String(errmsg),
 	}
 
 	/* 生成PB数据 */
@@ -1019,7 +1019,7 @@ func (ctx *UsrSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjo
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Code:   proto.Uint32(0),
-		ErrMsg: proto.String("Ok"),
+		Errmsg: proto.String("Ok"),
 	}
 
 	/* 生成PB数据 */
@@ -1241,7 +1241,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 	/* > 设置协议体 */
 	rsp := &mesg.MesgKickReq{
 		Code:   proto.Uint32(code),
-		ErrMsg: proto.String(errmsg),
+		Errmsg: proto.String(errmsg),
 	}
 
 	/* 生成PB数据 */

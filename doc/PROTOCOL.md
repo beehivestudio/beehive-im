@@ -141,6 +141,12 @@
 命令描述: 群聊消息(GROUP-MSG)<br>
 协议格式: 透传<br>
 TODO: 协议头中的to为群ID(GID)
+>{<br>
+>   required uint32 gid = 1;        // M|分组ID<br>
+>   required uint32 level = 2;      // M|消息级别<br>
+>   required string text = 3;       // M|聊天内容<br>
+>   optional bytes data = 4;        // M|透传数据<br>
+>}
 
 ---
 命令ID: 0x0111<br>
@@ -152,6 +158,11 @@ TODO: 协议头中的to为群ID(GID)
 命令描述: 私聊消息(PRVT-MSG)<br>
 协议格式: 透传<br>
 TODO: 协议头中的to为用户ID(UID)
+>{<br>
+>   required uint32 level = 1;      // M|消息级别<br>
+>   required string text = 2;       // M|聊天内容<br>
+>   optional bytes data = 3;        // M|透传数据<br>
+>}
 
 ---
 命令ID: 0x0113<br>
@@ -188,12 +199,12 @@ TODO: 协议头中的to为用户ID(UID)
 命令ID: 0x0118<br>
 命令描述: 聊天室消息(ROOM-MSG)<br>
 协议格式: <br>
->message ChatRoomMesg<br>
 >{<br>
 >   required uint64 rid = 1;        // M|聊天室ID<br>
 >   required uint32 gid = 2;        // M|分组ID<br>
 >   required uint32 level = 3;      // M|消息级别<br>
->   required bytes data = 4;        // M|透传数据<br>
+>   required string text = 4;       // M|聊天内容<br>
+>   optional bytes data = 5;        // M|透传数据<br>
 >}
 
 ---

@@ -130,7 +130,7 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomAck{
 		Code:   proto.Uint32(errno),
-		ErrMsg: proto.String(errmsg),
+		Errmsg: proto.String(errmsg),
 	}
 
 	/* 生成PB数据 */
@@ -177,7 +177,7 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomAck{
 		Code:   proto.Uint32(0),
-		ErrMsg: proto.String("Ok"),
+		Errmsg: proto.String("Ok"),
 	}
 
 	/* 生成PB数据 */
@@ -473,7 +473,7 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomAck{
 		Code:   proto.Uint32(errno),
-		ErrMsg: proto.String(errmsg),
+		Errmsg: proto.String(errmsg),
 	}
 
 	/* 生成PB数据 */
@@ -520,7 +520,7 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomAck{
 		Code:   proto.Uint32(0),
-		ErrMsg: proto.String("Ok"),
+		Errmsg: proto.String("Ok"),
 	}
 
 	/* 生成PB数据 */

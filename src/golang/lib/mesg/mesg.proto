@@ -2,53 +2,53 @@ package mesg;
 
 message mesg_online_req
 {
-    required uint64 Uid = 1;        // M|用户ID|数字|
-    required uint64 Sid = 2;        // M|会话ID|数字|
-    required string Token = 3;      // M|鉴权TOKEN|字串|
-    required string App = 4;        // M|APP名|字串|
-    required string Version = 5;    // M|APP版本|字串|
-    optional uint32 Terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 sid = 2;        // M|会话ID|数字|
+    required string token = 3;      // M|鉴权TOKEN|字串|
+    required string app = 4;        // M|APP名|字串|
+    required string version = 5;    // M|APP版本|字串|
+    optional uint32 terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
 }
 
 message mesg_online_ack
 {
-   required uint64 Uid = 1;         // M|用户ID|数字|<br>
-   required uint64 Sid = 2;         // M|会话ID|数字|内部使用<br>
-   required string App = 3;         // M|APP名|字串|<br>
-   required string Version = 4;     // M|APP版本|字串|<br>
-   optional uint32 Terminal = 5;    // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
-   required uint32 Code = 6;        // M|错误码|数字|<br>
-   required string ErrMsg = 7;      // M|错误描述|字串|<br>
+   required uint64 uid = 1;         // M|用户ID|数字|<br>
+   required uint64 sid = 2;         // M|会话ID|数字|内部使用<br>
+   required string app = 3;         // M|APP名|字串|<br>
+   required string version = 4;     // M|APP版本|字串|<br>
+   optional uint32 terminal = 5;    // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
+   required uint32 code = 6;        // M|错误码|数字|<br>
+   required string errmsg = 7;      // M|错误描述|字串|<br>
 }
 
 message mesg_join_req
 {
-    required uint64 Uid = 1;    // M|用户ID|数字|
-    required uint64 Rid = 2;    // M|聊天室ID|数字|
-    required string Token = 3;  // M|鉴权TOKEN|字串|
+    required uint64 uid = 1;    // M|用户ID|数字|
+    required uint64 rid = 2;    // M|聊天室ID|数字|
+    required string token = 3;  // M|鉴权TOKEN|字串|
 }
 
 message mesg_join_ack
 {
-    required uint64 Uid = 1;    // M|用户ID|数字|
-    required uint64 Rid = 2;    // M|聊天室ID|数字|
-    required uint32 Gid = 3;    // M|分组ID|数字|
-    required uint32 Code = 4;   // M|错误码|数字|
-    required string ErrMsg = 5; // M|错误描述|字串|
+    required uint64 uid = 1;    // M|用户ID|数字|
+    required uint64 rid = 2;    // M|聊天室ID|数字|
+    required uint32 gid = 3;    // M|分组ID|数字|
+    required uint32 code = 4;   // M|错误码|数字|
+    required string errmsg = 5; // M|错误描述|字串|
 }
 
 message mesg_unjoin_req
 {
-    required uint64 Uid = 1;    // M|用户ID|数字|
-    required uint64 Rid = 2;    // M|聊天室ID|数字|
+    required uint64 uid = 1;    // M|用户ID|数字|
+    required uint64 rid = 2;    // M|聊天室ID|数字|
 }
 
 message mesg_unjoin_ack
 {
-    required uint64 Uid = 1;    // M|用户ID|数字|
-    required uint64 Rid = 2;    // M|聊天室ID|数字|
-    required uint32 Code = 3;   // M|错误码|数字|
-    required string ErrMsg = 4; // M|错误描述|字串|
+    required uint64 uid = 1;    // M|用户ID|数字|
+    required uint64 rid = 2;    // M|聊天室ID|数字|
+    required uint32 code = 3;   // M|错误码|数字|
+    required string errmsg = 4; // M|错误描述|字串|
 }
 
 message mesg_lsn_rpt
@@ -60,6 +60,7 @@ message mesg_lsn_rpt
     required uint32 port = 5;   // M|端口号|数字|<br>
 }
 
+/* 转发层上报 */
 message mesg_frwd_rpt
 {
     required uint32 nid = 1;    // M|结点ID|数字|<br>
@@ -71,39 +72,38 @@ message mesg_frwd_rpt
 /* 聊天室消息 */
 message mesg_room_msg
 {
-    required uint64 Rid = 1;        // 聊天室ID
-    required uint32 Gid = 2;        // 分组ID
-    required uint32 level = 3;      // 消息级别
-    required bytes  Data = 4;       // 透传数据
+    required uint64 rid = 1;    // 聊天室ID
+    required uint32 gid = 2;    // 分组ID
+    required uint32 level = 3;  // 消息级别
+    required string text = 4;   // 聊天内容
+    optional bytes data = 5;    // 透传数据
 }
 
 /* 聊天室消息应答 */
 message mesg_room_ack
 {
-    required uint32 Code = 1;       // 错误码
-    required string ErrMsg = 2;     // 错误描述
+    required uint32 code = 1;       // 错误码
+    required string errmsg = 2;     // 错误描述
 }
-
 
 /* 私聊消息 */
 message mesg_prvt_msg
 {
-    required uint64 Rid = 1;        // 聊天室ID
-    required uint32 Gid = 2;        // 分组ID
-    required uint32 level = 3;      // 消息级别
-    required bytes  Data = 4;       // 透传数据
+    required uint32 level = 1;      // 消息级别
+    required string text = 2;       // 聊天内容
+    optional bytes data = 3;        // 透传数据
 }
 
 /* 私聊消息应答 */
 message mesg_prvt_ack
 {
-    required uint32 Code = 1;       // 错误码
-    required string ErrMsg = 2;     // 错误描述
+    required uint32 code = 1;       // 错误码
+    required string errmsg = 2;     // 错误描述
 }
 
 /* 踢人下线 */
 message mesg_kick_req
 {
-    required uint32 Code = 1;       // 错误码
-    required string ErrMsg = 2;     // 错误描述
+    required uint32 code = 1;       // 错误码
+    required string errmsg = 2;     // 错误描述
 }
