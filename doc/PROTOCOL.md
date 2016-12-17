@@ -142,7 +142,7 @@
 协议格式: 透传<br>
 TODO: 协议头中的to为群ID(GID)
 >{<br>
->   required uint32 gid = 1;        // M|分组ID<br>
+>   required uint64 gid = 1;        // M|分组ID<br>
 >   required uint32 level = 2;      // M|消息级别<br>
 >   required string text = 3;       // M|聊天内容<br>
 >   optional bytes data = 4;        // M|透传数据<br>
