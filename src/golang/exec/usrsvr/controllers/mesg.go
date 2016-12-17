@@ -1227,10 +1227,8 @@ func UsrSvrPingHandler(cmd uint32, orig uint32, data []byte, length uint32, para
  **实现描述:
  **应答协议:
  ** {
- **     required uint64 sid = 1;        // M|会话ID|数字|
- **     required uint32 nid = 2;        // M|结点ID|数字|
- **     required int code = 3;          // M|错误码|数字|
- **     required string errmsg = 4;     // M|错误描述|数字|
+ **     required int code = 1;          // M|错误码|数字|
+ **     required string errmsg = 2;     // M|错误描述|数字|
  ** }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.16 20:49:02 #
@@ -1268,6 +1266,6 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_KICK_REQ, p.Buff, uint32(len(p.Buff)))
 
-	ctx.log.Debug("Send kick command success!")
+	ctx.log.Debug("Send kick command success! sid:%d nid:%d", sid, nid)
 	return 0
 }

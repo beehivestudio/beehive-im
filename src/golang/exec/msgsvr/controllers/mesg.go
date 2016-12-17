@@ -554,22 +554,43 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  **输入参数:
  **     head: 协议头
  **     req: ROOM-MSG请求
+ **     data: 原始数据
  **输出参数: NONE
- **返    回:
+ **返    回: 错误信息
  **实现描述:
+ **     1. 将消息存放在聊天室历史消息表中
+ **     2. 遍历rid->nid列表, 并转发聊天室消息
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:34:55 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_handler(
-	head *comm.MesgHeader, req *mesg.MesgRoomMsg) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgRoomMsg, data []byte) (err error) {
+	var hhead comm.MesgHeader
+
 	ctx.rid_to_nid_map.RLock()
 	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
 	if false == ok {
 		ctx.rid_to_nid_map.RUnlock()
 		return nil
 	}
+
+	/* > 遍历rid->nid列表, 并下发聊天室消息 */
 	for nid := range nid_list {
 		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
+
+		/* 拼接协议包 */
+		p := &comm.MesgPacket{}
+		p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+int(head.GetLength()))
+
+		hhead.Cmd = comm.CMD_ROOM_MSG
+		hhead.Nid = uint32(nid)
+		hhead.Length = head.GetLength()
+		hhead.ChkSum = comm.MSG_CHKSUM_VAL
+
+		comm.MesgHeadHton(&hhead, p)
+		copy(p.Buff[binary.Size(comm.MesgHeader{}):], data[binary.Size(comm.MesgHeader{}):])
+
+		ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG, p.Buff, uint32(len(p.Buff)))
 	}
 	ctx.rid_to_nid_map.RUnlock()
 	return err
@@ -612,7 +633,7 @@ func MsgSvrRoomMsgHandler(cmd uint32, orig uint32,
 	}
 
 	/* > 进行业务处理 */
-	err := ctx.room_msg_handler(head, req)
+	err := ctx.room_msg_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Parse room-msg failed!")
 		ctx.send_err_room_msg_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
