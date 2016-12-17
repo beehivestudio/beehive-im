@@ -170,7 +170,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 
 	/* > 遍历rid->nid列表, 并下发聊天室消息 */
 	for nid := range nid_list {
-		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
+		ctx.log.Debug("gid:%d nid:%d", req.GetGid(), nid)
 
 		/* 拼接协议包 */
 		p := &comm.MesgPacket{}
@@ -303,7 +303,7 @@ func (ctx *MsgSvrCntx) prvt_msg_parse(data []byte) (
 
 /******************************************************************************
  **函数名称: send_err_prvt_msg_ack
- **功    能: 发送ROOM-MSG应答(异常)
+ **功    能: 发送PRVT-MSG应答(异常)
  **输入参数:
  **     head: 协议头
  **     req: 上线请求
@@ -314,16 +314,16 @@ func (ctx *MsgSvrCntx) prvt_msg_parse(data []byte) (
  **实现描述:
  **应答协议:
  **     {
- **         optional uint32 code = 4; // M|错误码|数字|
- **         optional string errmsg = 5; // M|错误描述|字串|
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
-	req *mesg.MesgRoomMsg, code uint32, errmsg string) int {
+	req *mesg.MesgPrvtMsg, code uint32, errmsg string) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgRoomAck{
+	rsp := &mesg.MesgPrvtAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -341,36 +341,36 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
 
-	head.Cmd = comm.CMD_ROOM_MSG_ACK
+	head.Cmd = comm.CMD_PRVT_MSG_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
 
 /******************************************************************************
  **函数名称: send_prvt_msg_ack
- **功    能: 发送上线应答
+ **功    能: 发送私聊应答
  **输入参数:
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
  **应答协议:
  **     {
- **         optional uint32 code = 4; // M|错误码|数字|
- **         optional string errmsg = 5; // M|错误描述|字串|
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgRoomMsg) int {
+func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPrvtMsg) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgRoomAck{
+	rsp := &mesg.MesgPrvtAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -388,24 +388,25 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
 
-	head.Cmd = comm.CMD_ROOM_MSG_ACK
+	head.Cmd = comm.CMD_PRVT_MSG_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
 
 /******************************************************************************
  **函数名称: prvt_msg_handler
- **功    能: ROOM-MSG处理
+ **功    能: PRVT-MSG处理
  **输入参数:
  **     head: 协议头
- **     req: ROOM-MSG请求
+ **     req: PRVT-MSG请求
+ **     data: 原始数据
  **输出参数: NONE
  **返    回:
  **实现描述:
@@ -413,17 +414,7 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  **作    者: # Qifeng.zou # 2016.11.04 22:34:55 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) prvt_msg_handler(
-	head *comm.MesgHeader, req *mesg.MesgRoomMsg) (err error) {
-	ctx.rid_to_nid_map.RLock()
-	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
-	if false == ok {
-		ctx.rid_to_nid_map.RUnlock()
-		return nil
-	}
-	for nid := range nid_list {
-		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
-	}
-	ctx.rid_to_nid_map.RUnlock()
+	head *comm.MesgHeader, req *mesg.MesgPrvtMsg, data []byte) (err error) {
 	return err
 }
 
@@ -454,6 +445,23 @@ func MsgSvrPrvtMsgHandler(cmd uint32, orig uint32,
 	}
 
 	ctx.log.Debug("Recv private msg ack!")
+
+	/* > 解析ROOM-MSG协议 */
+	head, req := ctx.prvt_msg_parse(data)
+	if nil == head || nil == req {
+		ctx.log.Error("Parse private message failed!")
+		return -1
+	}
+
+	/* > 进行业务处理 */
+	err := ctx.prvt_msg_handler(head, req, data)
+	if nil != err {
+		ctx.log.Error("Parse group-msg failed!")
+		ctx.send_err_prvt_msg_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		return -1
+	}
+
+	ctx.send_prvt_msg_ack(head, req)
 
 	return 0
 }

@@ -86,6 +86,24 @@ message mesg_room_ack
     required string errmsg = 2;     // 错误描述
 }
 
+/* 群组消息 */
+message mesg_group_msg
+{
+    required uint64 gid = 1;    // 分组ID
+    required uint32 level = 2;  // 消息级别
+    required string text = 3;   // 聊天内容
+    optional bytes data = 4;    // 透传数据
+}
+
+/* 群组消息应答 */
+message mesg_group_ack
+{
+    required uint32 code = 1;       // 错误码
+    required string errmsg = 2;     // 错误描述
+}
+
+
+
 /* 私聊消息 */
 message mesg_prvt_msg
 {
