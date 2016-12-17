@@ -151,7 +151,11 @@ TODO: 协议头中的to为群ID(GID)
 ---
 命令ID: 0x0111<br>
 命令描述: 群聊消息应答(GROUP-MSG-ACK)<br>
-协议格式: NONE<br>
+协议格式: <br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x0112<br>
