@@ -107,7 +107,7 @@ func (ctx *MsgSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_GROUP_MSG, MsgSvrGroupMsgHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_MSG_ACK, MsgSvrGroupMsgAckHandler, ctx)
 
-	ctx.frwder.Register(comm.CMD_PRVT_MSG, MsgSvrPrvtMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_PRVT_MSG, MsgSvrPrivateMsgHandler, ctx)
 	ctx.frwder.Register(comm.CMD_PRVT_MSG_ACK, MsgSvrPrvtMsgAckHandler, ctx)
 
 	ctx.frwder.Register(comm.CMD_BC_MSG, MsgSvrBcMsgHandler, ctx)

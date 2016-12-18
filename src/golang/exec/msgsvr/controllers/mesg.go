@@ -2,7 +2,10 @@ package controllers
 
 import (
 	"encoding/binary"
+	"fmt"
+	"strconv"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
@@ -273,7 +276,7 @@ func MsgSvrGroupMsgAckHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: prvt_msg_parse
+ **函数名称: private_msg_parse
  **功    能: 解析私聊消息
  **输入参数:
  **     data: 接收的数据
@@ -285,7 +288,7 @@ func MsgSvrGroupMsgAckHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.05 13:23:54 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) prvt_msg_parse(data []byte) (
+func (ctx *MsgSvrCntx) private_msg_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgPrvtMsg) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -295,6 +298,9 @@ func (ctx *MsgSvrCntx) prvt_msg_parse(data []byte) (
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal prvt-msg failed! errmsg:%s", err.Error())
+		return nil, nil
+	} else if 0 == req.GetOrig() || 0 == req.GetDest() {
+		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetOrig(), req.GetDest())
 		return nil, nil
 	}
 
@@ -401,7 +407,7 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
 }
 
 /******************************************************************************
- **函数名称: prvt_msg_handler
+ **函数名称: private_msg_handler
  **功    能: PRVT-MSG处理
  **输入参数:
  **     head: 协议头
@@ -410,16 +416,62 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
  **输出参数: NONE
  **返    回:
  **实现描述:
+ **     1. 将消息放入UID离线队列
+ **     2. 回复发送方应答
+ **     3. 判断接收方是否在线.
+ **        > 如果在线, 则直接下发消息
+ **        > 如果不在线, 则无需下发消息
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.04 22:34:55 #
+ **作    者: # Qifeng.zou # 2016.12.18 20:33:18 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) prvt_msg_handler(
+func (ctx *MsgSvrCntx) private_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgPrvtMsg, data []byte) (err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* 1. 将消息放入离线队列 */
+	/* 2. 回复发送方应答消息 */
+	/* 3. 判断接收方是否在线.
+	   > 如果在线, 则直接下发消息
+	   > 如果不在线, 则无需下发消息 */
+	key := fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDest())
+
+	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
+	if nil != err {
+		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDest())
+		return err
+	}
+
+	num := len(sid_list)
+	for idx := 0; idx < num; idx += 1 {
+		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
+
+		attr := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
+		nid, _ := redis.Int(rds.Do("HGET", attr, "NID"))
+		if 0 == nid {
+			continue
+		}
+
+		/* > 拼接协议包 */
+		p := &comm.MesgPacket{}
+		p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+int(head.GetLength()))
+
+		head.Cmd = comm.CMD_PRVT_MSG
+		head.Sid = uint64(sid)
+		head.Nid = uint32(nid)
+
+		comm.MesgHeadHton(head, p)
+		copy(p.Buff[binary.Size(comm.MesgHeader{}):], data[binary.Size(comm.MesgHeader{}):])
+
+		/* > 发送协议包 */
+		ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG, p.Buff, uint32(len(p.Buff)))
+	}
+
 	return err
 }
 
 /******************************************************************************
- **函数名称: MsgSvrPrvtMsgHandler
+ **函数名称: MsgSvrPrivateMsgHandler
  **功    能: 私聊消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -437,7 +489,7 @@ func (ctx *MsgSvrCntx) prvt_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.05 13:05:26 #
  ******************************************************************************/
-func MsgSvrPrvtMsgHandler(cmd uint32, orig uint32,
+func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -447,14 +499,14 @@ func MsgSvrPrvtMsgHandler(cmd uint32, orig uint32,
 	ctx.log.Debug("Recv private msg ack!")
 
 	/* > 解析ROOM-MSG协议 */
-	head, req := ctx.prvt_msg_parse(data)
+	head, req := ctx.private_msg_parse(data)
 	if nil == head || nil == req {
 		ctx.log.Error("Parse private message failed!")
 		return -1
 	}
 
 	/* > 进行业务处理 */
-	err := ctx.prvt_msg_handler(head, req, data)
+	err := ctx.private_msg_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Parse group-msg failed!")
 		ctx.send_err_prvt_msg_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())

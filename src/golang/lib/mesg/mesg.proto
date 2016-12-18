@@ -103,13 +103,14 @@ message mesg_group_ack
 }
 
 
-
 /* 私聊消息 */
 message mesg_prvt_msg
 {
-    required uint32 level = 1;      // 消息级别
-    required string text = 2;       // 聊天内容
-    optional bytes data = 3;        // 透传数据
+    required uint64 orig = 1;       // 发送方UID
+    required uint64 dest = 2;       // 接收方UID
+    required uint32 level = 3;      // 消息级别
+    required string text = 4;       // 聊天内容
+    optional bytes data = 5;        // 透传数据
 }
 
 /* 私聊消息应答 */
