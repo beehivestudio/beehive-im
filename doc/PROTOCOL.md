@@ -163,9 +163,11 @@ TODO: 协议头中的to为群ID(GID)
 协议格式: 透传<br>
 TODO: 协议头中的to为用户ID(UID)
 >{<br>
->   required uint32 level = 1;      // M|消息级别<br>
->   required string text = 2;       // M|聊天内容<br>
->   optional bytes data = 3;        // M|透传数据<br>
+>   required uint64 orig = 1;       // M|发送方UID<br>
+>   required uint64 dest = 2;       // M|接收方UID<br>
+>   required uint32 level = 3;      // M|消息级别<br>
+>   required string text = 4;       // M|聊天内容<br>
+>   optional bytes data = 5;        // M|透传数据<br>
 >}
 
 ---
