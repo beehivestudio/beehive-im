@@ -2,8 +2,8 @@
 
 ##错误返回值格式
 >{<br>
->  "errno" : 20503,<br>
->  "errmsg" : "Need you follow uid."<br>
+>  "errno" : 10001,<br>
+>  "errmsg" : "System error"<br>
 >}
 
 ## 错误码说明
