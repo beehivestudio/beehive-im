@@ -57,8 +57,8 @@ func (ctx *MsgSvrCntx) group_msg_parse(data []byte) (
  **实现描述:
  **应答协议:
  **     {
- **         optional uint32 code = 1; // M|错误码|数字|
- **         optional string errmsg = 2; // M|错误描述|字串|
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:44:00 #
@@ -107,8 +107,8 @@ func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
  **实现描述:
  **应答协议:
  **     {
- **         optional uint32 code = 1; // M|错误码|数字|
- **         optional string errmsg = 2; // M|错误描述|字串|
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:44:49 #
@@ -717,8 +717,8 @@ func (ctx *MsgSvrCntx) room_msg_parse(data []byte) (
  **实现描述:
  **应答协议:
  **     {
- **         optional uint32 code = 4; // M|错误码|数字|
- **         optional string errmsg = 5; // M|错误描述|字串|
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
@@ -765,8 +765,8 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
  **实现描述:
  **应答协议:
  **     {
- **         optional uint32 code = 4; // M|错误码|数字|
- **         optional string errmsg = 5; // M|错误描述|字串|
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
