@@ -9,6 +9,9 @@ const (
 	IM_KEY_SID_ATTR       = "im:sid:%d:attr"       //*| HASH | 会话SID属性 | 包含UID/NID |
 	IM_KEY_UID_TO_SID_SET = "im:uid:%d:to:sid:set" //| SET | 用户UID对应的会话SID集合 | SID集合 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
+	//私聊
+	CHAT_KEY_USR_OFFLINE_QUEUE = "chat:uid:%d:offline:queue" //| LIST | 用户离线数据队列 |
+	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//聊天室
 	CHAT_KEY_RID_ZSET             = "chat:rid:zset"               //*| ZSET | 聊天室RID集合 | 成员:RID 分值:TTL |
 	CHAT_KEY_UID_TO_RID           = "chat:uid:%d:to:rid:htab"     //| HASH | 用户UID对应的RID集合 | 成员:RID 分值:GID |
