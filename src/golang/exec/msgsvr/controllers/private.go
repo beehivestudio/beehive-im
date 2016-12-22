@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/binary"
 	"fmt"
 	"strconv"
 
@@ -82,13 +81,13 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_PRVT_MSG_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG_ACK, p.Buff, uint32(len(p.Buff)))
@@ -129,18 +128,39 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_PRVT_MSG_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
+}
+
+func (ctx *MsgSvrCntx) send_private_mesg(sid uint64, nid uint32, data []byte, length uint32) {
+	var head comm.MesgHeader
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+int(length))
+
+	head.Cmd = comm.CMD_PRVT_MSG
+	head.Sid = sid
+	head.Nid = nid
+	head.Length = length
+	head.ChkSum = comm.MSG_CHKSUM_VAL
+
+	comm.MesgHeadHton(&head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], data)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG, p.Buff, uint32(len(p.Buff)))
+
 }
 
 /******************************************************************************
@@ -169,18 +189,45 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 
 	/* 1. 将消息放入离线队列 */
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_QUEUE, req.GetDest())
-	num, err := redis.Int(rds.Do("RPUSH", key, data[binary.Size(comm.MesgHeader{}):]))
+	num, err := redis.Int(rds.Do("RPUSH", key, data[comm.MESG_HEAD_SIZE:]))
 	if nil != err {
 		ctx.log.Error("Push data into offline queue failed! uid:%d", req.GetDest())
 		return err
 	}
 
-	/* 2. 判断接收方是否在线.
+	/* 2. 发送给"发送方"的其他终端.
+	   > 如果在线, 则直接下发消息
+	   > 如果不在线, 则无需下发消息 */
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetOrig())
+
+	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
+	if nil != err {
+		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetOrig())
+		return err
+	}
+
+	num = len(sid_list)
+	for idx := 0; idx < num; idx += 1 {
+		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
+		if uint64(sid) == head.GetSid() {
+			continue
+		}
+
+		attr := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
+		nid, _ := redis.Int(rds.Do("HGET", attr, "NID"))
+		if 0 == nid {
+			continue
+		}
+
+		ctx.send_private_mesg(uint64(sid), uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+	}
+
+	/* 3. 发送给"接收方"所有终端.
 	   > 如果在线, 则直接下发消息
 	   > 如果不在线, 则无需下发消息 */
 	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDest())
 
-	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
+	sid_list, err = redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
 		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDest())
 		return err
@@ -196,19 +243,7 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		/* > 拼接协议包 */
-		p := &comm.MesgPacket{}
-		p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+int(head.GetLength()))
-
-		head.Cmd = comm.CMD_PRVT_MSG
-		head.Sid = uint64(sid)
-		head.Nid = uint32(nid)
-
-		comm.MesgHeadHton(head, p)
-		copy(p.Buff[binary.Size(comm.MesgHeader{}):], data[binary.Size(comm.MesgHeader{}):])
-
-		/* > 发送协议包 */
-		ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG, p.Buff, uint32(len(p.Buff)))
+		ctx.send_private_mesg(uint64(sid), uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
 	return err
