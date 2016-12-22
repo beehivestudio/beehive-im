@@ -193,8 +193,11 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 		}
 
 		attr := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-		nid, _ := redis.Int(rds.Do("HGET", attr, "NID"))
-		if 0 == nid {
+		vals, _ := redis.Strings(rds.Do("HGET", attr, "UID", "NID"))
+
+		uid, _ := strconv.ParseInt(vals[0], 10, 64)
+		nid, _ := strconv.ParseInt(vals[1], 10, 32)
+		if uint64(uid) != req.GetOrig() || 0 == nid {
 			continue
 		}
 
@@ -218,8 +221,11 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
 
 		attr := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-		nid, _ := redis.Int(rds.Do("HGET", attr, "NID"))
-		if 0 == nid {
+		vals, _ := redis.Strings(rds.Do("HGET", attr, "UID", "NID"))
+
+		uid, _ := strconv.ParseInt(vals[0], 10, 64)
+		nid, _ := strconv.ParseInt(vals[1], 10, 32)
+		if uint64(uid) != req.GetDest() || 0 == nid {
 			continue
 		}
 
