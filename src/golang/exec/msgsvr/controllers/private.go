@@ -142,27 +142,6 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
 	return 0
 }
 
-func (ctx *MsgSvrCntx) send_private_mesg(sid uint64, nid uint32, data []byte, length uint32) {
-	var head comm.MesgHeader
-
-	/* > 拼接协议包 */
-	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+int(length))
-
-	head.Cmd = comm.CMD_PRVT_MSG
-	head.Sid = sid
-	head.Nid = nid
-	head.Length = length
-	head.ChkSum = comm.MSG_CHKSUM_VAL
-
-	comm.MesgHeadHton(&head, p)
-	copy(p.Buff[comm.MESG_HEAD_SIZE:], data)
-
-	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG, p.Buff, uint32(len(p.Buff)))
-
-}
-
 /******************************************************************************
  **函数名称: private_msg_handler
  **功    能: PRVT-MSG处理
@@ -219,7 +198,8 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		ctx.send_private_mesg(uint64(sid), uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid),
+			uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
 	/* 3. 发送给"接收方"所有终端.
@@ -243,7 +223,8 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		ctx.send_private_mesg(uint64(sid), uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid),
+			uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
 	return err
