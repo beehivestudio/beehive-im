@@ -77,22 +77,7 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	length := len(body)
-
-	/* > 拼接协议包 */
-	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
-
-	head.Cmd = comm.CMD_PRVT_MSG_ACK
-	head.Length = uint32(length)
-
-	comm.MesgHeadHton(head, p)
-	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
-
-	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG_ACK, p.Buff, uint32(len(p.Buff)))
-
-	return 0
+	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(), head.GetNid(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -124,22 +109,7 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
 		return -1
 	}
 
-	length := len(body)
-
-	/* > 拼接协议包 */
-	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
-
-	head.Cmd = comm.CMD_PRVT_MSG_ACK
-	head.Length = uint32(length)
-
-	comm.MesgHeadHton(head, p)
-	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
-
-	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_PRVT_MSG_ACK, p.Buff, uint32(len(p.Buff)))
-
-	return 0
+	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(), head.GetNid(), body, uint32(len(body)))
 }
 
 /******************************************************************************

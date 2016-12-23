@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/binary"
 	_ "fmt"
 	_ "strconv"
 
@@ -75,22 +74,8 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	length := len(body)
-
-	/* > 拼接协议包 */
-	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
-
-	head.Cmd = comm.CMD_ROOM_MSG_ACK
-	head.Length = uint32(length)
-
-	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
-
-	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
-
-	return 0
+	return ctx.send_data(comm.CMD_ROOM_MSG_ACK,
+		head.GetSid(), head.GetNid(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -122,22 +107,8 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 		return -1
 	}
 
-	length := len(body)
-
-	/* > 拼接协议包 */
-	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
-
-	head.Cmd = comm.CMD_ROOM_MSG_ACK
-	head.Length = uint32(length)
-
-	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
-
-	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG_ACK, p.Buff, uint32(len(p.Buff)))
-
-	return 0
+	return ctx.send_data(comm.CMD_ROOM_MSG_ACK,
+		head.GetSid(), head.GetNid(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -157,8 +128,6 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomMsg, data []byte) (err error) {
-	var hhead comm.MesgHeader
-
 	ctx.rid_to_nid_map.RLock()
 	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
 	if false == ok {
@@ -170,19 +139,8 @@ func (ctx *MsgSvrCntx) room_msg_handler(
 	for nid := range nid_list {
 		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
 
-		/* 拼接协议包 */
-		p := &comm.MesgPacket{}
-		p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+int(head.GetLength()))
-
-		hhead.Cmd = comm.CMD_ROOM_MSG
-		hhead.Nid = uint32(nid)
-		hhead.Length = head.GetLength()
-		hhead.ChkSum = comm.MSG_CHKSUM_VAL
-
-		comm.MesgHeadHton(&hhead, p)
-		copy(p.Buff[binary.Size(comm.MesgHeader{}):], data[binary.Size(comm.MesgHeader{}):])
-
-		ctx.frwder.AsyncSend(comm.CMD_ROOM_MSG, p.Buff, uint32(len(p.Buff)))
+		ctx.send_data(comm.CMD_ROOM_MSG, req.GetRid(),
+			uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 	ctx.rid_to_nid_map.RUnlock()
 	return err
@@ -232,8 +190,7 @@ func MsgSvrRoomMsgHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	ctx.send_room_msg_ack(head, req)
-	return 0
+	return ctx.send_room_msg_ack(head, req)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
