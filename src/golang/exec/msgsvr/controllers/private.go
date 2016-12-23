@@ -77,7 +77,8 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(), head.GetNid(), body, uint32(len(body)))
+	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(),
+		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -109,7 +110,8 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(), head.GetNid(), body, uint32(len(body)))
+	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(),
+		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -171,8 +173,8 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid),
-			uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(nid),
+			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
 	/* 3. 发送给"接收方"所有终端.
@@ -199,8 +201,8 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid),
-			uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(nid),
+			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
 	return err

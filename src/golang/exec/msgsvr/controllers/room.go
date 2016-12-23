@@ -74,8 +74,8 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_ROOM_MSG_ACK,
-		head.GetSid(), head.GetNid(), body, uint32(len(body)))
+	return ctx.send_data(comm.CMD_ROOM_MSG_ACK, head.GetSid(),
+		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -107,8 +107,8 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_ROOM_MSG_ACK,
-		head.GetSid(), head.GetNid(), body, uint32(len(body)))
+	return ctx.send_data(comm.CMD_ROOM_MSG_ACK, head.GetSid(),
+		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -139,8 +139,8 @@ func (ctx *MsgSvrCntx) room_msg_handler(
 	for nid := range nid_list {
 		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
 
-		ctx.send_data(comm.CMD_ROOM_MSG, req.GetRid(),
-			uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+		ctx.send_data(comm.CMD_ROOM_MSG, req.GetRid(), uint32(nid),
+			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 	ctx.rid_to_nid_map.RUnlock()
 	return err

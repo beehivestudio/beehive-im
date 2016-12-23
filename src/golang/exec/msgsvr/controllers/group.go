@@ -77,8 +77,8 @@ func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_GROUP_MSG_ACK,
-		head.GetSid(), head.GetNid(), body, uint32(len(body)))
+	return ctx.send_data(comm.CMD_GROUP_MSG_ACK, head.GetSid(),
+		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -112,8 +112,8 @@ func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgG
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_GROUP_MSG_ACK,
-		head.GetSid(), head.GetNid(), body, uint32(len(body)))
+	return ctx.send_data(comm.CMD_GROUP_MSG_ACK, head.GetSid(),
+		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -144,8 +144,8 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 	for nid := range nid_list {
 		ctx.log.Debug("gid:%d nid:%d", req.GetGid(), nid)
 
-		ctx.send_data(comm.CMD_GROUP_MSG, req.GetGid(),
-			uint32(nid), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+		ctx.send_data(comm.CMD_GROUP_MSG, req.GetGid(), uint32(nid),
+			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 	ctx.gid_to_nid_map.RUnlock()
 	return err
