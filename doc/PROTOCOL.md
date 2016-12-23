@@ -144,8 +144,9 @@ TODO: 协议头中的to为群ID(GID)
 >{<br>
 >   required uint64 gid = 1;        // M|分组ID<br>
 >   required uint32 level = 2;      // M|消息级别<br>
->   required string text = 3;       // M|聊天内容<br>
->   optional bytes data = 4;        // M|透传数据<br>
+>   required uint64 time = 3;       // M|发送时间<br>
+>   required string text = 4;       // M|聊天内容<br>
+>   optional bytes data = 5;        // M|透传数据<br>
 >}
 
 ---
@@ -166,8 +167,9 @@ TODO: 协议头中的to为用户ID(UID)
 >   required uint64 orig = 1;       // M|发送方UID<br>
 >   required uint64 dest = 2;       // M|接收方UID<br>
 >   required uint32 level = 3;      // M|消息级别<br>
->   required string text = 4;       // M|聊天内容<br>
->   optional bytes data = 5;        // M|透传数据<br>
+>   required uint64 time = 4;       // M|发送时间<br>
+>   required string text = 5;       // M|聊天内容<br>
+>   optional bytes data = 6;        // M|透传数据<br>
 >}
 
 ---
@@ -209,8 +211,9 @@ TODO: 协议头中的to为用户ID(UID)
 >   required uint64 rid = 1;        // M|聊天室ID<br>
 >   required uint32 gid = 2;        // M|分组ID<br>
 >   required uint32 level = 3;      // M|消息级别<br>
->   required string text = 4;       // M|聊天内容<br>
->   optional bytes data = 5;        // M|透传数据<br>
+>   required uint64 time = 4;       // M|发送时间<br>
+>   required string text = 5;       // M|聊天内容<br>
+>   optional bytes data = 6;        // M|透传数据<br>
 >}
 
 ---

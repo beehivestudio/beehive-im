@@ -75,8 +75,9 @@ message mesg_room_msg
     required uint64 rid = 1;    // 聊天室ID
     required uint32 gid = 2;    // 分组ID
     required uint32 level = 3;  // 消息级别
-    required string text = 4;   // 聊天内容
-    optional bytes data = 5;    // 透传数据
+    required uint64 time = 4;   // 发送时间
+    required string text = 5;   // 聊天内容
+    optional bytes data = 6;    // 透传数据
 }
 
 /* 聊天室消息应答 */
@@ -91,8 +92,9 @@ message mesg_group_msg
 {
     required uint64 gid = 1;    // 分组ID
     required uint32 level = 2;  // 消息级别
-    required string text = 3;   // 聊天内容
-    optional bytes data = 4;    // 透传数据
+    required uint64 time = 3;   // 发送时间
+    required string text = 4;   // 聊天内容
+    optional bytes data = 5;    // 透传数据
 }
 
 /* 群组消息应答 */
@@ -109,8 +111,9 @@ message mesg_prvt_msg
     required uint64 orig = 1;       // 发送方UID
     required uint64 dest = 2;       // 接收方UID
     required uint32 level = 3;      // 消息级别
-    required string text = 4;       // 聊天内容
-    optional bytes data = 5;        // 透传数据
+    required uint64 time = 4;       // 发送时间
+    required string text = 5;       // 聊天内容
+    optional bytes data = 6;        // 透传数据
 }
 
 /* 私聊消息应答 */
