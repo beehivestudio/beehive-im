@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"strconv"
@@ -200,13 +199,13 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_ONLINE_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
@@ -257,13 +256,13 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_ONLINE_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
@@ -639,13 +638,13 @@ func (ctx *UsrSvrCntx) send_err_join_ack(head *comm.MesgHeader,
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_JOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
@@ -692,13 +691,13 @@ func (ctx *UsrSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinRe
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_JOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
@@ -947,13 +946,13 @@ func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_UNJOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
@@ -1033,13 +1032,13 @@ func (ctx *UsrSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjo
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_UNJOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
@@ -1253,7 +1252,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, binary.Size(comm.MesgHeader{})+length)
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	head.Cmd = comm.CMD_KICK_REQ
 	head.Sid = sid
@@ -1261,7 +1260,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(&head, p)
-	copy(p.Buff[binary.Size(comm.MesgHeader{}):], body)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_KICK_REQ, p.Buff, uint32(len(p.Buff)))
