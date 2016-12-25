@@ -125,6 +125,9 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
  **返    回:
  **实现描述:
  **     1. 将消息放入UID离线队列
+ **	    2. 发送给"发送方"的其他终端.
+ **        > 如果在线, 则直接下发消息
+ **        > 如果不在线, 则无需下发消息
  **     3. 判断接收方是否在线.
  **        > 如果在线, 则直接下发消息
  **        > 如果不在线, 则无需下发消息
@@ -164,16 +167,12 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		attr := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-		vals, _ := redis.Strings(rds.Do("HGET", attr, "UID", "NID"))
-
-		uid, _ := strconv.ParseInt(vals[0], 10, 64)
-		nid, _ := strconv.ParseInt(vals[1], 10, 32)
-		if uint64(uid) != req.GetOrig() || 0 == nid {
+		attr := ctx.get_sid_attr(uint64(sid))
+		if uint64(attr.uid) != req.GetOrig() || 0 == attr.nid {
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(nid),
+		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(attr.nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -192,16 +191,16 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 	for idx := 0; idx < num; idx += 1 {
 		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
 
-		attr := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-		vals, _ := redis.Strings(rds.Do("HGET", attr, "UID", "NID"))
-
-		uid, _ := strconv.ParseInt(vals[0], 10, 64)
-		nid, _ := strconv.ParseInt(vals[1], 10, 32)
-		if uint64(uid) != req.GetDest() || 0 == nid {
+		attr := ctx.get_sid_attr(uint64(sid))
+		if uint64(attr.uid) != req.GetOrig() || 0 == attr.nid {
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(nid),
+		if uint64(attr.uid) != req.GetDest() || 0 == attr.nid {
+			continue
+		}
+
+		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(attr.nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
