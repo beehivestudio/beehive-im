@@ -141,13 +141,8 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	/* 1. 将消息放入离线队列 */
-	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_QUEUE, req.GetDest())
-	num, err := redis.Int(rds.Do("RPUSH", key, data[comm.MESG_HEAD_SIZE:]))
-	if nil != err {
-		ctx.log.Error("Push data into offline queue failed! uid:%d", req.GetDest())
-		return err
-	}
+	/* 1. 将消息放入存储队列 */
+	ctx.private_mesg_storage_chan <- data
 
 	/* 2. 发送给"发送方"的其他终端.
 	   > 如果在线, 则直接下发消息
@@ -160,7 +155,7 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 		return err
 	}
 
-	num = len(sid_list)
+	num := len(sid_list)
 	for idx := 0; idx < num; idx += 1 {
 		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
 		if uint64(sid) == head.GetSid() {

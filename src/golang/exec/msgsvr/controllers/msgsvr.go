@@ -32,6 +32,10 @@ type MsgSvrCntx struct {
 	redis          *redis.Pool         /* REDIS连接池 */
 	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
 	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
+
+	room_mesg_storage_chan    chan []byte /* 聊天室消息存储队列 */
+	group_mesg_storage_chan   chan []byte /* 组聊消息存储队列 */
+	private_mesg_storage_chan chan []byte /* 私聊消息存储队列 */
 }
 
 /******************************************************************************
@@ -89,6 +93,11 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	if nil == ctx.frwder {
 		return nil, err
 	}
+
+	/* > 初始化存储队列 */
+	ctx.room_mesg_storage_chan = make(chan []byte, 100000)
+	ctx.group_mesg_storage_chan = make(chan []byte, 100000)
+	ctx.private_mesg_storage_chan = make(chan []byte, 100000)
 
 	return ctx, nil
 }
