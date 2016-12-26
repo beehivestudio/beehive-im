@@ -8,9 +8,12 @@ const (
 	IM_KEY_SID_INCR       = "im:sid:incr"          //*| STRING | 会话SID增量器 | 只增不减 注意:sid不能为0 |
 	IM_KEY_SID_ATTR       = "im:sid:%d:attr"       //*| HASH | 会话SID属性 | 包含UID/NID |
 	IM_KEY_UID_TO_SID_SET = "im:uid:%d:to:sid:set" //| SET | 用户UID对应的会话SID集合 | SID集合 |
+
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//私聊
-	CHAT_KEY_USR_OFFLINE_QUEUE = "chat:uid:%d:offline:queue" //| LIST | 用户离线数据队列 |
+	CHAT_KEY_PRIVATE_MESG_TIMEOUT_ZSET = "chat:private:mesg:timeout:zset" //| ZSET | 私聊消息超时管理 | 成员:消息ID 分值:发起时间 |
+	CHAT_KEY_USR_OFFLINE_ZSET          = "chat:uid:%d:offline:zset"       //| ZSET | 用户离线数据队列 | 成员:消息ID 分值:发起时间 |
+	CHAT_KEY_ORIG_MESG_DATA            = "im:orig:mesg:%d:data"           //| STRING | 离线消息内容 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//聊天室
 	CHAT_KEY_RID_ZSET             = "chat:rid:zset"               //*| ZSET | 聊天室RID集合 | 成员:RID 分值:TTL |

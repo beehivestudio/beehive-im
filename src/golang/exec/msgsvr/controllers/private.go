@@ -254,6 +254,72 @@ func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
+ **函数名称: private_ack_parse
+ **功    能: 解析私聊应答消息
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.26 20:38:42 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) private_ack_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgPrvtAck) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgPrvtAck{}
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal prvt-msg failed! errmsg:%s", err.Error())
+		return nil, nil
+	}
+
+	return head, req
+}
+
+/******************************************************************************
+ **函数名称: private_ack_handler
+ **功    能: PRVT-MSG-ACK处理
+ **输入参数:
+ **     head: 协议头
+ **     req: PRVT-MSG-ACK请求
+ **     data: 原始数据
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **     1. 清理离线消息
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.26 21:01:12 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) private_ack_handler(
+	head *comm.MesgHeader, req *mesg.MesgPrvtAck, data []byte) (err error) {
+	rds := ctx.redis.Get()
+	defer func() {
+		rds.Do("")
+		rds.Close()
+	}()
+
+	if 0 != req.GetCode() {
+		ctx.log.Error("code:%d errmsg:%s", req.GetCode(), req.GetErrmsg())
+		return nil
+	}
+
+	/* 清理离线消息 */
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetUid())
+	rds.Send("ZREM", key, head.GetSerial())
+
+	key = fmt.Sprintf(comm.CHAT_KEY_ORIG_MESG_DATA, head.GetSerial())
+	rds.Send("DEL", key)
+
+	return err
+}
+
+/******************************************************************************
  **函数名称: MsgSvrPrvtMsgAckHandler
  **功    能: 私聊消息应答处理
  **输入参数:
@@ -275,7 +341,19 @@ func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Recv group msg ack!")
+	/* > 解析PRVT-MSG-ACK协议 */
+	head, req := ctx.private_ack_parse(data)
+	if nil == head || nil == req {
+		ctx.log.Error("Parse private message ack failed!")
+		return -1
+	}
+
+	/* > 进行业务处理 */
+	err := ctx.private_ack_handler(head, req, data)
+	if nil != err {
+		ctx.log.Error("Parse private message ack failed!")
+		return -1
+	}
 
 	return 0
 }
