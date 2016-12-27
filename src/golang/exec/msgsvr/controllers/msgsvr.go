@@ -9,6 +9,7 @@ import (
 
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/log"
+	"beehive-im/src/golang/lib/mesg"
 	"beehive-im/src/golang/lib/rtmq"
 )
 
@@ -24,6 +25,13 @@ type MsgSvrGidToNidMap struct {
 	m            map[uint64][]uint32 /* GID->NID映射表 */
 }
 
+/* 私聊消息 */
+type mesg_private_item struct {
+	head *comm.MesgHeader  /* 头部信息 */
+	req  *mesg.MesgPrvtMsg /* 请求内容 */
+	raw  []byte            /* 原始消息 */
+}
+
 /* MSGSVR上下文 */
 type MsgSvrCntx struct {
 	conf           *MsgSvrConf         /* 配置信息 */
@@ -33,9 +41,9 @@ type MsgSvrCntx struct {
 	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
 	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
 
-	room_mesg_storage_chan    chan []byte /* 聊天室消息存储队列 */
-	group_mesg_storage_chan   chan []byte /* 组聊消息存储队列 */
-	private_mesg_storage_chan chan []byte /* 私聊消息存储队列 */
+	room_mesg_storage_chan    chan []byte             /* 聊天室消息存储队列 */
+	group_mesg_storage_chan   chan []byte             /* 组聊消息存储队列 */
+	private_mesg_storage_chan chan *mesg_private_item /* 私聊消息存储队列 */
 }
 
 /******************************************************************************
@@ -97,7 +105,7 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	/* > 初始化存储队列 */
 	ctx.room_mesg_storage_chan = make(chan []byte, 100000)
 	ctx.group_mesg_storage_chan = make(chan []byte, 100000)
-	ctx.private_mesg_storage_chan = make(chan []byte, 100000)
+	ctx.private_mesg_storage_chan = make(chan *mesg_private_item, 100000)
 
 	return ctx, nil
 }
@@ -146,6 +154,7 @@ func (ctx *MsgSvrCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) Launch() {
+	go ctx.task()
 	go ctx.update()
 	ctx.frwder.Launch()
 }

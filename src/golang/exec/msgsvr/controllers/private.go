@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
@@ -137,12 +138,17 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
 func (ctx *MsgSvrCntx) private_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgPrvtMsg, data []byte) (err error) {
 	var key string
+	var item mesg_private_item
 
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	/* 1. 将消息放入存储队列 */
-	ctx.private_mesg_storage_chan <- data
+	/* 1. 将消息放入离线队列 */
+	item.head = head
+	item.req = req
+	item.raw = data
+
+	ctx.private_mesg_storage_chan <- &item
 
 	/* 2. 发送给"发送方"的其他终端.
 	   > 如果在线, 则直接下发消息
@@ -228,7 +234,7 @@ func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Recv private msg ack!")
+	ctx.log.Debug("Recv private message!")
 
 	/* > 解析ROOM-MSG协议 */
 	head, req := ctx.private_msg_parse(data)
@@ -360,3 +366,49 @@ func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: private_mesg_storage_task
+ **功    能: 私聊消息的存储任务
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 从私聊消息队列中取出消息, 并进行存储处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) private_mesg_storage_task() {
+	for item := range ctx.private_mesg_storage_chan {
+		ctx.private_mesg_storage_proc(item.head, item.req, item.raw)
+	}
+}
+
+/******************************************************************************
+ **函数名称: private_mesg_storage_proc
+ **功    能: 私聊消息的存储处理
+ **输入参数:
+ **     head: 消息头
+ **     req: 请求内容
+ **     raw: 原始数据
+ **输出参数: NONE
+ **返    回: NONE
+ **实现描述: 将私聊消息存入缓存和数据库
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) private_mesg_storage_proc(head *comm.MesgHeader, req *mesg.MesgPrvtMsg, raw []byte) {
+	var key string
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	ctm := time.Now().Unix()
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
+	pl.Send("ZADD", key, head.GetSerial(), ctm+comm.TIME_WEEK)
+
+	key = fmt.Sprintf(comm.CHAT_KEY_ORIG_MESG_DATA, head.GetSerial())
+	pl.Send("SET", key, raw[comm.MESG_HEAD_SIZE:])
+}
