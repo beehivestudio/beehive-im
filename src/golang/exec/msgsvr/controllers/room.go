@@ -128,6 +128,16 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomMsg, data []byte) (err error) {
+	var item mesg_room_item
+
+	/* 1. 放入存储队列 */
+	item.head = head
+	item.req = req
+	item.raw = data
+
+	ctx.room_mesg_storage_chan <- &item
+
+	/* 2. 下发聊天室消息 */
 	ctx.rid_to_nid_map.RLock()
 	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
 	if false == ok {
@@ -290,3 +300,36 @@ func MsgSvrRoomBcMsgAckHandler(cmd uint32, orig uint32,
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: room_mesg_storage_task
+ **功    能: 聊天室消息的存储任务
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 从聊天室消息队列中取出消息, 并进行存储处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.27 23:43:03 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) room_mesg_storage_task() {
+	for item := range ctx.room_mesg_storage_chan {
+		ctx.room_mesg_storage_proc(item.head, item.req, item.raw)
+	}
+}
+
+/******************************************************************************
+ **函数名称: room_mesg_storage_proc
+ **功    能: 聊天室消息的存储处理
+ **输入参数:
+ **     head: 消息头
+ **     req: 请求内容
+ **     raw: 原始数据
+ **输出参数: NONE
+ **返    回: NONE
+ **实现描述: 将聊天室消息存入缓存和数据库
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.27 23:43:47 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) room_mesg_storage_proc(
+	head *comm.MesgHeader, req *mesg.MesgRoomMsg, raw []byte) {
+}

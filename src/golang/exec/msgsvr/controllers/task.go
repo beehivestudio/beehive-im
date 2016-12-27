@@ -77,10 +77,12 @@ func (ctx *MsgSvrCntx) update_gid_to_nid_map() {
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
- **实现描述:
+ **实现描述: 依次启动私聊、群聊、聊天室的存储任务协程
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.27 11:43:03 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) task() {
+	go ctx.room_mesg_storage_task()
+	go ctx.group_mesg_storage_task()
 	go ctx.private_mesg_storage_task()
 }

@@ -133,6 +133,16 @@ func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgG
  ******************************************************************************/
 func (ctx *MsgSvrCntx) group_msg_handler(
 	head *comm.MesgHeader, req *mesg.MesgGroupMsg, data []byte) (err error) {
+	var item mesg_group_item
+
+	/* 1. 放入存储队列 */
+	item.head = head
+	item.req = req
+	item.raw = data
+
+	ctx.group_mesg_storage_chan <- &item
+
+	/* 2. 下发群聊消息 */
 	ctx.gid_to_nid_map.RLock()
 	nid_list, ok := ctx.gid_to_nid_map.m[req.GetGid()]
 	if false == ok {
@@ -232,3 +242,36 @@ func MsgSvrGroupMsgAckHandler(cmd uint32, orig uint32,
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: group_mesg_storage_task
+ **功    能: 群聊消息的存储任务
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 从群聊消息队列中取出消息, 并进行存储处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.27 23:45:01 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) group_mesg_storage_task() {
+	for item := range ctx.group_mesg_storage_chan {
+		ctx.group_mesg_storage_proc(item.head, item.req, item.raw)
+	}
+}
+
+/******************************************************************************
+ **函数名称: group_mesg_storage_proc
+ **功    能: 群聊消息的存储处理
+ **输入参数:
+ **     head: 消息头
+ **     req: 请求内容
+ **     raw: 原始数据
+ **输出参数: NONE
+ **返    回: NONE
+ **实现描述: 将群聊消息存入缓存和数据库
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.27 23:45:46 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) group_mesg_storage_proc(
+	head *comm.MesgHeader, req *mesg.MesgGroupMsg, raw []byte) {
+}
