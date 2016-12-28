@@ -140,7 +140,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 	item.req = req
 	item.raw = data
 
-	ctx.group_mesg_storage_chan <- &item
+	ctx.group_mesg_chan <- &item
 
 	/* 2. 下发群聊消息 */
 	ctx.gid_to_nid_map.RLock()
@@ -254,7 +254,7 @@ func MsgSvrGroupMsgAckHandler(cmd uint32, orig uint32,
  **作    者: # Qifeng.zou # 2016.12.27 23:45:01 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) group_mesg_storage_task() {
-	for item := range ctx.group_mesg_storage_chan {
+	for item := range ctx.group_mesg_chan {
 		ctx.group_mesg_storage_proc(item.head, item.req, item.raw)
 	}
 }

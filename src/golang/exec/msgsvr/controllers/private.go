@@ -148,7 +148,7 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 	item.req = req
 	item.raw = data
 
-	ctx.private_mesg_storage_chan <- &item
+	ctx.private_mesg_chan <- &item
 
 	/* 2. 发送给"发送方"的其他终端.
 	   > 如果在线, 则直接下发消息
@@ -378,7 +378,7 @@ func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
  **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) private_mesg_storage_task() {
-	for item := range ctx.private_mesg_storage_chan {
+	for item := range ctx.private_mesg_chan {
 		ctx.private_mesg_storage_proc(item.head, item.req, item.raw)
 	}
 }

@@ -55,9 +55,9 @@ type MsgSvrCntx struct {
 	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
 	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
 
-	room_mesg_storage_chan    chan *mesg_room_item    /* 聊天室消息存储队列 */
-	group_mesg_storage_chan   chan *mesg_group_item   /* 组聊消息存储队列 */
-	private_mesg_storage_chan chan *mesg_private_item /* 私聊消息存储队列 */
+	room_mesg_chan    chan *mesg_room_item    /* 聊天室消息存储队列 */
+	group_mesg_chan   chan *mesg_group_item   /* 组聊消息存储队列 */
+	private_mesg_chan chan *mesg_private_item /* 私聊消息存储队列 */
 }
 
 /******************************************************************************
@@ -117,9 +117,9 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	}
 
 	/* > 初始化存储队列 */
-	ctx.room_mesg_storage_chan = make(chan *mesg_room_item, 100000)
-	ctx.group_mesg_storage_chan = make(chan *mesg_group_item, 100000)
-	ctx.private_mesg_storage_chan = make(chan *mesg_private_item, 100000)
+	ctx.room_mesg_chan = make(chan *mesg_room_item, 100000)
+	ctx.group_mesg_chan = make(chan *mesg_group_item, 100000)
+	ctx.private_mesg_chan = make(chan *mesg_private_item, 100000)
 
 	return ctx, nil
 }

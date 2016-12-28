@@ -135,7 +135,7 @@ func (ctx *MsgSvrCntx) room_msg_handler(
 	item.req = req
 	item.raw = data
 
-	ctx.room_mesg_storage_chan <- &item
+	ctx.room_mesg_chan <- &item
 
 	/* 2. 下发聊天室消息 */
 	ctx.rid_to_nid_map.RLock()
@@ -312,7 +312,7 @@ func MsgSvrRoomBcMsgAckHandler(cmd uint32, orig uint32,
  **作    者: # Qifeng.zou # 2016.12.27 23:43:03 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_mesg_storage_task() {
-	for item := range ctx.room_mesg_storage_chan {
+	for item := range ctx.room_mesg_chan {
 		ctx.room_mesg_storage_proc(item.head, item.req, item.raw)
 	}
 }
