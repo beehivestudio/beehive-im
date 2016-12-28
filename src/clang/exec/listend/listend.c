@@ -12,6 +12,7 @@
 #include "lock.h"
 #include "mesg.h"
 #include "redo.h"
+#include "timer.h"
 #include "access.h"
 #include "listend.h"
 #include "mem_ref.h"
@@ -259,9 +260,9 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         }
 
         /* > 初始化定时任务表 */
-        ctx->task = task_init();
-        if (NULL == ctx->task) {
-            log_error(log, "Initialize timer task failed!");
+        ctx->timer = timer_cntx_init();
+        if (NULL == ctx->timer) {
+            log_error(log, "Initialize timer failed!");
             break;
         }
 
@@ -299,6 +300,28 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
 
     FREE(ctx);
     return NULL;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_set_timer
+ **功    能: 设置定时任务
+ **输入参数:
+ **     ctx: 全局信息
+ **输出参数:
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 20:56:24 #
+ ******************************************************************************/
+static void lsnd_set_timer(lsnd_cntx_t *ctx)
+{
+    timer_task_t timer_kick, timer_report;
+
+    timer_task_init(&timer_kick, lsnd_timer_kick_handler, 5, 5, (void *)ctx);
+    timer_task_init(&timer_report, lsnd_timer_report_handler, 5, 5, (void *)ctx);
+
+    timer_task_add(ctx->timer, &timer_kick);
+    timer_task_add(ctx->timer, &timer_report);
 }
 
 /******************************************************************************
@@ -340,8 +363,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_RTQ_REG_CB(ctx, CMD_KICK_REQ, lsnd_mesg_kick_handler, ctx);
 
     /* 注册定时任务回调 */
-    task_add(ctx->task, lsnd_timer_kick_handler, 5, 5, 0, (void *)ctx);
-    task_add(ctx->task, lsnd_timer_report_handler, 5, 5, 0, (void *)ctx);
+    lsnd_set_timer(ctx);
 
     return LSND_OK;
 }
@@ -372,7 +394,7 @@ static int lsnd_launch(lsnd_cntx_t *ctx)
     }
 
     /* > 启动定时任务 */
-    if (thread_pool_add_worker(ctx->timer_task_tp, task_routine, ctx->task)) {
+    if (thread_pool_add_worker(ctx->timer_task_tp, timer_task_routine, ctx->timer)) {
         log_error(ctx->log, "Add timeout handler failed!");
         return LSND_ERR;
     }

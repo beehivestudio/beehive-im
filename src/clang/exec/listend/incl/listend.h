@@ -3,7 +3,7 @@
 
 #include "log.h"
 #include "comm.h"
-#include "task.h"
+#include "timer.h"
 #include "chat.h"
 #include "access.h"
 #include "listend.h"
@@ -126,7 +126,7 @@ typedef struct _lsnd_cntx_t
     acc_cntx_t *access;             /* 帧听层模块 */
     rtmq_proxy_t *frwder;           /* FRWDER服务 */
 
-    task_t *task;                   /* 定时任务表 */
+    timer_cntx_t *timer;            /* 定时任务表 */
     chat_tab_t *chat_tab;           /* 聊天室组织表 */
     hash_tab_t *uid_sid_tab;        /* 用户ID管理表(以UID为主键, 数据:lsnd_uid_item_t) */
 
