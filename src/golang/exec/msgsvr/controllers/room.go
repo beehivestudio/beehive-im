@@ -376,7 +376,7 @@ func (ctx *MsgSvrCntx) room_mesg_queue_clean_task() {
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_mesg_queue_clean() {
 	rds := ctx.redis.Get()
-	rds.Close()
+	defer rds.Close()
 
 	off := 0
 	for {
