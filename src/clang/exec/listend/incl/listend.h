@@ -130,6 +130,9 @@ typedef struct _lsnd_cntx_t
     chat_tab_t *chat_tab;           /* 聊天室组织表 */
     hash_tab_t *uid_sid_tab;        /* 用户ID管理表(以UID为主键, 数据:lsnd_uid_item_t) */
 
+    /* 定时任务 */
+    timer_task_t timer_kick;        /* 定时清理被踢列表 */
+    timer_task_t timer_report;      /* 定时上报帧听层状态 */
     /* 注意: 以下三个表互斥, 共同个管理类为lsnd_conn_extra_t的数据  */
     hash_tab_t *conn_sid_tab;       /* 连接管理表(以SID为主键, 数据:lsnd_conn_extra_t) */
     hash_tab_t *conn_cid_tab;       /* 连接管理表(以CID为主键, 数据:lsnd_conn_extra_t) */
