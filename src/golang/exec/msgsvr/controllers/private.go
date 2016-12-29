@@ -296,7 +296,7 @@ func (ctx *MsgSvrCntx) private_ack_parse(data []byte) (
  **     req: PRVT-MSG-ACK请求
  **     data: 原始数据
  **输出参数: NONE
- **返    回:
+ **返    回: 错误信息
  **实现描述:
  **     1. 清理离线消息
  **注意事项:
@@ -357,7 +357,7 @@ func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
 	/* > 进行业务处理 */
 	err := ctx.private_ack_handler(head, req, data)
 	if nil != err {
-		ctx.log.Error("Parse private message ack failed!")
+		ctx.log.Error("Handle private message ack failed!")
 		return -1
 	}
 
@@ -396,7 +396,8 @@ func (ctx *MsgSvrCntx) private_mesg_storage_task() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) private_mesg_storage_proc(head *comm.MesgHeader, req *mesg.MesgPrvtMsg, raw []byte) {
+func (ctx *MsgSvrCntx) private_mesg_storage_proc(
+	head *comm.MesgHeader, req *mesg.MesgPrvtMsg, raw []byte) {
 	var key string
 
 	pl := ctx.redis.Get()

@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	_ "fmt"
-	_ "strconv"
+	"fmt"
+	"strconv"
+	"time"
 
-	_ "github.com/garyburd/redigo/redis"
+	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
@@ -31,6 +32,7 @@ func (ctx *MsgSvrCntx) room_msg_parse(data []byte) (
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgRoomMsg{}
+
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal room-msg failed! errmsg:%s", err.Error())
@@ -82,9 +84,11 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
  **函数名称: send_room_msg_ack
  **功    能: 发送上线应答
  **输入参数:
+ **     head: 协议头
+ **     req: 聊天室消息
  **输出参数: NONE
- **返    回: VOID
- **实现描述:
+ **返    回: 0:成功 !0:失败
+ **实现描述: 生成PB格式消息应答 并发送应答.
  **应答协议:
  **     {
  **         required uint32 code = 1; // M|错误码|数字|
@@ -195,7 +199,7 @@ func MsgSvrRoomMsgHandler(cmd uint32, orig uint32,
 	/* > 进行业务处理 */
 	err := ctx.room_msg_handler(head, req, data)
 	if nil != err {
-		ctx.log.Error("Parse room-msg failed!")
+		ctx.log.Error("Handle room message failed!")
 		ctx.send_err_room_msg_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return -1
 	}
@@ -326,10 +330,70 @@ func (ctx *MsgSvrCntx) room_mesg_storage_task() {
  **     raw: 原始数据
  **输出参数: NONE
  **返    回: NONE
- **实现描述: 将聊天室消息存入缓存和数据库
+ **实现描述: 将消息存入聊天室缓存和数据库
  **注意事项:
- **作    者: # Qifeng.zou # 2016.12.27 23:43:47 #
+ **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_mesg_storage_proc(
 	head *comm.MesgHeader, req *mesg.MesgRoomMsg, raw []byte) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_MESG_QUEUE, req.GetRid())
+	pl.Send("LPUSH", key, raw[comm.MESG_HEAD_SIZE:])
+}
+
+/******************************************************************************
+ **函数名称: room_mesg_queue_clean_task
+ **功    能: 清理聊天室缓存消息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 保持聊天室缓存消息为最新的100条
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 22:34:18 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) room_mesg_queue_clean_task() {
+	for {
+		ctx.room_mesg_queue_clean()
+
+		time.Sleep(30 * time.Second)
+	}
+}
+
+/******************************************************************************
+ **函数名称: room_mesg_queue_clean
+ **功    能: 清理聊天室缓存消息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 保持聊天室缓存消息为最新的100条
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 22:34:18 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) room_mesg_queue_clean() {
+	rds := ctx.redis.Get()
+	rds.Close()
+
+	off := 0
+	for {
+		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			comm.CHAT_KEY_RID_ZSET, 0, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			ctx.log.Error("Get rid list failed! errmsg:%s", err.Error())
+			continue
+		}
+
+		num := len(rid_list)
+		for idx := 0; idx < num; idx += 1 {
+			/* 保持聊天室缓存消息为最新的100条 */
+			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
+			key := fmt.Sprintf(comm.CHAT_KEY_RID_MESG_QUEUE, uint64(rid))
+
+			rds.Do("LTRIM", key, 0, 99)
+		}
+	}
 }

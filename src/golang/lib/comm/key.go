@@ -26,6 +26,7 @@ const (
 	CHAT_KEY_RID_SUB_USR_NUM_ZSET = "chat:rid:sub:usr:num:zset"   //| ZSET | 聊天室人数订阅集合 | 暂无 |
 	CHAT_KEY_RID_TO_UID_ZSET      = "chat:rid:%d:to:uid:zset"     //| ZSET | 聊天室用户列表 | 成员:UID 分值:TTL |
 	CHAT_KEY_RID_TO_SID_ZSET      = "chat:rid:%d:to:sid:zset"     //| ZSET | 聊天室SID列表 | 成员:SID 分值:TTL |
+	CHAT_KEY_RID_MESG_QUEUE       = "chat:rid:%d:mesg:queue"      //| LIST | 聊天室消息队列 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//群聊
 	CHAT_KEY_GID_ZSET            = "chat:gid:zset"               //| ZSET | 群ID集合 | 成员:GID 分值:TTL |
