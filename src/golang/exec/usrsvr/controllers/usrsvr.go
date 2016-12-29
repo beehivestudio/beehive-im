@@ -173,7 +173,7 @@ type UsrSvrLogConf struct {
 /* REDIS配置 */
 type UsrSvrRedisConf struct {
 	Name   xml.Name `xml:"REDIS"`       // 结点名
-	Addr   string   `xml:"Addr,attr"`   // 地址(IP+端口)
+	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
@@ -181,7 +181,7 @@ type UsrSvrRedisConf struct {
 /* MYSQL配置 */
 type UsrSvrMysqlConf struct {
 	Name   xml.Name `xml:"MYSQL"`       // 结点名
-	Addr   string   `xml:"Addr,attr"`   // 地址(IP+端口)
+	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
@@ -189,7 +189,7 @@ type UsrSvrMysqlConf struct {
 /* MONGO配置 */
 type UsrSvrMongoConf struct {
 	Name   xml.Name `xml:"MONGO"`       // 结点名
-	Addr   string   `xml:"Addr,attr"`   // 地址(IP+端口)
+	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
