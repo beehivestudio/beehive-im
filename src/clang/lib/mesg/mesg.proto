@@ -56,10 +56,38 @@ message mesg_unjoin_req
 /* 聊天室消息 */
 message mesg_room
 {
-    required uint64 rid = 1;        // 聊天室ID
-    required uint32 gid = 2;        // 分组ID
+    required uint64 uid = 1;        // 用户ID
+    required uint64 rid = 2;        // 聊天室ID
+    required uint32 gid = 3;        // 分组ID
+    required uint32 level = 4;      // 消息级别
+    required uint64 time = 5;       // 发送时间
+    required string text = 6;       // 聊天内容
+    optional bytes data = 7;        // 透传数据
+}
+
+/* 聊天室消息应答 */
+message mesg_room_ack
+{
+    required uint32 code = 1;       // 错误码
+    required string errmsg = 2;     // 错误描述
+}
+
+/* 群组消息 */
+message mesg_group
+{
+    required uint64 uid = 1;        // 用户ID
+    required uint64 gid = 2;        // 分组ID
     required uint32 level = 3;      // 消息级别
-    required bytes data = 4;        // 透传数据
+    required uint64 time = 4;       // 发送时间
+    required string text = 5;       // 聊天内容
+    optional bytes data = 6;        // 透传数据
+}
+
+/* 群组消息应答 */
+message mesg_group_ack
+{
+    required uint32 code = 1;       // 错误码
+    required string errmsg = 2;     // 错误描述
 }
 
 ////////////////////////////////////////////////////////////////////////////////

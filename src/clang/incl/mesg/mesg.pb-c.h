@@ -21,6 +21,9 @@ typedef struct _MesgJoinReq MesgJoinReq;
 typedef struct _MesgJoinAck MesgJoinAck;
 typedef struct _MesgUnjoinReq MesgUnjoinReq;
 typedef struct _MesgRoom MesgRoom;
+typedef struct _MesgRoomAck MesgRoomAck;
+typedef struct _MesgGroup MesgGroup;
+typedef struct _MesgGroupAck MesgGroupAck;
 typedef struct _MesgLsnRpt MesgLsnRpt;
 typedef struct _MesgKickReq MesgKickReq;
 
@@ -103,14 +106,56 @@ struct  _MesgUnjoinReq
 struct  _MesgRoom
 {
   ProtobufCMessage base;
+  uint64_t uid;
   uint64_t rid;
   uint32_t gid;
   uint32_t level;
+  uint64_t time;
+  char *text;
+  protobuf_c_boolean has_data;
   ProtobufCBinaryData data;
 };
 #define MESG_ROOM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room__descriptor) \
-    , 0, 0, 0, {0,NULL} }
+    , 0, 0, 0, 0, 0, NULL, 0,{0,NULL} }
+
+
+struct  _MesgRoomAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_ROOM_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroup
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+  uint32_t level;
+  uint64_t time;
+  char *text;
+  protobuf_c_boolean has_data;
+  ProtobufCBinaryData data;
+};
+#define MESG_GROUP__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group__descriptor) \
+    , 0, 0, 0, 0, NULL, 0,{0,NULL} }
+
+
+struct  _MesgGroupAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ack__descriptor) \
+    , 0, NULL }
 
 
 struct  _MesgLsnRpt
@@ -252,6 +297,63 @@ MesgRoom *
 void   mesg_room__free_unpacked
                      (MesgRoom *message,
                       ProtobufCAllocator *allocator);
+/* MesgRoomAck methods */
+void   mesg_room_ack__init
+                     (MesgRoomAck         *message);
+size_t mesg_room_ack__get_packed_size
+                     (const MesgRoomAck   *message);
+size_t mesg_room_ack__pack
+                     (const MesgRoomAck   *message,
+                      uint8_t             *out);
+size_t mesg_room_ack__pack_to_buffer
+                     (const MesgRoomAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomAck *
+       mesg_room_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_ack__free_unpacked
+                     (MesgRoomAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroup methods */
+void   mesg_group__init
+                     (MesgGroup         *message);
+size_t mesg_group__get_packed_size
+                     (const MesgGroup   *message);
+size_t mesg_group__pack
+                     (const MesgGroup   *message,
+                      uint8_t             *out);
+size_t mesg_group__pack_to_buffer
+                     (const MesgGroup   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroup *
+       mesg_group__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group__free_unpacked
+                     (MesgGroup *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupAck methods */
+void   mesg_group_ack__init
+                     (MesgGroupAck         *message);
+size_t mesg_group_ack__get_packed_size
+                     (const MesgGroupAck   *message);
+size_t mesg_group_ack__pack
+                     (const MesgGroupAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_ack__pack_to_buffer
+                     (const MesgGroupAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupAck *
+       mesg_group_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_ack__free_unpacked
+                     (MesgGroupAck *message,
+                      ProtobufCAllocator *allocator);
 /* MesgLsnRpt methods */
 void   mesg_lsn_rpt__init
                      (MesgLsnRpt         *message);
@@ -310,6 +412,15 @@ typedef void (*MesgUnjoinReq_Closure)
 typedef void (*MesgRoom_Closure)
                  (const MesgRoom *message,
                   void *closure_data);
+typedef void (*MesgRoomAck_Closure)
+                 (const MesgRoomAck *message,
+                  void *closure_data);
+typedef void (*MesgGroup_Closure)
+                 (const MesgGroup *message,
+                  void *closure_data);
+typedef void (*MesgGroupAck_Closure)
+                 (const MesgGroupAck *message,
+                  void *closure_data);
 typedef void (*MesgLsnRpt_Closure)
                  (const MesgLsnRpt *message,
                   void *closure_data);
@@ -328,6 +439,9 @@ extern const ProtobufCMessageDescriptor mesg_join_req__descriptor;
 extern const ProtobufCMessageDescriptor mesg_join_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unjoin_req__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_lsn_rpt__descriptor;
 extern const ProtobufCMessageDescriptor mesg_kick_req__descriptor;
 
