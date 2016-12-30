@@ -342,7 +342,7 @@ func (ctx *MsgSvrCntx) room_mesg_storage_proc(
 		pl.Close()
 	}()
 
-	key := fmt.Sprintf(comm.CHAT_KEY_RID_MESG_QUEUE, req.GetRid())
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_MESG_QUEUE, req.GetRid())
 	pl.Send("LPUSH", key, raw[comm.MESG_HEAD_SIZE:])
 }
 
@@ -391,7 +391,7 @@ func (ctx *MsgSvrCntx) room_mesg_queue_clean() {
 		for idx := 0; idx < num; idx += 1 {
 			/* 保持聊天室缓存消息为最新的100条 */
 			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
-			key := fmt.Sprintf(comm.CHAT_KEY_RID_MESG_QUEUE, uint64(rid))
+			key := fmt.Sprintf(comm.CHAT_KEY_ROOM_MESG_QUEUE, uint64(rid))
 
 			rds.Do("LTRIM", key, 0, 99)
 		}

@@ -26,7 +26,7 @@ const (
 	CHAT_KEY_RID_SUB_USR_NUM_ZSET = "chat:rid:sub:usr:num:zset"   //| ZSET | 聊天室人数订阅集合 | 暂无 |
 	CHAT_KEY_RID_TO_UID_ZSET      = "chat:rid:%d:to:uid:zset"     //| ZSET | 聊天室用户列表 | 成员:UID 分值:TTL |
 	CHAT_KEY_RID_TO_SID_ZSET      = "chat:rid:%d:to:sid:zset"     //| ZSET | 聊天室SID列表 | 成员:SID 分值:TTL |
-	CHAT_KEY_RID_MESG_QUEUE       = "chat:rid:%d:mesg:queue"      //| LIST | 聊天室消息队列 |
+	CHAT_KEY_ROOM_MESG_QUEUE      = "chat:rid:%d:mesg:queue"      //| LIST | 聊天室消息队列 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//群聊
 	CHAT_KEY_GID_ZSET            = "chat:gid:zset"               //| ZSET | 群ID集合 | 成员:GID 分值:TTL |
@@ -35,6 +35,7 @@ const (
 	CHAT_KEY_GID_NID_TO_NUM_ZSET = "chat:gid:%d:nid:to:num:zset" //| ZSET | 某群各帧听层人数 | 成员:NID 分值:USERNUM | 由帧听层上报数据获取
 	CHAT_KEY_GID_TO_UID_ZSET     = "chat:gid:%d:to:uid:zset"     //| ZSET | 某群在线用户列表 | 成员:UID 分值:TTL |
 	CHAT_KEY_GID_TO_SID_ZSET     = "chat:gid:%d:to:sid:zset"     //| ZSET | 某群SID列表 | 成员:SID 分值:TTL |
+	CHAT_KEY_GROUP_MESG_QUEUE    = "chat:gid:%d:mesg:queue"      //| LIST | 聊天室消息队列 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	IM_KEY_LSN_NATION_ZSET    = "im:lsn:nation:zset"                 //| ZSET | 帧听层"地区/国家"集合 | 成员:"国家/地区" 分值:TTL |
 	IM_KEY_LSN_OP_ZSET        = "im:lsn:nation:%s:op:zset"           //| ZSET | 帧听层"地区/国家"对应的运营商集合 | 成员:运营商名称 分值:TTL |

@@ -82,8 +82,10 @@ func (ctx *MsgSvrCntx) update_gid_to_nid_map() {
  **作    者: # Qifeng.zou # 2016.12.27 11:43:03 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) task() {
-	go ctx.group_mesg_storage_task()
 	go ctx.private_mesg_storage_task()
+
+	go ctx.group_mesg_storage_task()
+	go ctx.group_mesg_queue_clean_task()
 
 	go ctx.room_mesg_storage_task()
 	go ctx.room_mesg_queue_clean_task()

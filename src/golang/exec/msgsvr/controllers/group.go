@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	_ "fmt"
-	_ "strconv"
+	"fmt"
+	"strconv"
+	"time"
 
-	_ "github.com/garyburd/redigo/redis"
+	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
@@ -268,10 +269,70 @@ func (ctx *MsgSvrCntx) group_mesg_storage_task() {
  **     raw: 原始数据
  **输出参数: NONE
  **返    回: NONE
- **实现描述: 将群聊消息存入缓存和数据库
+ **实现描述: 将消息存入聊天室缓存和数据库
  **注意事项:
- **作    者: # Qifeng.zou # 2016.12.27 23:45:46 #
+ **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) group_mesg_storage_proc(
 	head *comm.MesgHeader, req *mesg.MesgGroupMsg, raw []byte) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	key := fmt.Sprintf(comm.CHAT_KEY_GROUP_MESG_QUEUE, req.GetGid())
+	pl.Send("LPUSH", key, raw[comm.MESG_HEAD_SIZE:])
+}
+
+/******************************************************************************
+ **函数名称: group_mesg_queue_clean_task
+ **功    能: 清理聊天室缓存消息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 保持群聊缓存消息为最新的100条
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 08:38:44 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) group_mesg_queue_clean_task() {
+	for {
+		ctx.group_mesg_queue_clean()
+
+		time.Sleep(30 * time.Second)
+	}
+}
+
+/******************************************************************************
+ **函数名称: group_mesg_queue_clean
+ **功    能: 清理群聊缓存消息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 保持群聊缓存消息为最新的100条
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.29 08:38:38 #
+ ******************************************************************************/
+func (ctx *MsgSvrCntx) group_mesg_queue_clean() {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	off := 0
+	for {
+		gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			comm.CHAT_KEY_GID_ZSET, 0, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			ctx.log.Error("Get gid list failed! errmsg:%s", err.Error())
+			continue
+		}
+
+		num := len(gid_list)
+		for idx := 0; idx < num; idx += 1 {
+			/* 保持聊天室缓存消息为最新的100条 */
+			gid, _ := strconv.ParseInt(gid_list[idx], 10, 64)
+			key := fmt.Sprintf(comm.CHAT_KEY_GROUP_MESG_QUEUE, uint64(gid))
+
+			rds.Do("LTRIM", key, 0, 99)
+		}
+	}
 }
