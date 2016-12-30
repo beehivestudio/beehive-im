@@ -127,7 +127,7 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  **实现描述:
  **     1. 将消息存放在聊天室历史消息表中
  **     2. 遍历rid->nid列表, 并转发聊天室消息
- **注意事项:
+ **注意事项: TODO: 增加敏感词过滤功能, 屏蔽政治、低俗、侮辱性词汇.
  **作    者: # Qifeng.zou # 2016.11.04 22:34:55 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_handler(

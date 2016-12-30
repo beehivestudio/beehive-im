@@ -45,6 +45,8 @@ const (
 	CMD_ROOM_USR_NUM_ACK = 0x0120 /* 聊天室人数应答 */
 	CMD_SYNC_MSG         = 0x0121 /* 同步消息 */
 	CMD_SYNC_MSG_ACK     = 0x0122 /* 同步消息应答 */
+	CMD_ALLOC_SEQ        = 0x0123 /* 申请序列号 */
+	CMD_ALLOC_SEQ_ACK    = 0x0124 /* 申请序列号应答 */
 	/* 通知类消息 */
 	CMD_ONLINE_NTC        = 0x0301 /* 上线通知 */
 	CMD_OFFLINE_NTC       = 0x0302 /* 下线通知 */

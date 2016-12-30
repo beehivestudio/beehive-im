@@ -276,6 +276,25 @@ TODO: 协议头中的to为用户ID(UID)
 命令描述: 同步消息应答(SYNC-MSG-ACK)<br>
 协议格式: NONE<br>
 
+---
+命令ID: 0x0123<br>
+命令描述: 申请序列号(ALLOC-SEQ)<br>
+协议格式:<br>
+>{<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint16 num = 2;        // M|申请序列号个数|数字|<br>
+>}
+
+---
+命令ID: 0x0124<br>
+命令描述: 申请序列号应答(ALLOC-SEQ-ACK)<br>
+协议格式: NONE<br>
+>{<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint64 seq = 2;        // M|序列号起始值|数字|<br>
+>   required uint16 num = 3;        // M|分配序列号个数|数字|<br>
+>}
+
 # 通知类命令
 
 ---
