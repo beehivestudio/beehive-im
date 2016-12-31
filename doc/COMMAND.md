@@ -20,8 +20,8 @@
 | 16 | 0x0111 | 申请序列号应答 | ALLOC-SEQ-ACK | 暂无 |
 | 17 | 0x0112 | 踢连接下线 | KICK | 当登录鉴权失败时, 需要将指定连接踢下线 |
 | 18 | 0x0113 | 踢连接下线应答 | KICK-ACK | 暂无 |
-| 19 | 0x0114 | 上线通知 | ONLINE-NTC | 实时消息 |
-| 20 | 0x0115 | 下线通知 | OFFLINE-NTC | 实时消息 |
+| 19 | 0x0150 | 上线通知 | ONLINE-NTC | 实时消息 |
+| 20 | 0x0151 | 下线通知 | OFFLINE-NTC | 实时消息 |
 
 #私聊消息
 ---
@@ -60,15 +60,15 @@
 | 20 | 0x0319 | 添加群组管理员应答 | GROUP-MGR-ADD-ACK | 暂无 |
 | 21 | 0x031A | 解除群组管理员 | GROUP-MGR-DEL | 暂无 |
 | 22 | 0x031B | 解除群组管理员应答 | GROUP-MGR-DEL-ACK | 暂无 |
-| 23 | 0x031C | 入群通知 | GROUP-JOIN-NTC | 实时消息 |
-| 24 | 0x031D | 退群通知 | GROUP-QUIT-NTC | 实时消息 |
-| 25 | 0x031E | 踢人通知 | GROUP-KICK-NTC | 实时消息 |
-| 26 | 0x0320 | 禁言通知 | GROUP-BAN-ADD-NTC | 实时消息 |
-| 27 | 0x0321 | 解除禁言通知 | GROUP-BAN-DEL-NTC | 实时消息 |
-| 28 | 0x0322 | 加入黑名单通知 | GROUP-BL-ADD-NTC | 实时消息 |
-| 29 | 0x0323 | 移除黑名单通知 | GROUP-BL-DEL-NTC | 实时消息 |
-| 30 | 0x0324 | 添加管理员通知 | GROUP-MGR-ADD-NTC | 实时消息 |
-| 31 | 0x0325 | 解除管理员通知 | GROUP-MGR-DEL-NTC | 实时消息 |
+| 23 | 0x0350 | 入群通知 | GROUP-JOIN-NTC | 实时消息 |
+| 24 | 0x0351 | 退群通知 | GROUP-QUIT-NTC | 实时消息 |
+| 25 | 0x0352 | 踢人通知 | GROUP-KICK-NTC | 实时消息 |
+| 26 | 0x0353 | 禁言通知 | GROUP-BAN-ADD-NTC | 实时消息 |
+| 27 | 0x0354 | 解除禁言通知 | GROUP-BAN-DEL-NTC | 实时消息 |
+| 28 | 0x0355 | 加入黑名单通知 | GROUP-BL-ADD-NTC | 实时消息 |
+| 29 | 0x0356 | 移除黑名单通知 | GROUP-BL-DEL-NTC | 实时消息 |
+| 30 | 0x0357 | 添加管理员通知 | GROUP-MGR-ADD-NTC | 实时消息 |
+| 31 | 0x0358 | 解除管理员通知 | GROUP-MGR-DEL-NTC | 实时消息 |
 
 #聊天室消息
 ---
@@ -86,9 +86,9 @@
 | 10 | 0x040A | 聊天室广播消息应答 | ROOM-BC-MSG-ACK | 暂无 |
 | 11 | 0x040B | 聊天室人数 | ROOM-USR-NUM | 暂无 |
 | 12 | 0x040C | 聊天室人数应答 | ROOM-USR-NUM-ACK | 暂无 |
-| 13 | 0x040D | 加入聊天室通知 | ROOM-JOIN-NTC | 暂无 |
-| 14 | 0x040E | 退出聊天室通知 | ROOM-UNJOIN-NTC | 暂无 |
-| 15 | 0x0410 | 踢出聊天室通知 | ROOM-KICK-NTC | 暂无 |
+| 13 | 0x0450 | 加入聊天室通知 | ROOM-JOIN-NTC | 暂无 |
+| 14 | 0x0451 | 退出聊天室通知 | ROOM-UNJOIN-NTC | 暂无 |
+| 15 | 0x0452 | 踢出聊天室通知 | ROOM-KICK-NTC | 暂无 |
 
 #推送消息
 ---
