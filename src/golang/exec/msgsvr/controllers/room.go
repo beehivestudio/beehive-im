@@ -161,7 +161,7 @@ func (ctx *MsgSvrCntx) room_msg_handler(
 }
 
 /******************************************************************************
- **函数名称: MsgSvrRoomMsgHandler
+ **函数名称: MsgSvrRoomHandler
  **功    能: 聊天室消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -180,7 +180,7 @@ func (ctx *MsgSvrCntx) room_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:28:02 #
  ******************************************************************************/
-func MsgSvrRoomMsgHandler(cmd uint32, orig uint32,
+func MsgSvrRoomHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -211,7 +211,7 @@ func MsgSvrRoomMsgHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrRoomMsgAckHandler
+ **函数名称: MsgSvrRoomAckHandler
  **功    能: 聊天室消息应答
  **输入参数:
  **     cmd: 消息类型
@@ -225,7 +225,7 @@ func MsgSvrRoomMsgHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
  ******************************************************************************/
-func MsgSvrRoomMsgAckHandler(cmd uint32, orig uint32,
+func MsgSvrRoomAckHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -241,7 +241,7 @@ func MsgSvrRoomMsgAckHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrRoomBcMsgHandler
+ **函数名称: MsgSvrRoomBcHandler
  **功    能: 聊天室广播消息处理
  **输入参数:
  **     cmd: 消息类型
@@ -260,7 +260,7 @@ func MsgSvrRoomMsgAckHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
  ******************************************************************************/
-func MsgSvrRoomBcMsgHandler(cmd uint32, orig uint32,
+func MsgSvrRoomBcHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -276,7 +276,7 @@ func MsgSvrRoomBcMsgHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrRoomBcMsgAckHandler
+ **函数名称: MsgSvrRoomBcAckHandler
  **功    能: 聊天室广播消息处理
  **输入参数:
  **     cmd: 消息类型
@@ -290,7 +290,7 @@ func MsgSvrRoomBcMsgHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
  ******************************************************************************/
-func MsgSvrRoomBcMsgAckHandler(cmd uint32, orig uint32,
+func MsgSvrRoomBcAckHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {

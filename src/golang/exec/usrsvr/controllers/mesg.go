@@ -640,14 +640,14 @@ func (ctx *UsrSvrCntx) send_err_join_ack(head *comm.MesgHeader,
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_JOIN_ACK
+	head.Cmd = comm.CMD_ROOM_JOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -693,14 +693,14 @@ func (ctx *UsrSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinRe
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_JOIN_ACK
+	head.Cmd = comm.CMD_ROOM_JOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_JOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -948,14 +948,14 @@ func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_UNJOIN_ACK
+	head.Cmd = comm.CMD_ROOM_UNJOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -1034,14 +1034,14 @@ func (ctx *UsrSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjo
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_UNJOIN_ACK
+	head.Cmd = comm.CMD_ROOM_UNJOIN_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }

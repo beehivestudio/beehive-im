@@ -91,7 +91,7 @@ func MonInit(conf *MonConf) (ctx *MonSvrCntx, err error) {
 func (ctx *MonSvrCntx) Register() {
 	/* > 运维消息 */
 	ctx.frwder.Register(comm.CMD_LSN_RPT, MonLsnRptHandler, ctx)
-	ctx.frwder.Register(comm.CMD_FRWD_LIST, MonFrwdRptHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRWD_RPT, MonFrwdRptHandler, ctx)
 }
 
 /******************************************************************************

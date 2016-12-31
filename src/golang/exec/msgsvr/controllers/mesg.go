@@ -13,7 +13,7 @@ import (
 )
 
 /******************************************************************************
- **函数名称: MsgSvrBcMsgHandler
+ **函数名称: MsgSvrBcHandler
  **功    能: 广播消息的处理(待商议)
  **输入参数:
  **     cmd: 消息类型
@@ -27,7 +27,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:48:07 #
  ******************************************************************************/
-func MsgSvrBcMsgHandler(cmd uint32, orig uint32,
+func MsgSvrBcHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -43,7 +43,7 @@ func MsgSvrBcMsgHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrBcMsgAckHandler
+ **函数名称: MsgSvrBcAckHandler
  **功    能: 广播消息应答处理(待商议)
  **输入参数:
  **     cmd: 消息类型
@@ -57,7 +57,7 @@ func MsgSvrBcMsgHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:54:37 #
  ******************************************************************************/
-func MsgSvrBcMsgAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func MsgSvrBcAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1

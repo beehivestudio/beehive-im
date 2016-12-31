@@ -141,17 +141,17 @@ func (ctx *MsgSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_PRVT_MSG, MsgSvrPrivateMsgHandler, ctx)
 	ctx.frwder.Register(comm.CMD_PRVT_MSG_ACK, MsgSvrPrvtMsgAckHandler, ctx)
 
-	ctx.frwder.Register(comm.CMD_BC_MSG, MsgSvrBcMsgHandler, ctx)
-	ctx.frwder.Register(comm.CMD_BC_MSG_ACK, MsgSvrBcMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BC, MsgSvrBcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BC_ACK, MsgSvrBcAckHandler, ctx)
 
 	//ctx.frwder.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
 	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
 
-	ctx.frwder.Register(comm.CMD_ROOM_MSG, MsgSvrRoomMsgHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_MSG, MsgSvrRoomHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomAckHandler, ctx)
 
-	ctx.frwder.Register(comm.CMD_ROOM_BC_MSG, MsgSvrRoomBcMsgHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_BC_MSG_ACK, MsgSvrRoomBcMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_BC, MsgSvrRoomBcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_BC_ACK, MsgSvrRoomBcAckHandler, ctx)
 
 	ctx.frwder.Register(comm.CMD_SYNC_MSG, MsgSvrSyncMsgHandler, ctx)
 	//ctx.frwder.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)

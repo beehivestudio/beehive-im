@@ -125,8 +125,8 @@ func (ctx *UsrSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_ONLINE_REQ, UsrSvrOnlineReqHandler, ctx)
 	ctx.frwder.Register(comm.CMD_OFFLINE_REQ, UsrSvrOfflineReqHandler, ctx)
 
-	ctx.frwder.Register(comm.CMD_JOIN_REQ, UsrSvrJoinReqHandler, ctx)
-	ctx.frwder.Register(comm.CMD_UNJOIN_REQ, UsrSvrUnjoinReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN_REQ, UsrSvrJoinReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_UNJOIN_REQ, UsrSvrUnjoinReqHandler, ctx)
 
 	ctx.frwder.Register(comm.CMD_PING, UsrSvrPingHandler, ctx)
 }
