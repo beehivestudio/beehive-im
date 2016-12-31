@@ -100,23 +100,29 @@ typedef enum
     , CMD_GROUP_MGR_DEL_NTC     = 0x0358    /* 解除群组管理员通知 */
 
     /* 聊天室消息 */
-    , CMD_ROOM_JOIN_REQ         = 0x0401    /* 加入聊天室 */
-    , CMD_ROOM_JOIN_ACK         = 0x0402    /* 加入聊天室应答 */
+    , CMD_ROOM_CREAT            = 0x0401    /* 创建聊天室 */
+    , CMD_ROOM_CREAT_ACK        = 0x0402    /* 创建聊天室应答 */
 
-    , CMD_ROOM_UNJOIN_REQ       = 0x0402    /* 退出聊天室 */
-    , CMD_ROOM_UNJOIN_ACK       = 0x0403    /* 退出聊天室应答 */
+    , CMD_ROOM_DIMISS           = 0x0403    /* 解散聊天室 */
+    , CMD_ROOM_DIMISS_ACK       = 0x0404    /* 解散聊天室应答 */
 
-    , CMD_ROOM_KICK             = 0x0404    /* 踢出聊天室 */
-    , CMD_ROOM_KICK_ACK         = 0x0406    /* 踢出聊天室应答 */
+    , CMD_ROOM_JOIN_REQ         = 0x0405    /* 加入聊天室 */
+    , CMD_ROOM_JOIN_ACK         = 0x0406    /* 加入聊天室应答 */
 
-    , CMD_ROOM_MSG              = 0x0407    /* 聊天室消息 */
-    , CMD_ROOM_MSG_ACK          = 0x0408    /* 聊天室消息应答 */
+    , CMD_ROOM_UNJOIN_REQ       = 0x0407    /* 退出聊天室 */
+    , CMD_ROOM_UNJOIN_ACK       = 0x0408    /* 退出聊天室应答 */
 
-    , CMD_ROOM_BC               = 0x0409    /* 聊天室广播消息 */
-    , CMD_ROOM_BC_ACK           = 0x040A    /* 聊天室广播消息应答 */
+    , CMD_ROOM_KICK             = 0x0409    /* 踢出聊天室 */
+    , CMD_ROOM_KICK_ACK         = 0x040A    /* 踢出聊天室应答 */
 
-    , CMD_ROOM_USR_NUM          = 0x040B    /* 聊天室人数 */
-    , CMD_ROOM_USR_NUM_ACK      = 0x040C    /* 聊天室人数应答 */
+    , CMD_ROOM_MSG              = 0x040B    /* 聊天室消息 */
+    , CMD_ROOM_MSG_ACK          = 0x040C    /* 聊天室消息应答 */
+
+    , CMD_ROOM_BC               = 0x040D    /* 聊天室广播消息 */
+    , CMD_ROOM_BC_ACK           = 0x040E    /* 聊天室广播消息应答 */
+
+    , CMD_ROOM_USR_NUM          = 0x0410    /* 聊天室人数 */
+    , CMD_ROOM_USR_NUM_ACK      = 0x0411    /* 聊天室人数应答 */
 
     , CMD_ROOM_JOIN_NTC         = 0x0451    /* 加入聊天室通知 */
     , CMD_ROOM_QUIT_NTC         = 0x0451    /* 退出聊天室通知 */
