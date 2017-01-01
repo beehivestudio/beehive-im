@@ -26,12 +26,12 @@ import (
  **作    者: # Qifeng.zou # 2016.11.05 13:23:54 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) private_msg_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgPrvtMsg) {
+	head *comm.MesgHeader, req *mesg.MesgPrvtChat) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgPrvtMsg{}
+	req = &mesg.MesgPrvtChat{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal prvt-msg failed! errmsg:%s", err.Error())
@@ -64,9 +64,9 @@ func (ctx *MsgSvrCntx) private_msg_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
-	req *mesg.MesgPrvtMsg, code uint32, errmsg string) int {
+	req *mesg.MesgPrvtChat, code uint32, errmsg string) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgPrvtAck{
+	rsp := &mesg.MesgPrvtChatAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -97,9 +97,9 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPrvtMsg) int {
+func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPrvtChat) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgPrvtAck{
+	rsp := &mesg.MesgPrvtChatAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -136,7 +136,7 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
  **作    者: # Qifeng.zou # 2016.12.18 20:33:18 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) private_msg_handler(
-	head *comm.MesgHeader, req *mesg.MesgPrvtMsg, data []byte) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgPrvtChat, data []byte) (err error) {
 	var key string
 	var item mesg_private_item
 
@@ -273,12 +273,12 @@ func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
  **作    者: # Qifeng.zou # 2016.12.26 20:38:42 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) private_ack_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgPrvtAck) {
+	head *comm.MesgHeader, req *mesg.MesgPrvtChatAck) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgPrvtAck{}
+	req = &mesg.MesgPrvtChatAck{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal prvt-msg failed! errmsg:%s", err.Error())
@@ -303,7 +303,7 @@ func (ctx *MsgSvrCntx) private_ack_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.12.26 21:01:12 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) private_ack_handler(
-	head *comm.MesgHeader, req *mesg.MesgPrvtAck, data []byte) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgPrvtChatAck, data []byte) (err error) {
 	rds := ctx.redis.Get()
 	defer func() {
 		rds.Do("")
@@ -397,7 +397,7 @@ func (ctx *MsgSvrCntx) private_mesg_storage_task() {
  **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) private_mesg_storage_proc(
-	head *comm.MesgHeader, req *mesg.MesgPrvtMsg, raw []byte) {
+	head *comm.MesgHeader, req *mesg.MesgPrvtChat, raw []byte) {
 	var key string
 
 	pl := ctx.redis.Get()

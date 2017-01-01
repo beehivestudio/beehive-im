@@ -26,12 +26,12 @@ import (
  **作    者: # Qifeng.zou # 2016.11.04 22:29:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgRoomMsg) {
+	head *comm.MesgHeader, req *mesg.MesgRoom) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgRoomMsg{}
+	req = &mesg.MesgRoom{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
@@ -62,7 +62,7 @@ func (ctx *MsgSvrCntx) room_msg_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
-	req *mesg.MesgRoomMsg, code uint32, errmsg string) int {
+	req *mesg.MesgRoom, code uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomAck{
 		Code:   proto.Uint32(code),
@@ -97,7 +97,7 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRoomMsg) int {
+func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRoom) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomAck{
 		Code:   proto.Uint32(0),
@@ -131,7 +131,7 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  **作    者: # Qifeng.zou # 2016.11.04 22:34:55 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_handler(
-	head *comm.MesgHeader, req *mesg.MesgRoomMsg, data []byte) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgRoom, data []byte) (err error) {
 	var item mesg_room_item
 
 	/* 1. 放入存储队列 */
@@ -335,7 +335,7 @@ func (ctx *MsgSvrCntx) room_mesg_storage_task() {
  **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_mesg_storage_proc(
-	head *comm.MesgHeader, req *mesg.MesgRoomMsg, raw []byte) {
+	head *comm.MesgHeader, req *mesg.MesgRoom, raw []byte) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")

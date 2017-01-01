@@ -27,23 +27,23 @@ type MsgSvrGidToNidMap struct {
 
 /* 私聊消息 */
 type mesg_private_item struct {
-	head *comm.MesgHeader  /* 头部信息 */
-	req  *mesg.MesgPrvtMsg /* 请求内容 */
-	raw  []byte            /* 原始消息 */
+	head *comm.MesgHeader   /* 头部信息 */
+	req  *mesg.MesgPrvtChat /* 请求内容 */
+	raw  []byte             /* 原始消息 */
 }
 
 /* 群组消息 */
 type mesg_group_item struct {
-	head *comm.MesgHeader   /* 头部信息 */
-	req  *mesg.MesgGroupMsg /* 请求内容 */
-	raw  []byte             /* 原始消息 */
+	head *comm.MesgHeader    /* 头部信息 */
+	req  *mesg.MesgGroupChat /* 请求内容 */
+	raw  []byte              /* 原始消息 */
 }
 
 /* 聊天室消息 */
 type mesg_room_item struct {
-	head *comm.MesgHeader  /* 头部信息 */
-	req  *mesg.MesgRoomMsg /* 请求内容 */
-	raw  []byte            /* 原始消息 */
+	head *comm.MesgHeader /* 头部信息 */
+	req  *mesg.MesgRoom   /* 请求内容 */
+	raw  []byte           /* 原始消息 */
 }
 
 /* MSGSVR上下文 */

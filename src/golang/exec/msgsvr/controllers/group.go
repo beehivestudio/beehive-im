@@ -29,12 +29,12 @@ import (
  **作    者: # Qifeng.zou # 2016.11.04 22:29:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) group_msg_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgGroupMsg) {
+	head *comm.MesgHeader, req *mesg.MesgGroupChat) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgGroupMsg{}
+	req = &mesg.MesgGroupChat{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal group-msg failed! errmsg:%s", err.Error())
@@ -64,9 +64,9 @@ func (ctx *MsgSvrCntx) group_msg_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.12.17 13:44:00 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
-	req *mesg.MesgGroupMsg, code uint32, errmsg string) int {
+	req *mesg.MesgGroupChat, code uint32, errmsg string) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgGroupAck{
+	rsp := &mesg.MesgGroupChatAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -99,9 +99,9 @@ func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:44:49 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgGroupMsg) int {
+func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgGroupChat) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgGroupAck{
+	rsp := &mesg.MesgGroupChatAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -133,7 +133,7 @@ func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgG
  **作    者: # Qifeng.zou # 2016.12.17 13:48:00 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) group_msg_handler(
-	head *comm.MesgHeader, req *mesg.MesgGroupMsg, data []byte) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgGroupChat, data []byte) (err error) {
 	var item mesg_group_item
 
 	/* 1. 放入存储队列 */
@@ -274,7 +274,7 @@ func (ctx *MsgSvrCntx) group_mesg_storage_task() {
  **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) group_mesg_storage_proc(
-	head *comm.MesgHeader, req *mesg.MesgGroupMsg, raw []byte) {
+	head *comm.MesgHeader, req *mesg.MesgGroupChat, raw []byte) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")

@@ -82,8 +82,8 @@ const (
 	CMD_ROOM_DISMISS_ACK = 0x0404 /* 退出聊天室应答 */
 	CMD_ROOM_JOIN_REQ    = 0x0405 /* 加入聊天室 */
 	CMD_ROOM_JOIN_ACK    = 0x0406 /* 加入聊天室应答 */
-	CMD_ROOM_UNJOIN_REQ  = 0x0407 /* 退出聊天室 */
-	CMD_ROOM_UNJOIN_ACK  = 0x0408 /* 退出聊天室应答 */
+	CMD_ROOM_QUIT_REQ    = 0x0407 /* 退出聊天室 */
+	CMD_ROOM_QUIT_ACK    = 0x0408 /* 退出聊天室应答 */
 	CMD_ROOM_KICK        = 0x0409 /* 踢出聊天室 */
 	CMD_ROOM_KICK_ACK    = 0x040A /* 踢出聊天室应答 */
 	CMD_ROOM_MSG         = 0x040B /* 聊天室消息 */

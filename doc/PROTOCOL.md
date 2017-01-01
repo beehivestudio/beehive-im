@@ -191,8 +191,9 @@
 协议格式:
 >message mesg_prvt_chat_ack<br>
 >{<br>
->   required uint32 code = 1;       // M|错误码|数字|<br>
->   required string errmsg = 2;     // M|错误描述|字串|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint32 code = 2;       // M|错误码|数字|<br>
+>   required string errmsg = 3;     // M|错误描述|字串|<br>
 >}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -643,8 +644,10 @@ TODO: 协议头中的to为群ID(GID)
 协议格式: NONE
 >message mesg_room_quit_ack<br>
 >{<br>
->   required uint32 code = 1;       // M|错误码|数字|<br>
->   required string errmsg = 2;     // M|错误描述|数字|<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
+>   required uint32 code = 3;       // M|错误码|数字|<br>
+>   required string errmsg = 4;     // M|错误描述|数字|<br>
 >}
 
 ---
@@ -794,9 +797,10 @@ TODO: 协议头中的to为群ID(GID)
 >message mesg_lsn_rpt<br>
 >{<br>
 >   required uint32 nid = 1;        // M|结点ID|数字|<br>
->   required uint32 op = 2;         // M|运营商ID|数字|<br>
->   required string ipaddr = 3;     // M|IP地址|字串|<br>
->   required uint32 port = 4;       // M|IP地址|字串|<br>
+>   required string nation = 2;     // M|所属国家|字串|<br>
+>   required string name = 3;       // M|运营商名称|字串|<br>
+>   required string ipaddr = 4;     // M|IP地址|字串|<br>
+>   required uint32 port = 5;       // M|端口|数字|<br>
 >}
 
 ---

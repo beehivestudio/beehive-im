@@ -7,6 +7,5 @@ do
     echo ${ITEM}
     if [ -e ${ITEM} ]; then
         protoc --go_out=. ${ITEM};
-        INCL=`echo ${ITEM} | awk -F. '{print $1}'`;
     fi
 done

@@ -11,19 +11,71 @@ It is generated from these files:
 It has these top-level messages:
 	MesgOnlineReq
 	MesgOnlineAck
-	MesgJoinReq
-	MesgJoinAck
-	MesgUnjoinReq
-	MesgUnjoinAck
+	MesgSubReq
+	MesgSubAck
+	MesgUnsubReq
+	MesgUnsubAck
+	MesgUnusualbReq
+	MesgAllocSeq
+	MesgAllocSeqAck
+	MesgKickReq
+	MesgPrvtChat
+	MesgPrvtChatAck
+	MesgGroupCreat
+	MesgGroupCreatAck
+	MesgGroupDismiss
+	MesgGroupDismissAck
+	MesgGroupApply
+	MesgGroupApplyAck
+	MesgGroupQuit
+	MesgGroupQuitAck
+	MesgGroupInvite
+	MesgGroupInviteAck
+	MesgGroupChat
+	MesgGroupChatAck
+	MesgGroupKick
+	MesgGroupKickAck
+	MesgGroupBanAdd
+	MesgGroupBanAddAck
+	MesgGroupBanDel
+	MesgGroupBanDelAck
+	MesgGroupBlAdd
+	MesgGroupBlAddAck
+	MesgGroupBlDel
+	MesgGroupBlDelAck
+	MesgGroupMgrAdd
+	MesgGroupMgrAddAck
+	MesgGroupMgrDel
+	MesgGroupMgrDelAck
+	MesgGroupJoinNtc
+	MesgGroupQuitNtc
+	MesgGroupKickNtc
+	MesgGroupBanAddNtc
+	MesgGroupBanDelNtc
+	MesgGroupBlAddNtc
+	MesgGroupBlDelNtc
+	MesgGroupMgrAddNtc
+	MesgGroupMgrDelNtc
+	MesgRoomCreat
+	MesgRoomCreatAck
+	MesgRoomDismiss
+	MesgRoomDismissAck
+	MesgRoomJoin
+	MesgRoomJoinAck
+	MesgRoomQuit
+	MesgRoomQuitAck
+	MesgRoomKick
+	MesgRoomKickAck
+	MesgRoom
+	MesgRoomAck
+	MesgRoomBc
+	MesgRoomBcAck
+	MesgRoomUsrNum
+	MesgRoomJoinNtc
+	MesgRoomQuitNtc
+	MesgRoomKickNtc
 	MesgLsnRpt
 	MesgFrwdRpt
-	MesgRoomMsg
-	MesgRoomAck
-	MesgGroupMsg
-	MesgGroupAck
-	MesgPrvtMsg
-	MesgPrvtAck
-	MesgKickReq
 */
 package mesg
 
@@ -42,6 +94,10 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+//
+// 命令ID: 0x0101
+// 命令描述: 上线请求(ONLINE)
+// 协议格式:
 type MesgOnlineReq struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
 	Sid              *uint64 `protobuf:"varint,2,req,name=sid" json:"sid,omitempty"`
@@ -99,6 +155,10 @@ func (m *MesgOnlineReq) GetTerminal() uint32 {
 	return 0
 }
 
+//
+// 命令ID: 0x0102
+// 命令描述: 上线请求应答(ONLINE-ACK)
+// 协议格式:
 type MesgOnlineAck struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
 	Sid              *uint64 `protobuf:"varint,2,req,name=sid" json:"sid,omitempty"`
@@ -164,40 +224,1589 @@ func (m *MesgOnlineAck) GetErrmsg() string {
 	return ""
 }
 
-type MesgJoinReq struct {
-	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
-	Token            *string `protobuf:"bytes,3,req,name=token" json:"token,omitempty"`
+//
+// 命令ID: 0x0107
+// 命令描述: 订阅请求(SUB)
+// 协议格式:
+type MesgSubReq struct {
+	Sub              *uint32 `protobuf:"varint,1,opt,name=sub" json:"sub,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgJoinReq) Reset()                    { *m = MesgJoinReq{} }
-func (m *MesgJoinReq) String() string            { return proto.CompactTextString(m) }
-func (*MesgJoinReq) ProtoMessage()               {}
-func (*MesgJoinReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (m *MesgSubReq) Reset()                    { *m = MesgSubReq{} }
+func (m *MesgSubReq) String() string            { return proto.CompactTextString(m) }
+func (*MesgSubReq) ProtoMessage()               {}
+func (*MesgSubReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
-func (m *MesgJoinReq) GetUid() uint64 {
+func (m *MesgSubReq) GetSub() uint32 {
+	if m != nil && m.Sub != nil {
+		return *m.Sub
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0108
+// 命令描述: 订阅应答(SUB-ACK)
+// 协议格式:
+type MesgSubAck struct {
+	Sub              *uint32 `protobuf:"varint,1,req,name=sub" json:"sub,omitempty"`
+	Code             *uint32 `protobuf:"varint,2,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,3,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgSubAck) Reset()                    { *m = MesgSubAck{} }
+func (m *MesgSubAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgSubAck) ProtoMessage()               {}
+func (*MesgSubAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+func (m *MesgSubAck) GetSub() uint32 {
+	if m != nil && m.Sub != nil {
+		return *m.Sub
+	}
+	return 0
+}
+
+func (m *MesgSubAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgSubAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0109
+// 命令描述: 取消订阅(UNSUB)
+// 协议格式:
+type MesgUnsubReq struct {
+	Sub              *uint32 `protobuf:"varint,1,req,name=sub" json:"sub,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgUnsubReq) Reset()                    { *m = MesgUnsubReq{} }
+func (m *MesgUnsubReq) String() string            { return proto.CompactTextString(m) }
+func (*MesgUnsubReq) ProtoMessage()               {}
+func (*MesgUnsubReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+func (m *MesgUnsubReq) GetSub() uint32 {
+	if m != nil && m.Sub != nil {
+		return *m.Sub
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x010A
+// 命令描述: 取消订阅应答(UNSUB-ACK)
+// 协议格式:
+type MesgUnsubAck struct {
+	Sub              *uint32 `protobuf:"varint,1,req,name=sub" json:"sub,omitempty"`
+	Code             *uint32 `protobuf:"varint,2,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,3,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgUnsubAck) Reset()                    { *m = MesgUnsubAck{} }
+func (m *MesgUnsubAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgUnsubAck) ProtoMessage()               {}
+func (*MesgUnsubAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *MesgUnsubAck) GetSub() uint32 {
+	if m != nil && m.Sub != nil {
+		return *m.Sub
+	}
+	return 0
+}
+
+func (m *MesgUnsubAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgUnsubAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x010B
+// 命令描述: 通用异常消息(UNUSUAL)
+// 协议格式:
+type MesgUnusualbReq struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgUnusualbReq) Reset()                    { *m = MesgUnusualbReq{} }
+func (m *MesgUnusualbReq) String() string            { return proto.CompactTextString(m) }
+func (*MesgUnusualbReq) ProtoMessage()               {}
+func (*MesgUnusualbReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+
+func (m *MesgUnusualbReq) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgUnusualbReq) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0110
+// 命令描述: 申请序列号(ALLOC-SEQ)
+// 协议格式:
+type MesgAllocSeq struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Num              *uint32 `protobuf:"varint,2,req,name=num" json:"num,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgAllocSeq) Reset()                    { *m = MesgAllocSeq{} }
+func (m *MesgAllocSeq) String() string            { return proto.CompactTextString(m) }
+func (*MesgAllocSeq) ProtoMessage()               {}
+func (*MesgAllocSeq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
+func (m *MesgAllocSeq) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
 		return *m.Uid
 	}
 	return 0
 }
 
-func (m *MesgJoinReq) GetRid() uint64 {
+func (m *MesgAllocSeq) GetNum() uint32 {
+	if m != nil && m.Num != nil {
+		return *m.Num
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0111
+// 命令描述: 申请序列号应答(ALLOC-SEQ-ACK)
+// 协议格式:
+type MesgAllocSeqAck struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Seq              *uint64 `protobuf:"varint,2,req,name=seq" json:"seq,omitempty"`
+	Num              *uint32 `protobuf:"varint,3,req,name=num" json:"num,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgAllocSeqAck) Reset()                    { *m = MesgAllocSeqAck{} }
+func (m *MesgAllocSeqAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgAllocSeqAck) ProtoMessage()               {}
+func (*MesgAllocSeqAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+
+func (m *MesgAllocSeqAck) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgAllocSeqAck) GetSeq() uint64 {
+	if m != nil && m.Seq != nil {
+		return *m.Seq
+	}
+	return 0
+}
+
+func (m *MesgAllocSeqAck) GetNum() uint32 {
+	if m != nil && m.Num != nil {
+		return *m.Num
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0112
+// 命令描述: 踢连接下线(KICK)
+// 协议格式:
+type MesgKickReq struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgKickReq) Reset()                    { *m = MesgKickReq{} }
+func (m *MesgKickReq) String() string            { return proto.CompactTextString(m) }
+func (*MesgKickReq) ProtoMessage()               {}
+func (*MesgKickReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+
+func (m *MesgKickReq) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgKickReq) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0201
+// 命令描述: 私聊消息(PRVT-CHAT)
+// 协议格式:
+type MesgPrvtChat struct {
+	Orig             *uint64 `protobuf:"varint,1,req,name=orig" json:"orig,omitempty"`
+	Dest             *uint64 `protobuf:"varint,2,req,name=dest" json:"dest,omitempty"`
+	Level            *uint32 `protobuf:"varint,3,req,name=level" json:"level,omitempty"`
+	Time             *uint64 `protobuf:"varint,4,req,name=time" json:"time,omitempty"`
+	Text             *string `protobuf:"bytes,5,req,name=text" json:"text,omitempty"`
+	Data             []byte  `protobuf:"bytes,6,opt,name=data" json:"data,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgPrvtChat) Reset()                    { *m = MesgPrvtChat{} }
+func (m *MesgPrvtChat) String() string            { return proto.CompactTextString(m) }
+func (*MesgPrvtChat) ProtoMessage()               {}
+func (*MesgPrvtChat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+
+func (m *MesgPrvtChat) GetOrig() uint64 {
+	if m != nil && m.Orig != nil {
+		return *m.Orig
+	}
+	return 0
+}
+
+func (m *MesgPrvtChat) GetDest() uint64 {
+	if m != nil && m.Dest != nil {
+		return *m.Dest
+	}
+	return 0
+}
+
+func (m *MesgPrvtChat) GetLevel() uint32 {
+	if m != nil && m.Level != nil {
+		return *m.Level
+	}
+	return 0
+}
+
+func (m *MesgPrvtChat) GetTime() uint64 {
+	if m != nil && m.Time != nil {
+		return *m.Time
+	}
+	return 0
+}
+
+func (m *MesgPrvtChat) GetText() string {
+	if m != nil && m.Text != nil {
+		return *m.Text
+	}
+	return ""
+}
+
+func (m *MesgPrvtChat) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+//
+// 命令ID: 0x0202
+// 命令描述: 私聊消息应答(PRVT-CHAT-ACK)
+// 协议格式:
+type MesgPrvtChatAck struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Code             *uint32 `protobuf:"varint,2,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,3,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgPrvtChatAck) Reset()                    { *m = MesgPrvtChatAck{} }
+func (m *MesgPrvtChatAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgPrvtChatAck) ProtoMessage()               {}
+func (*MesgPrvtChatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
+
+func (m *MesgPrvtChatAck) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgPrvtChatAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgPrvtChatAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0301
+// 命令描述: 创建群组(GROUP-CREAT)
+// 协议格式:
+type MesgGroupCreat struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupCreat) Reset()                    { *m = MesgGroupCreat{} }
+func (m *MesgGroupCreat) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupCreat) ProtoMessage()               {}
+func (*MesgGroupCreat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
+
+func (m *MesgGroupCreat) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupCreat) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0302
+// 命令描述: 创建群组应答(GROUP-APPLY-ACK)
+// 协议格式:
+type MesgGroupCreatAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupCreatAck) Reset()                    { *m = MesgGroupCreatAck{} }
+func (m *MesgGroupCreatAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupCreatAck) ProtoMessage()               {}
+func (*MesgGroupCreatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
+
+func (m *MesgGroupCreatAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupCreatAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0303
+// 命令描述: 解散群组(GROUP-DISMISS)
+// 协议格式:
+type MesgGroupDismiss struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupDismiss) Reset()                    { *m = MesgGroupDismiss{} }
+func (m *MesgGroupDismiss) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupDismiss) ProtoMessage()               {}
+func (*MesgGroupDismiss) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
+
+func (m *MesgGroupDismiss) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupDismiss) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0304
+// 命令描述: 解散群组应答(GROUP-DISMISS-ACK)
+// 协议格式:
+type MesgGroupDismissAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupDismissAck) Reset()                    { *m = MesgGroupDismissAck{} }
+func (m *MesgGroupDismissAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupDismissAck) ProtoMessage()               {}
+func (*MesgGroupDismissAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{15} }
+
+func (m *MesgGroupDismissAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupDismissAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0305
+// 命令描述: 申请入群(GROUP-APPLY)
+// 协议格式:
+type MesgGroupApply struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupApply) Reset()                    { *m = MesgGroupApply{} }
+func (m *MesgGroupApply) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupApply) ProtoMessage()               {}
+func (*MesgGroupApply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
+
+func (m *MesgGroupApply) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupApply) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0306
+// 命令描述: 申请入群应答(GROUP-APPLY-ACK)
+// 协议格式:
+type MesgGroupApplyAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupApplyAck) Reset()                    { *m = MesgGroupApplyAck{} }
+func (m *MesgGroupApplyAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupApplyAck) ProtoMessage()               {}
+func (*MesgGroupApplyAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
+
+func (m *MesgGroupApplyAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupApplyAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0307
+// 命令描述: 退群(GROUP-QUIT)
+// 协议格式:
+type MesgGroupQuit struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupQuit) Reset()                    { *m = MesgGroupQuit{} }
+func (m *MesgGroupQuit) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupQuit) ProtoMessage()               {}
+func (*MesgGroupQuit) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
+
+func (m *MesgGroupQuit) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupQuit) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0308
+// 命令描述: 退群应答(GROUP-QUIT-ACK)
+// 协议格式:
+type MesgGroupQuitAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupQuitAck) Reset()                    { *m = MesgGroupQuitAck{} }
+func (m *MesgGroupQuitAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupQuitAck) ProtoMessage()               {}
+func (*MesgGroupQuitAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
+
+func (m *MesgGroupQuitAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupQuitAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0309
+// 命令描述: 邀请入群(GROUP-INVITE)
+// 协议格式:
+type MesgGroupInvite struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	To               *uint64 `protobuf:"varint,3,req,name=to" json:"to,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupInvite) Reset()                    { *m = MesgGroupInvite{} }
+func (m *MesgGroupInvite) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupInvite) ProtoMessage()               {}
+func (*MesgGroupInvite) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
+
+func (m *MesgGroupInvite) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupInvite) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+func (m *MesgGroupInvite) GetTo() uint64 {
+	if m != nil && m.To != nil {
+		return *m.To
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x030A
+// 命令描述: 邀请入群应答(GROUP-INVITE-ACK)
+// 协议格式:
+type MesgGroupInviteAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupInviteAck) Reset()                    { *m = MesgGroupInviteAck{} }
+func (m *MesgGroupInviteAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupInviteAck) ProtoMessage()               {}
+func (*MesgGroupInviteAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{21} }
+
+func (m *MesgGroupInviteAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupInviteAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x030B
+// 命令描述: 群聊消息(GROUP-CHAT)
+// 协议格式:
+type MesgGroupChat struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	Level            *uint32 `protobuf:"varint,3,req,name=level" json:"level,omitempty"`
+	Time             *uint64 `protobuf:"varint,4,req,name=time" json:"time,omitempty"`
+	Text             *string `protobuf:"bytes,5,req,name=text" json:"text,omitempty"`
+	Data             []byte  `protobuf:"bytes,6,opt,name=data" json:"data,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupChat) Reset()                    { *m = MesgGroupChat{} }
+func (m *MesgGroupChat) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupChat) ProtoMessage()               {}
+func (*MesgGroupChat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{22} }
+
+func (m *MesgGroupChat) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupChat) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+func (m *MesgGroupChat) GetLevel() uint32 {
+	if m != nil && m.Level != nil {
+		return *m.Level
+	}
+	return 0
+}
+
+func (m *MesgGroupChat) GetTime() uint64 {
+	if m != nil && m.Time != nil {
+		return *m.Time
+	}
+	return 0
+}
+
+func (m *MesgGroupChat) GetText() string {
+	if m != nil && m.Text != nil {
+		return *m.Text
+	}
+	return ""
+}
+
+func (m *MesgGroupChat) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+//
+// 命令ID: 0x030C
+// 命令描述: 群聊消息应答(GROUP-CHAT-ACK)
+// 协议格式:
+type MesgGroupChatAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupChatAck) Reset()                    { *m = MesgGroupChatAck{} }
+func (m *MesgGroupChatAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupChatAck) ProtoMessage()               {}
+func (*MesgGroupChatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{23} }
+
+func (m *MesgGroupChatAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupChatAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x030D
+// 命令描述: 群组踢人(GROUP-KICK)
+// 协议格式:
+type MesgGroupKick struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupKick) Reset()                    { *m = MesgGroupKick{} }
+func (m *MesgGroupKick) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupKick) ProtoMessage()               {}
+func (*MesgGroupKick) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{24} }
+
+func (m *MesgGroupKick) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupKick) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x030E
+// 命令描述: 群组踢人应答(GROUP-KICK-ACK)
+// 协议格式:
+type MesgGroupKickAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupKickAck) Reset()                    { *m = MesgGroupKickAck{} }
+func (m *MesgGroupKickAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupKickAck) ProtoMessage()               {}
+func (*MesgGroupKickAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{25} }
+
+func (m *MesgGroupKickAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupKickAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0310
+// 命令描述: 群组禁言(GROUP-BAN-ADD)
+// 协议格式:
+type MesgGroupBanAdd struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBanAdd) Reset()                    { *m = MesgGroupBanAdd{} }
+func (m *MesgGroupBanAdd) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBanAdd) ProtoMessage()               {}
+func (*MesgGroupBanAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{26} }
+
+func (m *MesgGroupBanAdd) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBanAdd) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0311
+// 命令描述: 群组禁言应答(GROUP-BAN-ADD-ACK)
+// 协议格式:
+type MesgGroupBanAddAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBanAddAck) Reset()                    { *m = MesgGroupBanAddAck{} }
+func (m *MesgGroupBanAddAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBanAddAck) ProtoMessage()               {}
+func (*MesgGroupBanAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{27} }
+
+func (m *MesgGroupBanAddAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupBanAddAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0312
+// 命令描述: 解除群组禁言(GROUP-BAN-DEL)
+// 协议格式:
+type MesgGroupBanDel struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBanDel) Reset()                    { *m = MesgGroupBanDel{} }
+func (m *MesgGroupBanDel) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBanDel) ProtoMessage()               {}
+func (*MesgGroupBanDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{28} }
+
+func (m *MesgGroupBanDel) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBanDel) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0313
+// 命令描述: 解除群组禁言应答(GROUP-BAN-DEL-ACK)
+// 协议格式:
+type MesgGroupBanDelAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBanDelAck) Reset()                    { *m = MesgGroupBanDelAck{} }
+func (m *MesgGroupBanDelAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBanDelAck) ProtoMessage()               {}
+func (*MesgGroupBanDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{29} }
+
+func (m *MesgGroupBanDelAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupBanDelAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0314
+// 命令描述: 加入群组黑名单(GROUP-BL-ADD)
+// 协议格式:
+type MesgGroupBlAdd struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBlAdd) Reset()                    { *m = MesgGroupBlAdd{} }
+func (m *MesgGroupBlAdd) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBlAdd) ProtoMessage()               {}
+func (*MesgGroupBlAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{30} }
+
+func (m *MesgGroupBlAdd) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBlAdd) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0315
+// 命令描述: 加入群组黑名单应答(GROUP-BL-ADD-ACK)
+// 协议格式:
+type MesgGroupBlAddAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBlAddAck) Reset()                    { *m = MesgGroupBlAddAck{} }
+func (m *MesgGroupBlAddAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBlAddAck) ProtoMessage()               {}
+func (*MesgGroupBlAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{31} }
+
+func (m *MesgGroupBlAddAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupBlAddAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0316
+// 命令描述: 移除群组黑名单(GROUP-BL-DEL)
+// 协议格式:
+type MesgGroupBlDel struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBlDel) Reset()                    { *m = MesgGroupBlDel{} }
+func (m *MesgGroupBlDel) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBlDel) ProtoMessage()               {}
+func (*MesgGroupBlDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{32} }
+
+func (m *MesgGroupBlDel) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBlDel) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0317
+// 命令描述: 移除群组黑名单应答(GROUP-BL-DEL-ACK)
+// 协议格式:
+type MesgGroupBlDelAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBlDelAck) Reset()                    { *m = MesgGroupBlDelAck{} }
+func (m *MesgGroupBlDelAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBlDelAck) ProtoMessage()               {}
+func (*MesgGroupBlDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{33} }
+
+func (m *MesgGroupBlDelAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupBlDelAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0318
+// 命令描述: 添加群组管理员(GROUP-MGR-ADD)
+// 协议格式:
+type MesgGroupMgrAdd struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupMgrAdd) Reset()                    { *m = MesgGroupMgrAdd{} }
+func (m *MesgGroupMgrAdd) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupMgrAdd) ProtoMessage()               {}
+func (*MesgGroupMgrAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{34} }
+
+func (m *MesgGroupMgrAdd) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupMgrAdd) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0319
+// 命令描述: 添加群组管理员应答(GROUP-MGR-ADD-ACK)
+// 协议格式:
+type MesgGroupMgrAddAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupMgrAddAck) Reset()                    { *m = MesgGroupMgrAddAck{} }
+func (m *MesgGroupMgrAddAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupMgrAddAck) ProtoMessage()               {}
+func (*MesgGroupMgrAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{35} }
+
+func (m *MesgGroupMgrAddAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupMgrAddAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x031A
+// 命令描述: 解除群组管理员(GROUP-MGR-DEL)
+// 协议格式:
+type MesgGroupMgrDel struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupMgrDel) Reset()                    { *m = MesgGroupMgrDel{} }
+func (m *MesgGroupMgrDel) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupMgrDel) ProtoMessage()               {}
+func (*MesgGroupMgrDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{36} }
+
+func (m *MesgGroupMgrDel) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupMgrDel) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x031B
+// 命令描述: 解除群组管理员应答(GROUP-MGR-DEL-ACK)
+// 协议格式:
+type MesgGroupMgrDelAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupMgrDelAck) Reset()                    { *m = MesgGroupMgrDelAck{} }
+func (m *MesgGroupMgrDelAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupMgrDelAck) ProtoMessage()               {}
+func (*MesgGroupMgrDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{37} }
+
+func (m *MesgGroupMgrDelAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgGroupMgrDelAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x031C
+// 命令描述: 入群通知(GROUP-JOIN-NTC)
+// 协议格式:
+type MesgGroupJoinNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupJoinNtc) Reset()                    { *m = MesgGroupJoinNtc{} }
+func (m *MesgGroupJoinNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupJoinNtc) ProtoMessage()               {}
+func (*MesgGroupJoinNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{38} }
+
+func (m *MesgGroupJoinNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupJoinNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x031D
+// 命令描述: 退群通知(GROUP-QUIT-NTC)
+// 协议格式:
+type MesgGroupQuitNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupQuitNtc) Reset()                    { *m = MesgGroupQuitNtc{} }
+func (m *MesgGroupQuitNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupQuitNtc) ProtoMessage()               {}
+func (*MesgGroupQuitNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{39} }
+
+func (m *MesgGroupQuitNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupQuitNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x031E
+// 命令描述: 踢人通知(GROUP-KICK-NTC)
+// 协议格式:
+type MesgGroupKickNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupKickNtc) Reset()                    { *m = MesgGroupKickNtc{} }
+func (m *MesgGroupKickNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupKickNtc) ProtoMessage()               {}
+func (*MesgGroupKickNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{40} }
+
+func (m *MesgGroupKickNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupKickNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0320
+// 命令描述: 禁言通知(GROUP-BAN-ADD-NTC)
+// 协议格式:
+type MesgGroupBanAddNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBanAddNtc) Reset()                    { *m = MesgGroupBanAddNtc{} }
+func (m *MesgGroupBanAddNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBanAddNtc) ProtoMessage()               {}
+func (*MesgGroupBanAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{41} }
+
+func (m *MesgGroupBanAddNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBanAddNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0321
+// 命令描述: 解除禁言通知(GROUP-BAN-DEL-NTC)
+// 协议格式:
+type MesgGroupBanDelNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBanDelNtc) Reset()                    { *m = MesgGroupBanDelNtc{} }
+func (m *MesgGroupBanDelNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBanDelNtc) ProtoMessage()               {}
+func (*MesgGroupBanDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{42} }
+
+func (m *MesgGroupBanDelNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBanDelNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0322
+// 命令描述: 加入黑名单通知(GROUP-BL-ADD-NTC)
+// 协议格式:
+type MesgGroupBlAddNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBlAddNtc) Reset()                    { *m = MesgGroupBlAddNtc{} }
+func (m *MesgGroupBlAddNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBlAddNtc) ProtoMessage()               {}
+func (*MesgGroupBlAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{43} }
+
+func (m *MesgGroupBlAddNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBlAddNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0323
+// 命令描述: 移除黑名单通知(GROUP-BL-DEL-NTC)
+// 协议格式:
+type MesgGroupBlDelNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupBlDelNtc) Reset()                    { *m = MesgGroupBlDelNtc{} }
+func (m *MesgGroupBlDelNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupBlDelNtc) ProtoMessage()               {}
+func (*MesgGroupBlDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{44} }
+
+func (m *MesgGroupBlDelNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupBlDelNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0324
+// 命令描述: 添加管理员通知(GROUP-MGR-ADD-NTC)
+// 协议格式:
+type MesgGroupMgrAddNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupMgrAddNtc) Reset()                    { *m = MesgGroupMgrAddNtc{} }
+func (m *MesgGroupMgrAddNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupMgrAddNtc) ProtoMessage()               {}
+func (*MesgGroupMgrAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{45} }
+
+func (m *MesgGroupMgrAddNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupMgrAddNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0325
+// 命令描述: 移除管理员通知(GROUP-MGR-DEL-NTC)
+// 协议格式:
+type MesgGroupMgrDelNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgGroupMgrDelNtc) Reset()                    { *m = MesgGroupMgrDelNtc{} }
+func (m *MesgGroupMgrDelNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgGroupMgrDelNtc) ProtoMessage()               {}
+func (*MesgGroupMgrDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{46} }
+
+func (m *MesgGroupMgrDelNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgGroupMgrDelNtc) GetGid() uint64 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0401
+// 命令描述: 创建聊天室(ROOM-CREAT)
+// 协议格式:
+type MesgRoomCreat struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	Name             *string `protobuf:"bytes,3,req,name=name" json:"name,omitempty"`
+	Desc             *string `protobuf:"bytes,4,req,name=desc" json:"desc,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomCreat) Reset()                    { *m = MesgRoomCreat{} }
+func (m *MesgRoomCreat) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomCreat) ProtoMessage()               {}
+func (*MesgRoomCreat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{47} }
+
+func (m *MesgRoomCreat) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoomCreat) GetRid() uint64 {
 	if m != nil && m.Rid != nil {
 		return *m.Rid
 	}
 	return 0
 }
 
-func (m *MesgJoinReq) GetToken() string {
+func (m *MesgRoomCreat) GetName() string {
+	if m != nil && m.Name != nil {
+		return *m.Name
+	}
+	return ""
+}
+
+func (m *MesgRoomCreat) GetDesc() string {
+	if m != nil && m.Desc != nil {
+		return *m.Desc
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0402
+// 命令描述: 创建聊天室应答(ROOM-CREAT-ACK)
+// 协议格式:
+type MesgRoomCreatAck struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	Code             *uint32 `protobuf:"varint,3,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,4,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomCreatAck) Reset()                    { *m = MesgRoomCreatAck{} }
+func (m *MesgRoomCreatAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomCreatAck) ProtoMessage()               {}
+func (*MesgRoomCreatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{48} }
+
+func (m *MesgRoomCreatAck) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoomCreatAck) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+func (m *MesgRoomCreatAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgRoomCreatAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0403
+// 命令描述: 解散聊天室(ROOM-DISMISS)
+// 协议格式:
+type MesgRoomDismiss struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomDismiss) Reset()                    { *m = MesgRoomDismiss{} }
+func (m *MesgRoomDismiss) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomDismiss) ProtoMessage()               {}
+func (*MesgRoomDismiss) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{49} }
+
+func (m *MesgRoomDismiss) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoomDismiss) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0404
+// 命令描述: 解散聊天室应答(ROOM-DISMISS-ACK)
+// 协议格式:
+type MesgRoomDismissAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomDismissAck) Reset()                    { *m = MesgRoomDismissAck{} }
+func (m *MesgRoomDismissAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomDismissAck) ProtoMessage()               {}
+func (*MesgRoomDismissAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{50} }
+
+func (m *MesgRoomDismissAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgRoomDismissAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0405
+// 命令描述: 加入聊天室(ROOM-JOIN)
+// 协议格式:
+type MesgRoomJoin struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	Token            *string `protobuf:"bytes,3,req,name=token" json:"token,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomJoin) Reset()                    { *m = MesgRoomJoin{} }
+func (m *MesgRoomJoin) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomJoin) ProtoMessage()               {}
+func (*MesgRoomJoin) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{51} }
+
+func (m *MesgRoomJoin) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoomJoin) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+func (m *MesgRoomJoin) GetToken() string {
 	if m != nil && m.Token != nil {
 		return *m.Token
 	}
 	return ""
 }
 
-type MesgJoinAck struct {
+//
+// 命令ID: 0x0406
+// 命令描述: 加入聊天室应答(ROOM-JOIN-ACK)
+// 协议格式:
+type MesgRoomJoinAck struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
 	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
 	Gid              *uint32 `protobuf:"varint,3,req,name=gid" json:"gid,omitempty"`
@@ -206,72 +1815,80 @@ type MesgJoinAck struct {
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgJoinAck) Reset()                    { *m = MesgJoinAck{} }
-func (m *MesgJoinAck) String() string            { return proto.CompactTextString(m) }
-func (*MesgJoinAck) ProtoMessage()               {}
-func (*MesgJoinAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+func (m *MesgRoomJoinAck) Reset()                    { *m = MesgRoomJoinAck{} }
+func (m *MesgRoomJoinAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomJoinAck) ProtoMessage()               {}
+func (*MesgRoomJoinAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{52} }
 
-func (m *MesgJoinAck) GetUid() uint64 {
+func (m *MesgRoomJoinAck) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
 		return *m.Uid
 	}
 	return 0
 }
 
-func (m *MesgJoinAck) GetRid() uint64 {
+func (m *MesgRoomJoinAck) GetRid() uint64 {
 	if m != nil && m.Rid != nil {
 		return *m.Rid
 	}
 	return 0
 }
 
-func (m *MesgJoinAck) GetGid() uint32 {
+func (m *MesgRoomJoinAck) GetGid() uint32 {
 	if m != nil && m.Gid != nil {
 		return *m.Gid
 	}
 	return 0
 }
 
-func (m *MesgJoinAck) GetCode() uint32 {
+func (m *MesgRoomJoinAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
 		return *m.Code
 	}
 	return 0
 }
 
-func (m *MesgJoinAck) GetErrmsg() string {
+func (m *MesgRoomJoinAck) GetErrmsg() string {
 	if m != nil && m.Errmsg != nil {
 		return *m.Errmsg
 	}
 	return ""
 }
 
-type MesgUnjoinReq struct {
+//
+// 命令ID: 0x0407
+// 命令描述: 退出聊天室(ROOM-QUIT)
+// 协议格式:
+type MesgRoomQuit struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
 	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgUnjoinReq) Reset()                    { *m = MesgUnjoinReq{} }
-func (m *MesgUnjoinReq) String() string            { return proto.CompactTextString(m) }
-func (*MesgUnjoinReq) ProtoMessage()               {}
-func (*MesgUnjoinReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+func (m *MesgRoomQuit) Reset()                    { *m = MesgRoomQuit{} }
+func (m *MesgRoomQuit) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomQuit) ProtoMessage()               {}
+func (*MesgRoomQuit) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{53} }
 
-func (m *MesgUnjoinReq) GetUid() uint64 {
+func (m *MesgRoomQuit) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
 		return *m.Uid
 	}
 	return 0
 }
 
-func (m *MesgUnjoinReq) GetRid() uint64 {
+func (m *MesgRoomQuit) GetRid() uint64 {
 	if m != nil && m.Rid != nil {
 		return *m.Rid
 	}
 	return 0
 }
 
-type MesgUnjoinAck struct {
+//
+// 命令ID: 0x0408
+// 命令描述: 退出聊天室应答(ROOM-QUIT-ACK)
+// 协议格式:
+type MesgRoomQuitAck struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
 	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
 	Code             *uint32 `protobuf:"varint,3,req,name=code" json:"code,omitempty"`
@@ -279,39 +1896,389 @@ type MesgUnjoinAck struct {
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgUnjoinAck) Reset()                    { *m = MesgUnjoinAck{} }
-func (m *MesgUnjoinAck) String() string            { return proto.CompactTextString(m) }
-func (*MesgUnjoinAck) ProtoMessage()               {}
-func (*MesgUnjoinAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+func (m *MesgRoomQuitAck) Reset()                    { *m = MesgRoomQuitAck{} }
+func (m *MesgRoomQuitAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomQuitAck) ProtoMessage()               {}
+func (*MesgRoomQuitAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{54} }
 
-func (m *MesgUnjoinAck) GetUid() uint64 {
+func (m *MesgRoomQuitAck) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
 		return *m.Uid
 	}
 	return 0
 }
 
-func (m *MesgUnjoinAck) GetRid() uint64 {
+func (m *MesgRoomQuitAck) GetRid() uint64 {
 	if m != nil && m.Rid != nil {
 		return *m.Rid
 	}
 	return 0
 }
 
-func (m *MesgUnjoinAck) GetCode() uint32 {
+func (m *MesgRoomQuitAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
 		return *m.Code
 	}
 	return 0
 }
 
-func (m *MesgUnjoinAck) GetErrmsg() string {
+func (m *MesgRoomQuitAck) GetErrmsg() string {
 	if m != nil && m.Errmsg != nil {
 		return *m.Errmsg
 	}
 	return ""
 }
 
+//
+// 命令ID: 0x0409
+// 命令描述: 踢出聊天室(ROOM-KICK)
+// 协议格式:
+type MesgRoomKick struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomKick) Reset()                    { *m = MesgRoomKick{} }
+func (m *MesgRoomKick) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomKick) ProtoMessage()               {}
+func (*MesgRoomKick) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{55} }
+
+func (m *MesgRoomKick) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoomKick) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x040A
+// 命令描述: 踢出聊天室应答(ROOM-KICK-ACK)
+// 协议格式:
+type MesgRoomKickAck struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomKickAck) Reset()                    { *m = MesgRoomKickAck{} }
+func (m *MesgRoomKickAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomKickAck) ProtoMessage()               {}
+func (*MesgRoomKickAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{56} }
+
+func (m *MesgRoomKickAck) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoomKickAck) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x040B
+// 命令描述: 聊天室消息(ROOM)
+// 协议格式:
+type MesgRoom struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	Gid              *uint32 `protobuf:"varint,3,req,name=gid" json:"gid,omitempty"`
+	Level            *uint32 `protobuf:"varint,4,req,name=level" json:"level,omitempty"`
+	Time             *uint64 `protobuf:"varint,5,req,name=time" json:"time,omitempty"`
+	Text             *string `protobuf:"bytes,6,req,name=text" json:"text,omitempty"`
+	Data             []byte  `protobuf:"bytes,7,opt,name=data" json:"data,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoom) Reset()                    { *m = MesgRoom{} }
+func (m *MesgRoom) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoom) ProtoMessage()               {}
+func (*MesgRoom) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{57} }
+
+func (m *MesgRoom) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoom) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+func (m *MesgRoom) GetGid() uint32 {
+	if m != nil && m.Gid != nil {
+		return *m.Gid
+	}
+	return 0
+}
+
+func (m *MesgRoom) GetLevel() uint32 {
+	if m != nil && m.Level != nil {
+		return *m.Level
+	}
+	return 0
+}
+
+func (m *MesgRoom) GetTime() uint64 {
+	if m != nil && m.Time != nil {
+		return *m.Time
+	}
+	return 0
+}
+
+func (m *MesgRoom) GetText() string {
+	if m != nil && m.Text != nil {
+		return *m.Text
+	}
+	return ""
+}
+
+func (m *MesgRoom) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+//
+// 命令ID: 0x040C
+// 命令描述: 聊天室消息应答(ROOM-ACK)
+// 协议格式:
+type MesgRoomAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomAck) Reset()                    { *m = MesgRoomAck{} }
+func (m *MesgRoomAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomAck) ProtoMessage()               {}
+func (*MesgRoomAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{58} }
+
+func (m *MesgRoomAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgRoomAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x040D
+// 命令描述: 聊天室广播消息(ROOM-BC)
+// 协议格式:
+type MesgRoomBc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
+	Level            *uint32 `protobuf:"varint,4,req,name=level" json:"level,omitempty"`
+	Time             *uint64 `protobuf:"varint,5,req,name=time" json:"time,omitempty"`
+	Expire           *uint32 `protobuf:"varint,6,req,name=expire" json:"expire,omitempty"`
+	Text             *string `protobuf:"bytes,7,req,name=text" json:"text,omitempty"`
+	Data             []byte  `protobuf:"bytes,8,opt,name=data" json:"data,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomBc) Reset()                    { *m = MesgRoomBc{} }
+func (m *MesgRoomBc) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomBc) ProtoMessage()               {}
+func (*MesgRoomBc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{59} }
+
+func (m *MesgRoomBc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+func (m *MesgRoomBc) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+func (m *MesgRoomBc) GetLevel() uint32 {
+	if m != nil && m.Level != nil {
+		return *m.Level
+	}
+	return 0
+}
+
+func (m *MesgRoomBc) GetTime() uint64 {
+	if m != nil && m.Time != nil {
+		return *m.Time
+	}
+	return 0
+}
+
+func (m *MesgRoomBc) GetExpire() uint32 {
+	if m != nil && m.Expire != nil {
+		return *m.Expire
+	}
+	return 0
+}
+
+func (m *MesgRoomBc) GetText() string {
+	if m != nil && m.Text != nil {
+		return *m.Text
+	}
+	return ""
+}
+
+func (m *MesgRoomBc) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+//
+// 命令ID: 0x040E
+// 命令描述: 聊天室广播消息应答(ROOM-BC-ACK)
+// 协议格式:
+type MesgRoomBcAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomBcAck) Reset()                    { *m = MesgRoomBcAck{} }
+func (m *MesgRoomBcAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomBcAck) ProtoMessage()               {}
+func (*MesgRoomBcAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{60} }
+
+func (m *MesgRoomBcAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgRoomBcAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0410
+// 命令描述: 聊天室人数(ROOM-USR-NUM)
+// 协议格式:
+type MesgRoomUsrNum struct {
+	Rid              *uint64 `protobuf:"varint,1,req,name=rid" json:"rid,omitempty"`
+	Num              *uint32 `protobuf:"varint,2,req,name=num" json:"num,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomUsrNum) Reset()                    { *m = MesgRoomUsrNum{} }
+func (m *MesgRoomUsrNum) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomUsrNum) ProtoMessage()               {}
+func (*MesgRoomUsrNum) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{61} }
+
+func (m *MesgRoomUsrNum) GetRid() uint64 {
+	if m != nil && m.Rid != nil {
+		return *m.Rid
+	}
+	return 0
+}
+
+func (m *MesgRoomUsrNum) GetNum() uint32 {
+	if m != nil && m.Num != nil {
+		return *m.Num
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0450
+// 命令描述: 加入聊天室通知(ROOM-JOIN-NTC)
+// 协议格式:
+type MesgRoomJoinNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomJoinNtc) Reset()                    { *m = MesgRoomJoinNtc{} }
+func (m *MesgRoomJoinNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomJoinNtc) ProtoMessage()               {}
+func (*MesgRoomJoinNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{62} }
+
+func (m *MesgRoomJoinNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0451
+// 命令描述: 退出聊天室通知(ROOM-QUIT-NTC)
+// 协议格式:
+type MesgRoomQuitNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomQuitNtc) Reset()                    { *m = MesgRoomQuitNtc{} }
+func (m *MesgRoomQuitNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomQuitNtc) ProtoMessage()               {}
+func (*MesgRoomQuitNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{63} }
+
+func (m *MesgRoomQuitNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0452
+// 命令描述: 踢出聊天室通知(ROOM-KICK-NTC)
+// 协议格式:
+type MesgRoomKickNtc struct {
+	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgRoomKickNtc) Reset()                    { *m = MesgRoomKickNtc{} }
+func (m *MesgRoomKickNtc) String() string            { return proto.CompactTextString(m) }
+func (*MesgRoomKickNtc) ProtoMessage()               {}
+func (*MesgRoomKickNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{64} }
+
+func (m *MesgRoomKickNtc) GetUid() uint64 {
+	if m != nil && m.Uid != nil {
+		return *m.Uid
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0601
+// 命令描述: 帧听层上报(LSN-RPT)
+// 协议格式:
 type MesgLsnRpt struct {
 	Nid              *uint32 `protobuf:"varint,1,req,name=nid" json:"nid,omitempty"`
 	Nation           *string `protobuf:"bytes,2,req,name=nation" json:"nation,omitempty"`
@@ -324,7 +2291,7 @@ type MesgLsnRpt struct {
 func (m *MesgLsnRpt) Reset()                    { *m = MesgLsnRpt{} }
 func (m *MesgLsnRpt) String() string            { return proto.CompactTextString(m) }
 func (*MesgLsnRpt) ProtoMessage()               {}
-func (*MesgLsnRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+func (*MesgLsnRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{65} }
 
 func (m *MesgLsnRpt) GetNid() uint32 {
 	if m != nil && m.Nid != nil {
@@ -361,7 +2328,10 @@ func (m *MesgLsnRpt) GetPort() uint32 {
 	return 0
 }
 
-// 转发层上报
+//
+// 命令ID: 0x0603
+// 命令描述: 转发层上报 (FRWD-RPT)
+// 协议格式:
 type MesgFrwdRpt struct {
 	Nid              *uint32 `protobuf:"varint,1,req,name=nid" json:"nid,omitempty"`
 	Ipaddr           *string `protobuf:"bytes,2,req,name=ipaddr" json:"ipaddr,omitempty"`
@@ -373,7 +2343,7 @@ type MesgFrwdRpt struct {
 func (m *MesgFrwdRpt) Reset()                    { *m = MesgFrwdRpt{} }
 func (m *MesgFrwdRpt) String() string            { return proto.CompactTextString(m) }
 func (*MesgFrwdRpt) ProtoMessage()               {}
-func (*MesgFrwdRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+func (*MesgFrwdRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{66} }
 
 func (m *MesgFrwdRpt) GetNid() uint32 {
 	if m != nil && m.Nid != nil {
@@ -403,348 +2373,132 @@ func (m *MesgFrwdRpt) GetBackendPort() uint32 {
 	return 0
 }
 
-// 聊天室消息
-type MesgRoomMsg struct {
-	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
-	Rid              *uint64 `protobuf:"varint,2,req,name=rid" json:"rid,omitempty"`
-	Gid              *uint32 `protobuf:"varint,3,req,name=gid" json:"gid,omitempty"`
-	Level            *uint32 `protobuf:"varint,4,req,name=level" json:"level,omitempty"`
-	Time             *uint64 `protobuf:"varint,5,req,name=time" json:"time,omitempty"`
-	Text             *string `protobuf:"bytes,6,req,name=text" json:"text,omitempty"`
-	Data             []byte  `protobuf:"bytes,7,opt,name=data" json:"data,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgRoomMsg) Reset()                    { *m = MesgRoomMsg{} }
-func (m *MesgRoomMsg) String() string            { return proto.CompactTextString(m) }
-func (*MesgRoomMsg) ProtoMessage()               {}
-func (*MesgRoomMsg) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
-
-func (m *MesgRoomMsg) GetUid() uint64 {
-	if m != nil && m.Uid != nil {
-		return *m.Uid
-	}
-	return 0
-}
-
-func (m *MesgRoomMsg) GetRid() uint64 {
-	if m != nil && m.Rid != nil {
-		return *m.Rid
-	}
-	return 0
-}
-
-func (m *MesgRoomMsg) GetGid() uint32 {
-	if m != nil && m.Gid != nil {
-		return *m.Gid
-	}
-	return 0
-}
-
-func (m *MesgRoomMsg) GetLevel() uint32 {
-	if m != nil && m.Level != nil {
-		return *m.Level
-	}
-	return 0
-}
-
-func (m *MesgRoomMsg) GetTime() uint64 {
-	if m != nil && m.Time != nil {
-		return *m.Time
-	}
-	return 0
-}
-
-func (m *MesgRoomMsg) GetText() string {
-	if m != nil && m.Text != nil {
-		return *m.Text
-	}
-	return ""
-}
-
-func (m *MesgRoomMsg) GetData() []byte {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-// 聊天室消息应答
-type MesgRoomAck struct {
-	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
-	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgRoomAck) Reset()                    { *m = MesgRoomAck{} }
-func (m *MesgRoomAck) String() string            { return proto.CompactTextString(m) }
-func (*MesgRoomAck) ProtoMessage()               {}
-func (*MesgRoomAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
-
-func (m *MesgRoomAck) GetCode() uint32 {
-	if m != nil && m.Code != nil {
-		return *m.Code
-	}
-	return 0
-}
-
-func (m *MesgRoomAck) GetErrmsg() string {
-	if m != nil && m.Errmsg != nil {
-		return *m.Errmsg
-	}
-	return ""
-}
-
-// 群组消息
-type MesgGroupMsg struct {
-	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
-	Gid              *uint64 `protobuf:"varint,2,req,name=gid" json:"gid,omitempty"`
-	Level            *uint32 `protobuf:"varint,3,req,name=level" json:"level,omitempty"`
-	Time             *uint64 `protobuf:"varint,4,req,name=time" json:"time,omitempty"`
-	Text             *string `protobuf:"bytes,5,req,name=text" json:"text,omitempty"`
-	Data             []byte  `protobuf:"bytes,6,opt,name=data" json:"data,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgGroupMsg) Reset()                    { *m = MesgGroupMsg{} }
-func (m *MesgGroupMsg) String() string            { return proto.CompactTextString(m) }
-func (*MesgGroupMsg) ProtoMessage()               {}
-func (*MesgGroupMsg) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
-
-func (m *MesgGroupMsg) GetUid() uint64 {
-	if m != nil && m.Uid != nil {
-		return *m.Uid
-	}
-	return 0
-}
-
-func (m *MesgGroupMsg) GetGid() uint64 {
-	if m != nil && m.Gid != nil {
-		return *m.Gid
-	}
-	return 0
-}
-
-func (m *MesgGroupMsg) GetLevel() uint32 {
-	if m != nil && m.Level != nil {
-		return *m.Level
-	}
-	return 0
-}
-
-func (m *MesgGroupMsg) GetTime() uint64 {
-	if m != nil && m.Time != nil {
-		return *m.Time
-	}
-	return 0
-}
-
-func (m *MesgGroupMsg) GetText() string {
-	if m != nil && m.Text != nil {
-		return *m.Text
-	}
-	return ""
-}
-
-func (m *MesgGroupMsg) GetData() []byte {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-// 群组消息应答
-type MesgGroupAck struct {
-	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
-	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgGroupAck) Reset()                    { *m = MesgGroupAck{} }
-func (m *MesgGroupAck) String() string            { return proto.CompactTextString(m) }
-func (*MesgGroupAck) ProtoMessage()               {}
-func (*MesgGroupAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
-
-func (m *MesgGroupAck) GetCode() uint32 {
-	if m != nil && m.Code != nil {
-		return *m.Code
-	}
-	return 0
-}
-
-func (m *MesgGroupAck) GetErrmsg() string {
-	if m != nil && m.Errmsg != nil {
-		return *m.Errmsg
-	}
-	return ""
-}
-
-// 私聊消息
-type MesgPrvtMsg struct {
-	Orig             *uint64 `protobuf:"varint,1,req,name=orig" json:"orig,omitempty"`
-	Dest             *uint64 `protobuf:"varint,2,req,name=dest" json:"dest,omitempty"`
-	Level            *uint32 `protobuf:"varint,3,req,name=level" json:"level,omitempty"`
-	Time             *uint64 `protobuf:"varint,4,req,name=time" json:"time,omitempty"`
-	Text             *string `protobuf:"bytes,5,req,name=text" json:"text,omitempty"`
-	Data             []byte  `protobuf:"bytes,6,opt,name=data" json:"data,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgPrvtMsg) Reset()                    { *m = MesgPrvtMsg{} }
-func (m *MesgPrvtMsg) String() string            { return proto.CompactTextString(m) }
-func (*MesgPrvtMsg) ProtoMessage()               {}
-func (*MesgPrvtMsg) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
-
-func (m *MesgPrvtMsg) GetOrig() uint64 {
-	if m != nil && m.Orig != nil {
-		return *m.Orig
-	}
-	return 0
-}
-
-func (m *MesgPrvtMsg) GetDest() uint64 {
-	if m != nil && m.Dest != nil {
-		return *m.Dest
-	}
-	return 0
-}
-
-func (m *MesgPrvtMsg) GetLevel() uint32 {
-	if m != nil && m.Level != nil {
-		return *m.Level
-	}
-	return 0
-}
-
-func (m *MesgPrvtMsg) GetTime() uint64 {
-	if m != nil && m.Time != nil {
-		return *m.Time
-	}
-	return 0
-}
-
-func (m *MesgPrvtMsg) GetText() string {
-	if m != nil && m.Text != nil {
-		return *m.Text
-	}
-	return ""
-}
-
-func (m *MesgPrvtMsg) GetData() []byte {
-	if m != nil {
-		return m.Data
-	}
-	return nil
-}
-
-// 私聊消息应答
-type MesgPrvtAck struct {
-	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
-	Code             *uint32 `protobuf:"varint,2,req,name=code" json:"code,omitempty"`
-	Errmsg           *string `protobuf:"bytes,3,req,name=errmsg" json:"errmsg,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgPrvtAck) Reset()                    { *m = MesgPrvtAck{} }
-func (m *MesgPrvtAck) String() string            { return proto.CompactTextString(m) }
-func (*MesgPrvtAck) ProtoMessage()               {}
-func (*MesgPrvtAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
-
-func (m *MesgPrvtAck) GetUid() uint64 {
-	if m != nil && m.Uid != nil {
-		return *m.Uid
-	}
-	return 0
-}
-
-func (m *MesgPrvtAck) GetCode() uint32 {
-	if m != nil && m.Code != nil {
-		return *m.Code
-	}
-	return 0
-}
-
-func (m *MesgPrvtAck) GetErrmsg() string {
-	if m != nil && m.Errmsg != nil {
-		return *m.Errmsg
-	}
-	return ""
-}
-
-// 踢人下线
-type MesgKickReq struct {
-	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
-	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
-	XXX_unrecognized []byte  `json:"-"`
-}
-
-func (m *MesgKickReq) Reset()                    { *m = MesgKickReq{} }
-func (m *MesgKickReq) String() string            { return proto.CompactTextString(m) }
-func (*MesgKickReq) ProtoMessage()               {}
-func (*MesgKickReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
-
-func (m *MesgKickReq) GetCode() uint32 {
-	if m != nil && m.Code != nil {
-		return *m.Code
-	}
-	return 0
-}
-
-func (m *MesgKickReq) GetErrmsg() string {
-	if m != nil && m.Errmsg != nil {
-		return *m.Errmsg
-	}
-	return ""
-}
-
 func init() {
-	proto.RegisterType((*MesgOnlineReq)(nil), "mesg.mesg_online_req")
-	proto.RegisterType((*MesgOnlineAck)(nil), "mesg.mesg_online_ack")
-	proto.RegisterType((*MesgJoinReq)(nil), "mesg.mesg_join_req")
-	proto.RegisterType((*MesgJoinAck)(nil), "mesg.mesg_join_ack")
-	proto.RegisterType((*MesgUnjoinReq)(nil), "mesg.mesg_unjoin_req")
-	proto.RegisterType((*MesgUnjoinAck)(nil), "mesg.mesg_unjoin_ack")
-	proto.RegisterType((*MesgLsnRpt)(nil), "mesg.mesg_lsn_rpt")
-	proto.RegisterType((*MesgFrwdRpt)(nil), "mesg.mesg_frwd_rpt")
-	proto.RegisterType((*MesgRoomMsg)(nil), "mesg.mesg_room_msg")
-	proto.RegisterType((*MesgRoomAck)(nil), "mesg.mesg_room_ack")
-	proto.RegisterType((*MesgGroupMsg)(nil), "mesg.mesg_group_msg")
-	proto.RegisterType((*MesgGroupAck)(nil), "mesg.mesg_group_ack")
-	proto.RegisterType((*MesgPrvtMsg)(nil), "mesg.mesg_prvt_msg")
-	proto.RegisterType((*MesgPrvtAck)(nil), "mesg.mesg_prvt_ack")
-	proto.RegisterType((*MesgKickReq)(nil), "mesg.mesg_kick_req")
+	proto.RegisterType((*MesgOnlineReq)(nil), "mesg_online_req")
+	proto.RegisterType((*MesgOnlineAck)(nil), "mesg_online_ack")
+	proto.RegisterType((*MesgSubReq)(nil), "mesg_sub_req")
+	proto.RegisterType((*MesgSubAck)(nil), "mesg_sub_ack")
+	proto.RegisterType((*MesgUnsubReq)(nil), "mesg_unsub_req")
+	proto.RegisterType((*MesgUnsubAck)(nil), "mesg_unsub_ack")
+	proto.RegisterType((*MesgUnusualbReq)(nil), "mesg_unusualb_req")
+	proto.RegisterType((*MesgAllocSeq)(nil), "mesg_alloc_seq")
+	proto.RegisterType((*MesgAllocSeqAck)(nil), "mesg_alloc_seq_ack")
+	proto.RegisterType((*MesgKickReq)(nil), "mesg_kick_req")
+	proto.RegisterType((*MesgPrvtChat)(nil), "mesg_prvt_chat")
+	proto.RegisterType((*MesgPrvtChatAck)(nil), "mesg_prvt_chat_ack")
+	proto.RegisterType((*MesgGroupCreat)(nil), "mesg_group_creat")
+	proto.RegisterType((*MesgGroupCreatAck)(nil), "mesg_group_creat_ack")
+	proto.RegisterType((*MesgGroupDismiss)(nil), "mesg_group_dismiss")
+	proto.RegisterType((*MesgGroupDismissAck)(nil), "mesg_group_dismiss_ack")
+	proto.RegisterType((*MesgGroupApply)(nil), "mesg_group_apply")
+	proto.RegisterType((*MesgGroupApplyAck)(nil), "mesg_group_apply_ack")
+	proto.RegisterType((*MesgGroupQuit)(nil), "mesg_group_quit")
+	proto.RegisterType((*MesgGroupQuitAck)(nil), "mesg_group_quit_ack")
+	proto.RegisterType((*MesgGroupInvite)(nil), "mesg_group_invite")
+	proto.RegisterType((*MesgGroupInviteAck)(nil), "mesg_group_invite_ack")
+	proto.RegisterType((*MesgGroupChat)(nil), "mesg_group_chat")
+	proto.RegisterType((*MesgGroupChatAck)(nil), "mesg_group_chat_ack")
+	proto.RegisterType((*MesgGroupKick)(nil), "mesg_group_kick")
+	proto.RegisterType((*MesgGroupKickAck)(nil), "mesg_group_kick_ack")
+	proto.RegisterType((*MesgGroupBanAdd)(nil), "mesg_group_ban_add")
+	proto.RegisterType((*MesgGroupBanAddAck)(nil), "mesg_group_ban_add_ack")
+	proto.RegisterType((*MesgGroupBanDel)(nil), "mesg_group_ban_del")
+	proto.RegisterType((*MesgGroupBanDelAck)(nil), "mesg_group_ban_del_ack")
+	proto.RegisterType((*MesgGroupBlAdd)(nil), "mesg_group_bl_add")
+	proto.RegisterType((*MesgGroupBlAddAck)(nil), "mesg_group_bl_add_ack")
+	proto.RegisterType((*MesgGroupBlDel)(nil), "mesg_group_bl_del")
+	proto.RegisterType((*MesgGroupBlDelAck)(nil), "mesg_group_bl_del_ack")
+	proto.RegisterType((*MesgGroupMgrAdd)(nil), "mesg_group_mgr_add")
+	proto.RegisterType((*MesgGroupMgrAddAck)(nil), "mesg_group_mgr_add_ack")
+	proto.RegisterType((*MesgGroupMgrDel)(nil), "mesg_group_mgr_del")
+	proto.RegisterType((*MesgGroupMgrDelAck)(nil), "mesg_group_mgr_del_ack")
+	proto.RegisterType((*MesgGroupJoinNtc)(nil), "mesg_group_join_ntc")
+	proto.RegisterType((*MesgGroupQuitNtc)(nil), "mesg_group_quit_ntc")
+	proto.RegisterType((*MesgGroupKickNtc)(nil), "mesg_group_kick_ntc")
+	proto.RegisterType((*MesgGroupBanAddNtc)(nil), "mesg_group_ban_add_ntc")
+	proto.RegisterType((*MesgGroupBanDelNtc)(nil), "mesg_group_ban_del_ntc")
+	proto.RegisterType((*MesgGroupBlAddNtc)(nil), "mesg_group_bl_add_ntc")
+	proto.RegisterType((*MesgGroupBlDelNtc)(nil), "mesg_group_bl_del_ntc")
+	proto.RegisterType((*MesgGroupMgrAddNtc)(nil), "mesg_group_mgr_add_ntc")
+	proto.RegisterType((*MesgGroupMgrDelNtc)(nil), "mesg_group_mgr_del_ntc")
+	proto.RegisterType((*MesgRoomCreat)(nil), "mesg_room_creat")
+	proto.RegisterType((*MesgRoomCreatAck)(nil), "mesg_room_creat_ack")
+	proto.RegisterType((*MesgRoomDismiss)(nil), "mesg_room_dismiss")
+	proto.RegisterType((*MesgRoomDismissAck)(nil), "mesg_room_dismiss_ack")
+	proto.RegisterType((*MesgRoomJoin)(nil), "mesg_room_join")
+	proto.RegisterType((*MesgRoomJoinAck)(nil), "mesg_room_join_ack")
+	proto.RegisterType((*MesgRoomQuit)(nil), "mesg_room_quit")
+	proto.RegisterType((*MesgRoomQuitAck)(nil), "mesg_room_quit_ack")
+	proto.RegisterType((*MesgRoomKick)(nil), "mesg_room_kick")
+	proto.RegisterType((*MesgRoomKickAck)(nil), "mesg_room_kick_ack")
+	proto.RegisterType((*MesgRoom)(nil), "mesg_room")
+	proto.RegisterType((*MesgRoomAck)(nil), "mesg_room_ack")
+	proto.RegisterType((*MesgRoomBc)(nil), "mesg_room_bc")
+	proto.RegisterType((*MesgRoomBcAck)(nil), "mesg_room_bc_ack")
+	proto.RegisterType((*MesgRoomUsrNum)(nil), "mesg_room_usr_num")
+	proto.RegisterType((*MesgRoomJoinNtc)(nil), "mesg_room_join_ntc")
+	proto.RegisterType((*MesgRoomQuitNtc)(nil), "mesg_room_quit_ntc")
+	proto.RegisterType((*MesgRoomKickNtc)(nil), "mesg_room_kick_ntc")
+	proto.RegisterType((*MesgLsnRpt)(nil), "mesg_lsn_rpt")
+	proto.RegisterType((*MesgFrwdRpt)(nil), "mesg_frwd_rpt")
 }
 
 func init() { proto.RegisterFile("mesg.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 443 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xa4, 0x93, 0x4f, 0x8f, 0xd3, 0x30,
-	0x10, 0xc5, 0xd5, 0xfc, 0xe9, 0x82, 0x69, 0x77, 0x51, 0xc5, 0x21, 0xc7, 0x95, 0x4f, 0x95, 0x10,
-	0x7b, 0x46, 0x7c, 0x03, 0xee, 0x48, 0x70, 0x8b, 0x4c, 0xec, 0x8d, 0xbc, 0x49, 0x6c, 0x33, 0x71,
-	0xbb, 0xf0, 0xed, 0x19, 0x4f, 0x1c, 0x29, 0xc9, 0x86, 0x16, 0x69, 0x4f, 0xed, 0xf8, 0xcf, 0x9b,
-	0xdf, 0x7b, 0x9e, 0x30, 0xd6, 0xa9, 0xbe, 0x7e, 0x70, 0x60, 0xbd, 0x3d, 0x64, 0xe1, 0x3f, 0x7f,
-	0x62, 0x77, 0xe1, 0xb7, 0xb4, 0xa6, 0xd5, 0x46, 0x95, 0xa0, 0x7e, 0x1d, 0xde, 0xb1, 0xf4, 0xa4,
-	0x65, 0xb1, 0xb9, 0x4f, 0x8e, 0x59, 0x28, 0x7a, 0x2c, 0x12, 0x2a, 0xf6, 0x2c, 0xf7, 0xb6, 0x51,
-	0xa6, 0x48, 0xb1, 0x7c, 0x1b, 0xf6, 0x84, 0x73, 0x45, 0x46, 0xc5, 0x1d, 0xbb, 0x39, 0x2b, 0xe8,
-	0xb5, 0x35, 0x45, 0x4e, 0x0b, 0xef, 0xd9, 0x1b, 0xaf, 0xa0, 0xd3, 0x46, 0xb4, 0xc5, 0xf6, 0x7e,
-	0x73, 0xdc, 0xf3, 0x3f, 0xf3, 0x5e, 0xa2, 0x6a, 0x2e, 0xf4, 0x8a, 0xe2, 0xe9, 0x52, 0x3c, 0x7b,
-	0x21, 0x9e, 0x07, 0xf1, 0xc3, 0x8e, 0x65, 0x95, 0x95, 0x0a, 0x5b, 0x25, 0x58, 0xdd, 0xb2, 0xad,
-	0x02, 0xe8, 0xfa, 0xba, 0xb8, 0x09, 0xe7, 0xf9, 0x67, 0xb6, 0xa7, 0xd6, 0x4f, 0x56, 0x9b, 0x55,
-	0x93, 0xf0, 0x0f, 0x93, 0xfc, 0xdb, 0xf4, 0xe6, 0x1a, 0x32, 0x4c, 0x91, 0x6b, 0x2c, 0x52, 0x22,
-	0x18, 0x79, 0xb2, 0x05, 0x0f, 0x85, 0xc3, 0x3f, 0xc6, 0x28, 0x4e, 0xe6, 0x3a, 0x11, 0xff, 0x3a,
-	0x3f, 0x7c, 0x19, 0x62, 0xec, 0x9b, 0x2e, 0xfa, 0x52, 0x6e, 0xfc, 0x3b, 0xdb, 0x91, 0x54, 0xdb,
-	0x63, 0x53, 0xe7, 0xc3, 0x55, 0x13, 0x75, 0xe8, 0xb0, 0x11, 0x3e, 0x84, 0x9c, 0x50, 0xc8, 0x28,
-	0x65, 0x44, 0xa7, 0xe2, 0x1b, 0xe0, 0xae, 0x76, 0x42, 0x4a, 0x88, 0x4f, 0x80, 0xbb, 0xce, 0x82,
-	0x27, 0x43, 0x7b, 0xfe, 0x23, 0xc6, 0xf4, 0x08, 0xcf, 0x72, 0x55, 0x39, 0xde, 0x1d, 0x94, 0x3f,
-	0xb0, 0xdd, 0xa3, 0x85, 0x67, 0x01, 0xb2, 0x24, 0x8d, 0x01, 0x16, 0x57, 0x7f, 0xa2, 0x39, 0x65,
-	0xe2, 0x2a, 0x45, 0xc7, 0x6d, 0x54, 0x06, 0x6b, 0xbb, 0x12, 0x9d, 0xfc, 0xef, 0x03, 0xe0, 0x3b,
-	0xb6, 0xea, 0xac, 0xda, 0xf8, 0x02, 0x88, 0xeb, 0x35, 0x9a, 0xc9, 0xc7, 0x94, 0xbc, 0xfa, 0xed,
-	0x69, 0x5a, 0xc8, 0x8a, 0x14, 0x5e, 0xe0, 0xac, 0x6c, 0x8e, 0x3b, 0xfe, 0x69, 0xda, 0x30, 0x84,
-	0x3d, 0x46, 0xba, 0x59, 0x44, 0x4a, 0x5e, 0x78, 0xc5, 0x6e, 0xe9, 0x78, 0x0d, 0xf6, 0xe4, 0x56,
-	0x01, 0xeb, 0xe9, 0x6c, 0x0d, 0x4c, 0xe9, 0x8c, 0x29, 0x9b, 0x31, 0xe5, 0x33, 0xa6, 0x2d, 0x31,
-	0x3d, 0xcc, 0x9a, 0x5c, 0x87, 0x92, 0xd1, 0x83, 0x83, 0xb3, 0x27, 0x26, 0x3c, 0x6e, 0x41, 0xd7,
-	0x11, 0x2a, 0x88, 0xab, 0xde, 0xbf, 0x96, 0xea, 0xcb, 0xb4, 0xcb, 0x8b, 0xb1, 0x1c, 0x09, 0x93,
-	0x05, 0xe1, 0xf0, 0x5d, 0x8d, 0x29, 0x37, 0xba, 0x6a, 0x68, 0xfe, 0x2f, 0x1a, 0xfa, 0x1b, 0x00,
-	0x00, 0xff, 0xff, 0x5b, 0x2d, 0x3f, 0x61, 0xba, 0x04, 0x00, 0x00,
+	// 864 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x9c, 0x57, 0xdf, 0x6f, 0xd3, 0x30,
+	0x10, 0xd6, 0xd2, 0x74, 0xdd, 0x4c, 0xbb, 0x8d, 0x32, 0x50, 0x25, 0x84, 0x34, 0xf2, 0x34, 0x01,
+	0xdb, 0xd8, 0xf8, 0x21, 0x4d, 0x3c, 0xf0, 0xc8, 0x0b, 0x3c, 0x03, 0x4f, 0x51, 0x9a, 0x78, 0xc5,
+	0x6b, 0x62, 0xa7, 0x8e, 0xd3, 0x6d, 0xff, 0x3d, 0xf6, 0xc5, 0x49, 0xeb, 0x24, 0x4d, 0x93, 0xbe,
+	0xd5, 0xf5, 0x7d, 0xf7, 0xdd, 0x9d, 0x3f, 0xdf, 0x39, 0x08, 0x45, 0x38, 0x99, 0x5d, 0xc6, 0x9c,
+	0x09, 0xe6, 0xdc, 0xa3, 0x63, 0xb5, 0x72, 0x19, 0x0d, 0x09, 0xc5, 0x2e, 0xc7, 0x8b, 0xf1, 0x33,
+	0xd4, 0x4b, 0x49, 0x30, 0xd9, 0x3b, 0xb3, 0xce, 0x6d, 0xb5, 0x48, 0xe4, 0xc2, 0x82, 0xc5, 0x08,
+	0xf5, 0x05, 0x9b, 0x63, 0x3a, 0xe9, 0xc9, 0xe5, 0xa1, 0xda, 0xf3, 0xe2, 0x78, 0x62, 0xc3, 0xe2,
+	0x18, 0x0d, 0x96, 0x98, 0x27, 0x84, 0xd1, 0x49, 0x1f, 0xfe, 0x38, 0x41, 0x07, 0x02, 0xf3, 0x88,
+	0x50, 0x2f, 0x9c, 0xec, 0x9f, 0xed, 0x9d, 0x8f, 0x9c, 0x27, 0x93, 0xcb, 0xf3, 0xe7, 0x0d, 0x5c,
+	0xda, 0x79, 0xaf, 0xec, 0xdc, 0xae, 0x38, 0xef, 0x2b, 0xe7, 0xe3, 0x21, 0xb2, 0x7d, 0x16, 0x60,
+	0x49, 0x65, 0xc9, 0xd5, 0x11, 0xda, 0xc7, 0x9c, 0x47, 0xc9, 0x6c, 0x32, 0x50, 0xf6, 0xce, 0x6b,
+	0x34, 0x04, 0xea, 0x24, 0x9d, 0xe6, 0x39, 0xca, 0x9f, 0x92, 0x57, 0xc5, 0x75, 0xbb, 0xb6, 0xa9,
+	0x83, 0xca, 0x36, 0xad, 0x35, 0xbf, 0x56, 0xc9, 0x2f, 0x04, 0xe6, 0xbc, 0x41, 0x47, 0x00, 0x4d,
+	0x69, 0xc5, 0xb3, 0x34, 0x77, 0xbe, 0x19, 0xdb, 0x1d, 0x7d, 0x5f, 0xa3, 0xe7, 0x1a, 0x9c, 0x26,
+	0xa9, 0x17, 0x66, 0xee, 0x73, 0xc8, 0x5e, 0x09, 0x62, 0x01, 0xe4, 0x9d, 0xe6, 0xf3, 0xc2, 0x90,
+	0xf9, 0x6e, 0x52, 0x73, 0x98, 0x34, 0x8d, 0x32, 0x3a, 0x19, 0xdb, 0xd8, 0xb4, 0xad, 0x3f, 0x10,
+	0xbc, 0x58, 0x1d, 0x88, 0x02, 0xf7, 0x00, 0x7c, 0x81, 0x46, 0x00, 0x9e, 0x13, 0x7f, 0xde, 0x22,
+	0x2e, 0xac, 0xe3, 0x8a, 0xf9, 0x52, 0xb8, 0xfe, 0x3f, 0x4f, 0x28, 0x7b, 0xc6, 0xc9, 0x4c, 0x13,
+	0xc9, 0x55, 0x80, 0x13, 0xb1, 0x92, 0x59, 0x88, 0x97, 0x38, 0xcc, 0xb8, 0xd4, 0xa6, 0x20, 0x11,
+	0x86, 0x93, 0x07, 0x53, 0x81, 0x1f, 0x85, 0x16, 0x99, 0x02, 0x7a, 0xc2, 0x03, 0x81, 0x0d, 0x9d,
+	0xef, 0x3a, 0xa5, 0x82, 0xa6, 0x9a, 0x52, 0x73, 0xc9, 0x3f, 0xa0, 0x13, 0x70, 0x30, 0xe3, 0x2c,
+	0x8d, 0x5d, 0x9f, 0x63, 0x19, 0x69, 0xb9, 0x22, 0xb3, 0x5c, 0xa2, 0xce, 0x67, 0x74, 0x5a, 0xb6,
+	0x06, 0xc2, 0xe6, 0x5a, 0x5c, 0xea, 0x20, 0x33, 0x54, 0x40, 0x92, 0x88, 0x24, 0x49, 0x03, 0xcb,
+	0x57, 0xf4, 0xaa, 0x6a, 0xdf, 0x82, 0xc7, 0xcc, 0x45, 0xde, 0xa5, 0xf0, 0xa9, 0x75, 0x2e, 0x60,
+	0xdd, 0x82, 0xe3, 0xbd, 0xbe, 0xd1, 0x19, 0x6a, 0x91, 0x92, 0xa6, 0x72, 0x7d, 0x42, 0x2f, 0x4a,
+	0xc6, 0x2d, 0x18, 0x6e, 0xf5, 0x25, 0xc8, 0x40, 0x84, 0x2e, 0x89, 0xc0, 0x9b, 0x39, 0xc6, 0x08,
+	0x59, 0x82, 0xc1, 0x61, 0xda, 0xce, 0x17, 0xf4, 0xb2, 0x02, 0x6d, 0xc1, 0x18, 0x18, 0x39, 0x81,
+	0x58, 0x37, 0xf3, 0xed, 0x2c, 0x55, 0xb3, 0x18, 0x85, 0x56, 0xbb, 0x94, 0x5b, 0xdd, 0xbd, 0xd6,
+	0xe5, 0x86, 0x8b, 0xda, 0x55, 0x9c, 0x53, 0x8f, 0xba, 0x5e, 0x10, 0xb4, 0x16, 0xa7, 0xb6, 0xdf,
+	0x89, 0x27, 0xc0, 0x61, 0x27, 0x1e, 0x69, 0xdf, 0x82, 0xe7, 0xc2, 0x90, 0xcf, 0x34, 0xdc, 0x92,
+	0x8e, 0x29, 0x99, 0xcc, 0x7c, 0x17, 0x96, 0xe6, 0x64, 0x2a, 0x2c, 0xed, 0x72, 0x31, 0x6b, 0x16,
+	0xcd, 0x78, 0xa7, 0xb3, 0xd1, 0xf6, 0x3b, 0xf1, 0x74, 0x39, 0x1b, 0x6d, 0xdf, 0x82, 0xe7, 0xca,
+	0x10, 0xe8, 0x3d, 0x23, 0xd4, 0xa5, 0xc2, 0x6f, 0x20, 0xba, 0xaa, 0x36, 0x90, 0x2e, 0x00, 0xb8,
+	0x02, 0xcd, 0x80, 0x9b, 0x5a, 0x39, 0x77, 0xc5, 0xa8, 0xf4, 0x9b, 0x31, 0xd7, 0x75, 0x3a, 0xeb,
+	0x08, 0xd9, 0xce, 0x72, 0x53, 0x2b, 0x80, 0xae, 0x98, 0xed, 0x3c, 0x3f, 0x74, 0x5b, 0xe2, 0x8c,
+	0x45, 0x1b, 0x86, 0x26, 0x2f, 0x3a, 0xa6, 0xd4, 0x04, 0xf5, 0x64, 0x8b, 0xec, 0x15, 0x4d, 0x11,
+	0x27, 0x7e, 0xf6, 0xaa, 0x73, 0x7e, 0xe9, 0xf3, 0x5a, 0x39, 0xaa, 0x7d, 0x93, 0x18, 0xce, 0x40,
+	0x60, 0xbd, 0x92, 0xc0, 0x6c, 0xe3, 0x5a, 0x82, 0xbb, 0x4d, 0x83, 0x96, 0x57, 0xae, 0xe5, 0xba,
+	0x79, 0xab, 0x09, 0x75, 0xb4, 0x82, 0x29, 0x15, 0x37, 0xc4, 0x6b, 0x3e, 0xa0, 0x9d, 0xbf, 0xfa,
+	0xa6, 0x15, 0xd0, 0x2d, 0xe9, 0xea, 0xaa, 0xf7, 0x8c, 0xc7, 0xa3, 0x5d, 0x8a, 0xaa, 0x6f, 0xbc,
+	0x04, 0xc1, 0x75, 0xed, 0x60, 0x5e, 0x25, 0xfe, 0x73, 0x3d, 0x8c, 0x62, 0x2e, 0xef, 0x5a, 0x75,
+	0x83, 0xb9, 0x76, 0x46, 0xad, 0x98, 0x2f, 0xd7, 0x99, 0x8b, 0x11, 0xb5, 0xd9, 0x7e, 0x8e, 0x0e,
+	0x0b, 0xfb, 0xb6, 0x75, 0x2a, 0x46, 0xb4, 0x6d, 0x8c, 0xe8, 0xbe, 0x31, 0xa2, 0xf7, 0x8d, 0x11,
+	0x3d, 0x80, 0x11, 0x9d, 0xbf, 0x71, 0x21, 0xb8, 0xed, 0x3a, 0x58, 0xe8, 0xaf, 0x08, 0x30, 0x9f,
+	0xfa, 0xcd, 0x2a, 0xd8, 0x1c, 0x91, 0x72, 0xfb, 0x18, 0x13, 0x9e, 0x7f, 0xc9, 0xe4, 0x11, 0x0e,
+	0x8c, 0x08, 0x0f, 0x20, 0xc2, 0x8f, 0xfa, 0x89, 0xa7, 0x29, 0x3b, 0x4c, 0x2a, 0x40, 0xa4, 0x09,
+	0x77, 0xe5, 0x93, 0x3e, 0x0f, 0xae, 0xe6, 0x1b, 0xe1, 0x6d, 0x45, 0xa0, 0xe5, 0x4e, 0x60, 0x9a,
+	0xd4, 0xf6, 0x64, 0xd3, 0xa4, 0xb6, 0x0b, 0x3b, 0xbf, 0x75, 0xf1, 0xc2, 0x84, 0xba, 0x3c, 0x06,
+	0xb1, 0x52, 0xbd, 0x09, 0x49, 0x50, 0x4f, 0xa8, 0x8f, 0x3f, 0x2b, 0x2f, 0xc2, 0x5a, 0x0b, 0x91,
+	0xbb, 0x24, 0x96, 0x8d, 0x8d, 0xeb, 0x4f, 0x43, 0xb9, 0x1b, 0x33, 0x9e, 0xbd, 0xba, 0x46, 0xce,
+	0x1f, 0x7d, 0x88, 0x77, 0xfc, 0x21, 0xa8, 0xf5, 0xac, 0xb1, 0x99, 0xe7, 0x53, 0x34, 0xbc, 0x63,
+	0xfc, 0xc1, 0xe3, 0x81, 0x0b, 0x3e, 0x32, 0x05, 0xc9, 0x7f, 0xa7, 0xb2, 0xb4, 0x98, 0xea, 0x7f,
+	0xe1, 0xd8, 0xfe, 0x07, 0x00, 0x00, 0xff, 0xff, 0x6d, 0x5e, 0x49, 0xaf, 0x46, 0x0f, 0x00, 0x00,
 }

@@ -532,7 +532,7 @@ func UsrSvrOfflineReqHandler(cmd uint32, orig uint32, data []byte, length uint32
  **     ttl: 该token的最大生命时间
  **作    者: # Qifeng.zou # 2016.11.03 16:41:28 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) join_req_isvalid(req *mesg.MesgJoinReq) bool {
+func (ctx *UsrSvrCntx) join_req_isvalid(req *mesg.MesgRoomJoin) bool {
 	/* > TOKEN解码 */
 	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
 	token := crypt.Decode(cry, req.GetToken())
@@ -574,12 +574,12 @@ func (ctx *UsrSvrCntx) join_req_isvalid(req *mesg.MesgJoinReq) bool {
  **作    者: # Qifeng.zou # 2016.11.03 16:41:17 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) join_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgJoinReq) {
+	head *comm.MesgHeader, req *mesg.MesgRoomJoin) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgJoinReq{}
+	req = &mesg.MesgRoomJoin{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal join request failed! errmsg:%s", err.Error())
@@ -617,9 +617,9 @@ func (ctx *UsrSvrCntx) join_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_join_ack(head *comm.MesgHeader,
-	req *mesg.MesgJoinReq, code uint32, errmsg string) int {
+	req *mesg.MesgRoomJoin, code uint32, errmsg string) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgJoinAck{
+	rsp := &mesg.MesgRoomJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Gid:    proto.Uint32(0),
@@ -670,9 +670,9 @@ func (ctx *UsrSvrCntx) send_err_join_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgJoinReq, gid uint32) int {
+func (ctx *UsrSvrCntx) send_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJoin, gid uint32) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgJoinAck{
+	rsp := &mesg.MesgRoomJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Gid:    proto.Uint32(gid),
@@ -764,7 +764,7 @@ func (ctx *UsrSvrCntx) alloc_gid(rid uint64) (gid uint32, err error) {
  **作    者: # Qifeng.zou # 2016.11.03 19:51:46 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) join_handler(
-	head *comm.MesgHeader, req *mesg.MesgJoinReq) (gid uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgRoomJoin) (gid uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -896,7 +896,7 @@ func UsrSvrJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, p
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:26:22 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
+func (ctx *UsrSvrCntx) unjoin_req_isvalid(req *mesg.MesgRoomQuit) bool {
 	if 0 == req.GetUid() || 0 == req.GetRid() {
 		return false
 	}
@@ -904,7 +904,7 @@ func (ctx *UsrSvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
 }
 
 /******************************************************************************
- **函数名称: send_err_unjoin_ack
+ **函数名称: send_err_room_quit_ack
  **功    能: 发送UNJOIN应答(异常)
  **输入参数:
  **     head: 协议头
@@ -925,10 +925,10 @@ func (ctx *UsrSvrCntx) unjoin_req_isvalid(req *mesg.MesgUnjoinReq) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:20:34 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
-	req *mesg.MesgUnjoinReq, code uint32, errmsg string) int {
+func (ctx *UsrSvrCntx) send_err_room_quit_ack(head *comm.MesgHeader,
+	req *mesg.MesgRoomQuit, code uint32, errmsg string) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgUnjoinAck{
+	rsp := &mesg.MesgRoomQuitAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Code:   proto.Uint32(code),
@@ -948,20 +948,20 @@ func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_ROOM_UNJOIN_ACK
+	head.Cmd = comm.CMD_ROOM_QUIT_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_ROOM_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_QUIT_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
 
 /******************************************************************************
- **函数名称: unjoin_parse
+ **函数名称: room_quit_parse
  **功    能: 解析UNJOIN请求
  **输入参数:
  **     data: 接收的数据
@@ -973,13 +973,13 @@ func (ctx *UsrSvrCntx) send_err_unjoin_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:18:29 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) unjoin_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgUnjoinReq) {
+func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgRoomQuit) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgUnjoinReq{}
+	req = &mesg.MesgRoomQuit{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal join request failed! errmsg:%s", err.Error())
@@ -995,7 +995,7 @@ func (ctx *UsrSvrCntx) unjoin_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_unjoin_ack
+ **函数名称: send_room_quit_ack
  **功    能: 发送UNJOIN应答
  **输入参数:
  **输出参数: NONE
@@ -1012,9 +1012,9 @@ func (ctx *UsrSvrCntx) unjoin_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjoinReq) int {
+func (ctx *UsrSvrCntx) send_room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgUnjoinAck{
+	rsp := &mesg.MesgRoomQuitAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Rid:    proto.Uint64(req.GetRid()),
 		Code:   proto.Uint32(0),
@@ -1034,21 +1034,21 @@ func (ctx *UsrSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjo
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_ROOM_UNJOIN_ACK
+	head.Cmd = comm.CMD_ROOM_QUIT_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_ROOM_UNJOIN_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_QUIT_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
 
 /******************************************************************************
- **函数名称: unjoin_handler
- **功    能: UNJOIN处理
+ **函数名称: room_quit_handler
+ **功    能: 退出聊天室处理
  **输入参数:
  **     head: 协议头
  **     req: UNJOIN请求
@@ -1058,8 +1058,8 @@ func (ctx *UsrSvrCntx) send_unjoin_ack(head *comm.MesgHeader, req *mesg.MesgUnjo
  **注意事项: 已验证了UNJION请求的合法性
  **作    者: # Qifeng.zou # 2016.11.03 21:28:18 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) unjoin_handler(
-	head *comm.MesgHeader, req *mesg.MesgUnjoinReq) (err error) {
+func (ctx *UsrSvrCntx) room_quit_handler(
+	head *comm.MesgHeader, req *mesg.MesgRoomQuit) (err error) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -1073,7 +1073,7 @@ func (ctx *UsrSvrCntx) unjoin_handler(
 }
 
 /******************************************************************************
- **函数名称: UsrSvrUnjoinReqHandler
+ **函数名称: UsrSvrRoomQuitReqHandler
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -1092,27 +1092,27 @@ func (ctx *UsrSvrCntx) unjoin_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrUnjoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomQuitReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if false == ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv unjoin request!")
+	ctx.log.Debug("Recv room quit request!")
 
 	/* 1. > 解析UNJOIN请求 */
-	head, req := ctx.unjoin_parse(data)
+	head, req := ctx.room_quit_parse(data)
 	if nil == head || nil != req {
 		ctx.log.Error("Parse join request failed!")
-		ctx.send_err_unjoin_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
+		ctx.send_err_room_quit_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
 		return -1
 	}
 
 	/* 2. > 退出聊天室处理 */
-	ctx.unjoin_handler(head, req)
+	ctx.room_quit_handler(head, req)
 
 	/* 3. > 发送UNJOIN应答 */
-	ctx.send_unjoin_ack(head, req)
+	ctx.send_room_quit_ack(head, req)
 
 	return 0
 }

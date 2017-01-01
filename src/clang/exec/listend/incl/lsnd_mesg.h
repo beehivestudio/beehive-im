@@ -12,8 +12,8 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
 int lsnd_mesg_offline_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args);
 int lsnd_mesg_offline_ack_handler(int type, int orig, char *data, size_t len, void *args);
 
-int lsnd_mesg_join_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args);
-int lsnd_mesg_join_ack_handler(int type, int orig, char *data, size_t len, void *args);
+int lsnd_mesg_room_join_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args);
+int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, void *args);
 
 int lsnd_mesg_unjoin_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args);
 int lsnd_mesg_ping_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args);

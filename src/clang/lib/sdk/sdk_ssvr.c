@@ -4,8 +4,7 @@
 #include "cmd_list.h"
 #include "sdk_mesg.h"
 #include "sdk_comm.h"
-#include "mesg_online.pb-c.h"
-#include "mesg_online_ack.pb-c.h"
+#include "mesg.pb-c.h"
 
 #include <math.h>
 #include <curl/curl.h>

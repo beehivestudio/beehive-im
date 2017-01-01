@@ -279,7 +279,7 @@ int lsnd_mesg_offline_req_handler(lsnd_conn_extra_t *conn, int type, void *data,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_join_req_handler
+ **函数名称: lsnd_mesg_room_join_req_handler
  **功    能: JOIN请求处理
  **输入参数:
  **     conn: 连接信息
@@ -293,7 +293,7 @@ int lsnd_mesg_offline_req_handler(lsnd_conn_extra_t *conn, int type, void *data,
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int lsnd_mesg_join_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_room_join_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -315,7 +315,7 @@ int lsnd_mesg_join_req_handler(lsnd_conn_extra_t *conn, int type, void *data, in
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_join_ack_handler
+ **函数名称: lsnd_mesg_room_join_ack_handler
  **功    能: JOIN应答处理
  **输入参数:
  **     type: 数据类型
@@ -329,11 +329,11 @@ int lsnd_mesg_join_req_handler(lsnd_conn_extra_t *conn, int type, void *data, in
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.20 23:40:12 #
  ******************************************************************************/
-int lsnd_mesg_join_ack_handler(int type, int orig, char *data, size_t len, void *args)
+int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, void *args)
 {
     uint32_t gid;
     uint64_t cid;
-    MesgJoinAck *ack;
+    MesgRoomJoinAck *ack;
     lsnd_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -345,7 +345,7 @@ int lsnd_mesg_join_ack_handler(int type, int orig, char *data, size_t len, void 
     log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 提取应答信息 */
-    ack = mesg_join_ack__unpack(NULL, hhead.length, (void *)(head + 1));
+    ack = mesg_room_join_ack__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == ack) {
         log_error(lsnd->log, "Unpack join ack body failed!");
         return 0;
@@ -357,12 +357,12 @@ int lsnd_mesg_join_ack_handler(int type, int orig, char *data, size_t len, void 
     extra = hash_tab_query(lsnd->conn_sid_tab, &key, WRLOCK); // 加写锁
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
-        mesg_join_ack__free_unpacked(ack, NULL);
+        mesg_room_join_ack__free_unpacked(ack, NULL);
         return 0;
     }
     else if (CHAT_CONN_STAT_ONLINE != extra->stat) {
         hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
-        mesg_join_ack__free_unpacked(ack, NULL);
+        mesg_room_join_ack__free_unpacked(ack, NULL);
         log_error(lsnd->log, "Connection status isn't online! sid:%lu", hhead.sid);
         return 0;
     }
@@ -379,12 +379,12 @@ int lsnd_mesg_join_ack_handler(int type, int orig, char *data, size_t len, void 
         log_error(lsnd->log, "Add into chat room failed! sid:%lu rid:%lu gid:%u",
                 hhead.sid, ack->rid, ack->gid);
         hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
-        mesg_join_ack__free_unpacked(ack, NULL);
+        mesg_room_join_ack__free_unpacked(ack, NULL);
         return -1;
     }
 
     hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
-    mesg_join_ack__free_unpacked(ack, NULL);
+    mesg_room_join_ack__free_unpacked(ack, NULL);
 
     /* 下发应答请求 */
     return acc_async_send(lsnd->access, type, cid, data, len);

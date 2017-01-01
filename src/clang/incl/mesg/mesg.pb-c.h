@@ -17,15 +17,71 @@ PROTOBUF_C__BEGIN_DECLS
 
 typedef struct _MesgOnlineReq MesgOnlineReq;
 typedef struct _MesgOnlineAck MesgOnlineAck;
-typedef struct _MesgJoinReq MesgJoinReq;
-typedef struct _MesgJoinAck MesgJoinAck;
-typedef struct _MesgUnjoinReq MesgUnjoinReq;
+typedef struct _MesgSubReq MesgSubReq;
+typedef struct _MesgSubAck MesgSubAck;
+typedef struct _MesgUnsubReq MesgUnsubReq;
+typedef struct _MesgUnsubAck MesgUnsubAck;
+typedef struct _MesgUnusualbReq MesgUnusualbReq;
+typedef struct _MesgAllocSeq MesgAllocSeq;
+typedef struct _MesgAllocSeqAck MesgAllocSeqAck;
+typedef struct _MesgKickReq MesgKickReq;
+typedef struct _MesgPrvtChat MesgPrvtChat;
+typedef struct _MesgPrvtChatAck MesgPrvtChatAck;
+typedef struct _MesgGroupCreat MesgGroupCreat;
+typedef struct _MesgGroupCreatAck MesgGroupCreatAck;
+typedef struct _MesgGroupDismiss MesgGroupDismiss;
+typedef struct _MesgGroupDismissAck MesgGroupDismissAck;
+typedef struct _MesgGroupApply MesgGroupApply;
+typedef struct _MesgGroupApplyAck MesgGroupApplyAck;
+typedef struct _MesgGroupQuit MesgGroupQuit;
+typedef struct _MesgGroupQuitAck MesgGroupQuitAck;
+typedef struct _MesgGroupInvite MesgGroupInvite;
+typedef struct _MesgGroupInviteAck MesgGroupInviteAck;
+typedef struct _MesgGroupChat MesgGroupChat;
+typedef struct _MesgGroupChatAck MesgGroupChatAck;
+typedef struct _MesgGroupKick MesgGroupKick;
+typedef struct _MesgGroupKickAck MesgGroupKickAck;
+typedef struct _MesgGroupBanAdd MesgGroupBanAdd;
+typedef struct _MesgGroupBanAddAck MesgGroupBanAddAck;
+typedef struct _MesgGroupBanDel MesgGroupBanDel;
+typedef struct _MesgGroupBanDelAck MesgGroupBanDelAck;
+typedef struct _MesgGroupBlAdd MesgGroupBlAdd;
+typedef struct _MesgGroupBlAddAck MesgGroupBlAddAck;
+typedef struct _MesgGroupBlDel MesgGroupBlDel;
+typedef struct _MesgGroupBlDelAck MesgGroupBlDelAck;
+typedef struct _MesgGroupMgrAdd MesgGroupMgrAdd;
+typedef struct _MesgGroupMgrAddAck MesgGroupMgrAddAck;
+typedef struct _MesgGroupMgrDel MesgGroupMgrDel;
+typedef struct _MesgGroupMgrDelAck MesgGroupMgrDelAck;
+typedef struct _MesgGroupJoinNtc MesgGroupJoinNtc;
+typedef struct _MesgGroupQuitNtc MesgGroupQuitNtc;
+typedef struct _MesgGroupKickNtc MesgGroupKickNtc;
+typedef struct _MesgGroupBanAddNtc MesgGroupBanAddNtc;
+typedef struct _MesgGroupBanDelNtc MesgGroupBanDelNtc;
+typedef struct _MesgGroupBlAddNtc MesgGroupBlAddNtc;
+typedef struct _MesgGroupBlDelNtc MesgGroupBlDelNtc;
+typedef struct _MesgGroupMgrAddNtc MesgGroupMgrAddNtc;
+typedef struct _MesgGroupMgrDelNtc MesgGroupMgrDelNtc;
+typedef struct _MesgRoomCreat MesgRoomCreat;
+typedef struct _MesgRoomCreatAck MesgRoomCreatAck;
+typedef struct _MesgRoomDismiss MesgRoomDismiss;
+typedef struct _MesgRoomDismissAck MesgRoomDismissAck;
+typedef struct _MesgRoomJoin MesgRoomJoin;
+typedef struct _MesgRoomJoinAck MesgRoomJoinAck;
+typedef struct _MesgRoomQuit MesgRoomQuit;
+typedef struct _MesgRoomQuitAck MesgRoomQuitAck;
+typedef struct _MesgRoomKick MesgRoomKick;
+typedef struct _MesgRoomKickAck MesgRoomKickAck;
 typedef struct _MesgRoom MesgRoom;
 typedef struct _MesgRoomAck MesgRoomAck;
-typedef struct _MesgGroup MesgGroup;
-typedef struct _MesgGroupAck MesgGroupAck;
+typedef struct _MesgRoomBc MesgRoomBc;
+typedef struct _MesgRoomBcAck MesgRoomBcAck;
+typedef struct _MesgRoomUsrNum MesgRoomUsrNum;
+typedef struct _MesgRoomJoinNtc MesgRoomJoinNtc;
+typedef struct _MesgRoomQuitNtc MesgRoomQuitNtc;
+typedef struct _MesgRoomKickNtc MesgRoomKickNtc;
 typedef struct _MesgLsnRpt MesgLsnRpt;
-typedef struct _MesgKickReq MesgKickReq;
+typedef struct _MesgFrwdRpt MesgFrwdRpt;
 
 
 /* --- enums --- */
@@ -66,19 +122,576 @@ struct  _MesgOnlineAck
     , 0, 0, NULL, NULL, 0,0, 0, NULL }
 
 
-struct  _MesgJoinReq
+struct  _MesgSubReq
+{
+  ProtobufCMessage base;
+  protobuf_c_boolean has_sub;
+  uint32_t sub;
+};
+#define MESG_SUB_REQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_sub_req__descriptor) \
+    , 0,0 }
+
+
+struct  _MesgSubAck
+{
+  ProtobufCMessage base;
+  uint32_t sub;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_SUB_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_sub_ack__descriptor) \
+    , 0, 0, NULL }
+
+
+struct  _MesgUnsubReq
+{
+  ProtobufCMessage base;
+  uint32_t sub;
+};
+#define MESG_UNSUB_REQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_unsub_req__descriptor) \
+    , 0 }
+
+
+struct  _MesgUnsubAck
+{
+  ProtobufCMessage base;
+  uint32_t sub;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_UNSUB_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_unsub_ack__descriptor) \
+    , 0, 0, NULL }
+
+
+struct  _MesgUnusualbReq
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_UNUSUALB_REQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_unusualb_req__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgAllocSeq
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint32_t num;
+};
+#define MESG_ALLOC_SEQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_alloc_seq__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgAllocSeqAck
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t seq;
+  uint32_t num;
+};
+#define MESG_ALLOC_SEQ_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_alloc_seq_ack__descriptor) \
+    , 0, 0, 0 }
+
+
+struct  _MesgKickReq
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_KICK_REQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_kick_req__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgPrvtChat
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+  uint32_t level;
+  uint64_t time;
+  char *text;
+  protobuf_c_boolean has_data;
+  ProtobufCBinaryData data;
+};
+#define MESG_PRVT_CHAT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_prvt_chat__descriptor) \
+    , 0, 0, 0, 0, NULL, 0,{0,NULL} }
+
+
+struct  _MesgPrvtChatAck
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_PRVT_CHAT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_prvt_chat_ack__descriptor) \
+    , 0, 0, NULL }
+
+
+struct  _MesgGroupCreat
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_CREAT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_creat__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupCreatAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_CREAT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_creat_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupDismiss
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_DISMISS__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_dismiss__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupDismissAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_DISMISS_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_dismiss_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupApply
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_APPLY__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_apply__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupApplyAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_APPLY_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_apply_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupQuit
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_QUIT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_quit__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupQuitAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_QUIT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_quit_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupInvite
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+  uint64_t to;
+};
+#define MESG_GROUP_INVITE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_invite__descriptor) \
+    , 0, 0, 0 }
+
+
+struct  _MesgGroupInviteAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_INVITE_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_invite_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupChat
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+  uint32_t level;
+  uint64_t time;
+  char *text;
+  protobuf_c_boolean has_data;
+  ProtobufCBinaryData data;
+};
+#define MESG_GROUP_CHAT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_chat__descriptor) \
+    , 0, 0, 0, 0, NULL, 0,{0,NULL} }
+
+
+struct  _MesgGroupChatAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_CHAT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_chat_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupKick
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_KICK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_kick__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupKickAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_KICK_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_kick_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupBanAdd
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BAN_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_add__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBanAddAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_BAN_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_add_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupBanDel
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BAN_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_del__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBanDelAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_BAN_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_del_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupBlAdd
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BL_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_bl_add__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBlAddAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_BL_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_bl_add_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupBlDel
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BL_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_bl_del__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBlDelAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_BL_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_bl_del_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupMgrAdd
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_MGR_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_mgr_add__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupMgrAddAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_MGR_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_mgr_add_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupMgrDel
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_MGR_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_mgr_del__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupMgrDelAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_GROUP_MGR_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_mgr_del_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgGroupJoinNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_JOIN_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_join_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupQuitNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_QUIT_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_quit_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupKickNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_KICK_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_kick_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBanAddNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BAN_ADD_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_add_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBanDelNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BAN_DEL_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_del_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBlAddNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BL_ADD_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_bl_add_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupBlDelNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_BL_DEL_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_bl_del_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupMgrAddNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_MGR_ADD_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_mgr_add_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupMgrDelNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t gid;
+};
+#define MESG_GROUP_MGR_DEL_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_mgr_del_ntc__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgRoomCreat
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t rid;
+  char *name;
+  char *desc;
+};
+#define MESG_ROOM_CREAT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_creat__descriptor) \
+    , 0, 0, NULL, NULL }
+
+
+struct  _MesgRoomCreatAck
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t rid;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_ROOM_CREAT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_creat_ack__descriptor) \
+    , 0, 0, 0, NULL }
+
+
+struct  _MesgRoomDismiss
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t rid;
+};
+#define MESG_ROOM_DISMISS__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_dismiss__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgRoomDismissAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_ROOM_DISMISS_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_dismiss_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgRoomJoin
 {
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t rid;
   char *token;
 };
-#define MESG_JOIN_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_join_req__descriptor) \
+#define MESG_ROOM_JOIN__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_join__descriptor) \
     , 0, 0, NULL }
 
 
-struct  _MesgJoinAck
+struct  _MesgRoomJoinAck
 {
   ProtobufCMessage base;
   uint64_t uid;
@@ -87,19 +700,54 @@ struct  _MesgJoinAck
   uint32_t code;
   char *errmsg;
 };
-#define MESG_JOIN_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_join_ack__descriptor) \
+#define MESG_ROOM_JOIN_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_join_ack__descriptor) \
     , 0, 0, 0, 0, NULL }
 
 
-struct  _MesgUnjoinReq
+struct  _MesgRoomQuit
 {
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t rid;
 };
-#define MESG_UNJOIN_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_unjoin_req__descriptor) \
+#define MESG_ROOM_QUIT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_quit__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgRoomQuitAck
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t rid;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_ROOM_QUIT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_quit_ack__descriptor) \
+    , 0, 0, 0, NULL }
+
+
+struct  _MesgRoomKick
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t rid;
+};
+#define MESG_ROOM_KICK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_kick__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgRoomKickAck
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t rid;
+};
+#define MESG_ROOM_KICK_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_kick_ack__descriptor) \
     , 0, 0 }
 
 
@@ -131,31 +779,73 @@ struct  _MesgRoomAck
     , 0, NULL }
 
 
-struct  _MesgGroup
+struct  _MesgRoomBc
 {
   ProtobufCMessage base;
   uint64_t uid;
-  uint64_t gid;
+  uint64_t rid;
   uint32_t level;
   uint64_t time;
+  uint32_t expire;
   char *text;
   protobuf_c_boolean has_data;
   ProtobufCBinaryData data;
 };
-#define MESG_GROUP__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group__descriptor) \
-    , 0, 0, 0, 0, NULL, 0,{0,NULL} }
+#define MESG_ROOM_BC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_bc__descriptor) \
+    , 0, 0, 0, 0, 0, NULL, 0,{0,NULL} }
 
 
-struct  _MesgGroupAck
+struct  _MesgRoomBcAck
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_GROUP_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ack__descriptor) \
+#define MESG_ROOM_BC_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_bc_ack__descriptor) \
     , 0, NULL }
+
+
+struct  _MesgRoomUsrNum
+{
+  ProtobufCMessage base;
+  uint64_t rid;
+  uint32_t num;
+};
+#define MESG_ROOM_USR_NUM__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_usr_num__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgRoomJoinNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+};
+#define MESG_ROOM_JOIN_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_join_ntc__descriptor) \
+    , 0 }
+
+
+struct  _MesgRoomQuitNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+};
+#define MESG_ROOM_QUIT_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_quit_ntc__descriptor) \
+    , 0 }
+
+
+struct  _MesgRoomKickNtc
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+};
+#define MESG_ROOM_KICK_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_kick_ntc__descriptor) \
+    , 0 }
 
 
 struct  _MesgLsnRpt
@@ -172,15 +862,17 @@ struct  _MesgLsnRpt
     , 0, NULL, NULL, NULL, 0 }
 
 
-struct  _MesgKickReq
+struct  _MesgFrwdRpt
 {
   ProtobufCMessage base;
-  uint32_t code;
-  char *errmsg;
+  uint32_t nid;
+  char *ipaddr;
+  uint32_t forward_port;
+  uint32_t backend_port;
 };
-#define MESG_KICK_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_kick_req__descriptor) \
-    , 0, NULL }
+#define MESG_FRWD_RPT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_frwd_rpt__descriptor) \
+    , 0, NULL, 0, 0 }
 
 
 /* MesgOnlineReq methods */
@@ -221,62 +913,1050 @@ MesgOnlineAck *
 void   mesg_online_ack__free_unpacked
                      (MesgOnlineAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgJoinReq methods */
-void   mesg_join_req__init
-                     (MesgJoinReq         *message);
-size_t mesg_join_req__get_packed_size
-                     (const MesgJoinReq   *message);
-size_t mesg_join_req__pack
-                     (const MesgJoinReq   *message,
+/* MesgSubReq methods */
+void   mesg_sub_req__init
+                     (MesgSubReq         *message);
+size_t mesg_sub_req__get_packed_size
+                     (const MesgSubReq   *message);
+size_t mesg_sub_req__pack
+                     (const MesgSubReq   *message,
                       uint8_t             *out);
-size_t mesg_join_req__pack_to_buffer
-                     (const MesgJoinReq   *message,
+size_t mesg_sub_req__pack_to_buffer
+                     (const MesgSubReq   *message,
                       ProtobufCBuffer     *buffer);
-MesgJoinReq *
-       mesg_join_req__unpack
+MesgSubReq *
+       mesg_sub_req__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_join_req__free_unpacked
-                     (MesgJoinReq *message,
+void   mesg_sub_req__free_unpacked
+                     (MesgSubReq *message,
                       ProtobufCAllocator *allocator);
-/* MesgJoinAck methods */
-void   mesg_join_ack__init
-                     (MesgJoinAck         *message);
-size_t mesg_join_ack__get_packed_size
-                     (const MesgJoinAck   *message);
-size_t mesg_join_ack__pack
-                     (const MesgJoinAck   *message,
+/* MesgSubAck methods */
+void   mesg_sub_ack__init
+                     (MesgSubAck         *message);
+size_t mesg_sub_ack__get_packed_size
+                     (const MesgSubAck   *message);
+size_t mesg_sub_ack__pack
+                     (const MesgSubAck   *message,
                       uint8_t             *out);
-size_t mesg_join_ack__pack_to_buffer
-                     (const MesgJoinAck   *message,
+size_t mesg_sub_ack__pack_to_buffer
+                     (const MesgSubAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgJoinAck *
-       mesg_join_ack__unpack
+MesgSubAck *
+       mesg_sub_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_join_ack__free_unpacked
-                     (MesgJoinAck *message,
+void   mesg_sub_ack__free_unpacked
+                     (MesgSubAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgUnjoinReq methods */
-void   mesg_unjoin_req__init
-                     (MesgUnjoinReq         *message);
-size_t mesg_unjoin_req__get_packed_size
-                     (const MesgUnjoinReq   *message);
-size_t mesg_unjoin_req__pack
-                     (const MesgUnjoinReq   *message,
+/* MesgUnsubReq methods */
+void   mesg_unsub_req__init
+                     (MesgUnsubReq         *message);
+size_t mesg_unsub_req__get_packed_size
+                     (const MesgUnsubReq   *message);
+size_t mesg_unsub_req__pack
+                     (const MesgUnsubReq   *message,
                       uint8_t             *out);
-size_t mesg_unjoin_req__pack_to_buffer
-                     (const MesgUnjoinReq   *message,
+size_t mesg_unsub_req__pack_to_buffer
+                     (const MesgUnsubReq   *message,
                       ProtobufCBuffer     *buffer);
-MesgUnjoinReq *
-       mesg_unjoin_req__unpack
+MesgUnsubReq *
+       mesg_unsub_req__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_unjoin_req__free_unpacked
-                     (MesgUnjoinReq *message,
+void   mesg_unsub_req__free_unpacked
+                     (MesgUnsubReq *message,
+                      ProtobufCAllocator *allocator);
+/* MesgUnsubAck methods */
+void   mesg_unsub_ack__init
+                     (MesgUnsubAck         *message);
+size_t mesg_unsub_ack__get_packed_size
+                     (const MesgUnsubAck   *message);
+size_t mesg_unsub_ack__pack
+                     (const MesgUnsubAck   *message,
+                      uint8_t             *out);
+size_t mesg_unsub_ack__pack_to_buffer
+                     (const MesgUnsubAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgUnsubAck *
+       mesg_unsub_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_unsub_ack__free_unpacked
+                     (MesgUnsubAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgUnusualbReq methods */
+void   mesg_unusualb_req__init
+                     (MesgUnusualbReq         *message);
+size_t mesg_unusualb_req__get_packed_size
+                     (const MesgUnusualbReq   *message);
+size_t mesg_unusualb_req__pack
+                     (const MesgUnusualbReq   *message,
+                      uint8_t             *out);
+size_t mesg_unusualb_req__pack_to_buffer
+                     (const MesgUnusualbReq   *message,
+                      ProtobufCBuffer     *buffer);
+MesgUnusualbReq *
+       mesg_unusualb_req__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_unusualb_req__free_unpacked
+                     (MesgUnusualbReq *message,
+                      ProtobufCAllocator *allocator);
+/* MesgAllocSeq methods */
+void   mesg_alloc_seq__init
+                     (MesgAllocSeq         *message);
+size_t mesg_alloc_seq__get_packed_size
+                     (const MesgAllocSeq   *message);
+size_t mesg_alloc_seq__pack
+                     (const MesgAllocSeq   *message,
+                      uint8_t             *out);
+size_t mesg_alloc_seq__pack_to_buffer
+                     (const MesgAllocSeq   *message,
+                      ProtobufCBuffer     *buffer);
+MesgAllocSeq *
+       mesg_alloc_seq__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_alloc_seq__free_unpacked
+                     (MesgAllocSeq *message,
+                      ProtobufCAllocator *allocator);
+/* MesgAllocSeqAck methods */
+void   mesg_alloc_seq_ack__init
+                     (MesgAllocSeqAck         *message);
+size_t mesg_alloc_seq_ack__get_packed_size
+                     (const MesgAllocSeqAck   *message);
+size_t mesg_alloc_seq_ack__pack
+                     (const MesgAllocSeqAck   *message,
+                      uint8_t             *out);
+size_t mesg_alloc_seq_ack__pack_to_buffer
+                     (const MesgAllocSeqAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgAllocSeqAck *
+       mesg_alloc_seq_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_alloc_seq_ack__free_unpacked
+                     (MesgAllocSeqAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgKickReq methods */
+void   mesg_kick_req__init
+                     (MesgKickReq         *message);
+size_t mesg_kick_req__get_packed_size
+                     (const MesgKickReq   *message);
+size_t mesg_kick_req__pack
+                     (const MesgKickReq   *message,
+                      uint8_t             *out);
+size_t mesg_kick_req__pack_to_buffer
+                     (const MesgKickReq   *message,
+                      ProtobufCBuffer     *buffer);
+MesgKickReq *
+       mesg_kick_req__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_kick_req__free_unpacked
+                     (MesgKickReq *message,
+                      ProtobufCAllocator *allocator);
+/* MesgPrvtChat methods */
+void   mesg_prvt_chat__init
+                     (MesgPrvtChat         *message);
+size_t mesg_prvt_chat__get_packed_size
+                     (const MesgPrvtChat   *message);
+size_t mesg_prvt_chat__pack
+                     (const MesgPrvtChat   *message,
+                      uint8_t             *out);
+size_t mesg_prvt_chat__pack_to_buffer
+                     (const MesgPrvtChat   *message,
+                      ProtobufCBuffer     *buffer);
+MesgPrvtChat *
+       mesg_prvt_chat__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_prvt_chat__free_unpacked
+                     (MesgPrvtChat *message,
+                      ProtobufCAllocator *allocator);
+/* MesgPrvtChatAck methods */
+void   mesg_prvt_chat_ack__init
+                     (MesgPrvtChatAck         *message);
+size_t mesg_prvt_chat_ack__get_packed_size
+                     (const MesgPrvtChatAck   *message);
+size_t mesg_prvt_chat_ack__pack
+                     (const MesgPrvtChatAck   *message,
+                      uint8_t             *out);
+size_t mesg_prvt_chat_ack__pack_to_buffer
+                     (const MesgPrvtChatAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgPrvtChatAck *
+       mesg_prvt_chat_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_prvt_chat_ack__free_unpacked
+                     (MesgPrvtChatAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupCreat methods */
+void   mesg_group_creat__init
+                     (MesgGroupCreat         *message);
+size_t mesg_group_creat__get_packed_size
+                     (const MesgGroupCreat   *message);
+size_t mesg_group_creat__pack
+                     (const MesgGroupCreat   *message,
+                      uint8_t             *out);
+size_t mesg_group_creat__pack_to_buffer
+                     (const MesgGroupCreat   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupCreat *
+       mesg_group_creat__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_creat__free_unpacked
+                     (MesgGroupCreat *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupCreatAck methods */
+void   mesg_group_creat_ack__init
+                     (MesgGroupCreatAck         *message);
+size_t mesg_group_creat_ack__get_packed_size
+                     (const MesgGroupCreatAck   *message);
+size_t mesg_group_creat_ack__pack
+                     (const MesgGroupCreatAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_creat_ack__pack_to_buffer
+                     (const MesgGroupCreatAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupCreatAck *
+       mesg_group_creat_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_creat_ack__free_unpacked
+                     (MesgGroupCreatAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupDismiss methods */
+void   mesg_group_dismiss__init
+                     (MesgGroupDismiss         *message);
+size_t mesg_group_dismiss__get_packed_size
+                     (const MesgGroupDismiss   *message);
+size_t mesg_group_dismiss__pack
+                     (const MesgGroupDismiss   *message,
+                      uint8_t             *out);
+size_t mesg_group_dismiss__pack_to_buffer
+                     (const MesgGroupDismiss   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupDismiss *
+       mesg_group_dismiss__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_dismiss__free_unpacked
+                     (MesgGroupDismiss *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupDismissAck methods */
+void   mesg_group_dismiss_ack__init
+                     (MesgGroupDismissAck         *message);
+size_t mesg_group_dismiss_ack__get_packed_size
+                     (const MesgGroupDismissAck   *message);
+size_t mesg_group_dismiss_ack__pack
+                     (const MesgGroupDismissAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_dismiss_ack__pack_to_buffer
+                     (const MesgGroupDismissAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupDismissAck *
+       mesg_group_dismiss_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_dismiss_ack__free_unpacked
+                     (MesgGroupDismissAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupApply methods */
+void   mesg_group_apply__init
+                     (MesgGroupApply         *message);
+size_t mesg_group_apply__get_packed_size
+                     (const MesgGroupApply   *message);
+size_t mesg_group_apply__pack
+                     (const MesgGroupApply   *message,
+                      uint8_t             *out);
+size_t mesg_group_apply__pack_to_buffer
+                     (const MesgGroupApply   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupApply *
+       mesg_group_apply__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_apply__free_unpacked
+                     (MesgGroupApply *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupApplyAck methods */
+void   mesg_group_apply_ack__init
+                     (MesgGroupApplyAck         *message);
+size_t mesg_group_apply_ack__get_packed_size
+                     (const MesgGroupApplyAck   *message);
+size_t mesg_group_apply_ack__pack
+                     (const MesgGroupApplyAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_apply_ack__pack_to_buffer
+                     (const MesgGroupApplyAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupApplyAck *
+       mesg_group_apply_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_apply_ack__free_unpacked
+                     (MesgGroupApplyAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupQuit methods */
+void   mesg_group_quit__init
+                     (MesgGroupQuit         *message);
+size_t mesg_group_quit__get_packed_size
+                     (const MesgGroupQuit   *message);
+size_t mesg_group_quit__pack
+                     (const MesgGroupQuit   *message,
+                      uint8_t             *out);
+size_t mesg_group_quit__pack_to_buffer
+                     (const MesgGroupQuit   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupQuit *
+       mesg_group_quit__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_quit__free_unpacked
+                     (MesgGroupQuit *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupQuitAck methods */
+void   mesg_group_quit_ack__init
+                     (MesgGroupQuitAck         *message);
+size_t mesg_group_quit_ack__get_packed_size
+                     (const MesgGroupQuitAck   *message);
+size_t mesg_group_quit_ack__pack
+                     (const MesgGroupQuitAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_quit_ack__pack_to_buffer
+                     (const MesgGroupQuitAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupQuitAck *
+       mesg_group_quit_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_quit_ack__free_unpacked
+                     (MesgGroupQuitAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupInvite methods */
+void   mesg_group_invite__init
+                     (MesgGroupInvite         *message);
+size_t mesg_group_invite__get_packed_size
+                     (const MesgGroupInvite   *message);
+size_t mesg_group_invite__pack
+                     (const MesgGroupInvite   *message,
+                      uint8_t             *out);
+size_t mesg_group_invite__pack_to_buffer
+                     (const MesgGroupInvite   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupInvite *
+       mesg_group_invite__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_invite__free_unpacked
+                     (MesgGroupInvite *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupInviteAck methods */
+void   mesg_group_invite_ack__init
+                     (MesgGroupInviteAck         *message);
+size_t mesg_group_invite_ack__get_packed_size
+                     (const MesgGroupInviteAck   *message);
+size_t mesg_group_invite_ack__pack
+                     (const MesgGroupInviteAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_invite_ack__pack_to_buffer
+                     (const MesgGroupInviteAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupInviteAck *
+       mesg_group_invite_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_invite_ack__free_unpacked
+                     (MesgGroupInviteAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupChat methods */
+void   mesg_group_chat__init
+                     (MesgGroupChat         *message);
+size_t mesg_group_chat__get_packed_size
+                     (const MesgGroupChat   *message);
+size_t mesg_group_chat__pack
+                     (const MesgGroupChat   *message,
+                      uint8_t             *out);
+size_t mesg_group_chat__pack_to_buffer
+                     (const MesgGroupChat   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupChat *
+       mesg_group_chat__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_chat__free_unpacked
+                     (MesgGroupChat *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupChatAck methods */
+void   mesg_group_chat_ack__init
+                     (MesgGroupChatAck         *message);
+size_t mesg_group_chat_ack__get_packed_size
+                     (const MesgGroupChatAck   *message);
+size_t mesg_group_chat_ack__pack
+                     (const MesgGroupChatAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_chat_ack__pack_to_buffer
+                     (const MesgGroupChatAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupChatAck *
+       mesg_group_chat_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_chat_ack__free_unpacked
+                     (MesgGroupChatAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupKick methods */
+void   mesg_group_kick__init
+                     (MesgGroupKick         *message);
+size_t mesg_group_kick__get_packed_size
+                     (const MesgGroupKick   *message);
+size_t mesg_group_kick__pack
+                     (const MesgGroupKick   *message,
+                      uint8_t             *out);
+size_t mesg_group_kick__pack_to_buffer
+                     (const MesgGroupKick   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupKick *
+       mesg_group_kick__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_kick__free_unpacked
+                     (MesgGroupKick *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupKickAck methods */
+void   mesg_group_kick_ack__init
+                     (MesgGroupKickAck         *message);
+size_t mesg_group_kick_ack__get_packed_size
+                     (const MesgGroupKickAck   *message);
+size_t mesg_group_kick_ack__pack
+                     (const MesgGroupKickAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_kick_ack__pack_to_buffer
+                     (const MesgGroupKickAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupKickAck *
+       mesg_group_kick_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_kick_ack__free_unpacked
+                     (MesgGroupKickAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBanAdd methods */
+void   mesg_group_ban_add__init
+                     (MesgGroupBanAdd         *message);
+size_t mesg_group_ban_add__get_packed_size
+                     (const MesgGroupBanAdd   *message);
+size_t mesg_group_ban_add__pack
+                     (const MesgGroupBanAdd   *message,
+                      uint8_t             *out);
+size_t mesg_group_ban_add__pack_to_buffer
+                     (const MesgGroupBanAdd   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBanAdd *
+       mesg_group_ban_add__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_ban_add__free_unpacked
+                     (MesgGroupBanAdd *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBanAddAck methods */
+void   mesg_group_ban_add_ack__init
+                     (MesgGroupBanAddAck         *message);
+size_t mesg_group_ban_add_ack__get_packed_size
+                     (const MesgGroupBanAddAck   *message);
+size_t mesg_group_ban_add_ack__pack
+                     (const MesgGroupBanAddAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_ban_add_ack__pack_to_buffer
+                     (const MesgGroupBanAddAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBanAddAck *
+       mesg_group_ban_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_ban_add_ack__free_unpacked
+                     (MesgGroupBanAddAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBanDel methods */
+void   mesg_group_ban_del__init
+                     (MesgGroupBanDel         *message);
+size_t mesg_group_ban_del__get_packed_size
+                     (const MesgGroupBanDel   *message);
+size_t mesg_group_ban_del__pack
+                     (const MesgGroupBanDel   *message,
+                      uint8_t             *out);
+size_t mesg_group_ban_del__pack_to_buffer
+                     (const MesgGroupBanDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBanDel *
+       mesg_group_ban_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_ban_del__free_unpacked
+                     (MesgGroupBanDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBanDelAck methods */
+void   mesg_group_ban_del_ack__init
+                     (MesgGroupBanDelAck         *message);
+size_t mesg_group_ban_del_ack__get_packed_size
+                     (const MesgGroupBanDelAck   *message);
+size_t mesg_group_ban_del_ack__pack
+                     (const MesgGroupBanDelAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_ban_del_ack__pack_to_buffer
+                     (const MesgGroupBanDelAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBanDelAck *
+       mesg_group_ban_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_ban_del_ack__free_unpacked
+                     (MesgGroupBanDelAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBlAdd methods */
+void   mesg_group_bl_add__init
+                     (MesgGroupBlAdd         *message);
+size_t mesg_group_bl_add__get_packed_size
+                     (const MesgGroupBlAdd   *message);
+size_t mesg_group_bl_add__pack
+                     (const MesgGroupBlAdd   *message,
+                      uint8_t             *out);
+size_t mesg_group_bl_add__pack_to_buffer
+                     (const MesgGroupBlAdd   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBlAdd *
+       mesg_group_bl_add__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_bl_add__free_unpacked
+                     (MesgGroupBlAdd *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBlAddAck methods */
+void   mesg_group_bl_add_ack__init
+                     (MesgGroupBlAddAck         *message);
+size_t mesg_group_bl_add_ack__get_packed_size
+                     (const MesgGroupBlAddAck   *message);
+size_t mesg_group_bl_add_ack__pack
+                     (const MesgGroupBlAddAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_bl_add_ack__pack_to_buffer
+                     (const MesgGroupBlAddAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBlAddAck *
+       mesg_group_bl_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_bl_add_ack__free_unpacked
+                     (MesgGroupBlAddAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBlDel methods */
+void   mesg_group_bl_del__init
+                     (MesgGroupBlDel         *message);
+size_t mesg_group_bl_del__get_packed_size
+                     (const MesgGroupBlDel   *message);
+size_t mesg_group_bl_del__pack
+                     (const MesgGroupBlDel   *message,
+                      uint8_t             *out);
+size_t mesg_group_bl_del__pack_to_buffer
+                     (const MesgGroupBlDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBlDel *
+       mesg_group_bl_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_bl_del__free_unpacked
+                     (MesgGroupBlDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBlDelAck methods */
+void   mesg_group_bl_del_ack__init
+                     (MesgGroupBlDelAck         *message);
+size_t mesg_group_bl_del_ack__get_packed_size
+                     (const MesgGroupBlDelAck   *message);
+size_t mesg_group_bl_del_ack__pack
+                     (const MesgGroupBlDelAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_bl_del_ack__pack_to_buffer
+                     (const MesgGroupBlDelAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBlDelAck *
+       mesg_group_bl_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_bl_del_ack__free_unpacked
+                     (MesgGroupBlDelAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupMgrAdd methods */
+void   mesg_group_mgr_add__init
+                     (MesgGroupMgrAdd         *message);
+size_t mesg_group_mgr_add__get_packed_size
+                     (const MesgGroupMgrAdd   *message);
+size_t mesg_group_mgr_add__pack
+                     (const MesgGroupMgrAdd   *message,
+                      uint8_t             *out);
+size_t mesg_group_mgr_add__pack_to_buffer
+                     (const MesgGroupMgrAdd   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupMgrAdd *
+       mesg_group_mgr_add__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_mgr_add__free_unpacked
+                     (MesgGroupMgrAdd *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupMgrAddAck methods */
+void   mesg_group_mgr_add_ack__init
+                     (MesgGroupMgrAddAck         *message);
+size_t mesg_group_mgr_add_ack__get_packed_size
+                     (const MesgGroupMgrAddAck   *message);
+size_t mesg_group_mgr_add_ack__pack
+                     (const MesgGroupMgrAddAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_mgr_add_ack__pack_to_buffer
+                     (const MesgGroupMgrAddAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupMgrAddAck *
+       mesg_group_mgr_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_mgr_add_ack__free_unpacked
+                     (MesgGroupMgrAddAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupMgrDel methods */
+void   mesg_group_mgr_del__init
+                     (MesgGroupMgrDel         *message);
+size_t mesg_group_mgr_del__get_packed_size
+                     (const MesgGroupMgrDel   *message);
+size_t mesg_group_mgr_del__pack
+                     (const MesgGroupMgrDel   *message,
+                      uint8_t             *out);
+size_t mesg_group_mgr_del__pack_to_buffer
+                     (const MesgGroupMgrDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupMgrDel *
+       mesg_group_mgr_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_mgr_del__free_unpacked
+                     (MesgGroupMgrDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupMgrDelAck methods */
+void   mesg_group_mgr_del_ack__init
+                     (MesgGroupMgrDelAck         *message);
+size_t mesg_group_mgr_del_ack__get_packed_size
+                     (const MesgGroupMgrDelAck   *message);
+size_t mesg_group_mgr_del_ack__pack
+                     (const MesgGroupMgrDelAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_mgr_del_ack__pack_to_buffer
+                     (const MesgGroupMgrDelAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupMgrDelAck *
+       mesg_group_mgr_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_mgr_del_ack__free_unpacked
+                     (MesgGroupMgrDelAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupJoinNtc methods */
+void   mesg_group_join_ntc__init
+                     (MesgGroupJoinNtc         *message);
+size_t mesg_group_join_ntc__get_packed_size
+                     (const MesgGroupJoinNtc   *message);
+size_t mesg_group_join_ntc__pack
+                     (const MesgGroupJoinNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_join_ntc__pack_to_buffer
+                     (const MesgGroupJoinNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupJoinNtc *
+       mesg_group_join_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_join_ntc__free_unpacked
+                     (MesgGroupJoinNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupQuitNtc methods */
+void   mesg_group_quit_ntc__init
+                     (MesgGroupQuitNtc         *message);
+size_t mesg_group_quit_ntc__get_packed_size
+                     (const MesgGroupQuitNtc   *message);
+size_t mesg_group_quit_ntc__pack
+                     (const MesgGroupQuitNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_quit_ntc__pack_to_buffer
+                     (const MesgGroupQuitNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupQuitNtc *
+       mesg_group_quit_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_quit_ntc__free_unpacked
+                     (MesgGroupQuitNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupKickNtc methods */
+void   mesg_group_kick_ntc__init
+                     (MesgGroupKickNtc         *message);
+size_t mesg_group_kick_ntc__get_packed_size
+                     (const MesgGroupKickNtc   *message);
+size_t mesg_group_kick_ntc__pack
+                     (const MesgGroupKickNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_kick_ntc__pack_to_buffer
+                     (const MesgGroupKickNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupKickNtc *
+       mesg_group_kick_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_kick_ntc__free_unpacked
+                     (MesgGroupKickNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBanAddNtc methods */
+void   mesg_group_ban_add_ntc__init
+                     (MesgGroupBanAddNtc         *message);
+size_t mesg_group_ban_add_ntc__get_packed_size
+                     (const MesgGroupBanAddNtc   *message);
+size_t mesg_group_ban_add_ntc__pack
+                     (const MesgGroupBanAddNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_ban_add_ntc__pack_to_buffer
+                     (const MesgGroupBanAddNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBanAddNtc *
+       mesg_group_ban_add_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_ban_add_ntc__free_unpacked
+                     (MesgGroupBanAddNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBanDelNtc methods */
+void   mesg_group_ban_del_ntc__init
+                     (MesgGroupBanDelNtc         *message);
+size_t mesg_group_ban_del_ntc__get_packed_size
+                     (const MesgGroupBanDelNtc   *message);
+size_t mesg_group_ban_del_ntc__pack
+                     (const MesgGroupBanDelNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_ban_del_ntc__pack_to_buffer
+                     (const MesgGroupBanDelNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBanDelNtc *
+       mesg_group_ban_del_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_ban_del_ntc__free_unpacked
+                     (MesgGroupBanDelNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBlAddNtc methods */
+void   mesg_group_bl_add_ntc__init
+                     (MesgGroupBlAddNtc         *message);
+size_t mesg_group_bl_add_ntc__get_packed_size
+                     (const MesgGroupBlAddNtc   *message);
+size_t mesg_group_bl_add_ntc__pack
+                     (const MesgGroupBlAddNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_bl_add_ntc__pack_to_buffer
+                     (const MesgGroupBlAddNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBlAddNtc *
+       mesg_group_bl_add_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_bl_add_ntc__free_unpacked
+                     (MesgGroupBlAddNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupBlDelNtc methods */
+void   mesg_group_bl_del_ntc__init
+                     (MesgGroupBlDelNtc         *message);
+size_t mesg_group_bl_del_ntc__get_packed_size
+                     (const MesgGroupBlDelNtc   *message);
+size_t mesg_group_bl_del_ntc__pack
+                     (const MesgGroupBlDelNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_bl_del_ntc__pack_to_buffer
+                     (const MesgGroupBlDelNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupBlDelNtc *
+       mesg_group_bl_del_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_bl_del_ntc__free_unpacked
+                     (MesgGroupBlDelNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupMgrAddNtc methods */
+void   mesg_group_mgr_add_ntc__init
+                     (MesgGroupMgrAddNtc         *message);
+size_t mesg_group_mgr_add_ntc__get_packed_size
+                     (const MesgGroupMgrAddNtc   *message);
+size_t mesg_group_mgr_add_ntc__pack
+                     (const MesgGroupMgrAddNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_mgr_add_ntc__pack_to_buffer
+                     (const MesgGroupMgrAddNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupMgrAddNtc *
+       mesg_group_mgr_add_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_mgr_add_ntc__free_unpacked
+                     (MesgGroupMgrAddNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupMgrDelNtc methods */
+void   mesg_group_mgr_del_ntc__init
+                     (MesgGroupMgrDelNtc         *message);
+size_t mesg_group_mgr_del_ntc__get_packed_size
+                     (const MesgGroupMgrDelNtc   *message);
+size_t mesg_group_mgr_del_ntc__pack
+                     (const MesgGroupMgrDelNtc   *message,
+                      uint8_t             *out);
+size_t mesg_group_mgr_del_ntc__pack_to_buffer
+                     (const MesgGroupMgrDelNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupMgrDelNtc *
+       mesg_group_mgr_del_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_mgr_del_ntc__free_unpacked
+                     (MesgGroupMgrDelNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomCreat methods */
+void   mesg_room_creat__init
+                     (MesgRoomCreat         *message);
+size_t mesg_room_creat__get_packed_size
+                     (const MesgRoomCreat   *message);
+size_t mesg_room_creat__pack
+                     (const MesgRoomCreat   *message,
+                      uint8_t             *out);
+size_t mesg_room_creat__pack_to_buffer
+                     (const MesgRoomCreat   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomCreat *
+       mesg_room_creat__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_creat__free_unpacked
+                     (MesgRoomCreat *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomCreatAck methods */
+void   mesg_room_creat_ack__init
+                     (MesgRoomCreatAck         *message);
+size_t mesg_room_creat_ack__get_packed_size
+                     (const MesgRoomCreatAck   *message);
+size_t mesg_room_creat_ack__pack
+                     (const MesgRoomCreatAck   *message,
+                      uint8_t             *out);
+size_t mesg_room_creat_ack__pack_to_buffer
+                     (const MesgRoomCreatAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomCreatAck *
+       mesg_room_creat_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_creat_ack__free_unpacked
+                     (MesgRoomCreatAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomDismiss methods */
+void   mesg_room_dismiss__init
+                     (MesgRoomDismiss         *message);
+size_t mesg_room_dismiss__get_packed_size
+                     (const MesgRoomDismiss   *message);
+size_t mesg_room_dismiss__pack
+                     (const MesgRoomDismiss   *message,
+                      uint8_t             *out);
+size_t mesg_room_dismiss__pack_to_buffer
+                     (const MesgRoomDismiss   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomDismiss *
+       mesg_room_dismiss__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_dismiss__free_unpacked
+                     (MesgRoomDismiss *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomDismissAck methods */
+void   mesg_room_dismiss_ack__init
+                     (MesgRoomDismissAck         *message);
+size_t mesg_room_dismiss_ack__get_packed_size
+                     (const MesgRoomDismissAck   *message);
+size_t mesg_room_dismiss_ack__pack
+                     (const MesgRoomDismissAck   *message,
+                      uint8_t             *out);
+size_t mesg_room_dismiss_ack__pack_to_buffer
+                     (const MesgRoomDismissAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomDismissAck *
+       mesg_room_dismiss_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_dismiss_ack__free_unpacked
+                     (MesgRoomDismissAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomJoin methods */
+void   mesg_room_join__init
+                     (MesgRoomJoin         *message);
+size_t mesg_room_join__get_packed_size
+                     (const MesgRoomJoin   *message);
+size_t mesg_room_join__pack
+                     (const MesgRoomJoin   *message,
+                      uint8_t             *out);
+size_t mesg_room_join__pack_to_buffer
+                     (const MesgRoomJoin   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomJoin *
+       mesg_room_join__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_join__free_unpacked
+                     (MesgRoomJoin *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomJoinAck methods */
+void   mesg_room_join_ack__init
+                     (MesgRoomJoinAck         *message);
+size_t mesg_room_join_ack__get_packed_size
+                     (const MesgRoomJoinAck   *message);
+size_t mesg_room_join_ack__pack
+                     (const MesgRoomJoinAck   *message,
+                      uint8_t             *out);
+size_t mesg_room_join_ack__pack_to_buffer
+                     (const MesgRoomJoinAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomJoinAck *
+       mesg_room_join_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_join_ack__free_unpacked
+                     (MesgRoomJoinAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomQuit methods */
+void   mesg_room_quit__init
+                     (MesgRoomQuit         *message);
+size_t mesg_room_quit__get_packed_size
+                     (const MesgRoomQuit   *message);
+size_t mesg_room_quit__pack
+                     (const MesgRoomQuit   *message,
+                      uint8_t             *out);
+size_t mesg_room_quit__pack_to_buffer
+                     (const MesgRoomQuit   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomQuit *
+       mesg_room_quit__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_quit__free_unpacked
+                     (MesgRoomQuit *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomQuitAck methods */
+void   mesg_room_quit_ack__init
+                     (MesgRoomQuitAck         *message);
+size_t mesg_room_quit_ack__get_packed_size
+                     (const MesgRoomQuitAck   *message);
+size_t mesg_room_quit_ack__pack
+                     (const MesgRoomQuitAck   *message,
+                      uint8_t             *out);
+size_t mesg_room_quit_ack__pack_to_buffer
+                     (const MesgRoomQuitAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomQuitAck *
+       mesg_room_quit_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_quit_ack__free_unpacked
+                     (MesgRoomQuitAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomKick methods */
+void   mesg_room_kick__init
+                     (MesgRoomKick         *message);
+size_t mesg_room_kick__get_packed_size
+                     (const MesgRoomKick   *message);
+size_t mesg_room_kick__pack
+                     (const MesgRoomKick   *message,
+                      uint8_t             *out);
+size_t mesg_room_kick__pack_to_buffer
+                     (const MesgRoomKick   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomKick *
+       mesg_room_kick__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_kick__free_unpacked
+                     (MesgRoomKick *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomKickAck methods */
+void   mesg_room_kick_ack__init
+                     (MesgRoomKickAck         *message);
+size_t mesg_room_kick_ack__get_packed_size
+                     (const MesgRoomKickAck   *message);
+size_t mesg_room_kick_ack__pack
+                     (const MesgRoomKickAck   *message,
+                      uint8_t             *out);
+size_t mesg_room_kick_ack__pack_to_buffer
+                     (const MesgRoomKickAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomKickAck *
+       mesg_room_kick_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_kick_ack__free_unpacked
+                     (MesgRoomKickAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgRoom methods */
 void   mesg_room__init
@@ -316,43 +1996,119 @@ MesgRoomAck *
 void   mesg_room_ack__free_unpacked
                      (MesgRoomAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroup methods */
-void   mesg_group__init
-                     (MesgGroup         *message);
-size_t mesg_group__get_packed_size
-                     (const MesgGroup   *message);
-size_t mesg_group__pack
-                     (const MesgGroup   *message,
+/* MesgRoomBc methods */
+void   mesg_room_bc__init
+                     (MesgRoomBc         *message);
+size_t mesg_room_bc__get_packed_size
+                     (const MesgRoomBc   *message);
+size_t mesg_room_bc__pack
+                     (const MesgRoomBc   *message,
                       uint8_t             *out);
-size_t mesg_group__pack_to_buffer
-                     (const MesgGroup   *message,
+size_t mesg_room_bc__pack_to_buffer
+                     (const MesgRoomBc   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroup *
-       mesg_group__unpack
+MesgRoomBc *
+       mesg_room_bc__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group__free_unpacked
-                     (MesgGroup *message,
+void   mesg_room_bc__free_unpacked
+                     (MesgRoomBc *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupAck methods */
-void   mesg_group_ack__init
-                     (MesgGroupAck         *message);
-size_t mesg_group_ack__get_packed_size
-                     (const MesgGroupAck   *message);
-size_t mesg_group_ack__pack
-                     (const MesgGroupAck   *message,
+/* MesgRoomBcAck methods */
+void   mesg_room_bc_ack__init
+                     (MesgRoomBcAck         *message);
+size_t mesg_room_bc_ack__get_packed_size
+                     (const MesgRoomBcAck   *message);
+size_t mesg_room_bc_ack__pack
+                     (const MesgRoomBcAck   *message,
                       uint8_t             *out);
-size_t mesg_group_ack__pack_to_buffer
-                     (const MesgGroupAck   *message,
+size_t mesg_room_bc_ack__pack_to_buffer
+                     (const MesgRoomBcAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupAck *
-       mesg_group_ack__unpack
+MesgRoomBcAck *
+       mesg_room_bc_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_ack__free_unpacked
-                     (MesgGroupAck *message,
+void   mesg_room_bc_ack__free_unpacked
+                     (MesgRoomBcAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomUsrNum methods */
+void   mesg_room_usr_num__init
+                     (MesgRoomUsrNum         *message);
+size_t mesg_room_usr_num__get_packed_size
+                     (const MesgRoomUsrNum   *message);
+size_t mesg_room_usr_num__pack
+                     (const MesgRoomUsrNum   *message,
+                      uint8_t             *out);
+size_t mesg_room_usr_num__pack_to_buffer
+                     (const MesgRoomUsrNum   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomUsrNum *
+       mesg_room_usr_num__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_usr_num__free_unpacked
+                     (MesgRoomUsrNum *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomJoinNtc methods */
+void   mesg_room_join_ntc__init
+                     (MesgRoomJoinNtc         *message);
+size_t mesg_room_join_ntc__get_packed_size
+                     (const MesgRoomJoinNtc   *message);
+size_t mesg_room_join_ntc__pack
+                     (const MesgRoomJoinNtc   *message,
+                      uint8_t             *out);
+size_t mesg_room_join_ntc__pack_to_buffer
+                     (const MesgRoomJoinNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomJoinNtc *
+       mesg_room_join_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_join_ntc__free_unpacked
+                     (MesgRoomJoinNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomQuitNtc methods */
+void   mesg_room_quit_ntc__init
+                     (MesgRoomQuitNtc         *message);
+size_t mesg_room_quit_ntc__get_packed_size
+                     (const MesgRoomQuitNtc   *message);
+size_t mesg_room_quit_ntc__pack
+                     (const MesgRoomQuitNtc   *message,
+                      uint8_t             *out);
+size_t mesg_room_quit_ntc__pack_to_buffer
+                     (const MesgRoomQuitNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomQuitNtc *
+       mesg_room_quit_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_quit_ntc__free_unpacked
+                     (MesgRoomQuitNtc *message,
+                      ProtobufCAllocator *allocator);
+/* MesgRoomKickNtc methods */
+void   mesg_room_kick_ntc__init
+                     (MesgRoomKickNtc         *message);
+size_t mesg_room_kick_ntc__get_packed_size
+                     (const MesgRoomKickNtc   *message);
+size_t mesg_room_kick_ntc__pack
+                     (const MesgRoomKickNtc   *message,
+                      uint8_t             *out);
+size_t mesg_room_kick_ntc__pack_to_buffer
+                     (const MesgRoomKickNtc   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomKickNtc *
+       mesg_room_kick_ntc__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_kick_ntc__free_unpacked
+                     (MesgRoomKickNtc *message,
                       ProtobufCAllocator *allocator);
 /* MesgLsnRpt methods */
 void   mesg_lsn_rpt__init
@@ -373,24 +2129,24 @@ MesgLsnRpt *
 void   mesg_lsn_rpt__free_unpacked
                      (MesgLsnRpt *message,
                       ProtobufCAllocator *allocator);
-/* MesgKickReq methods */
-void   mesg_kick_req__init
-                     (MesgKickReq         *message);
-size_t mesg_kick_req__get_packed_size
-                     (const MesgKickReq   *message);
-size_t mesg_kick_req__pack
-                     (const MesgKickReq   *message,
+/* MesgFrwdRpt methods */
+void   mesg_frwd_rpt__init
+                     (MesgFrwdRpt         *message);
+size_t mesg_frwd_rpt__get_packed_size
+                     (const MesgFrwdRpt   *message);
+size_t mesg_frwd_rpt__pack
+                     (const MesgFrwdRpt   *message,
                       uint8_t             *out);
-size_t mesg_kick_req__pack_to_buffer
-                     (const MesgKickReq   *message,
+size_t mesg_frwd_rpt__pack_to_buffer
+                     (const MesgFrwdRpt   *message,
                       ProtobufCBuffer     *buffer);
-MesgKickReq *
-       mesg_kick_req__unpack
+MesgFrwdRpt *
+       mesg_frwd_rpt__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_kick_req__free_unpacked
-                     (MesgKickReq *message,
+void   mesg_frwd_rpt__free_unpacked
+                     (MesgFrwdRpt *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
@@ -400,14 +2156,170 @@ typedef void (*MesgOnlineReq_Closure)
 typedef void (*MesgOnlineAck_Closure)
                  (const MesgOnlineAck *message,
                   void *closure_data);
-typedef void (*MesgJoinReq_Closure)
-                 (const MesgJoinReq *message,
+typedef void (*MesgSubReq_Closure)
+                 (const MesgSubReq *message,
                   void *closure_data);
-typedef void (*MesgJoinAck_Closure)
-                 (const MesgJoinAck *message,
+typedef void (*MesgSubAck_Closure)
+                 (const MesgSubAck *message,
                   void *closure_data);
-typedef void (*MesgUnjoinReq_Closure)
-                 (const MesgUnjoinReq *message,
+typedef void (*MesgUnsubReq_Closure)
+                 (const MesgUnsubReq *message,
+                  void *closure_data);
+typedef void (*MesgUnsubAck_Closure)
+                 (const MesgUnsubAck *message,
+                  void *closure_data);
+typedef void (*MesgUnusualbReq_Closure)
+                 (const MesgUnusualbReq *message,
+                  void *closure_data);
+typedef void (*MesgAllocSeq_Closure)
+                 (const MesgAllocSeq *message,
+                  void *closure_data);
+typedef void (*MesgAllocSeqAck_Closure)
+                 (const MesgAllocSeqAck *message,
+                  void *closure_data);
+typedef void (*MesgKickReq_Closure)
+                 (const MesgKickReq *message,
+                  void *closure_data);
+typedef void (*MesgPrvtChat_Closure)
+                 (const MesgPrvtChat *message,
+                  void *closure_data);
+typedef void (*MesgPrvtChatAck_Closure)
+                 (const MesgPrvtChatAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupCreat_Closure)
+                 (const MesgGroupCreat *message,
+                  void *closure_data);
+typedef void (*MesgGroupCreatAck_Closure)
+                 (const MesgGroupCreatAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupDismiss_Closure)
+                 (const MesgGroupDismiss *message,
+                  void *closure_data);
+typedef void (*MesgGroupDismissAck_Closure)
+                 (const MesgGroupDismissAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupApply_Closure)
+                 (const MesgGroupApply *message,
+                  void *closure_data);
+typedef void (*MesgGroupApplyAck_Closure)
+                 (const MesgGroupApplyAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupQuit_Closure)
+                 (const MesgGroupQuit *message,
+                  void *closure_data);
+typedef void (*MesgGroupQuitAck_Closure)
+                 (const MesgGroupQuitAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupInvite_Closure)
+                 (const MesgGroupInvite *message,
+                  void *closure_data);
+typedef void (*MesgGroupInviteAck_Closure)
+                 (const MesgGroupInviteAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupChat_Closure)
+                 (const MesgGroupChat *message,
+                  void *closure_data);
+typedef void (*MesgGroupChatAck_Closure)
+                 (const MesgGroupChatAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupKick_Closure)
+                 (const MesgGroupKick *message,
+                  void *closure_data);
+typedef void (*MesgGroupKickAck_Closure)
+                 (const MesgGroupKickAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupBanAdd_Closure)
+                 (const MesgGroupBanAdd *message,
+                  void *closure_data);
+typedef void (*MesgGroupBanAddAck_Closure)
+                 (const MesgGroupBanAddAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupBanDel_Closure)
+                 (const MesgGroupBanDel *message,
+                  void *closure_data);
+typedef void (*MesgGroupBanDelAck_Closure)
+                 (const MesgGroupBanDelAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupBlAdd_Closure)
+                 (const MesgGroupBlAdd *message,
+                  void *closure_data);
+typedef void (*MesgGroupBlAddAck_Closure)
+                 (const MesgGroupBlAddAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupBlDel_Closure)
+                 (const MesgGroupBlDel *message,
+                  void *closure_data);
+typedef void (*MesgGroupBlDelAck_Closure)
+                 (const MesgGroupBlDelAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupMgrAdd_Closure)
+                 (const MesgGroupMgrAdd *message,
+                  void *closure_data);
+typedef void (*MesgGroupMgrAddAck_Closure)
+                 (const MesgGroupMgrAddAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupMgrDel_Closure)
+                 (const MesgGroupMgrDel *message,
+                  void *closure_data);
+typedef void (*MesgGroupMgrDelAck_Closure)
+                 (const MesgGroupMgrDelAck *message,
+                  void *closure_data);
+typedef void (*MesgGroupJoinNtc_Closure)
+                 (const MesgGroupJoinNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupQuitNtc_Closure)
+                 (const MesgGroupQuitNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupKickNtc_Closure)
+                 (const MesgGroupKickNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupBanAddNtc_Closure)
+                 (const MesgGroupBanAddNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupBanDelNtc_Closure)
+                 (const MesgGroupBanDelNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupBlAddNtc_Closure)
+                 (const MesgGroupBlAddNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupBlDelNtc_Closure)
+                 (const MesgGroupBlDelNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupMgrAddNtc_Closure)
+                 (const MesgGroupMgrAddNtc *message,
+                  void *closure_data);
+typedef void (*MesgGroupMgrDelNtc_Closure)
+                 (const MesgGroupMgrDelNtc *message,
+                  void *closure_data);
+typedef void (*MesgRoomCreat_Closure)
+                 (const MesgRoomCreat *message,
+                  void *closure_data);
+typedef void (*MesgRoomCreatAck_Closure)
+                 (const MesgRoomCreatAck *message,
+                  void *closure_data);
+typedef void (*MesgRoomDismiss_Closure)
+                 (const MesgRoomDismiss *message,
+                  void *closure_data);
+typedef void (*MesgRoomDismissAck_Closure)
+                 (const MesgRoomDismissAck *message,
+                  void *closure_data);
+typedef void (*MesgRoomJoin_Closure)
+                 (const MesgRoomJoin *message,
+                  void *closure_data);
+typedef void (*MesgRoomJoinAck_Closure)
+                 (const MesgRoomJoinAck *message,
+                  void *closure_data);
+typedef void (*MesgRoomQuit_Closure)
+                 (const MesgRoomQuit *message,
+                  void *closure_data);
+typedef void (*MesgRoomQuitAck_Closure)
+                 (const MesgRoomQuitAck *message,
+                  void *closure_data);
+typedef void (*MesgRoomKick_Closure)
+                 (const MesgRoomKick *message,
+                  void *closure_data);
+typedef void (*MesgRoomKickAck_Closure)
+                 (const MesgRoomKickAck *message,
                   void *closure_data);
 typedef void (*MesgRoom_Closure)
                  (const MesgRoom *message,
@@ -415,17 +2327,29 @@ typedef void (*MesgRoom_Closure)
 typedef void (*MesgRoomAck_Closure)
                  (const MesgRoomAck *message,
                   void *closure_data);
-typedef void (*MesgGroup_Closure)
-                 (const MesgGroup *message,
+typedef void (*MesgRoomBc_Closure)
+                 (const MesgRoomBc *message,
                   void *closure_data);
-typedef void (*MesgGroupAck_Closure)
-                 (const MesgGroupAck *message,
+typedef void (*MesgRoomBcAck_Closure)
+                 (const MesgRoomBcAck *message,
+                  void *closure_data);
+typedef void (*MesgRoomUsrNum_Closure)
+                 (const MesgRoomUsrNum *message,
+                  void *closure_data);
+typedef void (*MesgRoomJoinNtc_Closure)
+                 (const MesgRoomJoinNtc *message,
+                  void *closure_data);
+typedef void (*MesgRoomQuitNtc_Closure)
+                 (const MesgRoomQuitNtc *message,
+                  void *closure_data);
+typedef void (*MesgRoomKickNtc_Closure)
+                 (const MesgRoomKickNtc *message,
                   void *closure_data);
 typedef void (*MesgLsnRpt_Closure)
                  (const MesgLsnRpt *message,
                   void *closure_data);
-typedef void (*MesgKickReq_Closure)
-                 (const MesgKickReq *message,
+typedef void (*MesgFrwdRpt_Closure)
+                 (const MesgFrwdRpt *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -435,15 +2359,71 @@ typedef void (*MesgKickReq_Closure)
 
 extern const ProtobufCMessageDescriptor mesg_online_req__descriptor;
 extern const ProtobufCMessageDescriptor mesg_online_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_join_req__descriptor;
-extern const ProtobufCMessageDescriptor mesg_join_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_unjoin_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_sub_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_sub_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_unsub_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_unsub_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_unusualb_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_alloc_seq__descriptor;
+extern const ProtobufCMessageDescriptor mesg_alloc_seq_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_kick_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_prvt_chat__descriptor;
+extern const ProtobufCMessageDescriptor mesg_prvt_chat_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_creat__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_creat_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_dismiss__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_dismiss_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_apply__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_apply_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_quit__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_quit_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_invite__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_invite_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_chat__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_chat_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_kick__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_kick_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_ban_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_ban_add_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_ban_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_ban_del_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_bl_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_bl_add_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_bl_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_bl_del_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_mgr_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_mgr_add_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_mgr_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_mgr_del_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_join_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_quit_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_kick_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_ban_add_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_ban_del_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_bl_add_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_bl_del_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_mgr_add_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_mgr_del_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_creat__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_creat_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_dismiss__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_dismiss_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_join__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_join_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_quit__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_quit_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_kick__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_kick_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_bc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_bc_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_usr_num__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_join_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_quit_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_lsn_rpt__descriptor;
-extern const ProtobufCMessageDescriptor mesg_kick_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_frwd_rpt__descriptor;
 
 PROTOBUF_C__END_DECLS
 
