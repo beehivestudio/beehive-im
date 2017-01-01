@@ -345,7 +345,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_ACC_REG_CB(ctx, CMD_ONLINE_REQ, lsnd_mesg_online_req_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_OFFLINE_REQ, lsnd_mesg_offline_req_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_ROOM_JOIN_REQ, lsnd_mesg_room_join_req_handler, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_ROOM_UNJOIN_REQ, lsnd_mesg_unjoin_req_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_ROOM_UNJOIN_REQ, lsnd_mesg_room_quit_req_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_PING, lsnd_mesg_ping_req_handler, ctx);
 
     /* 注册队列数据回调 */

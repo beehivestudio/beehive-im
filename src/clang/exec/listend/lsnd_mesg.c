@@ -394,7 +394,7 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_unjoin_req_handler
+ **函数名称: lsnd_mesg_room_quit_req_handler
  **功    能: UNJOIN请求处理(退出聊天室)
  **输入参数:
  **     conn: 连接信息
@@ -412,7 +412,7 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int lsnd_mesg_unjoin_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_room_quit_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
