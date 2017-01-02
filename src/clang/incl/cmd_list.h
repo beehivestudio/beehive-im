@@ -53,8 +53,8 @@ typedef enum
     , CMD_GROUP_CREAT           = 0x0301    /* 创建群组 */
     , CMD_GROUP_CREAT_ACK       = 0x0302    /* 创建群组应答 */
 
-    , CMD_GROUP_DIMISS          = 0x0303    /* 解散群组 */
-    , CMD_GROUP_DIMISS_ACK      = 0x0304    /* 解散群组应答 */
+    , CMD_GROUP_DISMISS         = 0x0303    /* 解散群组 */
+    , CMD_GROUP_DISMISS_ACK     = 0x0304    /* 解散群组应答 */
 
     , CMD_GROUP_APPLY           = 0x0305    /* 申请入群 */
     , CMD_GROUP_APPLY_ACK       = 0x0306    /* 申请入群应答 */
@@ -68,8 +68,8 @@ typedef enum
     , CMD_GROUP_MSG             = 0x030B    /* 群聊消息 */
     , CMD_GROUP_MSG_ACK         = 0x030C    /* 群聊消息应答 */
 
-    , CMD_GROUP_TICK            = 0x030D    /* 群组踢人 */
-    , CMD_GROUP_TICK_ACK        = 0x030E    /* 群组踢人应答 */
+    , CMD_GROUP_KICK            = 0x030D    /* 群组踢人 */
+    , CMD_GROUP_KICK_ACK        = 0x030E    /* 群组踢人应答 */
 
     , CMD_GROUP_BAN_ADD         = 0x0310    /* 群组禁言 */
     , CMD_GROUP_BAN_ADD_ACK     = 0x0311    /* 群组禁言应答 */
@@ -88,6 +88,9 @@ typedef enum
 
     , CMD_GROUP_MGR_DEL         = 0x031A    /* 解除群组管理员 */
     , CMD_GROUP_MGR_DEL_ACK     = 0x031B    /* 解除群组管理员应答 */
+
+    , CMD_GROUP_USR_LIST         = 0x031C    /* 群组成员列表 */
+    , CMD_GROUP_USR_LIST_ACK     = 0x031D    /* 群组成员列表应答 */
 
     , CMD_GROUP_JOIN_NTC        = 0x0350    /* 入群通知 */
     , CMD_GROUP_QUIT_NTC        = 0x0351    /* 退群通知 */

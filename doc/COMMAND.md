@@ -44,8 +44,8 @@
 | 08 | 0x0308 | 退群应答 | GROUP-QUIT-ACK | 暂无 |
 | 09 | 0x0309 | 邀请入群 | GROUP-INVITE | 暂无 |
 | 10 | 0x030A | 邀请入群应答 | GROUP-INVITE-ACK | 暂无 |
-| 11 | 0x030B | 群聊消息 | GROUP-MSG | 暂无 |
-| 12 | 0x030C | 群聊消息应答 | GROUP-MSG-ACK | 暂无 |
+| 11 | 0x030B | 群聊消息 | GROUP | 暂无 |
+| 12 | 0x030C | 群聊消息应答 | GROUP-ACK | 暂无 |
 | 13 | 0x030D | 群组踢人 | GROUP-KICK | 暂无 |
 | 14 | 0x030E | 群组踢人应答 | GROUP-KICK-ACK | 暂无 |
 | 15 | 0x0310 | 群组禁言 | GROUP-BAN-ADD | 暂无 |

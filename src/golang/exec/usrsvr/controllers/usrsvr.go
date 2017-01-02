@@ -121,14 +121,32 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) Register() {
-	/* > 业务消息 */
+	/* > 通用消息 */
 	ctx.frwder.Register(comm.CMD_ONLINE_REQ, UsrSvrOnlineReqHandler, ctx)
 	ctx.frwder.Register(comm.CMD_OFFLINE_REQ, UsrSvrOfflineReqHandler, ctx)
-
-	ctx.frwder.Register(comm.CMD_ROOM_JOIN_REQ, UsrSvrJoinReqHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_QUIT_REQ, UsrSvrRoomQuitReqHandler, ctx)
-
 	ctx.frwder.Register(comm.CMD_PING, UsrSvrPingHandler, ctx)
+	ctx.frwder.Register(comm.CMD_SUB_REQ, UsrSvrSubReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_UNSUB_REQ, UsrSvrUnsubReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ALLOC_SEQ, UsrSvrAllocSeqHandler, ctx)
+
+	/* > 群聊消息 */
+	ctx.frwder.Register(comm.CMD_GROUP_CREAT, UsrSvrGroupCreatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_DISMISS, UsrSvrGroupDismissHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_APPLY, UsrSvrGroupApplyHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_QUIT, UsrSvrGroupQuitHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_INVITE, UsrSvrGroupInviteHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_KICK, UsrSvrGroupKickHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_BAN_ADD, UsrSvrGroupBanAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_BAN_DEL, UsrSvrGroupBanDelHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_BL_ADD, UsrSvrGroupBlacklistAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_BL_DEL, UsrSvrGroupBlacklistDelHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_MGR_ADD, UsrSvrGroupMgrAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_MGR_DEL, UsrSvrGroupMgrDelHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_USR_LIST, UsrSvrGroupUsrListHandler, ctx)
+
+	/* > 聊天室消息 */
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN_REQ, UsrSvrRoomJoinReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_QUIT_REQ, UsrSvrRoomQuitReqHandler, ctx)
 }
 
 /******************************************************************************

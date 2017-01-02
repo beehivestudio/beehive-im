@@ -832,7 +832,7 @@ GET_GID:
 }
 
 /******************************************************************************
- **函数名称: UsrSvrJoinReqHandler
+ **函数名称: UsrSvrRoomJoinReqHandler
  **功    能: 加入聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -852,7 +852,7 @@ GET_GID:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomJoinReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if false == ok {
 		return -1
@@ -1266,5 +1266,86 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 	ctx.frwder.AsyncSend(comm.CMD_KICK_REQ, p.Buff, uint32(len(p.Buff)))
 
 	ctx.log.Debug("Send kick command success! sid:%d nid:%d", sid, nid)
+	return 0
+}
+
+/* 订阅请求 */
+func UsrSvrSubReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 取消订阅请求 */
+func UsrSvrUnsubReqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 申请消息序列号 */
+func UsrSvrAllocSeqHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/* 创建群组 */
+func UsrSvrGroupCreatHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 解散群组 */
+func UsrSvrGroupDismissHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 申请入群 */
+func UsrSvrGroupApplyHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 退群 */
+func UsrSvrGroupQuitHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 邀请入群 */
+func UsrSvrGroupInviteHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 群组踢人 */
+func UsrSvrGroupKickHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 群组禁言 */
+func UsrSvrGroupBanAddHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 解除群组禁言 */
+func UsrSvrGroupBanDelHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 加入群组黑名单 */
+func UsrSvrGroupBlacklistAddHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 移除群组黑名单 */
+func UsrSvrGroupBlacklistDelHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 添加群组管理员 */
+func UsrSvrGroupMgrAddHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 移除群组管理员 */
+func UsrSvrGroupMgrDelHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+	return 0
+}
+
+/* 群组成员列表 */
+func UsrSvrGroupUsrListHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
