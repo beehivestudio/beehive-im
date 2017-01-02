@@ -94,9 +94,9 @@ const (
 	CMD_ROOM_BC_ACK      = 0x040E /* 聊天室广播消息应答 */
 	CMD_ROOM_USR_NUM     = 0x0410 /* 聊天室人数 */
 	CMD_ROOM_USR_NUM_ACK = 0x0411 /* 聊天室人数应答 */
-	CMD_ROOM_JOIN_NTC    = 0x0451 /* 加入聊天室通知 */
+	CMD_ROOM_JOIN_NTC    = 0x0450 /* 加入聊天室通知 */
 	CMD_ROOM_QUIT_NTC    = 0x0451 /* 退出聊天室通知 */
-	CMD_ROOM_KICK_NTC    = 0x0451 /* 踢出聊天室通知 */
+	CMD_ROOM_KICK_NTC    = 0x0452 /* 踢出聊天室通知 */
 
 	/* 推送消息 */
 	CMD_BC      = 0x0501 /* 广播消息 */
