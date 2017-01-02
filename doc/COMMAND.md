@@ -60,15 +60,17 @@
 | 24 | 0x0319 | 添加群组管理员应答 | GROUP-MGR-ADD-ACK | 暂无 |
 | 25 | 0x031A | 解除群组管理员 | GROUP-MGR-DEL | 暂无 |
 | 26 | 0x031B | 解除群组管理员应答 | GROUP-MGR-DEL-ACK | 暂无 |
-| 27 | 0x0350 | 入群通知 | GROUP-JOIN-NTC | 实时消息 |
-| 28 | 0x0351 | 退群通知 | GROUP-QUIT-NTC | 实时消息 |
-| 29 | 0x0352 | 踢人通知 | GROUP-KICK-NTC | 实时消息 |
-| 30 | 0x0353 | 禁言通知 | GROUP-BAN-ADD-NTC | 实时消息 |
-| 31 | 0x0354 | 解除禁言通知 | GROUP-BAN-DEL-NTC | 实时消息 |
-| 32 | 0x0355 | 加入黑名单通知 | GROUP-BL-ADD-NTC | 实时消息 |
-| 33 | 0x0356 | 移除黑名单通知 | GROUP-BL-DEL-NTC | 实时消息 |
-| 34 | 0x0357 | 添加管理员通知 | GROUP-MGR-ADD-NTC | 实时消息 |
-| 35 | 0x0358 | 解除管理员通知 | GROUP-MGR-DEL-NTC | 实时消息 |
+| 27 | 0x031C | 群员列表请求 | GROUP-USR-LIST-REQ | 暂无 |
+| 28 | 0x031D | 群员列表应答 | GROUP-USR-LIST-ACK | 暂无 |
+| 29 | 0x0350 | 入群通知 | GROUP-JOIN-NTC | 实时消息 |
+| 30 | 0x0351 | 退群通知 | GROUP-QUIT-NTC | 实时消息 |
+| 31 | 0x0352 | 踢人通知 | GROUP-KICK-NTC | 实时消息 |
+| 32 | 0x0353 | 禁言通知 | GROUP-BAN-ADD-NTC | 实时消息 |
+| 33 | 0x0354 | 解除禁言通知 | GROUP-BAN-DEL-NTC | 实时消息 |
+| 34 | 0x0355 | 加入黑名单通知 | GROUP-BL-ADD-NTC | 实时消息 |
+| 35 | 0x0356 | 移除黑名单通知 | GROUP-BL-DEL-NTC | 实时消息 |
+| 36 | 0x0357 | 添加管理员通知 | GROUP-MGR-ADD-NTC | 实时消息 |
+| 37 | 0x0358 | 解除管理员通知 | GROUP-MGR-DEL-NTC | 实时消息 |
 
 #聊天室消息
 ---

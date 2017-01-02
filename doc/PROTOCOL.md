@@ -469,6 +469,26 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x031C<br>
+命令描述: 群组成员列表请求(GROUP-USR_LIST_REQ)<br>
+协议格式: <br>
+>message mesg_group_usr_list_req<br>
+>{<br>
+>   required uint64 gid = 1;        // M|群组ID<br>
+>   required uint32 num = 2;        // M|请求人数|数字|(备注:当num=0时, 表示获取所有人员列表; 当num>0时, 表示获取num个人员列表)
+>}
+
+---
+命令ID: 0x031B<br>
+命令描述: 群组成员列表应答(GROUP-USR_LIST_ACK)<br>
+协议格式: <br>
+>message mesg_group_usr_list_ack<br>
+>{<br>
+>   required uint64 gid = 1;        // M|群组ID|数字|<br>
+>   required string list = 2;       // M|用户列表|字串|JSON格式<br>
+>}
+
+---
+命令ID: 0x0350<br>
 命令描述: 入群通知(GROUP-JOIN-NTC)<br>
 协议格式: <br>
 >message mesg_group_join_ntc<br>
@@ -478,7 +498,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x031D<br>
+命令ID: 0x0351<br>
 命令描述: 退群通知(GROUP-QUIT-NTC)<br>
 协议格式: <br>
 >message mesg_group_quit_ntc<br>
@@ -488,7 +508,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x031E<br>
+命令ID: 0x0352<br>
 命令描述: 踢人通知(GROUP-KICK-NTC)<br>
 协议格式: <br>
 >message mesg_group_kick_ntc<br>
@@ -498,7 +518,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x0320<br>
+命令ID: 0x0353<br>
 命令描述: 禁言通知(GROUP-BAN-ADD-NTC)<br>
 协议格式: <br>
 >message mesg_group_ban_add_ntc<br>
@@ -508,7 +528,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x0321<br>
+命令ID: 0x0354<br>
 命令描述: 解除禁言通知(GROUP-BAN-DEL-NTC)<br>
 协议格式: <br>
 >message mesg_group_ban_del_ntc<br>
@@ -518,7 +538,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x0322<br>
+命令ID: 0x0355<br>
 命令描述: 加入黑名单通知(GROUP-BL-ADD-NTC)<br>
 协议格式: <br>
 >message mesg_group_bl_add_ntc<br>
@@ -528,7 +548,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x0323<br>
+命令ID: 0x0356<br>
 命令描述: 移除黑名单通知(GROUP-BL-DEL-NTC)<br>
 协议格式: <br>
 >message mesg_group_bl_del_ntc<br>
@@ -538,7 +558,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x0324<br>
+命令ID: 0x0357<br>
 命令描述: 添加管理员通知(GROUP-MGR-ADD-NTC)<br>
 协议格式: <br>
 >message mesg_group_mgr_add_ntc<br>
@@ -548,7 +568,7 @@ TODO: 协议头中的to为群ID(GID)
 >}
 
 ---
-命令ID: 0x0325<br>
+命令ID: 0x0358<br>
 命令描述: 移除管理员通知(GROUP-MGR-DEL-NTC)<br>
 协议格式: <br>
 >message mesg_group_mgr_del_ntc<br>
