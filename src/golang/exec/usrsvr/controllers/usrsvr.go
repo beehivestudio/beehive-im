@@ -145,8 +145,12 @@ func (ctx *UsrSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_GROUP_USR_LIST, UsrSvrGroupUsrListHandler, ctx)
 
 	/* > 聊天室消息 */
+	ctx.frwder.Register(comm.CMD_ROOM_CREAT, UsrSvrRoomCreatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_DISMISS, UsrSvrRoomDismissHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN_REQ, UsrSvrRoomJoinReqHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_QUIT_REQ, UsrSvrRoomQuitReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_KICK, UsrSvrRoomKickHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, UsrSvrRoomUsrNumHandler, ctx)
 }
 
 /******************************************************************************
