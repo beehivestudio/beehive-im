@@ -1,0 +1,827 @@
+////////////////////////////////////////////////////////////////////////////////
+//通用消息
+
+/*
+   命令ID: 0x0101
+   命令描述: 上线请求(ONLINE)
+   协议格式: */
+message mesg_online_req
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 sid = 2;        // M|会话ID|数字|
+    required string token = 3;      // M|鉴权TOKEN|字串|
+    required string app = 4;        // M|APP名|字串|
+    required string version = 5;    // M|APP版本|字串|
+    optional uint32 terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+}
+
+/*
+   命令ID: 0x0102
+   命令描述: 上线请求应答(ONLINE-ACK)
+   协议格式: */
+message mesg_online_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 sid = 2;        // M|会话ID|数字|
+    required string app = 3;        // M|APP名|字串|
+    required string version = 4;    // M|APP版本|字串|
+    optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+    required uint32 code = 6;       // M|错误码|数字|
+    required string errmsg = 7;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0103
+   命令描述: 下线请求(OFFLINE)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0104
+   命令描述: 下线请求应答(OFFLINE-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0105
+   命令描述: 客户端心跳(PING)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0106
+   命令描述: 客户端心跳应答(PONG)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0107
+   命令描述: 订阅请求(SUB)
+   协议格式: */
+message mesg_sub_req
+{
+    optional uint32 sub = 1;        // M|订阅的数据|数字| 
+}
+
+/*
+   命令ID: 0x0108
+   命令描述: 订阅应答(SUB-ACK)
+   协议格式: */
+message mesg_sub_ack
+{
+    required uint32 sub = 1;        // M|订阅的数据|数字|
+    required uint32 code = 2;       // M|错误码|数字|
+    required string errmsg = 3;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0109
+   命令描述: 取消订阅(UNSUB)
+   协议格式: */
+message mesg_unsub_req
+{
+    required uint32 sub = 1;        // M|取消订阅的数据|数字| 
+}
+
+/*
+   命令ID: 0x010A
+   命令描述: 取消订阅应答(UNSUB-ACK)
+   协议格式: */
+message mesg_unsub_ack
+{
+    required uint32 sub = 1;        // M|取消订阅的数据|数字|
+    required uint32 code = 2;       // M|错误码|数字|
+    required string errmsg = 3;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x010B
+   命令描述: 通用异常消息(UNUSUAL)
+   协议格式: */
+message mesg_unusualb_req
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x010C
+   命令描述: 通用异常消息应答(UNUSUAL-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x010D
+   命令描述: 同步消息(SYNC-MSG)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x010E
+   命令描述: 同步消息应答(SYNC-MSG-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0110
+   命令描述: 申请序列号(ALLOC-SEQ)
+   协议格式: */
+message mesg_alloc_seq
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint32 num = 2;        // M|申请序列号个数|数字|
+}
+
+/*
+   命令ID: 0x0111
+   命令描述: 申请序列号应答(ALLOC-SEQ-ACK)
+   协议格式: */
+message mesg_alloc_seq_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 seq = 2;        // M|序列号起始值|数字|
+    required uint32 num = 3;        // M|分配序列号个数|数字|
+}
+
+/*
+   命令ID: 0x0112
+   命令描述: 踢连接下线(KICK)
+   协议格式: */
+message mesg_kick_req
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0113
+   命令描述: 踢连接下线应答(KICK-ACK)
+   协议格式: NONE */
+
+////////////////////////////////////////////////////////////////////////////////
+//私聊消息
+
+/*
+   命令ID: 0x0201
+   命令描述: 私聊消息(PRVT-CHAT)
+   协议格式: */
+message mesg_prvt_chat
+{
+    required uint64 orig = 1;       // M|发送方UID
+    required uint64 dest = 2;       // M|接收方UID
+    required uint32 level = 3;      // M|消息级别
+    required uint64 time = 4;       // M|发送时间
+    required string text = 5;       // M|聊天内容
+    optional bytes data = 6;        // M|透传数据
+}
+
+/*
+   命令ID: 0x0202
+   命令描述: 私聊消息应答(PRVT-CHAT-ACK)
+   协议格式: */
+message mesg_prvt_chat_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|<br>
+    required uint32 code = 2;       // M|错误码|数字|
+    required string errmsg = 3;     // M|错误描述|字串|
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//群聊消息
+
+/*
+   命令ID: 0x0301
+   命令描述: 创建群组(GROUP-CREAT)
+   协议格式: */
+message mesg_group_creat
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0302
+   命令描述: 创建群组应答(GROUP-APPLY-ACK)
+   协议格式: */
+message mesg_group_creat_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0303
+   命令描述: 解散群组(GROUP-DISMISS)
+   协议格式: */
+message mesg_group_dismiss
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0304
+   命令描述: 解散群组应答(GROUP-DISMISS-ACK)
+   协议格式: */
+message mesg_group_dismiss_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+
+/*
+   命令ID: 0x0305
+   命令描述: 申请入群(GROUP-APPLY)
+   协议格式: */
+message mesg_group_apply
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0306
+   命令描述: 申请入群应答(GROUP-APPLY-ACK)
+   协议格式: */
+message mesg_group_apply_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0307
+   命令描述: 退群(GROUP-QUIT)
+   协议格式: */
+message mesg_group_quit
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0308
+   命令描述: 退群应答(GROUP-QUIT-ACK)
+   协议格式: */
+message mesg_group_quit_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0309
+   命令描述: 邀请入群(GROUP-INVITE)
+   协议格式: */
+message mesg_group_invite
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+    required uint64 to = 3;         // M|被邀请用户ID|数字|
+}
+
+/*
+   命令ID: 0x030A
+   命令描述: 邀请入群应答(GROUP-INVITE-ACK)
+   协议格式: */
+message mesg_group_invite_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x030B
+   命令描述: 群聊消息(GROUP-CHAT)
+   协议格式: */
+message mesg_group_chat
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|分组ID
+    required uint32 level = 3;      // M|消息级别
+    required uint64 time = 4;       // M|发送时间
+    required string text = 5;       // M|聊天内容
+    optional bytes data = 6;        // M|透传数据
+}
+
+/*
+   命令ID: 0x030C
+   命令描述: 群聊消息应答(GROUP-CHAT-ACK)
+   协议格式: */
+message mesg_group_chat_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x030D
+   命令描述: 群组踢人(GROUP-KICK)
+   协议格式: */
+message mesg_group_kick
+{
+    required uint64 uid = 1;        // M|被踢用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID
+}
+
+/*
+   命令ID: 0x030E
+   命令描述: 群组踢人应答(GROUP-KICK-ACK)
+   协议格式: */
+message mesg_group_kick_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0310
+   命令描述: 群组禁言(GROUP-BAN-ADD)
+   协议格式: */
+message mesg_group_ban_add
+{
+    required uint64 uid = 1;        // M|被禁言用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID
+}
+
+/*
+   命令ID: 0x0311
+   命令描述: 群组禁言应答(GROUP-BAN-ADD-ACK)
+   协议格式: */
+message mesg_group_ban_add_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0312
+   命令描述: 解除群组禁言(GROUP-BAN-DEL)
+   协议格式: */
+message mesg_group_ban_del
+{
+    required uint64 uid = 1;        // M|被解除禁言用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID
+}
+
+/*
+   命令ID: 0x0313
+   命令描述: 解除群组禁言应答(GROUP-BAN-DEL-ACK)
+   协议格式: */
+message mesg_group_ban_del_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0314
+   命令描述: 加入群组黑名单(GROUP-BL-ADD)
+   协议格式: */
+message mesg_group_bl_add
+{
+    required uint64 uid = 1;        // M|被加入黑名单用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID
+}
+
+/*
+   命令ID: 0x0315
+   命令描述: 加入群组黑名单应答(GROUP-BL-ADD-ACK)
+   协议格式: */
+message mesg_group_bl_add_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0316
+   命令描述: 移除群组黑名单(GROUP-BL-DEL)
+   协议格式: */
+message mesg_group_bl_del
+{
+    required uint64 uid = 1;        // M|被移除黑名单用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID
+}
+
+/*
+   命令ID: 0x0317
+   命令描述: 移除群组黑名单应答(GROUP-BL-DEL-ACK)
+   协议格式: */
+message mesg_group_bl_del_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0318
+   命令描述: 添加群组管理员(GROUP-MGR-ADD)
+   协议格式: */
+message mesg_group_mgr_add
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID
+}
+
+/*
+   命令ID: 0x0319
+   命令描述: 添加群组管理员应答(GROUP-MGR-ADD-ACK)
+   协议格式: */
+message mesg_group_mgr_add_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x031A
+   命令描述: 解除群组管理员(GROUP-MGR-DEL)
+   协议格式: */
+message mesg_group_mgr_del
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID
+}
+
+/*
+   命令ID: 0x031B
+   命令描述: 解除群组管理员应答(GROUP-MGR-DEL-ACK)
+   协议格式: */
+message mesg_group_mgr_del_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x031C
+   命令描述: 群员列表请求(GROUP-USR-LIST-REQ)
+   协议格式: */
+message mesg_group_usr_list_req
+{
+    required uint64 gid = 1;        // M|群组ID|数字|
+    required uint32 num = 2;        // M|请求人数|数字|(备注:当num=0时, 表示获取所有人员列表; 当num>0时, 表示获取num个人员列表)
+}
+
+/*
+   命令ID: 0x031D
+   命令描述: 群员列表应答(GROUP-USR-LIST-ACK)
+   协议格式: */
+message mesg_group_usr_list_ack
+{
+    required uint64 gid = 1;       // M|群组ID|数字|
+    required string list= 2;        // M|群组列表|字串|JSON
+}
+
+/*
+   命令ID: 0x0350
+   命令描述: 入群通知(GROUP-JOIN-NTC)
+   协议格式: */
+message mesg_group_join_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0351
+   命令描述: 退群通知(GROUP-QUIT-NTC)
+   协议格式: */
+message mesg_group_quit_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0352
+   命令描述: 踢人通知(GROUP-KICK-NTC)
+   协议格式: */
+message mesg_group_kick_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0353
+   命令描述: 禁言通知(GROUP-BAN-ADD-NTC)
+   协议格式: */
+message mesg_group_ban_add_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0354
+   命令描述: 解除禁言通知(GROUP-BAN-DEL-NTC)
+   协议格式: */
+message mesg_group_ban_del_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0355
+   命令描述: 加入黑名单通知(GROUP-BL-ADD-NTC)
+   协议格式: */
+message mesg_group_bl_add_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0356
+   命令描述: 移除黑名单通知(GROUP-BL-DEL-NTC)
+   协议格式: */
+message mesg_group_bl_del_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0357
+   命令描述: 添加管理员通知(GROUP-MGR-ADD-NTC)
+   协议格式: */
+message mesg_group_mgr_add_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+/*
+   命令ID: 0x0358
+   命令描述: 移除管理员通知(GROUP-MGR-DEL-NTC)
+   协议格式: */
+message mesg_group_mgr_del_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 gid = 2;        // M|群组ID|数字|
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//聊天室消息
+
+/*
+   命令ID: 0x0401
+   命令描述: 创建聊天室(ROOM-CREAT)
+   协议格式: */
+message mesg_room_creat
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+    required string name = 3;       // M|聊天室名称|字串|
+    required string desc = 4;       // M|聊天室描述|字串|
+}
+
+/*
+   命令ID: 0x0402
+   命令描述: 创建聊天室应答(ROOM-CREAT-ACK)
+   协议格式: */
+message mesg_room_creat_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+    required uint32 code = 3;       // M|错误码|数字|
+    required string errmsg = 4;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0403
+   命令描述: 解散聊天室(ROOM-DISMISS)
+   协议格式: */
+message mesg_room_dismiss
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+}
+
+/*
+   命令ID: 0x0404
+   命令描述: 解散聊天室应答(ROOM-DISMISS-ACK)
+   协议格式: */
+message mesg_room_dismiss_ack
+{
+    required uint32 code = 1;       // M|错误码|数字|
+    required string errmsg = 2;     // M|错误描述|数字|
+}
+
+/*
+   命令ID: 0x0405
+   命令描述: 加入聊天室(ROOM-JOIN)
+   协议格式: */
+message mesg_room_join
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+    required string token = 3;      // M|鉴权TOKEN|字串|
+}
+
+/*
+   命令ID: 0x0406
+   命令描述: 加入聊天室应答(ROOM-JOIN-ACK)
+   协议格式: */
+message mesg_room_join_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+    required uint32 gid = 3;        // M|分组ID|数字|
+    required uint32 code = 4;       // M|错误码|数字|
+    required string errmsg = 5;     // M|错误描述|字串|
+}
+
+/*
+   命令ID: 0x0407
+   命令描述: 退出聊天室(ROOM-QUIT)
+   协议格式: */
+message mesg_room_quit
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+}
+
+/*
+   命令ID: 0x0408
+   命令描述: 退出聊天室应答(ROOM-QUIT-ACK)
+   协议格式: */
+message mesg_room_quit_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|<br>
+    required uint64 rid = 2;        // M|聊天室ID|数字|<br>
+    required uint32 code = 3;       // M|错误码|数字|
+    required string errmsg = 4;     // M|错误描述|数字|
+}
+
+/*
+   命令ID: 0x0409
+   命令描述: 踢出聊天室(ROOM-KICK)
+   协议格式: */
+message mesg_room_kick
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+}
+
+/*
+   命令ID: 0x040A
+   命令描述: 踢出聊天室应答(ROOM-KICK-ACK)
+   协议格式: */
+message mesg_room_kick_ack
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
+}
+
+/*
+   命令ID: 0x040B
+   命令描述: 聊天室消息(ROOM)
+   协议格式: */
+message mesg_room
+{
+    required uint64 uid = 1;        // M|用户ID
+    required uint64 rid = 2;        // M|聊天室ID
+    required uint32 gid = 3;        // M|分组ID
+    required uint32 level = 4;      // M|消息级别
+    required uint64 time = 5;       // M|发送时间
+    required string text = 6;       // M|聊天内容
+    optional bytes data = 7;        // M|透传数据
+}
+
+/*
+   命令ID: 0x040C
+   命令描述: 聊天室消息应答(ROOM-ACK)
+   协议格式: */
+message mesg_room_ack
+{
+    required uint32 code = 1;       // M|错误码
+    required string errmsg = 2;     // M|错误描述
+}
+
+/*
+   命令ID: 0x040D
+   命令描述: 聊天室广播消息(ROOM-BC)
+   协议格式: */
+message mesg_room_bc
+{
+    required uint64 uid = 1;        // M|用户ID
+    required uint64 rid = 2;        // M|聊天室ID
+    required uint32 level = 4;      // M|消息级别
+    required uint64 time = 5;       // M|发送时间
+    required uint32 expire = 6;     // M|过期时间
+    required string text = 7;       // M|广播内容
+    optional bytes data = 8;        // M|透传数据
+}
+
+/*
+   命令ID: 0x040E
+   命令描述: 聊天室广播消息应答(ROOM-BC-ACK)
+   协议格式: */
+message mesg_room_bc_ack
+{
+    required uint32 code = 1;       // M|错误码
+    required string errmsg = 2;     // M|错误描述
+}
+
+/*
+   命令ID: 0x0410
+   命令描述: 聊天室人数(ROOM-USR-NUM)
+   协议格式: */
+message mesg_room_usr_num
+{
+    required uint64 rid = 1;        // M|聊天室ID|数字|
+    required uint32 num = 2;        // M|用户人数|数字|
+}
+
+/*
+   命令ID: 0x0411
+   命令描述: 聊天室人数应答(ROOM-USR-NUM-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0450
+   命令描述: 加入聊天室通知(ROOM-JOIN-NTC)
+   协议格式: */
+message mesg_room_join_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+}
+
+/*
+   命令ID: 0x0451
+   命令描述: 退出聊天室通知(ROOM-QUIT-NTC)
+   协议格式: */
+message mesg_room_quit_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+}
+
+/*
+   命令ID: 0x0452
+   命令描述: 踢出聊天室通知(ROOM-KICK-NTC)
+   协议格式: */
+message mesg_room_kick_ntc
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//推送消息
+
+/*
+   命令ID: 0x0501
+   命令描述: 广播消息(BC)
+   功能描述: 用于给所有人员发送广播消息
+   协议格式: 透传 */
+
+/*
+   命令ID: 0x0502
+   命令描述: 广播消息应答(BC-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0503
+   命令描述: 点到点消息(P2P)
+   功能描述: 可用于发送私聊消息、添加/删除好友等点到点的消息
+   协议格式: 自定义 */
+
+/*
+   命令ID: 0x0504
+   命令描述: 点到点消息应答(P2P-ACK)
+   协议格式: NONE */
+
+////////////////////////////////////////////////////////////////////////////////
+//系统内部命令
+
+/*
+   命令ID: 0x0601
+   命令描述: 帧听层上报(LSN-RPT)
+   协议格式: */
+message mesg_lsn_rpt
+{
+    required uint32 nid = 1;        // M|结点ID|数字|
+    required string nation = 2;     // M|所属国家|字串|
+    required string name = 3;       // M|运营商名称|字串|
+    required string ipaddr = 4;     // M|IP地址|字串|
+    required uint32 port = 5;       // M|端口号|数字|
+}
+
+/*
+   命令ID: 0x0602
+   命令描述: 帧听层上报应答(LSN-RPT-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0603
+   命令描述: 转发层上报 (FRWD-RPT)
+   协议格式: */
+message mesg_frwd_rpt
+{
+    required uint32 nid = 1;        // M|结点ID|数字|
+    required string ipaddr = 2;     // M|IP地址|字串|
+    required uint32 forward_port = 3;    // M|前端口号|数字|
+    required uint32 backend_port = 4;    // M|后端口号|数字|
+}
+
+/*
+   命令ID: 0x0604
+   命令描述: 转发层上报应答(FRWD-RPT-ACK)
+   协议格式: NONE */
