@@ -27,8 +27,22 @@
 ---
 | **序号** | **键值** | **命令含义** | **关键字** | **备注** |
 |:------:|:------:|:-------|:---------|:-------|
-| 01 | 0x0201 | 私聊消息 | PRVT-MSG | 暂无 |
-| 02 | 0x0202 | 私聊消息应答 | PRVT-MSG-ACK | 暂无 |
+| 01 | 0x0201 | 私聊消息 | PRVT-CHAT | 暂无 |
+| 02 | 0x0202 | 私聊消息应答 | PRVT-CHAT-ACK | 暂无 |
+| 03 | 0x0203 | 添加好友 | PRVT-FRIEND-ADD | 暂无 |
+| 04 | 0x0204 | 添加好友应答 | PRVT-FRIEND-ADD-ACK | 暂无 |
+| 05 | 0x0205 | 删除好友 | PRVT-FRIEND-DEL | 暂无 |
+| 06 | 0x0206 | 删除好友应答 | PRVT-FRIEND-DEL-ACK | 暂无 |
+| 07 | 0x0207 | 加入黑名单 | PRVT-BL-ADD | 暂无 |
+| 08 | 0x0208 | 加入黑名单应答 | PRVT-BL-ADD-ACK | 暂无 |
+| 09 | 0x0209 | 移除黑名单 | PRVT-BL-DEL | 暂无 |
+| 10 | 0x020A | 移除黑名单应答 | PRVT-BL-DEL-ACK | 暂无 |
+| 11 | 0x020B | 屏蔽此人 | PRVT-BAN-ADD | 暂无 |
+| 12 | 0x020C | 屏蔽此人应答 | PRVT-BAN-ADD-ACK | 暂无 |
+| 13 | 0x020D | 取消屏蔽此人 | PRVT-BAN-DEL | 暂无 |
+| 14 | 0x020E | 取消屏蔽此人应答 | PRVT-BAN-DEL-ACK | 暂无 |
+| 15 | 0x0210 | 备注此人 | PRVT-MARK | 暂无 |
+| 16 | 0x0211 | 备注此人应答 | PRVT-MARK-ACK | 暂无 |
 
 #群聊消息
 ---
@@ -44,8 +58,8 @@
 | 08 | 0x0308 | 退群应答 | GROUP-QUIT-ACK | 暂无 |
 | 09 | 0x0309 | 邀请入群 | GROUP-INVITE | 暂无 |
 | 10 | 0x030A | 邀请入群应答 | GROUP-INVITE-ACK | 暂无 |
-| 11 | 0x030B | 群聊消息 | GROUP | 暂无 |
-| 12 | 0x030C | 群聊消息应答 | GROUP-ACK | 暂无 |
+| 11 | 0x030B | 群聊消息 | GROUP-CHAT | 暂无 |
+| 12 | 0x030C | 群聊消息应答 | GROUP-CHAT-ACK | 暂无 |
 | 13 | 0x030D | 群组踢人 | GROUP-KICK | 暂无 |
 | 14 | 0x030E | 群组踢人应答 | GROUP-KICK-ACK | 暂无 |
 | 15 | 0x0310 | 群组禁言 | GROUP-BAN-ADD | 暂无 |
@@ -86,8 +100,8 @@
 | 08 | 0x0408 | 退出聊天室应答 | ROOM-QUIT-ACK | 暂无 |
 | 09 | 0x0409 | 踢出聊天室 | ROOM-KICK | 暂无 |
 | 10 | 0x040A | 踢出聊天室应答 | ROOM-KICK-ACK | 暂无 |
-| 11 | 0x040B | 聊天室消息 | ROOM | 暂无 |
-| 12 | 0x040C | 聊天室消息应答 | ROOM-ACK | 暂无 |
+| 11 | 0x040B | 聊天室消息 | ROOM-CHAT | 暂无 |
+| 12 | 0x040C | 聊天室消息应答 | ROOM-CHAT-ACK | 暂无 |
 | 13 | 0x040D | 聊天室广播消息 | ROOM-BC | 暂无 |
 | 14 | 0x040E | 聊天室广播消息应答 | ROOM-BC-ACK | 暂无 |
 | 15 | 0x0410 | 聊天室人数 | ROOM-USR-NUM | 暂无 |
