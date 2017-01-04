@@ -135,26 +135,31 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) Register() {
-	ctx.frwder.Register(comm.CMD_GROUP_MSG, MsgSvrGroupMsgHandler, ctx)
-	ctx.frwder.Register(comm.CMD_GROUP_MSG_ACK, MsgSvrGroupMsgAckHandler, ctx)
+	/* > 通用消息 */
+	ctx.frwder.Register(comm.CMD_SYNC_MSG, MsgSvrSyncMsgHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
 
+	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
+
+	/* > 私聊消息 */
 	ctx.frwder.Register(comm.CMD_PRVT_MSG, MsgSvrPrivateMsgHandler, ctx)
 	ctx.frwder.Register(comm.CMD_PRVT_MSG_ACK, MsgSvrPrvtMsgAckHandler, ctx)
 
-	ctx.frwder.Register(comm.CMD_BC, MsgSvrBcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_BC_ACK, MsgSvrBcAckHandler, ctx)
+	/* > 群聊消息 */
+	ctx.frwder.Register(comm.CMD_GROUP_MSG, MsgSvrGroupMsgHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_MSG_ACK, MsgSvrGroupMsgAckHandler, ctx)
 
-	//ctx.frwder.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
-	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
-
+	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_MSG, MsgSvrRoomHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomAckHandler, ctx)
 
 	ctx.frwder.Register(comm.CMD_ROOM_BC, MsgSvrRoomBcHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_BC_ACK, MsgSvrRoomBcAckHandler, ctx)
 
-	ctx.frwder.Register(comm.CMD_SYNC_MSG, MsgSvrSyncMsgHandler, ctx)
-	//ctx.frwder.Register(comm.CMD_SYNC_MSG_ACK, MsgSvrSyncMsgAckHandler, ctx)
+	/* > 推送消息 */
+	ctx.frwder.Register(comm.CMD_BC, MsgSvrBcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BC_ACK, MsgSvrBcAckHandler, ctx)
 }
 
 /******************************************************************************
