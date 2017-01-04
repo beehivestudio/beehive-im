@@ -41,9 +41,9 @@ type mesg_group_item struct {
 
 /* 聊天室消息 */
 type mesg_room_item struct {
-	head *comm.MesgHeader /* 头部信息 */
-	req  *mesg.MesgRoom   /* 请求内容 */
-	raw  []byte           /* 原始消息 */
+	head *comm.MesgHeader   /* 头部信息 */
+	req  *mesg.MesgRoomChat /* 请求内容 */
+	raw  []byte             /* 原始消息 */
 }
 
 /* MSGSVR上下文 */
@@ -147,12 +147,12 @@ func (ctx *MsgSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_PRVT_MSG_ACK, MsgSvrPrvtMsgAckHandler, ctx)
 
 	/* > 群聊消息 */
-	ctx.frwder.Register(comm.CMD_GROUP_MSG, MsgSvrGroupMsgHandler, ctx)
-	ctx.frwder.Register(comm.CMD_GROUP_MSG_ACK, MsgSvrGroupMsgAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_CHAT, MsgSvrGroupChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_CHAT_ACK, MsgSvrGroupChatAckHandler, ctx)
 
 	/* > 聊天室消息 */
-	ctx.frwder.Register(comm.CMD_ROOM_MSG, MsgSvrRoomHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_MSG_ACK, MsgSvrRoomAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_CHAT, MsgSvrRoomChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_CHAT_ACK, MsgSvrRoomChatAckHandler, ctx)
 
 	ctx.frwder.Register(comm.CMD_ROOM_BC, MsgSvrRoomBcHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_BC_ACK, MsgSvrRoomBcAckHandler, ctx)

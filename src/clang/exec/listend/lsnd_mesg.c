@@ -527,7 +527,7 @@ static int lsnd_room_mesg_trav_send_handler(uint64_t *sid, lsnd_room_mesg_param_
 }
 
 /******************************************************************************
- **函数名称: lsnd_mesg_room_mesg_handler
+ **函数名称: lsnd_mesg_room_chat_handler
  **功    能: 下发聊天室消息(下行)
  **输入参数:
  **     type: 数据类型
@@ -541,10 +541,10 @@ static int lsnd_room_mesg_trav_send_handler(uint64_t *sid, lsnd_room_mesg_param_
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.25 01:24:45 #
  ******************************************************************************/
-int lsnd_mesg_room_mesg_handler(int type, int orig, void *data, size_t len, void *args)
+int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void *args)
 {
     uint32_t gid;
-    MesgRoom *mesg;
+    MesgRoomChat *mesg;
     lsnd_room_mesg_param_t param;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -556,7 +556,7 @@ int lsnd_mesg_room_mesg_handler(int type, int orig, void *data, size_t len, void
     log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 解压PROTO-BUF */
-    mesg = mesg_room__unpack(NULL, hhead.length, (void *)(head + 1));
+    mesg = mesg_room_chat__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
         log_error(lsnd->log, "Unpack chat room message failed!");
         return -1;
@@ -574,7 +574,7 @@ int lsnd_mesg_room_mesg_handler(int type, int orig, void *data, size_t len, void
             (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
-    mesg_room__free_unpacked(mesg, NULL);
+    mesg_room_chat__free_unpacked(mesg, NULL);
 
     return 0;
 }

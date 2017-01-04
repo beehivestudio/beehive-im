@@ -53,6 +53,8 @@ typedef struct _MesgGroupMgrAdd MesgGroupMgrAdd;
 typedef struct _MesgGroupMgrAddAck MesgGroupMgrAddAck;
 typedef struct _MesgGroupMgrDel MesgGroupMgrDel;
 typedef struct _MesgGroupMgrDelAck MesgGroupMgrDelAck;
+typedef struct _MesgGroupUsrListReq MesgGroupUsrListReq;
+typedef struct _MesgGroupUsrListAck MesgGroupUsrListAck;
 typedef struct _MesgGroupJoinNtc MesgGroupJoinNtc;
 typedef struct _MesgGroupQuitNtc MesgGroupQuitNtc;
 typedef struct _MesgGroupKickNtc MesgGroupKickNtc;
@@ -72,8 +74,8 @@ typedef struct _MesgRoomQuit MesgRoomQuit;
 typedef struct _MesgRoomQuitAck MesgRoomQuitAck;
 typedef struct _MesgRoomKick MesgRoomKick;
 typedef struct _MesgRoomKickAck MesgRoomKickAck;
-typedef struct _MesgRoom MesgRoom;
-typedef struct _MesgRoomAck MesgRoomAck;
+typedef struct _MesgRoomChat MesgRoomChat;
+typedef struct _MesgRoomChatAck MesgRoomChatAck;
 typedef struct _MesgRoomBc MesgRoomBc;
 typedef struct _MesgRoomBcAck MesgRoomBcAck;
 typedef struct _MesgRoomUsrNum MesgRoomUsrNum;
@@ -532,6 +534,28 @@ struct  _MesgGroupMgrDelAck
     , 0, NULL }
 
 
+struct  _MesgGroupUsrListReq
+{
+  ProtobufCMessage base;
+  uint64_t gid;
+  uint32_t num;
+};
+#define MESG_GROUP_USR_LIST_REQ__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_usr_list_req__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgGroupUsrListAck
+{
+  ProtobufCMessage base;
+  uint64_t gid;
+  char *list;
+};
+#define MESG_GROUP_USR_LIST_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_usr_list_ack__descriptor) \
+    , 0, NULL }
+
+
 struct  _MesgGroupJoinNtc
 {
   ProtobufCMessage base;
@@ -751,7 +775,7 @@ struct  _MesgRoomKickAck
     , 0, 0 }
 
 
-struct  _MesgRoom
+struct  _MesgRoomChat
 {
   ProtobufCMessage base;
   uint64_t uid;
@@ -763,19 +787,19 @@ struct  _MesgRoom
   protobuf_c_boolean has_data;
   ProtobufCBinaryData data;
 };
-#define MESG_ROOM__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_room__descriptor) \
+#define MESG_ROOM_CHAT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_chat__descriptor) \
     , 0, 0, 0, 0, 0, NULL, 0,{0,NULL} }
 
 
-struct  _MesgRoomAck
+struct  _MesgRoomChatAck
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_ROOM_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_room_ack__descriptor) \
+#define MESG_ROOM_CHAT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_chat_ack__descriptor) \
     , 0, NULL }
 
 
@@ -1597,6 +1621,44 @@ MesgGroupMgrDelAck *
 void   mesg_group_mgr_del_ack__free_unpacked
                      (MesgGroupMgrDelAck *message,
                       ProtobufCAllocator *allocator);
+/* MesgGroupUsrListReq methods */
+void   mesg_group_usr_list_req__init
+                     (MesgGroupUsrListReq         *message);
+size_t mesg_group_usr_list_req__get_packed_size
+                     (const MesgGroupUsrListReq   *message);
+size_t mesg_group_usr_list_req__pack
+                     (const MesgGroupUsrListReq   *message,
+                      uint8_t             *out);
+size_t mesg_group_usr_list_req__pack_to_buffer
+                     (const MesgGroupUsrListReq   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupUsrListReq *
+       mesg_group_usr_list_req__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_usr_list_req__free_unpacked
+                     (MesgGroupUsrListReq *message,
+                      ProtobufCAllocator *allocator);
+/* MesgGroupUsrListAck methods */
+void   mesg_group_usr_list_ack__init
+                     (MesgGroupUsrListAck         *message);
+size_t mesg_group_usr_list_ack__get_packed_size
+                     (const MesgGroupUsrListAck   *message);
+size_t mesg_group_usr_list_ack__pack
+                     (const MesgGroupUsrListAck   *message,
+                      uint8_t             *out);
+size_t mesg_group_usr_list_ack__pack_to_buffer
+                     (const MesgGroupUsrListAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgGroupUsrListAck *
+       mesg_group_usr_list_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_group_usr_list_ack__free_unpacked
+                     (MesgGroupUsrListAck *message,
+                      ProtobufCAllocator *allocator);
 /* MesgGroupJoinNtc methods */
 void   mesg_group_join_ntc__init
                      (MesgGroupJoinNtc         *message);
@@ -1958,43 +2020,43 @@ MesgRoomKickAck *
 void   mesg_room_kick_ack__free_unpacked
                      (MesgRoomKickAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgRoom methods */
-void   mesg_room__init
-                     (MesgRoom         *message);
-size_t mesg_room__get_packed_size
-                     (const MesgRoom   *message);
-size_t mesg_room__pack
-                     (const MesgRoom   *message,
+/* MesgRoomChat methods */
+void   mesg_room_chat__init
+                     (MesgRoomChat         *message);
+size_t mesg_room_chat__get_packed_size
+                     (const MesgRoomChat   *message);
+size_t mesg_room_chat__pack
+                     (const MesgRoomChat   *message,
                       uint8_t             *out);
-size_t mesg_room__pack_to_buffer
-                     (const MesgRoom   *message,
+size_t mesg_room_chat__pack_to_buffer
+                     (const MesgRoomChat   *message,
                       ProtobufCBuffer     *buffer);
-MesgRoom *
-       mesg_room__unpack
+MesgRoomChat *
+       mesg_room_chat__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_room__free_unpacked
-                     (MesgRoom *message,
+void   mesg_room_chat__free_unpacked
+                     (MesgRoomChat *message,
                       ProtobufCAllocator *allocator);
-/* MesgRoomAck methods */
-void   mesg_room_ack__init
-                     (MesgRoomAck         *message);
-size_t mesg_room_ack__get_packed_size
-                     (const MesgRoomAck   *message);
-size_t mesg_room_ack__pack
-                     (const MesgRoomAck   *message,
+/* MesgRoomChatAck methods */
+void   mesg_room_chat_ack__init
+                     (MesgRoomChatAck         *message);
+size_t mesg_room_chat_ack__get_packed_size
+                     (const MesgRoomChatAck   *message);
+size_t mesg_room_chat_ack__pack
+                     (const MesgRoomChatAck   *message,
                       uint8_t             *out);
-size_t mesg_room_ack__pack_to_buffer
-                     (const MesgRoomAck   *message,
+size_t mesg_room_chat_ack__pack_to_buffer
+                     (const MesgRoomChatAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgRoomAck *
-       mesg_room_ack__unpack
+MesgRoomChatAck *
+       mesg_room_chat_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_room_ack__free_unpacked
-                     (MesgRoomAck *message,
+void   mesg_room_chat_ack__free_unpacked
+                     (MesgRoomChatAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgRoomBc methods */
 void   mesg_room_bc__init
@@ -2264,6 +2326,12 @@ typedef void (*MesgGroupMgrDel_Closure)
 typedef void (*MesgGroupMgrDelAck_Closure)
                  (const MesgGroupMgrDelAck *message,
                   void *closure_data);
+typedef void (*MesgGroupUsrListReq_Closure)
+                 (const MesgGroupUsrListReq *message,
+                  void *closure_data);
+typedef void (*MesgGroupUsrListAck_Closure)
+                 (const MesgGroupUsrListAck *message,
+                  void *closure_data);
 typedef void (*MesgGroupJoinNtc_Closure)
                  (const MesgGroupJoinNtc *message,
                   void *closure_data);
@@ -2321,11 +2389,11 @@ typedef void (*MesgRoomKick_Closure)
 typedef void (*MesgRoomKickAck_Closure)
                  (const MesgRoomKickAck *message,
                   void *closure_data);
-typedef void (*MesgRoom_Closure)
-                 (const MesgRoom *message,
+typedef void (*MesgRoomChat_Closure)
+                 (const MesgRoomChat *message,
                   void *closure_data);
-typedef void (*MesgRoomAck_Closure)
-                 (const MesgRoomAck *message,
+typedef void (*MesgRoomChatAck_Closure)
+                 (const MesgRoomChatAck *message,
                   void *closure_data);
 typedef void (*MesgRoomBc_Closure)
                  (const MesgRoomBc *message,
@@ -2395,6 +2463,8 @@ extern const ProtobufCMessageDescriptor mesg_group_mgr_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_mgr_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_mgr_del__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_mgr_del_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_usr_list_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_usr_list_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_join_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_quit_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_kick_ntc__descriptor;
@@ -2414,8 +2484,8 @@ extern const ProtobufCMessageDescriptor mesg_room_quit__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_quit_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_kick__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_kick_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_room__descriptor;
-extern const ProtobufCMessageDescriptor mesg_room_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_chat__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_chat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_bc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_bc_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_usr_num__descriptor;

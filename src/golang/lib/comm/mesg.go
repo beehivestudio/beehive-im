@@ -49,8 +49,8 @@ const (
 	CMD_GROUP_QUIT_ACK     = 0x0308 /* 退群应答 */
 	CMD_GROUP_INVITE       = 0x0309 /* 邀请入群 */
 	CMD_GROUP_INVITE_ACK   = 0x030A /* 邀请入群应答 */
-	CMD_GROUP_MSG          = 0x030B /* 群聊消息 */
-	CMD_GROUP_MSG_ACK      = 0x030C /* 群聊消息应答 */
+	CMD_GROUP_CHAT         = 0x030B /* 群聊消息 */
+	CMD_GROUP_CHAT_ACK     = 0x030C /* 群聊消息应答 */
 	CMD_GROUP_KICK         = 0x030D /* 群组踢人 */
 	CMD_GROUP_KICK_ACK     = 0x030E /* 群组踢人应答 */
 	CMD_GROUP_BAN_ADD      = 0x0310 /* 群组禁言 */
@@ -88,8 +88,8 @@ const (
 	CMD_ROOM_QUIT_ACK    = 0x0408 /* 退出聊天室应答 */
 	CMD_ROOM_KICK        = 0x0409 /* 踢出聊天室 */
 	CMD_ROOM_KICK_ACK    = 0x040A /* 踢出聊天室应答 */
-	CMD_ROOM_MSG         = 0x040B /* 聊天室消息 */
-	CMD_ROOM_MSG_ACK     = 0x040C /* 聊天室消息应答 */
+	CMD_ROOM_CHAT        = 0x040B /* 聊天室消息 */
+	CMD_ROOM_CHAT_ACK    = 0x040C /* 聊天室消息应答 */
 	CMD_ROOM_BC          = 0x040D /* 聊天室广播消息 */
 	CMD_ROOM_BC_ACK      = 0x040E /* 聊天室广播消息应答 */
 	CMD_ROOM_USR_NUM     = 0x0410 /* 聊天室人数 */

@@ -78,7 +78,7 @@ func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_GROUP_MSG_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_GROUP_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
@@ -113,7 +113,7 @@ func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgG
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_GROUP_MSG_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_GROUP_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
@@ -155,7 +155,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 	for nid := range nid_list {
 		ctx.log.Debug("gid:%d nid:%d", req.GetGid(), nid)
 
-		ctx.send_data(comm.CMD_GROUP_MSG, req.GetGid(), uint32(nid),
+		ctx.send_data(comm.CMD_GROUP_CHAT, req.GetGid(), uint32(nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 	ctx.gid_to_nid_map.RUnlock()
@@ -163,7 +163,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 }
 
 /******************************************************************************
- **函数名称: MsgSvrGroupMsgHandler
+ **函数名称: MsgSvrGroupChatHandler
  **功    能: 群消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -182,7 +182,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 08:45:19 #
  ******************************************************************************/
-func MsgSvrGroupMsgHandler(cmd uint32, orig uint32,
+func MsgSvrGroupChatHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -215,7 +215,7 @@ func MsgSvrGroupMsgHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrGroupMsgAckHandler
+ **函数名称: MsgSvrGroupChatAckHandler
  **功    能: 群消息应答处理
  **输入参数:
  **     cmd: 消息类型
@@ -229,7 +229,7 @@ func MsgSvrGroupMsgHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:43:01 #
  ******************************************************************************/
-func MsgSvrGroupMsgAckHandler(cmd uint32, orig uint32,
+func MsgSvrGroupChatAckHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {

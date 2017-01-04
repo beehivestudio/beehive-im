@@ -675,7 +675,7 @@ message mesg_room_kick_ack
    命令ID: 0x040B
    命令描述: 聊天室消息(ROOM)
    协议格式: */
-message mesg_room
+message mesg_room_chat
 {
     required uint64 uid = 1;        // M|用户ID
     required uint64 rid = 2;        // M|聊天室ID
@@ -688,9 +688,9 @@ message mesg_room
 
 /*
    命令ID: 0x040C
-   命令描述: 聊天室消息应答(ROOM-ACK)
+   命令描述: 聊天室消息应答(ROOM-CHAT-ACK)
    协议格式: */
-message mesg_room_ack
+message mesg_room_chat_ack
 {
     required uint32 code = 1;       // M|错误码
     required string errmsg = 2;     // M|错误描述

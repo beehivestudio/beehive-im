@@ -18,7 +18,7 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
 int lsnd_mesg_room_quit_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args);
 int lsnd_mesg_ping_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args);
 
-int lsnd_mesg_room_mesg_handler(int type, int orig, void *data, size_t len, void *args);
+int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void *args);
 int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *args);
 
 #endif /*__LSND_MESG_H__*/

@@ -26,12 +26,12 @@ import (
  **作    者: # Qifeng.zou # 2016.11.04 22:29:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgRoom) {
+	head *comm.MesgHeader, req *mesg.MesgRoomChat) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgRoom{}
+	req = &mesg.MesgRoomChat{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
@@ -62,9 +62,9 @@ func (ctx *MsgSvrCntx) room_msg_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
-	req *mesg.MesgRoom, code uint32, errmsg string) int {
+	req *mesg.MesgRoomChat, code uint32, errmsg string) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgRoomAck{
+	rsp := &mesg.MesgRoomChatAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -76,7 +76,7 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_ROOM_MSG_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_ROOM_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
@@ -97,9 +97,9 @@ func (ctx *MsgSvrCntx) send_err_room_msg_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRoom) int {
+func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRoomChat) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgRoomAck{
+	rsp := &mesg.MesgRoomChatAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -111,7 +111,7 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_ROOM_MSG_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_ROOM_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
@@ -131,7 +131,7 @@ func (ctx *MsgSvrCntx) send_room_msg_ack(head *comm.MesgHeader, req *mesg.MesgRo
  **作    者: # Qifeng.zou # 2016.11.04 22:34:55 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_msg_handler(
-	head *comm.MesgHeader, req *mesg.MesgRoom, data []byte) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgRoomChat, data []byte) (err error) {
 	var item mesg_room_item
 
 	/* 1. 放入存储队列 */
@@ -153,7 +153,7 @@ func (ctx *MsgSvrCntx) room_msg_handler(
 	for nid := range nid_list {
 		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
 
-		ctx.send_data(comm.CMD_ROOM_MSG, req.GetRid(), uint32(nid),
+		ctx.send_data(comm.CMD_ROOM_CHAT, req.GetRid(), uint32(nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 	ctx.rid_to_nid_map.RUnlock()
@@ -161,7 +161,7 @@ func (ctx *MsgSvrCntx) room_msg_handler(
 }
 
 /******************************************************************************
- **函数名称: MsgSvrRoomHandler
+ **函数名称: MsgSvrRoomChatHandler
  **功    能: 聊天室消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -180,7 +180,7 @@ func (ctx *MsgSvrCntx) room_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:28:02 #
  ******************************************************************************/
-func MsgSvrRoomHandler(cmd uint32, orig uint32,
+func MsgSvrRoomChatHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -211,7 +211,7 @@ func MsgSvrRoomHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrRoomAckHandler
+ **函数名称: MsgSvrRoomChatAckHandler
  **功    能: 聊天室消息应答
  **输入参数:
  **     cmd: 消息类型
@@ -225,7 +225,7 @@ func MsgSvrRoomHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
  ******************************************************************************/
-func MsgSvrRoomAckHandler(cmd uint32, orig uint32,
+func MsgSvrRoomChatAckHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -335,7 +335,7 @@ func (ctx *MsgSvrCntx) room_mesg_storage_task() {
  **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_mesg_storage_proc(
-	head *comm.MesgHeader, req *mesg.MesgRoom, raw []byte) {
+	head *comm.MesgHeader, req *mesg.MesgRoomChat, raw []byte) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
