@@ -313,7 +313,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	id, _ = strconv.ParseInt(vals[1], 10, 32)
 	nid := uint32(id)
 
-	if 0 != nid && nid != head.GetNid() {
+	if 0 != nid && nid != head.GetNid() { // 注意：当nid为0时表示会话SID之前并未登录.
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d]",
 			uid, head.GetSid(), nid, head.GetNid())
 		ctx.send_kick(head.GetSid(), nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
@@ -765,48 +765,6 @@ func UsrSvrRoomDismissHandler(cmd uint32, orig uint32, data []byte, length uint3
 /* 加入聊天室 */
 
 /******************************************************************************
- **函数名称: room_join_isvalid
- **功    能: 判断JOIN是否合法
- **输入参数:
- **     req: JOIN请求
- **输出参数: NONE
- **返    回: true:合法 false:非法
- **实现描述: 计算TOKEN合法性
- **注意事项:
- **     TOKEN的格式"uid:${uid}:rid:${rid}:ttl:${ttl}"
- **     uid: 用户ID
- **     ttl: 该token的最大生命时间
- **作    者: # Qifeng.zou # 2016.11.03 16:41:28 #
- ******************************************************************************/
-func (ctx *UsrSvrCntx) room_join_isvalid(req *mesg.MesgRoomJoin) bool {
-	/* > TOKEN解码 */
-	cry := crypt.CreateEncodeCtx(ctx.conf.Cipher)
-	token := crypt.Decode(cry, req.GetToken())
-	words := strings.Split(token, ":")
-	if 4 != len(words) {
-		ctx.log.Error("Token format not right! token:%s", token)
-		return false
-	}
-
-	/* > 验证TOKEN合法性 */
-	uid, _ := strconv.ParseInt(words[1], 10, 64)
-	rid, _ := strconv.ParseInt(words[3], 10, 64)
-	ttl, _ := strconv.ParseInt(words[5], 10, 64)
-	if ttl < time.Now().Unix() {
-		ctx.log.Error("Token is timeout!")
-		return false
-	} else if uint64(uid) != req.GetUid() {
-		ctx.log.Error("Token is invalid! uid:%d/%d", uid, req.GetUid())
-		return false
-	} else if uint64(rid) != req.GetRid() {
-		ctx.log.Error("Token is invalid! rid:%d/%d", rid, req.GetRid())
-		return false
-	}
-
-	return true
-}
-
-/******************************************************************************
  **函数名称: room_join_parse
  **功    能: 解析JOIN请求
  **输入参数:
@@ -829,11 +787,6 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal join request failed! errmsg:%s", err.Error())
-		return nil, nil
-	}
-
-	/* > 校验协议合法性 */
-	if !ctx.room_join_isvalid(req) {
 		return nil, nil
 	}
 

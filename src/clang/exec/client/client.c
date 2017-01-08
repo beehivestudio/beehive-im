@@ -1,6 +1,7 @@
 #include "sdk.h"
 #include "redo.h"
 #include "cmd_list.h"
+#include "mesg.pb-c.h"
 
 /* > 设置配置信息 */
 void client_set_conf(sdk_conf_t *conf)
@@ -9,8 +10,8 @@ void client_set_conf(sdk_conf_t *conf)
 
     conf->nid = 0; /* 设备ID: 唯一值 */
     snprintf(conf->path, sizeof(conf->path), "."); /* 工作路径 */
-    conf->uid = 2234;                 /* 用户ID */
-    conf->sid = 10001;                 /* 会话ID(备选) */
+    conf->uid = 18600522324;                 /* 用户ID */
+    conf->sid = 1234;                 /* 会话ID(备选) */
     conf->terminal = 1;                /* 终端类型 */
     snprintf(conf->app, sizeof(conf->app), "beehive chat");
     snprintf(conf->version, sizeof(conf->version), "1.0.0");    /* 客户端自身版本号(留做统计用) */
@@ -68,6 +69,33 @@ int sdk_send_cb(uint16_t cmd, const void *orig, size_t size,
     return 0;
 }
 
+/* 加入指定聊天室 */
+int room_join(sdk_cntx_t *ctx, uint64_t rid)
+{
+    void *addr;
+    size_t size;
+    sdk_conf_t *conf = &ctx->conf;
+    MesgRoomJoin join = MESG_ROOM_JOIN__INIT;
+
+    /* > 设置ONLINE字段 */
+    join.uid = conf->uid;
+    join.rid = rid;
+
+    /* > 申请内存空间 */
+    size = mesg_room_join__get_packed_size(&join);
+
+    addr = (void *)calloc(1, size);
+    if (NULL == addr) {
+        return SDK_ERR;
+    }
+
+    mesg_room_join__pack(&join, addr);
+
+    /* > 发起JOIN请求 */
+    sdk_async_send(ctx, CMD_ROOM_JOIN_REQ, addr, size, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     sdk_conf_t conf;
@@ -89,6 +117,7 @@ int main(int argc, char *argv[])
 
     while (1) {
         sdk_async_send(ctx, CMD_PING, NULL, 0, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
+        room_join(ctx, 1000000015);
         Sleep(1);
     }
 

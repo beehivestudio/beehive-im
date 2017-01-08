@@ -430,8 +430,9 @@ TODO: 协议头中的to为群ID(GID)
 协议格式: <br>
 >message mesg_group_chat_ack<br>
 >{<br>
->   required uint32 code = 1;       // M|错误码|数字|<br>
->   required string errmsg = 2;     // M|错误描述|字串|<br>
+>   required uint64 seq = 1;        // M|群消息序列号|数字|<br>
+>   required uint32 code = 2;       // M|错误码|数字|<br>
+>   required string errmsg = 3;     // M|错误描述|字串|<br>
 >}
 
 ---
@@ -739,7 +740,6 @@ TODO: 协议头中的to为群ID(GID)
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
->   required string token = 3;      // M|鉴权TOKEN|字串|<br>
 >}
 
 ---

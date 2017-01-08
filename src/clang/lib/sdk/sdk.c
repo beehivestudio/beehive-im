@@ -211,8 +211,7 @@ int sdk_register(sdk_cntx_t *ctx, uint32_t cmd, sdk_reg_cb_t proc, void *param)
  **功    能: 发送指定数据(对外接口)
  **输入参数:
  **     ctx: 上下文信息
- **     type: 数据类型
- **     nid: 源结点ID
+ **     cmd: 数据类型
  **     data: 数据地址
  **     size: 数据长度
  **     timeout: 超时时间

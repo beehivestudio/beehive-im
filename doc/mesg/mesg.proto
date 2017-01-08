@@ -608,12 +608,12 @@ message mesg_room_dismiss_ack
 /*
    命令ID: 0x0405
    命令描述: 加入聊天室(ROOM-JOIN)
+   注意事项: 登录成功后 再加入聊天室时 无需再进行token认证.
    协议格式: */
 message mesg_room_join
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 rid = 2;        // M|聊天室ID|数字|
-    required string token = 3;      // M|鉴权TOKEN|字串|
 }
 
 /*

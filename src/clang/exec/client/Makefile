@@ -10,6 +10,7 @@ include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
 			-I$(PROJ)/src/clang/incl \
+			-I$(PROJ)/src/clang/incl/mesg \
 			-I$(PROJ)/src/clang/incl/sdk \
 			-I$(PROJ)/../cctrl/src/incl
 INCLUDE += $(GLOBAL_INCLUDE)

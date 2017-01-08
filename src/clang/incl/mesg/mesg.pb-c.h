@@ -708,11 +708,10 @@ struct  _MesgRoomJoin
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t rid;
-  char *token;
 };
 #define MESG_ROOM_JOIN__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_join__descriptor) \
-    , 0, 0, NULL }
+    , 0, 0 }
 
 
 struct  _MesgRoomJoinAck

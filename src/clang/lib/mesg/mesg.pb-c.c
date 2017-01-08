@@ -5989,7 +5989,7 @@ const ProtobufCMessageDescriptor mesg_room_dismiss_ack__descriptor =
   (ProtobufCMessageInit) mesg_room_dismiss_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_join__field_descriptors[3] =
+static const ProtobufCFieldDescriptor mesg_room_join__field_descriptors[2] =
 {
   {
     "uid",
@@ -6015,28 +6015,15 @@ static const ProtobufCFieldDescriptor mesg_room_join__field_descriptors[3] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
-  {
-    "token",
-    3,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(MesgRoomJoin, token),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
 };
 static const unsigned mesg_room_join__field_indices_by_name[] = {
   1,   /* field[1] = rid */
-  2,   /* field[2] = token */
   0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_room_join__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor mesg_room_join__descriptor =
 {
@@ -6046,7 +6033,7 @@ const ProtobufCMessageDescriptor mesg_room_join__descriptor =
   "MesgRoomJoin",
   "",
   sizeof(MesgRoomJoin),
-  3,
+  2,
   mesg_room_join__field_descriptors,
   mesg_room_join__field_indices_by_name,
   1,  mesg_room_join__number_ranges,

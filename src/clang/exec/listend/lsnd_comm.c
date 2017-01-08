@@ -179,6 +179,8 @@ void lsnd_timer_kick_handler(void *_ctx)
     lsnd_kick_item_t *item, key;
     lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
 
+    log_debug(ctx->log, "Exec timer kick handler!");
+
     timeout_list = list_creat(NULL);
     if (NULL == timeout_list) {
         log_error(ctx->log, "Initialize kick timeout list failed!");
@@ -201,6 +203,8 @@ void lsnd_timer_kick_handler(void *_ctx)
         free(item);
 
         acc_async_kick(ctx->access, (uint64_t)cid);
+
+        log_debug(ctx->log, "Async kick cid:%d", cid);
     }
 
     return;
