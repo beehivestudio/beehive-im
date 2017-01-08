@@ -182,7 +182,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 08:45:19 #
  ******************************************************************************/
-func MsgSvrGroupChatHandler(cmd uint32, orig uint32,
+func MsgSvrGroupChatHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -229,7 +229,7 @@ func MsgSvrGroupChatHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:43:01 #
  ******************************************************************************/
-func MsgSvrGroupChatAckHandler(cmd uint32, orig uint32,
+func MsgSvrGroupChatAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {

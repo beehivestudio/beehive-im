@@ -27,7 +27,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:48:07 #
  ******************************************************************************/
-func MsgSvrBcHandler(cmd uint32, orig uint32,
+func MsgSvrBcHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -57,7 +57,7 @@ func MsgSvrBcHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:54:37 #
  ******************************************************************************/
-func MsgSvrBcAckHandler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
+func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
 		return -1
@@ -91,7 +91,7 @@ func MsgSvrBcAckHandler(cmd uint32, orig uint32, data []byte, length uint32, par
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
  ******************************************************************************/
-func MsgSvrP2pMsgHandler(cmd uint32, orig uint32,
+func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -121,7 +121,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:58:12 #
  ******************************************************************************/
-func MsgSvrP2pMsgAckHandler(cmd uint32, orig uint32,
+func MsgSvrP2pMsgAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -151,7 +151,7 @@ func MsgSvrP2pMsgAckHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:28:02 #
  ******************************************************************************/
-func MsgSvrSyncMsgHandler(cmd uint32, orig uint32,
+func MsgSvrSyncMsgHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
