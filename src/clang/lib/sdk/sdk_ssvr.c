@@ -1222,6 +1222,7 @@ static int sdk_ssvr_parse_conn_info(
             break;
         }
         conn_info->sid = (uint64_t)sid->valuedouble;
+        ctx->sid = conn_info->sid;
         ret = 0;
     } while(0);
 
