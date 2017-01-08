@@ -267,6 +267,8 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_ONLINE_ACK, p.Buff, uint32(len(p.Buff)))
 
+	ctx.log.Debug("Send online ack success!")
+
 	return 0
 }
 
@@ -311,7 +313,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	id, _ = strconv.ParseInt(vals[1], 10, 32)
 	nid := uint32(id)
 
-	if nid != head.GetNid() {
+	if 0 != nid && nid != head.GetNid() {
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d]",
 			uid, head.GetSid(), nid, head.GetNid())
 		ctx.send_kick(head.GetSid(), nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
