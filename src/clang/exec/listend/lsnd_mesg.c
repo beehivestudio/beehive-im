@@ -423,18 +423,25 @@ int lsnd_mesg_room_quit_req_handler(lsnd_conn_extra_t *conn, int type, void *dat
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
-    mesg_header_t hhead, *head = (mesg_header_t *)data; /* 消息头 */
+    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
     /* > 转换字节序 */
-    MESG_HEAD_NTOH(head, &hhead);
+    MESG_HEAD_NTOH(head, head);
+    if (!MESG_CHKSUM_ISVALID(head)) {
+        log_error(lsnd->log, "Head is invalid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
+                head->sid, head->serial, len, head->chksum);
+        return -1;
+    }
 
-    head->nid = ntohl(conf->nid);
+    head->nid = conf->nid;
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            hhead.sid, hhead.serial, len, hhead.body);
+    log_debug(lsnd->log, "Head is valid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
+            head->sid, head->serial, len, head->chksum);
+
+    MESG_HEAD_HTON(head, head);
 
     /* > 从聊天室中删除此会话 */
-    chat_del_session(lsnd->chat_tab, hhead.sid);
+    chat_del_session(lsnd->chat_tab, conn->sid);
 
     /* > 转发UNJOIN请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
