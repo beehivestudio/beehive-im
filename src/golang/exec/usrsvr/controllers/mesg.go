@@ -1066,7 +1066,10 @@ func UsrSvrRoomJoinReqHandler(cmd uint32, dest uint32, data []byte, length uint3
 
 	/* 1. > 解析JOIN请求 */
 	head, req := ctx.room_join_parse(data)
-	if nil == head && nil != req {
+	if nil == head && nil == req {
+		ctx.log.Error("Parse join request failed!")
+		return -1
+	} else if nil == head && nil != req {
 		ctx.log.Error("Parse join request failed!")
 		ctx.send_err_room_join_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
 		return -1
