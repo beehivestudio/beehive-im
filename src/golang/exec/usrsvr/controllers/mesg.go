@@ -122,14 +122,14 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !comm.MesgHeadIsValid(head) {
-		ctx.log.Error("Header of Online request is invalid! cmd:0x%04X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
+		ctx.log.Error("Header of Online request is invalid! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
 			head.GetCmd(), head.GetFlag(), head.GetLength(),
-			head.GetChkSum(), head.GetSid(), head.GetNid(),
+			head.GetChkSum(), head.GetCid(), head.GetNid(),
 			head.GetSerial(), comm.MESG_HEAD_SIZE)
 		return nil, nil, errors.New("Header of online request is invalied!")
 	}
 
-	ctx.log.Debug("Online request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X sid:%d nid:%d serial:%d head:%d",
+	ctx.log.Debug("Online request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
 		head.GetCmd(), head.GetFlag(), head.GetLength(),
 		head.GetChkSum(), head.GetSid(), head.GetNid(),
 		head.GetSerial(), comm.MESG_HEAD_SIZE)
@@ -180,7 +180,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
-		Sid:      proto.Uint64(0),
+		Sid:      proto.Uint64(req.GetSid()),
 		App:      proto.String(req.GetApp()),
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
@@ -237,7 +237,7 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
-		Sid:      proto.Uint64(head.GetSid()),
+		Sid:      proto.Uint64(req.GetSid()),
 		App:      proto.String(req.GetApp()),
 		Version:  proto.String(req.GetVersion()),
 		Terminal: proto.Uint32(req.GetTerminal()),
@@ -283,6 +283,8 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
  **     1. 校验是否SID上线信息是否存在冲突. 如果存在冲突, 则将之前的连接踢下线.
  **     2. 更新数据库信息
  **注意事项:
+ **     1. 在上线请求中, head中的sid此时为侦听层cid
+ **     2. 在上线请求中, req中的sid此时为会话sid
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (err error) {
@@ -300,7 +302,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 
 	/* 获取SID -> (UID/NID)的映射 */
-	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
+	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, req.GetSid())
 
 	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
 	if nil != err {
@@ -314,24 +316,24 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	nid := uint32(id)
 
 	if 0 != nid && nid != head.GetNid() { // 注意：当nid为0时表示会话SID之前并未登录.
-		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d]",
-			uid, head.GetSid(), nid, head.GetNid())
-		ctx.send_kick(head.GetSid(), nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
+		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
+			uid, req.GetSid(), nid, head.GetNid(), head.GetCid())
+		ctx.send_kick(head.GetCid(), nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
 
 	/* 记录SID集合 */
-	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
+	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, req.GetSid())
 
 	/* 记录UID集合 */
 	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, req.GetUid())
 
 	/* 记录SID->UID/NID */
-	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
+	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, req.GetSid())
 	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
 	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetUid())
-	pl.Send("SADD", key, head.GetSid())
+	pl.Send("SADD", key, req.GetSid())
 
 	return err
 }
@@ -357,7 +359,10 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
  **        required string version = 5;     // M|APP版本|字串|
  **        optional uint32 terminal = 6;    // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
  **     }
- **注意事项: 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
+ **注意事项:
+ **     1. 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
+ **     2. 在上线请求中, head中的sid此时为侦听层cid
+ **     3. 在上线请求中, req中的sid此时为会话sid
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func UsrSvrOnlineReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {

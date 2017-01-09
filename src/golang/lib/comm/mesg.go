@@ -152,6 +152,10 @@ func (head *MesgHeader) GetSid() uint64 {
 	return head.Sid
 }
 
+func (head *MesgHeader) GetCid() uint64 {
+	return head.Sid
+}
+
 func (head *MesgHeader) GetNid() uint32 {
 	return head.Nid
 }
