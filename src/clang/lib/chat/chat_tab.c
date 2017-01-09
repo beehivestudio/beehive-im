@@ -332,11 +332,11 @@ static int _chat_group_add_session(chat_tab_t *chat,
 static int _chat_group_del_session(chat_tab_t *chat,
         chat_room_t *room, chat_group_t *grp, uint64_t sid)
 {
-    uint64_t loc_sid;
+    void *sid_ptr;
 
     /* > 删除会话信息 */
-    loc_sid = *(uint64_t *)hash_tab_delete(grp->sid_set, (void *)sid, WRLOCK);
-    if (0 == loc_sid) {
+    sid_ptr = hash_tab_delete(grp->sid_set, (void *)sid, WRLOCK);
+    if (NULL == sid_ptr) {
         return 0; /* Didn't find */
     }
 
