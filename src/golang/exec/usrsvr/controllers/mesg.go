@@ -12,6 +12,7 @@ import (
 
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/crypt"
+	"beehive-im/src/golang/lib/im"
 	"beehive-im/src/golang/lib/mesg"
 )
 
@@ -542,35 +543,6 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
 	return comm.MesgHeadNtoh(data)
 }
 
-type sid_attr struct {
-	sid uint64 // 会话SID
-	uid uint64 // 用户ID
-	nid uint32 // 侦听层ID
-}
-
-func (ctx *UsrSvrCntx) get_sid_attr(sid uint64) *sid_attr {
-	var attr sid_attr
-
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	/* 获取SID->UID/NID */
-	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
-	if nil != err {
-		ctx.log.Error("Get uid by sid [%d] failed!", sid)
-		return nil
-	}
-
-	attr.sid = sid
-	uid_int, _ := strconv.ParseInt(vals[0], 10, 64)
-	attr.uid = uint64(uid_int)
-	nid_int, _ := strconv.ParseInt(vals[1], 10, 64)
-	attr.nid = uint32(nid_int)
-
-	return &attr
-}
-
 /******************************************************************************
  **函数名称: ping_handler
  **功    能: PING处理
@@ -590,17 +562,17 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
 	}()
 
 	/* 获取会话属性 */
-	attr := ctx.get_sid_attr(head.GetSid())
+	attr := im.GetSidAttr(ctx.redis, head.GetSid())
 
-	if attr.nid != head.GetNid() {
+	if attr.Nid != head.GetNid() {
 		ctx.log.Error("Node id isn't right! sid:%d nid:%d/%d",
-			head.GetSid(), attr.nid, head.GetNid())
+			head.GetSid(), attr.Nid, head.GetNid())
 		return
 	}
 
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
-	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.uid)
+	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.Uid)
 
 	/* 更新聊天室TTL */
 }
