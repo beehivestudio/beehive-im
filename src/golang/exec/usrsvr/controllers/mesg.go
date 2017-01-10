@@ -145,6 +145,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	/* > 校验协议合法性 */
 	err = ctx.online_req_check(req)
 	if nil != err {
+		ctx.log.Error("Online request is invalid!")
 		return head, nil, err
 	}
 
@@ -541,6 +542,35 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
 	return comm.MesgHeadNtoh(data)
 }
 
+type sid_attr struct {
+	sid uint64 // 会话SID
+	uid uint64 // 用户ID
+	nid uint32 // 侦听层ID
+}
+
+func (ctx *UsrSvrCntx) get_sid_attr(sid uint64) *sid_attr {
+	var attr sid_attr
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* 获取SID->UID/NID */
+	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
+	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
+	if nil != err {
+		ctx.log.Error("Get uid by sid [%d] failed!", sid)
+		return nil
+	}
+
+	attr.sid = sid
+	uid_int, _ := strconv.ParseInt(vals[0], 10, 64)
+	attr.uid = uint64(uid_int)
+	nid_int, _ := strconv.ParseInt(vals[1], 10, 64)
+	attr.nid = uint32(nid_int)
+
+	return &attr
+}
+
 /******************************************************************************
  **函数名称: ping_handler
  **功    能: PING处理
@@ -553,37 +583,26 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
 	}()
 
-	/* 获取SID->UID/NID */
-	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
-	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
-	if nil != err {
-		ctx.log.Error("Get uid by sid [%d] failed!", head.GetSid())
-		return
-	}
+	/* 获取会话属性 */
+	attr := ctx.get_sid_attr(head.GetSid())
 
-	uid_int, _ := strconv.ParseInt(vals[0], 10, 64)
-	uid := uint64(uid_int)
-	nid_int, _ := strconv.ParseInt(vals[1], 10, 64)
-	nid := uint32(nid_int)
-
-	if nid != head.GetNid() {
+	if attr.nid != head.GetNid() {
 		ctx.log.Error("Node id isn't right! sid:%d nid:%d/%d",
-			head.GetSid(), nid, head.GetNid())
+			head.GetSid(), attr.nid, head.GetNid())
 		return
 	}
 
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
-	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, uid)
+	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.uid)
+
+	/* 更新聊天室TTL */
 }
 
 /******************************************************************************
@@ -792,7 +811,7 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal join request failed! errmsg:%s", err.Error())
-		return nil, nil
+		return head, nil
 	}
 
 	return head, req
@@ -822,10 +841,17 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_room_join_ack(head *comm.MesgHeader,
 	req *mesg.MesgRoomJoin, code uint32, errmsg string) int {
+	var uid, rid uint64
+
+	if nil != req {
+		uid = req.GetUid()
+		rid = req.GetRid()
+	}
+
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomJoinAck{
-		Uid:    proto.Uint64(req.GetUid()),
-		Rid:    proto.Uint64(req.GetRid()),
+		Uid:    proto.Uint64(uid),
+		Rid:    proto.Uint64(rid),
 		Gid:    proto.Uint32(0),
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
@@ -978,10 +1004,22 @@ func (ctx *UsrSvrCntx) room_join_handler(
 		pl.Close()
 	}()
 
+	/* > 判断UID是否在黑名单中 */
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_USR_BLACKLIST_SET, req.GetRid())
+	ok, err := redis.Bool(rds.Do("SISMEMBER", key, req.GetUid()))
+	if nil != err {
+		ctx.log.Error("Exec command [SISMEMBER] failed! rid:%d uid:%d err:",
+			req.GetRid(), req.GetUid(), err.Error())
+		return 0, err
+	} else if true == ok {
+		ctx.log.Error("User is in blacklist! rid:%d uid:%d", req.GetRid(), req.GetUid())
+		return 0, errors.New("User is in blacklist!")
+	}
+
 GET_GID:
 	/* > 判断UID是否登录过 */
-	key := fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, req.GetUid())
-	ok, err := redis.Bool(rds.Do("HEXISTS", key, req.GetRid()))
+	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, req.GetUid())
+	ok, err = redis.Bool(rds.Do("HEXISTS", key, req.GetRid()))
 	if nil != err {
 		ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
 		return 0, err
@@ -992,12 +1030,17 @@ GET_GID:
 			return 0, err
 		}
 
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, req.GetRid())
+		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
+		member := fmt.Sprintf(comm.UID_SID_STR, req.GetUid(), head.GetSid())
 		ttl := time.Now().Unix() + comm.CHAT_SID_TTL
-		pl.Send("ZINCRBY", key, ttl, req.GetUid())
+		pl.Send("ZADD", key, ttl, member) // 加入RID -> UID集合"${uid}:${sid}"
 
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
-		pl.Send("ZADD", key, ttl, head.GetSid())
+		pl.Send("ZADD", key, ttl, head.GetSid()) // 加入RID -> SID集合
+
+		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, req.GetRid())
+		pl.Send("ZADD", key, ttl, head.GetNid()) // 加入RID -> NID集合
+
 		return uint32(gid_int), nil
 	}
 
@@ -1022,15 +1065,16 @@ GET_GID:
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
 	pl.Send("ZINCRBY", key, 1, gid)
 
-	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, req.GetRid())
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
+	member := fmt.Sprintf(comm.UID_SID_STR, req.GetUid(), head.GetSid())
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
-	pl.Send("ZINCRBY", key, ttl, req.GetUid())
+	pl.Send("ZADD", key, ttl, member) // 加入RID -> UID集合"${uid}:${sid}"
 
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
-	pl.Send("ZADD", key, ttl, head.GetSid())
+	pl.Send("ZADD", key, ttl, head.GetSid()) // 加入RID -> SID集合
 
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, req.GetRid())
-	pl.Send("ZADD", key, ttl, head.GetNid())
+	pl.Send("ZADD", key, ttl, head.GetNid()) // 加入RID -> NID集合
 
 	return gid, nil
 }
@@ -1051,7 +1095,6 @@ GET_GID:
  **     {
  **        required uint64 uid = 1;    // M|用户ID|数字|
  **        required uint64 rid = 2;    // M|聊天室ID|数字|
- **        required string token = 3;  // M|鉴权TOKEN|字串|
  **     }
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
@@ -1066,11 +1109,8 @@ func UsrSvrRoomJoinReqHandler(cmd uint32, dest uint32, data []byte, length uint3
 
 	/* 1. > 解析JOIN请求 */
 	head, req := ctx.room_join_parse(data)
-	if nil == head && nil == req {
-		ctx.log.Error("Parse join request failed!")
-		return -1
-	} else if nil == head && nil != req {
-		ctx.log.Error("Parse join request failed!")
+	if nil == req {
+		ctx.log.Error("Parse room join request failed!")
 		ctx.send_err_room_join_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
 		return -1
 	}
@@ -1189,12 +1229,13 @@ func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
 	req = &mesg.MesgRoomQuit{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal join request failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal room quit request failed! errmsg:%s", err.Error())
 		return nil, nil
 	}
 
 	/* > 校验协议合法性 */
 	if !ctx.room_quit_isvalid(req) {
+		ctx.log.Error("Room quit request is invalid!")
 		return nil, nil
 	}
 
@@ -1274,7 +1315,11 @@ func (ctx *UsrSvrCntx) room_quit_handler(
 	}()
 
 	key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
-	pl.Send("ZREM", key, head.GetSid())
+	pl.Send("ZREM", key, head.GetSid()) // 清理RID -> SID集合
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
+	member := fmt.Sprintf(comm.UID_SID_STR, req.GetUid(), head.GetSid())
+	pl.Send("ZREM", key, member) // 清理RID -> UID集合"${uid}:${sid}"
 
 	return nil
 }
@@ -1296,7 +1341,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
  **        required uint64 uid = 1;    // M|用户ID|数字|
  **        required uint64 rid = 2;    // M|聊天室ID|数字|
  **     }
- **注意事项:
+ **注意事项: 需要对协议头进行字节序转换
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func UsrSvrRoomQuitReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
@@ -1309,10 +1354,15 @@ func UsrSvrRoomQuitReqHandler(cmd uint32, dest uint32, data []byte, length uint3
 
 	/* 1. > 解析UNJOIN请求 */
 	head, req := ctx.room_quit_parse(data)
-	if nil == head || nil != req {
-		ctx.log.Error("Parse join request failed!")
-		ctx.send_err_room_quit_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
-		return -1
+	if nil == head {
+		if nil != req {
+			ctx.log.Error("Parse room quit request failed!")
+			ctx.send_err_room_quit_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
+			return -1
+		} else {
+			ctx.log.Error("Parse room quit request failed!")
+			return -1
+		}
 	}
 
 	/* 2. > 退出聊天室处理 */

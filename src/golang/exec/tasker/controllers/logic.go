@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -240,23 +241,34 @@ func (ctx *TaskerCntx) clean_uid_by_rid(rid uint64) {
 	/* > 获取RID->UID集合 */
 	off := 0
 	for {
-		key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, rid)
-		uid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+		key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, rid)
+		uid_sid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
 			key, "-inf", "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
 			ctx.log.Error("Get sid list failed! errmsg:%s", err.Error())
 			return
 		}
 
-		uid_len := len(uid_list)
-		for idx := 0; idx < uid_len; idx += 1 {
+		uid_sid_num := len(uid_sid_list)
+		for idx := 0; idx < uid_sid_num; idx += 1 {
+			vals := strings.Split(uid_sid_list[idx], ":")
+			if 2 != len(vals) {
+				ctx.log.Error("Format of [uid:sid] is invalid! str:%s", uid_sid_list[idx])
+				continue
+			}
+
+			uid_str := vals[0] // 用户ID
+			sid_str := vals[1] // 会话ID
+
+			ctx.log.Debug("uid:%d sid:%d", uid_str, sid_str)
+
 			/* > 逐一清理UID->RID记录 */
-			uid, _ := strconv.ParseInt(uid_list[idx], 10, 64)
+			uid, _ := strconv.ParseInt(uid_str, 10, 64)
 			key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, uid)
 			pl.Send("HDEL", key, rid)
 		}
 
-		if uid_len < comm.CHAT_BAT_NUM {
+		if uid_sid_num < comm.CHAT_BAT_NUM {
 			break
 		}
 		off += comm.CHAT_BAT_NUM
@@ -291,7 +303,7 @@ func (ctx *TaskerCntx) clean_by_rid(rid uint64) {
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, rid)
 	pl.Send("DEL", key)
 
-	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_ZSET, rid)
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, rid)
 	ctx.clean_uid_by_rid(rid)
 	pl.Send("DEL", key)
 
