@@ -67,7 +67,7 @@ func GetSidAttr(pool *redis.Pool, sid uint64) *SidAttr {
 	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
 	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
 	if nil != err {
-		return nil
+		return &attr
 	}
 
 	attr.Sid = sid
