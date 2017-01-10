@@ -10,6 +10,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
+	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/crypt"
 	"beehive-im/src/golang/lib/im"
@@ -477,9 +478,12 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
 	/* 删除SID集合 */
 	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, head.GetSid())
 
-	/* 记录UID->SID集合 */
+	/* 清理UID->SID集合 */
 	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, uid)
 	pl.Send("SREM", key, head.GetSid())
+
+	/* 清理聊天室相关数据 */
+	chat.RoomCleanBySid(ctx.redis, uid, nid, head.GetSid())
 
 	return nil
 }
@@ -574,7 +578,7 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
 	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
 	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.Uid)
 
-	/* 更新聊天室TTL */
+	/* TODO:更新聊天室TTL */
 }
 
 /******************************************************************************

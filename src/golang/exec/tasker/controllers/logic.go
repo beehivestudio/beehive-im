@@ -8,6 +8,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
+	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -101,30 +102,7 @@ func (ctx *TaskerCntx) clean_by_sid(sid uint64) {
 	}
 
 	/* > 清理相关资源 */
-	key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, sid)
-	rid_gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
-	if nil != err {
-		ctx.log.Error("Get rid list by sid failed! sid:%d", sid)
-		return
-	}
-
-	rid_num := len(rid_gid_list)
-	for idx := 0; idx < rid_num; idx += 2 {
-		rid, _ := strconv.ParseInt(rid_gid_list[idx], 10, 64)
-		gid, _ := strconv.ParseInt(rid_gid_list[idx+1], 10, 64)
-
-		/* 更新统计计数 */
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, rid)
-		pl.Send("ZINCRBY", key, -1, gid)
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, rid)
-		pl.Send("ZINCRBY", key, -1, nid)
-	}
-
-	key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, sid)
-	pl.Send("DEL", key)
-
-	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, sid)
-	pl.Send("ZREM", key, sid)
+	chat.RoomCleanBySid(ctx.redis, uid, nid, sid)
 
 	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
 }
