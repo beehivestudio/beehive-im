@@ -447,25 +447,15 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
 	}()
 
 	// 获取SID -> (UID/NID)的映射
-	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, head.GetSid())
-
-	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
-	if nil != err {
-		ctx.log.Error("Get sid attribution failed! errmsg:%s", err)
-		return err
-	}
-
-	id, _ := strconv.ParseInt(vals[0], 10, 64)
-	uid := uint64(id)
-	id, _ = strconv.ParseInt(vals[1], 10, 32)
-	nid := uint32(id)
-
-	if nid != head.GetNid() {
-		ctx.log.Error("Nid isn't right! nid:%d/%d", nid, head.GetNid())
+	attr := im.GetSidAttr(ctx.redis, head.GetSid())
+	if attr.Nid != head.GetNid() {
+		ctx.log.Error("Nid isn't right! nid:%d/%d", attr.Nid, head.GetNid())
 		return errors.New("Node id isn't right!")
 	}
 
 	// 删除SID -> (UID/NID)的映射
+	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, attr.Sid)
+
 	num, err := redis.Int(rds.Do("DEL", key))
 	if nil != err {
 		ctx.log.Error("Delete key failed! errmsg:%s", err)
@@ -479,11 +469,11 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
 	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, head.GetSid())
 
 	/* 清理UID->SID集合 */
-	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, uid)
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, attr.Uid)
 	pl.Send("SREM", key, head.GetSid())
 
 	/* 清理聊天室相关数据 */
-	chat.RoomCleanBySid(ctx.redis, uid, nid, head.GetSid())
+	chat.RoomCleanBySid(ctx.redis, attr.Uid, attr.Nid, head.GetSid())
 
 	return nil
 }
