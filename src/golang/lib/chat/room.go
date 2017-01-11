@@ -147,8 +147,56 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
 	key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, sid)
 	pl.Send("DEL", key)
 
-	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, sid)
-	pl.Send("ZREM", key, sid)
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: RoomUpdateBySid
+ **功    能: 更新指定会话的聊天室数据
+ **输入参数:
+ **     pool: REDIS连接池
+ **     uid: 用户UID
+ **     nid: 侦听层ID
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.11 08:50:23 #
+ ******************************************************************************/
+func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
+	rds := pool.Get()
+	defer rds.Close()
+
+	pl := pool.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 获取SID -> RID列表 */
+	key := fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, sid)
+
+	rid_gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
+	if nil != err {
+		return -1
+	}
+
+	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
+
+	rid_num := len(rid_gid_list)
+	for idx := 0; idx < rid_num; idx += 2 {
+		rid, _ := strconv.ParseInt(rid_gid_list[idx], 10, 64)
+		//gid, _ := strconv.ParseInt(rid_gid_list[idx+1], 10, 64)
+
+		/* 清理各种数据 */
+		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, rid)
+		pl.Send("ZADD", key, ttl, sid)
+
+		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, rid)
+		member := fmt.Sprintf(comm.UID_SID_STR, uid, sid)
+		pl.Send("ZADD", key, ttl, member)
+	}
 
 	return 0
 }

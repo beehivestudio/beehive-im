@@ -7,6 +7,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
+	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -78,4 +79,47 @@ func GetSidAttr(pool *redis.Pool, sid uint64) *SidAttr {
 	attr.Nid = uint32(nid_int)
 
 	return &attr
+}
+
+/******************************************************************************
+ **函数名称: CleanSidData
+ **功    能: 清理会话数据
+ **输入参数:
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 会话属性
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
+ ******************************************************************************/
+func CleanSidData(pool *redis.Pool, sid uint64) error {
+	rds := pool.Get()
+	defer rds.Close()
+
+	pl := pool.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 获取SID对应的数据 */
+	attr := GetSidAttr(pool, sid)
+
+	/* > 删除SID对应的数据 */
+	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
+
+	num, err := redis.Int(rds.Do("DEL", key))
+	if nil != err {
+		return err
+	} else if 0 == num {
+		pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
+		return nil
+	}
+
+	/* > 清理相关资源 */
+	chat.RoomCleanBySid(pool, attr.Uid, attr.Nid, sid)
+
+	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
+
+	return nil
 }
