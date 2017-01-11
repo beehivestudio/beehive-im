@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 
@@ -85,6 +86,7 @@ func GetSidAttr(pool *redis.Pool, sid uint64) *SidAttr {
  **函数名称: CleanSidData
  **功    能: 清理会话数据
  **输入参数:
+ **     pool: REDIS连接池
  **     sid: 会话SID
  **输出参数: NONE
  **返    回: 会话属性
@@ -120,6 +122,44 @@ func CleanSidData(pool *redis.Pool, sid uint64) error {
 	chat.RoomCleanBySid(pool, attr.Uid, attr.Nid, sid)
 
 	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
+
+	return nil
+}
+
+/******************************************************************************
+ **函数名称: UpdateSidData
+ **功    能: 更新会话数据
+ **输入参数:
+ **     pool: REDIS连接池
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 会话属性
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.11 23:34:31 #
+ ******************************************************************************/
+func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) error {
+	pl := pool.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* 获取会话属性 */
+	attr := GetSidAttr(pool, sid)
+	if 0 == attr.Uid {
+		return errors.New("Get sid attribute failed!")
+	} else if nid != attr.Nid {
+		return errors.New("Node of session is collision!")
+	}
+
+	/* 更新会话属性 */
+	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
+	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, sid)
+	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.Uid)
+
+	/* > 更新聊天室信息 */
+	chat.RoomUpdateBySid(pool, attr.Uid, attr.Nid, sid)
 
 	return nil
 }

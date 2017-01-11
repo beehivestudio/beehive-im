@@ -10,7 +10,6 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
-	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/crypt"
 	"beehive-im/src/golang/lib/im"
@@ -307,7 +306,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	/* 获取会话属性 */
 	attr := im.GetSidAttr(ctx.redis, head.GetSid())
 
-	if (attr.Uid != req.GetUid()) ||
+	if (0 != attr.Uid && attr.Uid != req.GetUid()) ||
 		(0 != attr.Nid && attr.Nid != head.GetNid()) { // 注意：当nid为0时表示会话SID之前并未登录.
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
 			attr.Uid, req.GetSid(), attr.Nid, head.GetNid(), head.GetCid())
@@ -501,27 +500,7 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
-	pl := ctx.redis.Get()
-	defer func() {
-		pl.Do("")
-		pl.Close()
-	}()
-
-	/* 获取会话属性 */
-	attr := im.GetSidAttr(ctx.redis, head.GetSid())
-
-	if attr.Nid != head.GetNid() {
-		ctx.log.Error("Node id isn't right! sid:%d nid:%d/%d",
-			head.GetSid(), attr.Nid, head.GetNid())
-		return
-	}
-
-	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
-	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, head.GetSid())
-	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.Uid)
-
-	/* TODO:更新聊天室TTL */
-	chat.RoomUpdateBySid(ctx.redis, attr.Uid, attr.Nid, head.GetSid())
+	im.UpdateSidData(ctx.redis, head.GetNid(), head.GetSid())
 }
 
 /******************************************************************************
