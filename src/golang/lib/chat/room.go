@@ -104,7 +104,7 @@ func RoomGetRidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.10 23:00:26 #
  ******************************************************************************/
-func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
+func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -119,7 +119,7 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
 
 	rid_gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
 	if nil != err {
-		return -1
+		return err
 	}
 
 	rid_num := len(rid_gid_list)
@@ -147,7 +147,7 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
 	key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, sid)
 	pl.Send("DEL", key)
 
-	return 0
+	return nil
 }
 
 /******************************************************************************
@@ -164,7 +164,7 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 08:50:23 #
  ******************************************************************************/
-func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
+func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -179,7 +179,7 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
 
 	rid_gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
 	if nil != err {
-		return -1
+		return err
 	}
 
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
@@ -198,5 +198,5 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) int {
 		pl.Send("ZADD", key, ttl, member)
 	}
 
-	return 0
+	return nil
 }
