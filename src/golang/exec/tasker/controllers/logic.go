@@ -8,8 +8,8 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
-	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/im"
 )
 
 /******************************************************************************
@@ -55,59 +55,6 @@ func (ctx *TaskerCntx) timer_update() {
 }
 
 /******************************************************************************
- **函数名称: clean_by_sid
- **功    能: 通过SID清理资源
- **输入参数:
- **输出参数: NONE
- **返    回:
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.11.04 12:08:43 #
- ******************************************************************************/
-func (ctx *TaskerCntx) clean_by_sid(sid uint64) {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	pl := ctx.redis.Get()
-	defer func() {
-		pl.Do("")
-		pl.Close()
-	}()
-
-	/* > 获取SID对应的数据 */
-	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-
-	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
-	if nil != err {
-		ctx.log.Error("Get sid attr failed! errmsg:%s", err.Error())
-		return
-	}
-
-	id, _ := strconv.ParseInt(vals[0], 10, 64)
-	uid := uint64(id)
-	id, _ = strconv.ParseInt(vals[1], 10, 64)
-	nid := uint32(id)
-
-	ctx.log.Debug("Delete sid [%d] data! uid:%d nid:%d", sid, uid, nid)
-
-	/* > 删除SID对应的数据 */
-	num, err := redis.Int(rds.Do("DEL", key))
-	if nil != err {
-		ctx.log.Error("Delete sid attr failed! errmsg:%s", err.Error())
-		return
-	} else if 0 == num {
-		ctx.log.Error("Sid [%d] was deleted!", sid)
-		pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
-		return
-	}
-
-	/* > 清理相关资源 */
-	chat.RoomCleanBySid(ctx.redis, uid, nid, sid)
-
-	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
-}
-
-/******************************************************************************
  **函数名称: clean_sid_zset
  **功    能: 清理会话SID资源
  **输入参数:
@@ -134,7 +81,7 @@ func (ctx *TaskerCntx) clean_sid_zset(ctm int64) {
 		sid_num := len(sid_list)
 		for idx := 0; idx < sid_num; idx += 1 {
 			sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
-			ctx.clean_by_sid(uint64(sid))
+			im.CleanSidData(ctx.redis, uint64(sid))
 		}
 
 		if sid_num < comm.CHAT_BAT_NUM {

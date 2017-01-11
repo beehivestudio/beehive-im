@@ -304,24 +304,15 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 
-	/* 获取SID -> (UID/NID)的映射 */
-	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, req.GetSid())
+	/* 获取会话属性 */
+	attr := im.GetSidAttr(ctx.redis, head.GetSid())
 
-	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
-	if nil != err {
-		ctx.log.Error("Get sid attribution failed! errmsg:%s", err)
-		return err
-	}
-
-	id, _ := strconv.ParseInt(vals[0], 10, 64)
-	uid := uint64(id)
-	id, _ = strconv.ParseInt(vals[1], 10, 32)
-	nid := uint32(id)
-
-	if 0 != nid && nid != head.GetNid() { // 注意：当nid为0时表示会话SID之前并未登录.
+	if (attr.Uid != req.GetUid()) ||
+		(0 != attr.Nid && attr.Nid != head.GetNid()) { // 注意：当nid为0时表示会话SID之前并未登录.
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
-			uid, req.GetSid(), nid, head.GetNid(), head.GetCid())
-		ctx.send_kick(head.GetCid(), nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
+			attr.Uid, req.GetSid(), attr.Nid, head.GetNid(), head.GetCid())
+		im.CleanSidData(ctx.redis, head.GetSid()) // 清理会话数据
+		ctx.send_kick(head.GetCid(), attr.Nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
 
 	/* 记录SID集合 */
@@ -429,53 +420,14 @@ func (ctx *UsrSvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
  **功    能: Offline处理
  **输入参数:
  **     head: 协议头
- **     req: 下线请求
  **输出参数: NONE
  **返    回: 异常信息
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.02 22:22:02 #
+ **作    者: # Qifeng.zou # 2017.01.11 23:23:50 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	pl := ctx.redis.Get()
-	defer func() {
-		pl.Do("")
-		pl.Close()
-	}()
-
-	// 获取SID -> (UID/NID)的映射
-	attr := im.GetSidAttr(ctx.redis, head.GetSid())
-	if attr.Nid != head.GetNid() {
-		ctx.log.Error("Nid isn't right! nid:%d/%d", attr.Nid, head.GetNid())
-		return errors.New("Node id isn't right!")
-	}
-
-	// 删除SID -> (UID/NID)的映射
-	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, attr.Sid)
-
-	num, err := redis.Int(rds.Do("DEL", key))
-	if nil != err {
-		ctx.log.Error("Delete key failed! errmsg:%s", err)
-		return err
-	} else if 0 == num {
-		ctx.log.Error("Sid [%d] was cleaned!", head.GetSid())
-		return nil
-	}
-
-	/* 删除SID集合 */
-	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, head.GetSid())
-
-	/* 清理UID->SID集合 */
-	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, attr.Uid)
-	pl.Send("SREM", key, head.GetSid())
-
-	/* 清理聊天室相关数据 */
-	chat.RoomCleanBySid(ctx.redis, attr.Uid, attr.Nid, head.GetSid())
-
-	return nil
+	return im.CleanSidData(ctx.redis, head.GetSid())
 }
 
 /******************************************************************************
@@ -569,6 +521,7 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
 	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.Uid)
 
 	/* TODO:更新聊天室TTL */
+	chat.RoomUpdateBySid(ctx.redis, attr.Uid, attr.Nid, head.GetSid())
 }
 
 /******************************************************************************
