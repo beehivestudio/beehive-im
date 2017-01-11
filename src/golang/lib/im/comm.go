@@ -89,7 +89,7 @@ func GetSidAttr(pool *redis.Pool, sid uint64) *SidAttr {
  **     pool: REDIS连接池
  **     sid: 会话SID
  **输出参数: NONE
- **返    回: 会话属性
+ **返    回: 错误信息
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
@@ -133,7 +133,7 @@ func CleanSidData(pool *redis.Pool, sid uint64) error {
  **     pool: REDIS连接池
  **     sid: 会话SID
  **输出参数: NONE
- **返    回: 会话属性
+ **返    回: 错误信息
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 23:34:31 #
