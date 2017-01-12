@@ -494,13 +494,18 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **输入参数:
  **     head: 协议头
  **输出参数: NONE
- **返    回: 组ID
- **实现描述:
+ **返    回: VOID
+ **实现描述: 更新会话相关的TTL. 如果发现数据异常, 则需要清除该会话的数据, 并将该
+ **          会话踢下线.
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
-	im.UpdateSidData(ctx.redis, head.GetNid(), head.GetSid())
+	code, err := im.UpdateSidData(ctx.redis, head.GetNid(), head.GetSid())
+	if 0 != code {
+		im.CleanSidData(ctx.redis, head.GetSid()) // 清理会话数据
+		ctx.send_kick(head.GetSid(), head.GetNid(), code, err.Error())
+	}
 }
 
 /******************************************************************************

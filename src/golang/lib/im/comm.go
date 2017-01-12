@@ -133,12 +133,14 @@ func CleanSidData(pool *redis.Pool, sid uint64) error {
  **     pool: REDIS连接池
  **     sid: 会话SID
  **输出参数: NONE
- **返    回: 错误信息
- **实现描述:
+ **返    回:
+ **     code: 错误码
+ **     err: 错误信息
+ **实现描述: 更新会话属性以及对应的聊天室信息.
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 23:34:31 #
  ******************************************************************************/
-func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) error {
+func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) (code uint32, err error) {
 	pl := pool.Get()
 	defer func() {
 		pl.Do("")
@@ -148,9 +150,9 @@ func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) error {
 	/* 获取会话属性 */
 	attr := GetSidAttr(pool, sid)
 	if 0 == attr.Uid {
-		return errors.New("Get sid attribute failed!")
+		return comm.ERR_SVR_DATA_COLLISION, errors.New("Get sid attribute failed!")
 	} else if nid != attr.Nid {
-		return errors.New("Node of session is collision!")
+		return comm.ERR_SVR_DATA_COLLISION, errors.New("Node of session is collision!")
 	}
 
 	/* 更新会话属性 */
@@ -161,5 +163,5 @@ func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) error {
 	/* > 更新聊天室信息 */
 	chat.RoomUpdateBySid(pool, attr.Uid, attr.Nid, sid)
 
-	return nil
+	return 0, nil
 }
