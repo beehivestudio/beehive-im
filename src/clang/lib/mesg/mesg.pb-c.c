@@ -3499,7 +3499,7 @@ const ProtobufCMessageDescriptor mesg_alloc_seq__descriptor =
   (ProtobufCMessageInit) mesg_alloc_seq__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_alloc_seq_ack__field_descriptors[3] =
+static const ProtobufCFieldDescriptor mesg_alloc_seq_ack__field_descriptors[5] =
 {
   {
     "uid",
@@ -3537,8 +3537,34 @@ static const ProtobufCFieldDescriptor mesg_alloc_seq_ack__field_descriptors[3] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "code",
+    4,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgAllocSeqAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    5,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgAllocSeqAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mesg_alloc_seq_ack__field_indices_by_name[] = {
+  3,   /* field[3] = code */
+  4,   /* field[4] = errmsg */
   2,   /* field[2] = num */
   1,   /* field[1] = seq */
   0,   /* field[0] = uid */
@@ -3546,7 +3572,7 @@ static const unsigned mesg_alloc_seq_ack__field_indices_by_name[] = {
 static const ProtobufCIntRange mesg_alloc_seq_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 5 }
 };
 const ProtobufCMessageDescriptor mesg_alloc_seq_ack__descriptor =
 {
@@ -3556,7 +3582,7 @@ const ProtobufCMessageDescriptor mesg_alloc_seq_ack__descriptor =
   "MesgAllocSeqAck",
   "",
   sizeof(MesgAllocSeqAck),
-  3,
+  5,
   mesg_alloc_seq_ack__field_descriptors,
   mesg_alloc_seq_ack__field_indices_by_name,
   1,  mesg_alloc_seq_ack__number_ranges,

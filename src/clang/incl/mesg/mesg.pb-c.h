@@ -197,10 +197,12 @@ struct  _MesgAllocSeqAck
   uint64_t uid;
   uint64_t seq;
   uint32_t num;
+  uint32_t code;
+  char *errmsg;
 };
 #define MESG_ALLOC_SEQ_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_alloc_seq_ack__descriptor) \
-    , 0, 0, 0 }
+    , 0, 0, 0, 0, NULL }
 
 
 struct  _MesgKickReq

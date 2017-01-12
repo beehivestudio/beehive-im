@@ -127,7 +127,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 			head.GetCmd(), head.GetFlag(), head.GetLength(),
 			head.GetChkSum(), head.GetCid(), head.GetNid(),
 			head.GetSerial(), comm.MESG_HEAD_SIZE)
-		return nil, nil, errors.New("Header of online request is invalied!")
+		return nil, nil, errors.New("Header of online request is invalid!")
 	}
 
 	ctx.log.Debug("Online request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
@@ -459,7 +459,7 @@ func UsrSvrOfflineReqHandler(cmd uint32, dest uint32, data []byte, length uint32
 		return -1
 	}
 
-	/* 2. > 初始化上线环境 */
+	/* 2. > 清理会话数据 */
 	err := ctx.offline_handler(head)
 	if nil != err {
 		ctx.log.Error("Offline handler failed!")
@@ -606,8 +606,269 @@ func UsrSvrUnsubReqHandler(cmd uint32, dest uint32, data []byte, length uint32, 
 	return 0
 }
 
-/* 申请消息序列号 */
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: alloc_seq_parse
+ **功    能: 解析ALLOC-SEQ请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.12 11:27:25 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) alloc_seq_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgAllocSeq, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		ctx.log.Error("Header of alloc-seq request is invalid! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
+			head.GetCmd(), head.GetFlag(), head.GetLength(),
+			head.GetChkSum(), head.GetCid(), head.GetNid(),
+			head.GetSerial(), comm.MESG_HEAD_SIZE)
+		return nil, nil, errors.New("Header of alloc-seq request is invalid!")
+	}
+
+	ctx.log.Debug("Alloc-seq request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
+		head.GetCmd(), head.GetFlag(), head.GetLength(),
+		head.GetChkSum(), head.GetSid(), head.GetNid(),
+		head.GetSerial(), comm.MESG_HEAD_SIZE)
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgAllocSeq{}
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal alloc-seq request failed! errmsg:%s", err.Error())
+		return head, nil, errors.New("Unmarshal alloc-seq request failed!")
+	}
+
+	/* > 校验合法性 */
+	attr := im.GetSidAttr(ctx.redis, head.GetSid())
+	if 0 == req.GetNum() {
+		ctx.log.Error("Alloc seq num is zero! uid:%d/%d nid:%d/%d",
+			attr.Uid, req.GetUid(), attr.Nid, head.GetNid())
+		return head, nil, errors.New("Alloc seq number is zero!")
+	} else if req.GetUid() != attr.Uid || head.GetNid() != attr.Nid {
+		ctx.log.Error("Data is collision! uid:%d/%d nid:%d/%d",
+			attr.Uid, req.GetUid(), attr.Nid, head.GetNid())
+		return head, nil, errors.New("Data is collision!")
+	}
+
+	return head, req, nil
+}
+
+/******************************************************************************
+ **函数名称: alloc_seq_handler
+ **功    能: ALLOC-SEQ处理
+ **输入参数:
+ **     head: 协议头
+ **     req: 请求数据
+ **输出参数: NONE
+ **返    回: 异常信息
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.11 23:23:50 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) alloc_seq_handler(
+	head *comm.MesgHeader, req *mesg.MesgAllocSeq) (seq uint64, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 申请用户消息序列号 */
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_MSGID_INCR, req.GetUid())
+
+	seq_str, err := redis.String(rds.Do("INCRBY", key, req.GetNum()))
+	if nil != err {
+		ctx.log.Error("Alloc seq failed! errmsg:%s", err.Error())
+		return 0, err
+	}
+
+	seq_int, err := strconv.ParseInt(seq_str, 10, 64)
+	if nil != err {
+		ctx.log.Error("Parse seq-str failed! errmsg:%s", err.Error())
+		return 0, err
+	} else if 0 == seq {
+		ctx.log.Error("Alloced seq is invalid!")
+		return 0, errors.New("Alloced seq is invalid!")
+	}
+
+	seq = uint64(seq_int) - uint64(req.GetNum())
+
+	return seq, nil
+}
+
+/******************************************************************************
+ **函数名称: send_err_alloc_seq_ack
+ **功    能: 发送ALLOC-SEQ错误应答
+ **输入参数:
+ **     head: 协议头
+ **     req: 上线请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ **     {
+ **         required uint64 uid = 1;        // M|用户ID|数字|<br>
+ **         required uint64 seq = 2;        // M|序列号起始值|数字|<br>
+ **         required uint16 num = 3;        // M|分配序列号个数|数字|<br>
+ **         required uint32 code = 4;       // M|错误码|数字|<br>
+ **         required string errmsg = 5;     // M|错误描述|字串|<br>
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.12 11:34:17 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_err_alloc_seq_ack(head *comm.MesgHeader,
+	req *mesg.MesgAllocSeq, code uint32, errmsg string) int {
+	var uid uint64
+
+	if nil != req {
+		uid = req.GetUid()
+	}
+
+	/* > 设置协议体 */
+	rsp := &mesg.MesgAllocSeqAck{
+		Uid:    proto.Uint64(uid),
+		Seq:    proto.Uint64(0),
+		Num:    proto.Uint32(0),
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_ALLOC_SEQ_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_ALLOC_SEQ_ACK, p.Buff, uint32(len(p.Buff)))
+
+	ctx.log.Debug("Send alloc-seq ack success!")
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: send_alloc_seq_ack
+ **功    能: 发送ALLOC-SEQ应答
+ **输入参数:
+ **     head: 头部数据
+ **     req: 请求数据
+ **     seq: 申请到的序列号
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **     {
+ **         required uint64 uid = 1;        // M|用户ID|数字|<br>
+ **         required uint64 seq = 2;        // M|序列号起始值|数字|<br>
+ **         required uint16 num = 3;        // M|分配序列号个数|数字|<br>
+ **         required uint32 code = 4;       // M|错误码|数字|<br>
+ **         required string errmsg = 5;     // M|错误描述|字串|<br>
+ **     }
+
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_alloc_seq_ack(head *comm.MesgHeader, req *mesg.MesgAllocSeq, seq uint64) int {
+	/* > 设置协议体 */
+	rsp := &mesg.MesgAllocSeqAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Seq:    proto.Uint64(seq),
+		Num:    proto.Uint32(req.GetNum()),
+		Code:   proto.Uint32(0),
+		Errmsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_ALLOC_SEQ_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_ALLOC_SEQ_ACK, p.Buff, uint32(len(p.Buff)))
+
+	ctx.log.Debug("Send alloc-seq ack success!")
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: UsrSvrAllocSeqHandler
+ **功    能: 申请序列号请求
+ **输入参数:
+ **     cmd: 消息类型
+ **     dest: 业务层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.12 08:48:51 #
+ ******************************************************************************/
 func UsrSvrAllocSeqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*UsrSvrCntx)
+	if false == ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv alloc-seq request!")
+
+	/* 1. > 解析ALLOC-SEQ请求 */
+	head, req, err := ctx.alloc_seq_parse(data)
+	if nil == head {
+		ctx.log.Error("Parse header of alloc-seq request failed!")
+		return -1
+	} else if nil == req || nil != err {
+		ctx.log.Error("Parse body of alloc-seq request failed!")
+		ctx.send_err_alloc_seq_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
+		return -1
+	}
+
+	/* 2. > 申请序列号 */
+	seq, err := ctx.alloc_seq_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Alloc seq handler failed!")
+		ctx.send_err_alloc_seq_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
+		return -1
+	}
+
+	ctx.send_alloc_seq_ack(head, req, seq)
+
 	return 0
 }
 
