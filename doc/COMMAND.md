@@ -5,9 +5,9 @@
 | 01 | 0x0101 | 上线请求 | ONLINE | Ok |
 | 02 | 0x0102 |	上线请求应答 | ONLINE-ACK | Ok |
 | 03 | 0x0103 | 下线请求 | OFFLINE | Ok |
-| 04 | 0x0104 | 下线请求应答 | OFFLINE-ACK | 暂无 |
+| 04 | 0x0104 | 下线请求应答 | OFFLINE-ACK | Ok |
 | 05 | 0x0105 | 客户端心跳 | PING | 用于连接保活 - Ok |
-| 06 | 0x0106 | 客户端心跳应答 | PONG | 用于连接保活 |
+| 06 | 0x0106 | 客户端心跳应答 | PONG | 用于连接保活 -Ok |
 | 07 | 0x0107 | 订阅请求 | SUB | 暂无 |
 | 08 | 0x0108 | 订阅应答 | SUB-ACK | 暂无 |
 | 09 | 0x0109 | 取消订阅 | UNSUB | 暂无 |
@@ -16,10 +16,10 @@
 | 12 | 0x010C | 通用异常消息应答 | EXCEPT-ACK | 暂无 |
 | 13 | 0x010D | 同步消息 | SYNC-MSG | 暂无 |
 | 14 | 0x010E | 同步消息应答 | SYNC-MSG-ACK | 暂无 |
-| 15 | 0x0110 | 申请序列号 | ALLOC-SEQ | 暂无 |
-| 16 | 0x0111 | 申请序列号应答 | ALLOC-SEQ-ACK | 暂无 |
+| 15 | 0x0110 | 申请序列号 | ALLOC-SEQ | Ok |
+| 16 | 0x0111 | 申请序列号应答 | ALLOC-SEQ-ACK | Ok |
 | 17 | 0x0112 | 踢连接下线 | KICK | 当登录鉴权失败时, 需要将指定连接踢下线。-- Ok |
-| 18 | 0x0113 | 踢连接下线应答 | KICK-ACK | 暂无 |
+| 18 | 0x0113 | 踢连接下线应答 | KICK-ACK | Ok |
 | 19 | 0x0150 | 上线通知 | ONLINE-NTC | 实时消息 |
 | 20 | 0x0151 | 下线通知 | OFFLINE-NTC | 实时消息 |
 
@@ -94,10 +94,10 @@
 | 02 | 0x0402 | 创建聊天室应答 | ROOM-CREAT-ACK | 暂无 |
 | 03 | 0x0403 | 解散聊天室 | ROOM-DISMISS | 暂无 |
 | 04 | 0x0404 | 解散聊天室应答 | ROOM-DISMISS-ACK | 暂无 |
-| 05 | 0x0405 | 加入聊天室 | ROOM-JOIN | 暂无 |
-| 06 | 0x0406 | 加入聊天室应答 | ROOM-JOIN-ACK | 暂无 |
-| 07 | 0x0407 | 退出聊天室 | ROOM-QUIT | 暂无 |
-| 08 | 0x0408 | 退出聊天室应答 | ROOM-QUIT-ACK | 暂无 |
+| 05 | 0x0405 | 加入聊天室 | ROOM-JOIN | Ok |
+| 06 | 0x0406 | 加入聊天室应答 | ROOM-JOIN-ACK | Ok |
+| 07 | 0x0407 | 退出聊天室 | ROOM-QUIT | Ok |
+| 08 | 0x0408 | 退出聊天室应答 | ROOM-QUIT-ACK | Ok |
 | 09 | 0x0409 | 踢出聊天室 | ROOM-KICK | 暂无 |
 | 10 | 0x040A | 踢出聊天室应答 | ROOM-KICK-ACK | 暂无 |
 | 11 | 0x040B | 聊天室消息 | ROOM-CHAT | 暂无 |
