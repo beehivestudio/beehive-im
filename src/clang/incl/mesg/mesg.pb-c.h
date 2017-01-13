@@ -770,10 +770,12 @@ struct  _MesgRoomKickAck
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t rid;
+  uint32_t code;
+  char *errmsg;
 };
 #define MESG_ROOM_KICK_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_kick_ack__descriptor) \
-    , 0, 0 }
+    , 0, 0, 0, NULL }
 
 
 struct  _MesgRoomChat

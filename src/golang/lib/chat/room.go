@@ -10,6 +10,12 @@ import (
 	"beehive-im/src/golang/lib/comm"
 )
 
+/* 聊天室角色 */
+const (
+	CHAT_ROLE_OWNER   = 1 // 聊天室-所有者
+	CHAT_ROLE_MANAGER = 2 // 聊天室-管理员
+)
+
 /******************************************************************************
  **函数名称: RoomGetRidToNidSet
  **功    能: 通过聊天室RID获取对应的帧听层NID列表
@@ -199,4 +205,62 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error
 	}
 
 	return nil
+}
+
+/******************************************************************************
+ **函数名称: IsRoomOwner
+ **功    能: 用户是否是聊天室的所有者
+ **输入参数:
+ **     pool: REDIS连接池
+ **     rid: 聊天室ID
+ **     uid: 用户UID
+ **输出参数: NONE
+ **返    回: true:是 false:不是
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.13 07:35:22 #
+ ******************************************************************************/
+func IsRoomOwner(pool *redis.Pool, rid uint64, uid uint64) bool {
+	rds := pool.Get()
+	defer rds.Close()
+
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_ROLE_TAB, rid)
+
+	role, err := redis.Int(rds.Do("HGET", key, uid))
+	if nil != err {
+		return false
+	} else if CHAT_ROLE_OWNER == role {
+		return true
+	}
+
+	return true
+}
+
+/******************************************************************************
+ **函数名称: IsRoomManager
+ **功    能: 用户是否是聊天室的管理员
+ **输入参数:
+ **     pool: REDIS连接池
+ **     rid: 聊天室ID
+ **     uid: 用户UID
+ **输出参数: NONE
+ **返    回: true:是 false:不是
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.13 08:15:03 #
+ ******************************************************************************/
+func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
+	rds := pool.Get()
+	defer rds.Close()
+
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_ROLE_TAB, rid)
+
+	role, err := redis.Int(rds.Do("HGET", key, uid))
+	if nil != err {
+		return false
+	} else if CHAT_ROLE_OWNER == role || CHAT_ROLE_MANAGER == role {
+		return true
+	}
+
+	return true
 }

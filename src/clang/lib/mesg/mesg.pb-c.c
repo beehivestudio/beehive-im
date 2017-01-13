@@ -6335,7 +6335,7 @@ const ProtobufCMessageDescriptor mesg_room_kick__descriptor =
   (ProtobufCMessageInit) mesg_room_kick__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_kick_ack__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_room_kick_ack__field_descriptors[4] =
 {
   {
     "uid",
@@ -6361,15 +6361,41 @@ static const ProtobufCFieldDescriptor mesg_room_kick_ack__field_descriptors[2] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "code",
+    3,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomKickAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    4,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomKickAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mesg_room_kick_ack__field_indices_by_name[] = {
+  2,   /* field[2] = code */
+  3,   /* field[3] = errmsg */
   1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_room_kick_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor mesg_room_kick_ack__descriptor =
 {
@@ -6379,7 +6405,7 @@ const ProtobufCMessageDescriptor mesg_room_kick_ack__descriptor =
   "MesgRoomKickAck",
   "",
   sizeof(MesgRoomKickAck),
-  2,
+  4,
   mesg_room_kick_ack__field_descriptors,
   mesg_room_kick_ack__field_indices_by_name,
   1,  mesg_room_kick_ack__number_ranges,

@@ -60,9 +60,7 @@ type SidAttr struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
  ******************************************************************************/
-func GetSidAttr(pool *redis.Pool, sid uint64) *SidAttr {
-	var attr SidAttr
-
+func GetSidAttr(pool *redis.Pool, sid uint64) (attr *SidAttr, err error) {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -70,8 +68,10 @@ func GetSidAttr(pool *redis.Pool, sid uint64) *SidAttr {
 
 	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
 	if nil != err {
-		return &attr
+		return nil, err
 	}
+
+	attr = &SidAttr{}
 
 	attr.Sid = sid
 	uid_int, _ := strconv.ParseInt(vals[0], 10, 64)
@@ -79,7 +79,7 @@ func GetSidAttr(pool *redis.Pool, sid uint64) *SidAttr {
 	nid_int, _ := strconv.ParseInt(vals[1], 10, 64)
 	attr.Nid = uint32(nid_int)
 
-	return &attr
+	return attr, nil
 }
 
 /******************************************************************************
@@ -105,7 +105,10 @@ func CleanSidData(pool *redis.Pool, sid uint64) error {
 	}()
 
 	/* > 获取SID对应的数据 */
-	attr := GetSidAttr(pool, sid)
+	attr, err := GetSidAttr(pool, sid)
+	if nil != err {
+		return err
+	}
 
 	/* > 删除SID对应的数据 */
 	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
@@ -148,8 +151,10 @@ func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) (code uint32, err e
 	}()
 
 	/* 获取会话属性 */
-	attr := GetSidAttr(pool, sid)
-	if 0 == attr.Uid {
+	attr, err := GetSidAttr(pool, sid)
+	if nil != err {
+		return comm.ERR_SYS_SYSTEM, err
+	} else if 0 == attr.Uid {
 		return comm.ERR_SVR_DATA_COLLISION, errors.New("Get sid attribute failed!")
 	} else if nid != attr.Nid {
 		return comm.ERR_SVR_DATA_COLLISION, errors.New("Node of session is collision!")
