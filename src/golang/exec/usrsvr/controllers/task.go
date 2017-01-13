@@ -6,6 +6,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
+	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -21,7 +22,8 @@ import (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) start_task() {
 	for {
-		ctx.update_lsn_list()
+		ctx.update_lsn_list()                      // 更新侦听层列表
+		chat.RoomSendUsrNum(ctx.frwder, ctx.redis) // 下发聊天室人数
 
 		time.Sleep(time.Second)
 	}

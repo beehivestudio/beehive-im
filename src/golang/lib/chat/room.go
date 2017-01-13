@@ -6,8 +6,11 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/rtmq"
 )
 
 /* 聊天室角色 */
@@ -263,4 +266,125 @@ func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
 	}
 
 	return true
+}
+
+/******************************************************************************
+ **函数名称: RoomSendUsrNum
+ **功    能: 下发聊天室人数
+ **输入参数:
+ **     pool: REDIS连接池
+ **输出参数: NONE
+ **返    回: 错误码+错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.13 11:02:22 #
+ ******************************************************************************/
+func RoomSendUsrNum(frwder *rtmq.RtmqProxyCntx, pool *redis.Pool) error {
+	rds := pool.Get()
+	defer rds.Close()
+
+	ctm := time.Now().Unix()
+
+	/* 获取侦听层ID列表 */
+	lsn_nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
+		comm.IM_KEY_LSN_NID_ZSET, ctm, "+inf"))
+	if nil != err {
+		return err
+	}
+
+	lsn_num := len(lsn_nid_list)
+
+	off := 0
+	for {
+		/* 获取聊天室列表 */
+		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			comm.CHAT_KEY_RID_ZSET, ctm, "+inf", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			return err
+		}
+
+		rid_num := len(rid_list)
+
+		/* 遍历下发聊天室人数 */
+		for m := 0; m < rid_num; m += 1 {
+			rid, _ := strconv.ParseInt(rid_list[m], 10, 64)
+
+			/* 获取聊天室人数 */
+			key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, uint64(rid))
+			usr_num, err := redis.Int(rds.Do("ZCARD", key))
+			if nil != err {
+				continue
+			}
+
+			/* 下发聊天室人数 */
+			for n := 0; n < lsn_num; n += 1 {
+				send_room_usr_num(frwder, pool,
+					uint64(rid), uint32(lsn_nid_list[n]), uint32(usr_num))
+			}
+		}
+
+		if off < comm.CHAT_BAT_NUM {
+			break
+		}
+
+		off += rid_num
+	}
+
+	return nil
+}
+
+/******************************************************************************
+ **函数名称: send_room_usr_num
+ **功    能: 发送ROOM-USR-NUM信息
+ **输入参数:
+ **     head: 协议头
+ **     req: 请求数据
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **协议格式:
+ **     {
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.13 11:15:03 #
+ ******************************************************************************/
+func send_room_usr_num(frwder *rtmq.RtmqProxyCntx,
+	pool *redis.Pool, rid uint64, nid uint32, num uint32) int {
+	rds := pool.Get()
+	defer rds.Close()
+
+	/* > 设置协议体 */
+	rsp := &mesg.MesgRoomUsrNum{
+		Rid: proto.Uint64(rid),
+		Num: proto.Uint32(num),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(rsp)
+	if nil != err {
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head := &comm.MesgHeader{}
+
+	head.Cmd = comm.CMD_ROOM_USR_NUM
+	head.Sid = rid // 会话ID改为聊天室ID
+	head.Nid = uint32(nid)
+	head.Length = uint32(length)
+	head.ChkSum = comm.MSG_CHKSUM_VAL
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	frwder.AsyncSend(comm.CMD_ROOM_USR_NUM, p.Buff, uint32(len(p.Buff)))
+
+	return 0
 }
