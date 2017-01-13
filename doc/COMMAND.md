@@ -98,8 +98,8 @@
 | 06 | 0x0406 | 加入聊天室应答 | ROOM-JOIN-ACK | Ok |
 | 07 | 0x0407 | 退出聊天室 | ROOM-QUIT | Ok |
 | 08 | 0x0408 | 退出聊天室应答 | ROOM-QUIT-ACK | Ok |
-| 09 | 0x0409 | 踢出聊天室 | ROOM-KICK | 暂无 |
-| 10 | 0x040A | 踢出聊天室应答 | ROOM-KICK-ACK | 暂无 |
+| 09 | 0x0409 | 踢出聊天室 | ROOM-KICK | Ok |
+| 10 | 0x040A | 踢出聊天室应答 | ROOM-KICK-ACK | Ok |
 | 11 | 0x040B | 聊天室消息 | ROOM-CHAT | 暂无 |
 | 12 | 0x040C | 聊天室消息应答 | ROOM-CHAT-ACK | 暂无 |
 | 13 | 0x040D | 聊天室广播消息 | ROOM-BC | 暂无 |
@@ -108,7 +108,7 @@
 | 16 | 0x0411 | 聊天室人数应答 | ROOM-USR-NUM-ACK | 暂无 |
 | 17 | 0x0450 | 加入聊天室通知 | ROOM-JOIN-NTC | 暂无 |
 | 18 | 0x0451 | 退出聊天室通知 | ROOM-QUIT-NTC | 暂无 |
-| 19 | 0x0452 | 踢出聊天室通知 | ROOM-KICK-NTC | 暂无 |
+| 19 | 0x0452 | 踢出聊天室通知 | ROOM-KICK-NTC | Ok |
 
 #推送消息
 ---

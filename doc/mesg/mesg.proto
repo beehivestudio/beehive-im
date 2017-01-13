@@ -671,6 +671,8 @@ message mesg_room_kick_ack
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 rid = 2;        // M|聊天室ID|数字|
+    required uint32 code = 3;       // M|错误码|数字|
+    required string errmsg = 4;     // M|错误描述|数字|
 }
 
 /*

@@ -787,6 +787,8 @@ TODO: 协议头中的to为群ID(GID)
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
+>   required uint32 code = 3;       // M|错误码|数字|
+>   required string errmsg = 4;     // M|错误描述|数字|
 >}
 
 ---
@@ -797,6 +799,8 @@ TODO: 协议头中的to为群ID(GID)
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
+>   required uint32 code = 3;       // M|错误码|数字|<br>
+>   required string errmsg = 4;     // M|错误描述|字串|<br>
 >}
 
 ---
