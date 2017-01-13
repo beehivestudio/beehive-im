@@ -12,8 +12,8 @@ import (
 
 /* 聊天室角色 */
 const (
-	CHAT_ROLE_OWNER   = 1 // 聊天室-所有者
-	CHAT_ROLE_MANAGER = 2 // 聊天室-管理员
+	ROOM_ROLE_OWNER   = 1 // 聊天室-所有者
+	ROOM_ROLE_MANAGER = 2 // 聊天室-管理员
 )
 
 /******************************************************************************
@@ -229,7 +229,7 @@ func IsRoomOwner(pool *redis.Pool, rid uint64, uid uint64) bool {
 	role, err := redis.Int(rds.Do("HGET", key, uid))
 	if nil != err {
 		return false
-	} else if CHAT_ROLE_OWNER == role {
+	} else if ROOM_ROLE_OWNER == role {
 		return true
 	}
 
@@ -258,7 +258,7 @@ func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
 	role, err := redis.Int(rds.Do("HGET", key, uid))
 	if nil != err {
 		return false
-	} else if CHAT_ROLE_OWNER == role || CHAT_ROLE_MANAGER == role {
+	} else if ROOM_ROLE_OWNER == role || ROOM_ROLE_MANAGER == role {
 		return true
 	}
 
