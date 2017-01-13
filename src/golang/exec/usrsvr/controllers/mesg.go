@@ -1179,7 +1179,7 @@ func (ctx *UsrSvrCntx) room_join_handler(
 	}()
 
 	/* > 判断UID是否在黑名单中 */
-	key := fmt.Sprintf(comm.CHAT_KEY_RID_USR_BLACKLIST_SET, req.GetRid())
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
 	ok, err := redis.Bool(rds.Do("SISMEMBER", key, req.GetUid()))
 	if nil != err {
 		ctx.log.Error("Exec command [SISMEMBER] failed! rid:%d uid:%d err:",
@@ -1796,7 +1796,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 	}
 
 	/* > 用户加入黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_RID_USR_BLACKLIST_SET, req.GetRid())
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
 
 	pl.Send("ZADD", key, req.GetUid())
 
