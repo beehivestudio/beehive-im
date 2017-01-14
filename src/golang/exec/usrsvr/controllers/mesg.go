@@ -113,22 +113,22 @@ func (ctx *UsrSvrCntx) online_req_check(req *mesg.MesgOnlineReq) error {
  **返    回:
  **     head: 通用协议头
  **     req: 协议体内容
+ **     code: 错误码
  **     err: 错误描述
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgOnlineReq, err error) {
-
+	head *comm.MesgHeader, req *mesg.MesgOnlineReq, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !comm.MesgHeadIsValid(head) {
-		ctx.log.Error("Header of Online request is invalid! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
+		ctx.log.Error("Parse head invalid! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
 			head.GetCmd(), head.GetFlag(), head.GetLength(),
 			head.GetChkSum(), head.GetCid(), head.GetNid(),
 			head.GetSerial(), comm.MESG_HEAD_SIZE)
-		return nil, nil, errors.New("Header of online request is invalid!")
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Parse head invalid!")
 	}
 
 	ctx.log.Debug("Online request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
@@ -140,18 +140,18 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	req = &mesg.MesgOnlineReq{}
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal online request failed! errmsg:%s", err.Error())
-		return head, nil, errors.New("Unmarshal online request failed!")
+		ctx.log.Error("Unmarshal body failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Unmarshal body failed!")
 	}
 
 	/* > 校验协议合法性 */
 	err = ctx.online_req_check(req)
 	if nil != err {
-		ctx.log.Error("Online request is invalid!")
-		return head, nil, err
+		ctx.log.Error("Check online-request failed!")
+		return head, nil, comm.ERR_SVR_CHECK_FAIL, err
 	}
 
-	return head, req, nil
+	return head, req, 0, nil
 }
 
 /******************************************************************************
@@ -182,13 +182,16 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 	req *mesg.MesgOnlineReq, code uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgOnlineAck{
-		Uid:      proto.Uint64(req.GetUid()),
-		Sid:      proto.Uint64(req.GetSid()),
-		App:      proto.String(req.GetApp()),
-		Version:  proto.String(req.GetVersion()),
-		Terminal: proto.Uint32(req.GetTerminal()),
-		Code:     proto.Uint32(code),
-		Errmsg:   proto.String(errmsg),
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(errmsg),
+	}
+
+	if nil != req {
+		rsp.Uid = proto.Uint64(req.GetUid())
+		rsp.Sid = proto.Uint64(req.GetSid())
+		rsp.App = proto.String(req.GetApp())
+		rsp.Version = proto.String(req.GetVersion())
+		rsp.Terminal = proto.Uint32(req.GetTerminal())
 	}
 
 	/* 生成PB数据 */
@@ -371,18 +374,18 @@ func UsrSvrOnlineReqHandler(cmd uint32, dest uint32, data []byte, length uint32,
 
 	ctx.log.Debug("Recv online request! cmd:0x%04X dest:%d length:%d", cmd, dest, length)
 
-	/* 1. > 解析上线请求 */
-	head, req, err := ctx.online_parse(data)
-	if nil == head {
-		ctx.log.Error("Parse online request failed! Header is invalid.")
-		return -1
-	} else if nil == req {
-		ctx.log.Error("Parse online request failed! Request is invalid.")
-		ctx.send_err_online_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+	/* > 解析上线请求 */
+	head, req, code, err := ctx.online_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse online request failed! errmsg:%s", err.Error())
+		if nil != head {
+			ctx.send_err_online_ack(head, req, code, err.Error())
+			return -1
+		}
 		return -1
 	}
 
-	/* 2. > 初始化上线环境 */
+	/* > 初始化上线环境 */
 	err = ctx.online_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Online handler failed!")
@@ -390,7 +393,7 @@ func UsrSvrOnlineReqHandler(cmd uint32, dest uint32, data []byte, length uint32,
 		return -1
 	}
 
-	/* 3. > 发送上线应答 */
+	/* > 发送上线应答 */
 	ctx.send_online_ack(head, req)
 
 	return 0
@@ -415,6 +418,10 @@ func UsrSvrOnlineReqHandler(cmd uint32, dest uint32, data []byte, length uint32,
 func (ctx *UsrSvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		ctx.log.Error("Parse head failed!")
+		return nil
+	}
 
 	return head
 }
@@ -490,7 +497,13 @@ func UsrSvrOfflineReqHandler(cmd uint32, dest uint32, data []byte, length uint32
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
-	return comm.MesgHeadNtoh(data)
+	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		ctx.log.Error("Parse head failed!")
+		return nil
+	}
+
+	return head
 }
 
 /******************************************************************************
@@ -507,7 +520,7 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
 	code, err := im.UpdateSidData(ctx.redis, head.GetNid(), head.GetSid())
-	if 0 != code {
+	if nil != err {
 		im.CleanSidData(ctx.redis, head.GetSid()) // 清理会话数据
 		ctx.send_kick(head.GetSid(), head.GetNid(), code, err.Error())
 	}
@@ -523,9 +536,9 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
  **     length: 数据长度
  **     param: 附加参数
  **输出参数: NONE
- **返    回: VOID
+ **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项:
+ **注意事项: 由侦听层给各终端回复PONG请求
  **作    者: # Qifeng.zou # 2016.11.03 21:40:30 #
  ******************************************************************************/
 func UsrSvrPingHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
@@ -536,10 +549,14 @@ func UsrSvrPingHandler(cmd uint32, dest uint32, data []byte, length uint32, para
 
 	ctx.log.Debug("Recv ping request!")
 
-	/* 1. > 解析PING请求 */
+	/* > 解析PING请求 */
 	head := ctx.ping_parse(data)
+	if nil == head {
+		ctx.log.Error("Parse ping request failed!")
+		return -1
+	}
 
-	/* 2. > PING请求处理 */
+	/* > PING请求处理 */
 	ctx.ping_handler(head)
 
 	return 0
@@ -566,6 +583,8 @@ func UsrSvrPingHandler(cmd uint32, dest uint32, data []byte, length uint32, para
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg string) int {
 	var head comm.MesgHeader
+
+	ctx.log.Debug("Send kick command! sid:%d nid:%d", sid, nid)
 
 	/* > 设置协议体 */
 	rsp := &mesg.MesgKickReq{
@@ -597,7 +616,6 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_KICK_REQ, p.Buff, uint32(len(p.Buff)))
 
-	ctx.log.Debug("Send kick command success! sid:%d nid:%d", sid, nid)
 	return 0
 }
 
@@ -622,20 +640,22 @@ func UsrSvrUnsubReqHandler(cmd uint32, dest uint32, data []byte, length uint32, 
  **返    回:
  **     head: 通用协议头
  **     req: 协议体内容
+ **     code: 错误码
+ **     errmsg: 错误描述
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 11:27:25 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) alloc_seq_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgAllocSeq, err error) {
+	head *comm.MesgHeader, req *mesg.MesgAllocSeq, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !comm.MesgHeadIsValid(head) {
-		ctx.log.Error("Header of alloc-seq request is invalid! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
+		ctx.log.Error("Parse head of alloc-seq failed! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
 			head.GetCmd(), head.GetFlag(), head.GetLength(),
 			head.GetChkSum(), head.GetCid(), head.GetNid(),
 			head.GetSerial(), comm.MESG_HEAD_SIZE)
-		return nil, nil, errors.New("Header of alloc-seq request is invalid!")
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Parse head failed!")
 	}
 
 	ctx.log.Debug("Alloc-seq request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
@@ -648,10 +668,10 @@ func (ctx *UsrSvrCntx) alloc_seq_parse(data []byte) (
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal alloc-seq request failed! errmsg:%s", err.Error())
-		return head, nil, errors.New("Unmarshal alloc-seq request failed!")
+		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Unmarshal alloc-seq request failed!")
 	}
 
-	return head, req, nil
+	return head, req, 0, nil
 }
 
 /******************************************************************************
@@ -718,19 +738,16 @@ func (ctx *UsrSvrCntx) alloc_seq_handler(
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_alloc_seq_ack(head *comm.MesgHeader,
 	req *mesg.MesgAllocSeq, code uint32, errmsg string) int {
-	var uid uint64
-
-	if nil != req {
-		uid = req.GetUid()
-	}
-
 	/* > 设置协议体 */
 	rsp := &mesg.MesgAllocSeqAck{
-		Uid:    proto.Uint64(uid),
 		Seq:    proto.Uint64(0),
 		Num:    proto.Uint32(0),
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
+	}
+
+	if nil != req {
+		rsp.Uid = proto.Uint64(req.GetUid())
 	}
 
 	/* 生成PB数据 */
@@ -842,13 +859,14 @@ func UsrSvrAllocSeqHandler(cmd uint32, dest uint32, data []byte, length uint32, 
 	ctx.log.Debug("Recv alloc-seq request!")
 
 	/* > 解析ALLOC-SEQ请求 */
-	head, req, err := ctx.alloc_seq_parse(data)
-	if nil == head {
+	head, req, code, err := ctx.alloc_seq_parse(data)
+	if nil != err {
+		if nil != head {
+			ctx.log.Error("Parse alloc-seq request failed! errmsg:%s", err.Error())
+			ctx.send_err_alloc_seq_ack(head, req, code, err.Error())
+			return -1
+		}
 		ctx.log.Error("Parse header of alloc-seq request failed!")
-		return -1
-	} else if nil == req || nil != err {
-		ctx.log.Error("Parse body of alloc-seq request failed!")
-		ctx.send_err_alloc_seq_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
 		return -1
 	} else if 0 == req.GetNum() {
 		ctx.log.Error("Alloc seq num is zero! uid:%d nid:%d", req.GetUid(), head.GetNid())
@@ -1015,20 +1033,16 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_room_join_ack(head *comm.MesgHeader,
 	req *mesg.MesgRoomJoin, code uint32, errmsg string) int {
-	var uid, rid uint64
-
-	if nil != req {
-		uid = req.GetUid()
-		rid = req.GetRid()
-	}
-
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomJoinAck{
-		Uid:    proto.Uint64(uid),
-		Rid:    proto.Uint64(rid),
 		Gid:    proto.Uint32(0),
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
+	}
+
+	if nil != req {
+		rsp.Uid = proto.Uint64(req.GetUid())
+		rsp.Rid = proto.Uint64(req.GetRid())
 	}
 
 	/* 生成PB数据 */
@@ -1350,10 +1364,13 @@ func (ctx *UsrSvrCntx) send_err_room_quit_ack(head *comm.MesgHeader,
 	req *mesg.MesgRoomQuit, code uint32, errmsg string) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomQuitAck{
-		Uid:    proto.Uint64(req.GetUid()),
-		Rid:    proto.Uint64(req.GetRid()),
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
+	}
+
+	if nil != req {
+		rsp.Uid = proto.Uint64(req.GetUid())
+		rsp.Rid = proto.Uint64(req.GetRid())
 	}
 
 	/* 生成PB数据 */
@@ -1395,25 +1412,29 @@ func (ctx *UsrSvrCntx) send_err_room_quit_ack(head *comm.MesgHeader,
  **作    者: # Qifeng.zou # 2016.11.03 21:18:29 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgRoomQuit) {
+	head *comm.MesgHeader, req *mesg.MesgRoomQuit, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		ctx.log.Error("Parse header of room-quit request failed!")
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Parse head failed!")
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgRoomQuit{}
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal room quit request failed! errmsg:%s", err.Error())
-		return nil, nil
+		return nil, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Parse body failed!")
 	}
 
 	/* > 校验协议合法性 */
 	if !ctx.room_quit_isvalid(req) {
 		ctx.log.Error("Room quit request is invalid!")
-		return nil, nil
+		return nil, nil, comm.ERR_SVR_CHECK_FAIL, errors.New("Check request failed!")
 	}
 
-	return head, req
+	return head, req, 0, nil
 }
 
 /******************************************************************************
@@ -1475,13 +1496,15 @@ func (ctx *UsrSvrCntx) send_room_quit_ack(head *comm.MesgHeader, req *mesg.MesgR
  **     head: 协议头
  **     req: ROOM-QUIT请求
  **输出参数: NONE
- **返    回: 组ID
+ **返    回:
+ **     code: 错误码
+ **     err: 错误描述
  **实现描述:
  **注意事项: 已验证了ROOM-QUIT请求的合法性
  **作    者: # Qifeng.zou # 2016.11.03 21:28:18 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_quit_handler(
-	head *comm.MesgHeader, req *mesg.MesgRoomQuit) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgRoomQuit) (code uint32, err error) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -1495,7 +1518,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
 	member := fmt.Sprintf(comm.UID_SID_STR, req.GetUid(), head.GetSid())
 	pl.Send("ZREM", key, member) // 清理RID -> UID集合"${uid}:${sid}"
 
-	return nil
+	return 0, nil
 }
 
 /******************************************************************************
@@ -1527,20 +1550,23 @@ func UsrSvrRoomQuitReqHandler(cmd uint32, dest uint32, data []byte, length uint3
 	ctx.log.Debug("Recv room quit request!")
 
 	/* 1. > 解析ROOM-QUIT请求 */
-	head, req := ctx.room_quit_parse(data)
-	if nil == head {
-		if nil != req {
-			ctx.log.Error("Parse room quit request failed!")
-			ctx.send_err_room_quit_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse join request failed!")
-			return -1
-		} else {
-			ctx.log.Error("Parse room quit request failed!")
+	head, req, code, err := ctx.room_quit_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse room quit request failed!")
+		if nil != head {
+			ctx.send_err_room_quit_ack(head, req, code, err.Error())
 			return -1
 		}
+		return -1
 	}
 
 	/* 2. > 退出聊天室处理 */
-	ctx.room_quit_handler(head, req)
+	code, err = ctx.room_quit_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Hanle room quit request failed!")
+		ctx.send_err_room_quit_ack(head, req, code, err.Error())
+		return -1
+	}
 
 	/* 3. > 发送ROOM-QUIT应答 */
 	ctx.send_room_quit_ack(head, req)
@@ -1565,19 +1591,22 @@ func UsrSvrRoomQuitReqHandler(cmd uint32, dest uint32, data []byte, length uint3
  **作    者: # Qifeng.zou # 2017.01.12 23:21:37 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgRoomKick) {
+	head *comm.MesgHeader, req *mesg.MesgRoomKick, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Header is invalid!")
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgRoomKick{}
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal room-kick request failed! errmsg:%s", err.Error())
-		return head, nil
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
 	}
 
-	return head, req
+	return head, req, 0, nil
 }
 
 /******************************************************************************
@@ -1603,19 +1632,15 @@ func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_room_kick_ack(head *comm.MesgHeader,
 	req *mesg.MesgRoomKick, code uint32, errmsg string) int {
-	var uid, rid uint64
-
-	if nil != req {
-		uid = req.GetUid()
-		rid = req.GetRid()
-	}
-
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomKickAck{
-		Uid:    proto.Uint64(uid),
-		Rid:    proto.Uint64(rid),
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
+	}
+
+	if nil != req {
+		rsp.Uid = proto.Uint64(req.GetUid())
+		rsp.Rid = proto.Uint64(req.GetRid())
 	}
 
 	/* 生成PB数据 */
@@ -1834,15 +1859,18 @@ func UsrSvrRoomKickHandler(cmd uint32, dest uint32, data []byte, length uint32, 
 	ctx.log.Debug("Recv room-kick request! cmd:0x%04X dest:%d length:%d", cmd, dest, length)
 
 	/* > 解析ROOM-KICK请求 */
-	head, req := ctx.room_kick_parse(data)
-	if nil == req {
-		ctx.log.Error("Parse room-kick request failed!")
-		ctx.send_err_room_kick_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Parse room-kick request failed!")
+	head, req, code, err := ctx.room_kick_parse(data)
+	if nil != err {
+		if nil != head {
+			ctx.log.Error("Parse room-kick request failed!")
+			ctx.send_err_room_kick_ack(head, req, code, err.Error())
+			return -1
+		}
 		return -1
 	}
 
 	/* > 执行ROOM-KICK操作 */
-	code, err := ctx.room_kick_handler(head, req)
+	code, err = ctx.room_kick_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Room kick handler failed!")
 		ctx.send_err_room_kick_ack(head, req, code, err.Error())
