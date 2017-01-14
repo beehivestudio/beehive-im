@@ -814,13 +814,12 @@ struct  _MesgRoomBc
   uint32_t level;
   uint64_t time;
   uint32_t expire;
-  char *text;
   protobuf_c_boolean has_data;
   ProtobufCBinaryData data;
 };
 #define MESG_ROOM_BC__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_bc__descriptor) \
-    , 0, 0, 0, 0, 0, NULL, 0,{0,NULL} }
+    , 0, 0, 0, 0, 0, 0,{0,NULL} }
 
 
 struct  _MesgRoomBcAck

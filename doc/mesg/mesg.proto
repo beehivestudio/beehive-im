@@ -706,13 +706,11 @@ message mesg_room_chat_ack
    协议格式: */
 message mesg_room_bc
 {
-    required uint64 uid = 1;        // M|用户ID
-    required uint64 rid = 2;        // M|聊天室ID
-    required uint32 level = 4;      // M|消息级别
-    required uint64 time = 5;       // M|发送时间
-    required uint32 expire = 6;     // M|过期时间
-    required string text = 7;       // M|广播内容
-    optional bytes data = 8;        // M|透传数据
+    required uint64 rid = 1;        // M|聊天室ID
+    required uint32 level = 2;      // M|消息级别
+    required uint64 time = 3;       // M|发送时间
+    required uint32 expire = 4;     // M|过期时间
+    required bytes data = 5;        // M|透传数据
 }
 
 /*

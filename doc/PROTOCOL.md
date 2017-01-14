@@ -805,7 +805,7 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x040B<br>
-命令描述: 聊天室消息(ROOM)<br>
+命令描述: 聊天室消息(ROOM-CHAT)<br>
 协议格式: <br>
 >message mesg_room<br>
 >{<br>
@@ -834,13 +834,11 @@ TODO: 协议头中的to为群ID(GID)
 协议格式: <br>
 >message mesg_room_bc<br>
 >{<br>
->   required uint64 uid = 1;        // M|用户ID<br>
->   required uint64 rid = 2;        // M|聊天室ID<br>
->   required uint32 level = 4;      // M|消息级别<br>
->   required uint64 time = 5;       // M|发送时间<br>
->   required uint32 expire = 6;     // M|过期时间<br>
->   required string text = 7;       // M|广播内容<br>
->   optional bytes data = 8;        // M|透传数据<br>
+>   required uint64 rid = 1;        // M|聊天室ID<br>
+>   required uint32 level = 2;      // M|消息级别<br>
+>   required uint64 time = 3;       // M|发送时间<br>
+>   required uint32 expire = 4;     // M|过期时间<br>
+>   required bytes data = 5;        // M|透传数据<br>
 >}
 
 ---

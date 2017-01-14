@@ -36,10 +36,11 @@
 ---
 **功能描述**: 聊天室广播消息<br>
 **接口类型**: POST<br>
-**接口路径**: /im/push?dim=room&rid=${rid}<br>
+**接口路径**: /im/push?dim=room&rid=${rid}&expire=${expire}<br>
 **参数描述**:<br>
 > dim: 推送维度, 此时为room.(M)<br>
 > rid: 聊天室ID(M)<br>
+> expire: 过期时间(M)<br>
 
 **包体内容**: 下发的数据<br>
 **返回结果**:<br>

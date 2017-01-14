@@ -12,7 +12,6 @@ import (
 	"beehive-im/src/golang/lib/crypt"
 )
 
-/* 获取IP列表 */
 type UsrSvrQueryCtrl struct {
 	BaseController
 }
@@ -22,7 +21,7 @@ func (this *UsrSvrQueryCtrl) Query() {
 
 	opt := this.GetString("opt")
 	switch opt {
-	case "iplist":
+	case "iplist": // 获取IP列表
 		this.query_iplist(ctx)
 		return
 	}

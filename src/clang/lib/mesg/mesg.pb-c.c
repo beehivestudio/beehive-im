@@ -6579,7 +6579,7 @@ const ProtobufCMessageDescriptor mesg_room_chat_ack__descriptor =
   (ProtobufCMessageInit) mesg_room_chat_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[7] =
+static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[6] =
 {
   {
     "uid",
@@ -6642,20 +6642,8 @@ static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[7] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "text",
-    7,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(MesgRoomBc, text),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
     "data",
-    8,
+    7,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BYTES,
     offsetof(MesgRoomBc, has_data),
@@ -6667,11 +6655,10 @@ static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[7] =
   },
 };
 static const unsigned mesg_room_bc__field_indices_by_name[] = {
-  6,   /* field[6] = data */
+  5,   /* field[5] = data */
   4,   /* field[4] = expire */
   2,   /* field[2] = level */
   1,   /* field[1] = rid */
-  5,   /* field[5] = text */
   3,   /* field[3] = time */
   0,   /* field[0] = uid */
 };
@@ -6679,7 +6666,7 @@ static const ProtobufCIntRange mesg_room_bc__number_ranges[2 + 1] =
 {
   { 1, 0 },
   { 4, 2 },
-  { 0, 7 }
+  { 0, 6 }
 };
 const ProtobufCMessageDescriptor mesg_room_bc__descriptor =
 {
@@ -6689,7 +6676,7 @@ const ProtobufCMessageDescriptor mesg_room_bc__descriptor =
   "MesgRoomBc",
   "",
   sizeof(MesgRoomBc),
-  7,
+  6,
   mesg_room_bc__field_descriptors,
   mesg_room_bc__field_indices_by_name,
   2,  mesg_room_bc__number_ranges,

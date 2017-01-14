@@ -14,6 +14,7 @@ import (
 func Router() {
 	beego.Router("/im/register", &controllers.UsrSvrRegisterCtrl{}, "get:Register")
 
+	beego.Router("/im/push", &controllers.UsrSvrPushCtrl{}, "post:Push")
 	beego.Router("/im/query", &controllers.UsrSvrQueryCtrl{}, "get:Query")
 	beego.Router("/im/config", &controllers.UsrSvrConfigCtrl{}, "get:Config")
 

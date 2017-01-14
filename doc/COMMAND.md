@@ -100,7 +100,7 @@
 | 08 | 0x0408 | 退出聊天室应答 | ROOM-QUIT-ACK | Ok |
 | 09 | 0x0409 | 踢出聊天室 | ROOM-KICK | Ok |
 | 10 | 0x040A | 踢出聊天室应答 | ROOM-KICK-ACK | Ok |
-| 11 | 0x040B | 聊天室消息 | ROOM-CHAT | 暂无 |
+| 11 | 0x040B | 聊天室消息 | ROOM-CHAT | Ok |
 | 12 | 0x040C | 聊天室消息应答 | ROOM-CHAT-ACK | 暂无 |
 | 13 | 0x040D | 聊天室广播消息 | ROOM-BC | 暂无 |
 | 14 | 0x040E | 聊天室广播消息应答 | ROOM-BC-ACK | 暂无 |

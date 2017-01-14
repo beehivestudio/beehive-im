@@ -32,6 +32,8 @@ const (
 	CHAT_KEY_ROOM_MSGID_INCR        = "chat:rid:%d:msgid:incr"        //| STRING | 聊天室消息序列递增记录 |
 	CHAT_KEY_ROOM_USR_BLACKLIST_SET = "chat:rid:%d:usr:blacklist:set" //*| SET | 聊天室用户黑名单 | 成员:UID |
 	CHAT_KEY_ROOM_ROLE_TAB          = "chat:rid:%d:role:tab"          //*| HASH | 聊天室管理人员名单 | 成员:UID 分值:角色(1:OWNER 2:管理员) |
+	CHAT_KEY_ROOM_BC_ZSET           = "chat:rid:%d:broadcast:zset"    //| ZSET | 聊天室广播集合 | 成员:消息ID 分值:超时时间 |
+	CHAT_KEY_ROOM_BC_HASH           = "chat:rid:%d:broadcast:hash"    //| HASH | 聊天室广播内容 | 域:消息ID 值:广播内容 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//群聊
 	CHAT_KEY_GID_ZSET            = "chat:gid:zset"               //| ZSET | 群ID集合 | 成员:GID 分值:TTL |
