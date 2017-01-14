@@ -175,7 +175,7 @@ int sdk_mesg_send_sync_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
     /* 2. 设置SYNC数据 */
     head = (mesg_header_t *)addr;
 
-    head->type = CMD_SYNC_MSG;
+    head->type = CMD_SYNC;
     head->length = 0;
     head->flag = 0;
     head->sid = info->sid;

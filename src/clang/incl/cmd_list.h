@@ -33,8 +33,8 @@ typedef enum
     , CMD_EXCEPT_MSG            = 0x010B    /* 通用异常消息 */
     , CMD_EXCEPT_MSG_ACK        = 0x010C    /* 通用异常消息应答 */
 
-    , CMD_SYNC_MSG              = 0x010D    /* 同步消息 */
-    , CMD_SYNC_MSG_ACK          = 0x010E    /* 同步消息应答(客户端) */
+    , CMD_SYNC                  = 0x010D    /* 同步消息 */
+    , CMD_SYNC_ACK              = 0x010E    /* 同步消息应答(客户端) */
 
     , CMD_ALLOC_SEQ             = 0x0110    /* 申请序列号 */
     , CMD_ALLOC_SEQ_ACK         = 0x0111    /* 申请序列号应答 */

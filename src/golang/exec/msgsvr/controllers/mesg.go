@@ -137,7 +137,7 @@ func MsgSvrP2pMsgAckHandler(cmd uint32, dest uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrSyncMsgHandler
+ **函数名称: MsgSvrSyncHandler
  **功    能: 同步请求的处理
  **输入参数:
  **     cmd: 消息类型
@@ -151,7 +151,7 @@ func MsgSvrP2pMsgAckHandler(cmd uint32, dest uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:28:02 #
  ******************************************************************************/
-func MsgSvrSyncMsgHandler(cmd uint32, dest uint32,
+func MsgSvrSyncHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {

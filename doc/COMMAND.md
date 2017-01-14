@@ -14,8 +14,8 @@
 | 10 | 0x010A | 取消订阅应答 | UNSUB-ACK | 暂无 |
 | 11 | 0x010B | 通用异常消息 | EXCEPT | 暂无 |
 | 12 | 0x010C | 通用异常消息应答 | EXCEPT-ACK | 暂无 |
-| 13 | 0x010D | 同步消息 | SYNC-MSG | 暂无 |
-| 14 | 0x010E | 同步消息应答 | SYNC-MSG-ACK | 暂无 |
+| 13 | 0x010D | 消息同步 | SYNC | 暂无 |
+| 14 | 0x010E | 消息同步应答 | SYNC-ACK | 暂无 |
 | 15 | 0x0110 | 申请序列号 | ALLOC-SEQ | Ok |
 | 16 | 0x0111 | 申请序列号应答 | ALLOC-SEQ-ACK | Ok |
 | 17 | 0x0112 | 踢连接下线 | KICK | 当登录鉴权失败时, 需要将指定连接踢下线。-- Ok |
@@ -102,7 +102,7 @@
 | 10 | 0x040A | 踢出聊天室应答 | ROOM-KICK-ACK | Ok |
 | 11 | 0x040B | 聊天室消息 | ROOM-CHAT | Ok |
 | 12 | 0x040C | 聊天室消息应答 | ROOM-CHAT-ACK | 暂无 |
-| 13 | 0x040D | 聊天室广播消息 | ROOM-BC | 暂无 |
+| 13 | 0x040D | 聊天室广播消息 | ROOM-BC | Ok |
 | 14 | 0x040E | 聊天室广播消息应答 | ROOM-BC-ACK | 暂无 |
 | 15 | 0x0410 | 聊天室人数 | ROOM-USR-NUM | Ok |
 | 16 | 0x0411 | 聊天室人数应答 | ROOM-USR-NUM-ACK | 暂无 |
