@@ -321,11 +321,11 @@ func (ctx *MsgSvrCntx) private_ack_handler(
 
 	/* 清理离线消息 */
 	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
-	field := fmt.Sprintf(comm.UID_MSGID_STR, req.GetOrig(), req.GetSeq())
+	field := fmt.Sprintf(comm.UID_MSGID_STR, req.GetOrig(), head.GetSerial())
 	rds.Send("ZREM", key, field)
 
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
-	rds.Send("HDEL", key, req.GetSeq())
+	rds.Send("HDEL", key, head.GetSerial())
 
 	return err
 }

@@ -261,13 +261,12 @@ struct  _MesgPrvtChatAck
   ProtobufCMessage base;
   uint64_t orig;
   uint64_t dest;
-  uint64_t seq;
   uint32_t code;
   char *errmsg;
 };
 #define MESG_PRVT_CHAT_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_prvt_chat_ack__descriptor) \
-    , 0, 0, 0, 0, NULL }
+    , 0, 0, 0, NULL }
 
 
 struct  _MesgGroupCreat

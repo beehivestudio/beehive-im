@@ -188,9 +188,8 @@ message mesg_prvt_chat_ack
 {
     required uint64 orig = 1;       // M|发送方UID
     required uint64 dest = 2;       // M|接收方UID
-    required uint64 seq = 3;        // M|源序列号|数字|
-    required uint32 code = 4;       // M|错误码|数字|
-    required string errmsg = 5;     // M|错误描述|字串|
+    required uint32 code = 3;       // M|错误码|数字|
+    required string errmsg = 4;     // M|错误描述|字串|
 }
 
 ////////////////////////////////////////////////////////////////////////////////
