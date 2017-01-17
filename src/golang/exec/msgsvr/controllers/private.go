@@ -65,6 +65,10 @@ func (ctx *MsgSvrCntx) private_msg_parse(data []byte) (
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 	req *mesg.MesgPrvtChat, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
 	/* > 设置协议体 */
 	rsp := &mesg.MesgPrvtChatAck{
 		Code:   proto.Uint32(code),
@@ -316,11 +320,12 @@ func (ctx *MsgSvrCntx) private_ack_handler(
 	}
 
 	/* 清理离线消息 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetUid())
-	rds.Send("ZREM", key, head.GetSerial())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
+	field := fmt.Sprintf(comm.UID_MSGID_STR, req.GetOrig(), req.GetSeq())
+	rds.Send("ZREM", key, field)
 
-	key = fmt.Sprintf(comm.CHAT_KEY_ORIG_MESG_DATA, head.GetSerial())
-	rds.Send("DEL", key)
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
+	rds.Send("HDEL", key, req.GetSeq())
 
 	return err
 }
@@ -407,9 +412,13 @@ func (ctx *MsgSvrCntx) private_mesg_storage_proc(
 	}()
 
 	ctm := time.Now().Unix()
-	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
-	pl.Send("ZADD", key, head.GetSerial(), ctm+comm.TIME_WEEK)
 
-	key = fmt.Sprintf(comm.CHAT_KEY_ORIG_MESG_DATA, head.GetSerial())
-	pl.Send("SET", key, raw[comm.MESG_HEAD_SIZE:])
+	/* > 加入接收者离线列表 */
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
+	member := fmt.Sprintf(comm.UID_MSGID_STR, req.GetOrig(), head.GetSerial())
+	pl.Send("ZADD", key, member, ctm)
+
+	/* > 存储发送者离线消息 */
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
+	pl.Send("HSETNX", key, raw[comm.MESG_HEAD_SIZE:])
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -21,25 +22,31 @@ import (
  **返    回:
  **     head: 通用协议头
  **     req: 协议体内容
+ **     code: 错误码
+ **     err: 错误描述
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:29:23 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgRoomChat) {
+	head *comm.MesgHeader, req *mesg.MesgRoomChat, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		ctx.log.Error("Message header of room-chat is invalid!")
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Header is invalid!")
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgRoomChat{}
 
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal room-msg failed! errmsg:%s", err.Error())
-		return nil, nil
+		return nil, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Body is invalid!")
 	}
 
-	return head, req
+	return head, req, 0, nil
 }
 
 /******************************************************************************
@@ -63,6 +70,10 @@ func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_room_chat_ack(head *comm.MesgHeader,
 	req *mesg.MesgRoomChat, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
 	/* > 设置协议体 */
 	rsp := &mesg.MesgRoomChatAck{
 		Code:   proto.Uint32(code),
@@ -190,14 +201,14 @@ func MsgSvrRoomChatHandler(cmd uint32, dest uint32,
 	ctx.log.Debug("Recv room-chat message!")
 
 	/* > 解析ROOM-CHAT协议 */
-	head, req := ctx.room_chat_parse(data)
-	if nil == head || nil == req {
-		ctx.log.Error("Parse room-msg failed!")
+	head, req, code, err := ctx.room_chat_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse room-msg failed! code:%d errmsg:%s", code, err.Error())
 		return -1
 	}
 
 	/* > 进行业务处理 */
-	err := ctx.room_chat_handler(head, req, data)
+	err = ctx.room_chat_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Handle room message failed!")
 		ctx.send_err_room_chat_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())

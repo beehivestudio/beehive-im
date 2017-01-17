@@ -40,4 +40,7 @@ const (
 	ERR_SVR_INVALID_PARAM  = 20007 // Invalid paramter | 非法参数 |
 	ERR_SVR_AUTH_FAIL      = 20008 // Auth failed | 鉴权失败 |
 	ERR_SVR_DATA_COLLISION = 20009 // Data collision | 数据冲突 |
+	ERR_SVR_HEAD_INVALID   = 20010 // Head invalid | 头部不合法 |
+	ERR_SVR_BODY_INVALID   = 20011 // Body invalid| 报体不合法 |
+	ERR_SVR_CHECK_FAIL     = 20012 // Check invalid| 校验失败 |
 )

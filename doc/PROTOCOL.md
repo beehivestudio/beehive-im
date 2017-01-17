@@ -124,13 +124,23 @@
 
 ---
 命令ID: 0x010D<br>
-命令描述: 同步消息(SYNC-MSG)<br>
+命令描述: 同步消息(SYNC)<br>
 协议格式: NONE<br>
+>message mesg_sync<br>
+>{<br>
+>   required uint64 uid = 1;       // M|用户ID|数字|<br>
+>}
 
 ---
 命令ID: 0x010E<br>
-命令描述: 同步消息应答(SYNC-MSG-ACK)<br>
+命令描述: 同步消息应答(SYNC-ACK)<br>
 协议格式: NONE<br>
+>message mesg_sync_ack<br>
+>{<br>
+>   required uint64 uid = 1;        // M|用户ID|数字|<br>
+>   required uint32 code = 2;       // M|错误码|数字|<br>
+>   required string errmsg = 3;     // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x0110<br>

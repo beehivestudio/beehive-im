@@ -11,10 +11,11 @@ const (
 
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//私聊
+	CHAT_KEY_USR_SEND_MESG_HTAB        = "chat:uid:%d:send:mesg:htab"     //| HTAB | 用户发送的私聊消息 | 字段:消息ID 内容:消息内容 |
 	CHAT_KEY_PRIVATE_MESG_TIMEOUT_ZSET = "chat:private:mesg:timeout:zset" //| ZSET | 私聊消息超时管理 | 成员:消息ID 分值:发起时间 |
 	CHAT_KEY_USR_OFFLINE_ZSET          = "chat:uid:%d:offline:zset"       //| ZSET | 用户离线数据队列 | 成员:消息ID 分值:发起时间 |
-	CHAT_KEY_ORIG_MESG_DATA            = "im:orig:mesg:%d:data"           //| STRING | 离线消息内容 |
-	CHAT_KEY_USR_MSGID_INCR            = "chat:uid:%d:msgid:incr"         //| STRING | 私人消息序列递增记录 |
+	UID_MSGID_STR                      = "uid:%d:msgid:%d"
+	CHAT_KEY_USR_MSGID_INCR            = "chat:uid:%d:msgid:incr" //| STRING | 私人消息序列递增记录 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//聊天室
 	CHAT_KEY_RID_ZSET               = "chat:rid:zset"                 //*| ZSET | 聊天室RID集合 | 成员:RID 分值:TTL |

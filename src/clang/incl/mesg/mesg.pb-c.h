@@ -22,6 +22,8 @@ typedef struct _MesgSubAck MesgSubAck;
 typedef struct _MesgUnsubReq MesgUnsubReq;
 typedef struct _MesgUnsubAck MesgUnsubAck;
 typedef struct _MesgUnusualbReq MesgUnusualbReq;
+typedef struct _MesgSync MesgSync;
+typedef struct _MesgSyncAck MesgSyncAck;
 typedef struct _MesgAllocSeq MesgAllocSeq;
 typedef struct _MesgAllocSeqAck MesgAllocSeqAck;
 typedef struct _MesgKickReq MesgKickReq;
@@ -180,6 +182,28 @@ struct  _MesgUnusualbReq
     , 0, NULL }
 
 
+struct  _MesgSync
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+};
+#define MESG_SYNC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_sync__descriptor) \
+    , 0 }
+
+
+struct  _MesgSyncAck
+{
+  ProtobufCMessage base;
+  uint64_t uid;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_SYNC_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_sync_ack__descriptor) \
+    , 0, 0, NULL }
+
+
 struct  _MesgAllocSeq
 {
   ProtobufCMessage base;
@@ -235,13 +259,15 @@ struct  _MesgPrvtChat
 struct  _MesgPrvtChatAck
 {
   ProtobufCMessage base;
-  uint64_t uid;
+  uint64_t orig;
+  uint64_t dest;
+  uint64_t seq;
   uint32_t code;
   char *errmsg;
 };
 #define MESG_PRVT_CHAT_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_prvt_chat_ack__descriptor) \
-    , 0, 0, NULL }
+    , 0, 0, 0, 0, NULL }
 
 
 struct  _MesgGroupCreat
@@ -809,17 +835,15 @@ struct  _MesgRoomChatAck
 struct  _MesgRoomBc
 {
   ProtobufCMessage base;
-  uint64_t uid;
   uint64_t rid;
   uint32_t level;
   uint64_t time;
   uint32_t expire;
-  protobuf_c_boolean has_data;
   ProtobufCBinaryData data;
 };
 #define MESG_ROOM_BC__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_bc__descriptor) \
-    , 0, 0, 0, 0, 0, 0,{0,NULL} }
+    , 0, 0, 0, 0, {0,NULL} }
 
 
 struct  _MesgRoomBcAck
@@ -1033,6 +1057,44 @@ MesgUnusualbReq *
                       const uint8_t       *data);
 void   mesg_unusualb_req__free_unpacked
                      (MesgUnusualbReq *message,
+                      ProtobufCAllocator *allocator);
+/* MesgSync methods */
+void   mesg_sync__init
+                     (MesgSync         *message);
+size_t mesg_sync__get_packed_size
+                     (const MesgSync   *message);
+size_t mesg_sync__pack
+                     (const MesgSync   *message,
+                      uint8_t             *out);
+size_t mesg_sync__pack_to_buffer
+                     (const MesgSync   *message,
+                      ProtobufCBuffer     *buffer);
+MesgSync *
+       mesg_sync__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_sync__free_unpacked
+                     (MesgSync *message,
+                      ProtobufCAllocator *allocator);
+/* MesgSyncAck methods */
+void   mesg_sync_ack__init
+                     (MesgSyncAck         *message);
+size_t mesg_sync_ack__get_packed_size
+                     (const MesgSyncAck   *message);
+size_t mesg_sync_ack__pack
+                     (const MesgSyncAck   *message,
+                      uint8_t             *out);
+size_t mesg_sync_ack__pack_to_buffer
+                     (const MesgSyncAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgSyncAck *
+       mesg_sync_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_sync_ack__free_unpacked
+                     (MesgSyncAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgAllocSeq methods */
 void   mesg_alloc_seq__init
@@ -2235,6 +2297,12 @@ typedef void (*MesgUnsubAck_Closure)
 typedef void (*MesgUnusualbReq_Closure)
                  (const MesgUnusualbReq *message,
                   void *closure_data);
+typedef void (*MesgSync_Closure)
+                 (const MesgSync *message,
+                  void *closure_data);
+typedef void (*MesgSyncAck_Closure)
+                 (const MesgSyncAck *message,
+                  void *closure_data);
 typedef void (*MesgAllocSeq_Closure)
                  (const MesgAllocSeq *message,
                   void *closure_data);
@@ -2434,6 +2502,8 @@ extern const ProtobufCMessageDescriptor mesg_sub_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unsub_req__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unsub_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unusualb_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_sync__descriptor;
+extern const ProtobufCMessageDescriptor mesg_sync_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_alloc_seq__descriptor;
 extern const ProtobufCMessageDescriptor mesg_alloc_seq_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_kick_req__descriptor;

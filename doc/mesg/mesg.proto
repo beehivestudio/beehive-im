@@ -107,13 +107,23 @@ message mesg_unusualb_req
 
 /*
    命令ID: 0x010D
-   命令描述: 同步消息(SYNC-MSG)
+   命令描述: 同步消息(SYNC)
    协议格式: NONE */
+message mesg_sync
+{
+    required uint64 uid = 1;        // M|用户ID|数字|
+}
 
 /*
    命令ID: 0x010E
-   命令描述: 同步消息应答(SYNC-MSG-ACK)
+   命令描述: 同步消息应答(SYNC-ACK)
    协议格式: NONE */
+message mesg_sync_ack
+{
+   required uint64 uid = 1;        // M|用户ID|数字|
+   required uint32 code = 2;       // M|错误码|数字|
+   required string errmsg = 3;     // M|错误描述|字串|
+}
 
 /*
    命令ID: 0x0110
@@ -134,8 +144,8 @@ message mesg_alloc_seq_ack
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 seq = 2;        // M|序列号起始值|数字|
     required uint32 num = 3;        // M|分配序列号个数|数字|
-    required uint32 code = 4;       // M|错误码|数字|<br>
-    required string errmsg = 5;     // M|错误描述|字串|<br>
+    required uint32 code = 4;       // M|错误码|数字|
+    required string errmsg = 5;     // M|错误描述|字串|
 }
 
 /*
@@ -176,9 +186,11 @@ message mesg_prvt_chat
    协议格式: */
 message mesg_prvt_chat_ack
 {
-    required uint64 uid = 1;        // M|用户ID|数字|<br>
-    required uint32 code = 2;       // M|错误码|数字|
-    required string errmsg = 3;     // M|错误描述|字串|
+    required uint64 orig = 1;       // M|发送方UID
+    required uint64 dest = 2;       // M|接收方UID
+    required uint64 seq = 3;        // M|源序列号|数字|
+    required uint32 code = 4;       // M|错误码|数字|
+    required string errmsg = 5;     // M|错误描述|字串|
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -647,8 +659,8 @@ message mesg_room_quit
    协议格式: */
 message mesg_room_quit_ack
 {
-    required uint64 uid = 1;        // M|用户ID|数字|<br>
-    required uint64 rid = 2;        // M|聊天室ID|数字|<br>
+    required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
     required uint32 code = 3;       // M|错误码|数字|
     required string errmsg = 4;     // M|错误描述|数字|
 }

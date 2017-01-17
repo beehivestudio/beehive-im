@@ -65,6 +65,10 @@ func (ctx *MsgSvrCntx) group_msg_parse(data []byte) (
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
 	req *mesg.MesgGroupChat, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
 	/* > 设置协议体 */
 	rsp := &mesg.MesgGroupChatAck{
 		Code:   proto.Uint32(code),
