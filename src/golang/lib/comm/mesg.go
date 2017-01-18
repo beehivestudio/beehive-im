@@ -35,8 +35,8 @@ const (
 	CMD_OFFLINE_NTC    = 0x0152 /* 下线通知 */
 
 	/* 私聊消息 */
-	CMD_PRVT_MSG     = 0x0201 /* 私聊消息 */
-	CMD_PRVT_MSG_ACK = 0x0202 /* 私聊消息应答 */
+	CMD_PRVT_CHAT     = 0x0201 /* 私聊消息 */
+	CMD_PRVT_CHAT_ACK = 0x0202 /* 私聊消息应答 */
 
 	/* 群聊消息 */
 	CMD_GROUP_CREAT        = 0x0301 /* 创建群组 */

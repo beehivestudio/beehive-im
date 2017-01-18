@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -13,7 +14,7 @@ import (
 )
 
 /******************************************************************************
- **函数名称: private_msg_parse
+ **函数名称: private_chat_parse
  **功    能: 解析私聊消息
  **输入参数:
  **     data: 接收的数据
@@ -25,7 +26,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.05 13:23:54 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) private_msg_parse(data []byte) (
+func (ctx *MsgSvrCntx) private_chat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgPrvtChat) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -45,7 +46,7 @@ func (ctx *MsgSvrCntx) private_msg_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_prvt_msg_ack
+ **函数名称: send_err_private_chat_ack
  **功    能: 发送PRVT-MSG应答(异常)
  **输入参数:
  **     head: 协议头
@@ -63,7 +64,7 @@ func (ctx *MsgSvrCntx) private_msg_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
+func (ctx *MsgSvrCntx) send_err_private_chat_ack(head *comm.MesgHeader,
 	req *mesg.MesgPrvtChat, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -82,12 +83,12 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_PRVT_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
- **函数名称: send_prvt_msg_ack
+ **函数名称: send_private_chat_ack
  **功    能: 发送私聊应答
  **输入参数:
  **输出参数: NONE
@@ -101,7 +102,7 @@ func (ctx *MsgSvrCntx) send_err_prvt_msg_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPrvtChat) int {
+func (ctx *MsgSvrCntx) send_private_chat_ack(head *comm.MesgHeader, req *mesg.MesgPrvtChat) int {
 	/* > 设置协议体 */
 	rsp := &mesg.MesgPrvtChatAck{
 		Code:   proto.Uint32(0),
@@ -115,12 +116,12 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_PRVT_MSG_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_PRVT_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
- **函数名称: private_msg_handler
+ **函数名称: private_chat_handler
  **功    能: PRVT-MSG处理
  **输入参数:
  **     head: 协议头
@@ -139,7 +140,7 @@ func (ctx *MsgSvrCntx) send_prvt_msg_ack(head *comm.MesgHeader, req *mesg.MesgPr
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.18 20:33:18 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) private_msg_handler(
+func (ctx *MsgSvrCntx) private_chat_handler(
 	head *comm.MesgHeader, req *mesg.MesgPrvtChat, data []byte) (err error) {
 	var key string
 	var item mesg_private_item
@@ -177,7 +178,7 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(attr.nid),
+		ctx.send_data(comm.CMD_PRVT_CHAT, uint64(sid), uint32(attr.nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -205,7 +206,7 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_MSG, uint64(sid), uint32(attr.nid),
+		ctx.send_data(comm.CMD_PRVT_CHAT, uint64(sid), uint32(attr.nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -213,7 +214,7 @@ func (ctx *MsgSvrCntx) private_msg_handler(
 }
 
 /******************************************************************************
- **函数名称: MsgSvrPrivateMsgHandler
+ **函数名称: MsgSvrPrvtChatHandler
  **功    能: 私聊消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -231,7 +232,7 @@ func (ctx *MsgSvrCntx) private_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.05 13:05:26 #
  ******************************************************************************/
-func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
+func MsgSvrPrvtChatHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -241,21 +242,21 @@ func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
 	ctx.log.Debug("Recv private message!")
 
 	/* > 解析ROOM-MSG协议 */
-	head, req := ctx.private_msg_parse(data)
+	head, req := ctx.private_chat_parse(data)
 	if nil == head || nil == req {
 		ctx.log.Error("Parse private message failed!")
 		return -1
 	}
 
 	/* > 进行业务处理 */
-	err := ctx.private_msg_handler(head, req, data)
+	err := ctx.private_chat_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Parse private message failed!")
-		ctx.send_err_prvt_msg_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		ctx.send_err_private_chat_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return -1
 	}
 
-	ctx.send_prvt_msg_ack(head, req)
+	ctx.send_private_chat_ack(head, req)
 
 	return 0
 }
@@ -264,7 +265,7 @@ func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: private_ack_parse
+ **函数名称: private_chat_ack_parse
  **功    能: 解析私聊应答消息
  **输入参数:
  **     data: 接收的数据
@@ -276,37 +277,42 @@ func MsgSvrPrivateMsgHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.26 20:38:42 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) private_ack_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgPrvtChatAck) {
+func (ctx *MsgSvrCntx) private_chat_ack_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgPrvtChatAck, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		ctx.log.Error("Header of private chat message failed!")
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID,
+			errors.New("Header of private chat message failed!")
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgPrvtChatAck{}
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal prvt-msg failed! errmsg:%s", err.Error())
-		return nil, nil
+		return nil, nil, comm.ERR_SVR_BODY_INVALID,
+			errors.New("Body of private chat message failed!")
 	}
 
-	return head, req
+	return head, req, 0, nil
 }
 
 /******************************************************************************
- **函数名称: private_ack_handler
- **功    能: PRVT-MSG-ACK处理
+ **函数名称: private_chat_ack_handler
+ **功    能: PRVT-CHAT-ACK处理
  **输入参数:
  **     head: 协议头
  **     req: PRVT-MSG-ACK请求
  **     data: 原始数据
  **输出参数: NONE
  **返    回: 错误信息
- **实现描述:
- **     1. 清理离线消息
+ **实现描述: 清理离线消息
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.26 21:01:12 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) private_ack_handler(
+func (ctx *MsgSvrCntx) private_chat_ack_handler(
 	head *comm.MesgHeader, req *mesg.MesgPrvtChatAck, data []byte) (err error) {
 	rds := ctx.redis.Get()
 	defer func() {
@@ -331,7 +337,7 @@ func (ctx *MsgSvrCntx) private_ack_handler(
 }
 
 /******************************************************************************
- **函数名称: MsgSvrPrvtMsgAckHandler
+ **函数名称: MsgSvrPrvtChatAckHandler
  **功    能: 私聊消息应答处理
  **输入参数:
  **     cmd: 消息类型
@@ -345,7 +351,7 @@ func (ctx *MsgSvrCntx) private_ack_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:45:08 #
  ******************************************************************************/
-func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
+func MsgSvrPrvtChatAckHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if false == ok {
@@ -353,14 +359,15 @@ func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
 	}
 
 	/* > 解析PRVT-MSG-ACK协议 */
-	head, req := ctx.private_ack_parse(data)
-	if nil == head || nil == req {
-		ctx.log.Error("Parse private message ack failed!")
+	head, req, code, err := ctx.private_chat_ack_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse private message ack failed! code:%d errmsg:%s",
+			code, err.Error())
 		return -1
 	}
 
 	/* > 进行业务处理 */
-	err := ctx.private_ack_handler(head, req, data)
+	err = ctx.private_chat_ack_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Handle private message ack failed!")
 		return -1
@@ -384,12 +391,12 @@ func MsgSvrPrvtMsgAckHandler(cmd uint32, orig uint32,
  ******************************************************************************/
 func (ctx *MsgSvrCntx) private_mesg_storage_task() {
 	for item := range ctx.private_mesg_chan {
-		ctx.private_mesg_storage_proc(item.head, item.req, item.raw)
+		ctx.private_mesg_store_proc(item.head, item.req, item.raw)
 	}
 }
 
 /******************************************************************************
- **函数名称: private_mesg_storage_proc
+ **函数名称: private_mesg_store_proc
  **功    能: 私聊消息的存储处理
  **输入参数:
  **     head: 消息头
@@ -401,7 +408,7 @@ func (ctx *MsgSvrCntx) private_mesg_storage_task() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) private_mesg_storage_proc(
+func (ctx *MsgSvrCntx) private_mesg_store_proc(
 	head *comm.MesgHeader, req *mesg.MesgPrvtChat, raw []byte) {
 	var key string
 
@@ -420,5 +427,5 @@ func (ctx *MsgSvrCntx) private_mesg_storage_proc(
 
 	/* > 存储发送者离线消息 */
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
-	pl.Send("HSETNX", key, raw[comm.MESG_HEAD_SIZE:])
+	pl.Send("HSETNX", key, raw)
 }

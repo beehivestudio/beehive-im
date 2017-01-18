@@ -221,29 +221,42 @@ func (ctx *MsgSvrCntx) sync_handler(
 		}
 
 		/* > 获取离线消息*/
-		sub_key := fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, uid)
+		mesg_key := fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, uid)
 
-		data, err := redis.String(rds.Do("HGET", sub_key, msgid))
+		data, err := redis.String(rds.Do("HGET", mesg_key, msgid))
 		if nil != err {
 			ctx.log.Error("Get offline message failed! mesg:%s", mesg_list[idx])
-			pl.Send("ZREM", key)
+			pl.Send("ZREM", key, mesg_list[idx])
+			pl.Send("HDEL", mesg_key, msgid)
 			continue
 		}
 
-		/* > 判断消息是否超时 */
-		msg := &mesg.MesgPrvtChat{}
-
-		err = proto.Unmarshal([]byte(data), msg)
-		if nil != err {
-			ctx.log.Error("Unmarshal offline message failed! uid:%d msgid:%d errmsg:%s",
-				uid, msgid, err.Error())
-			pl.Send("ZREM", key)
+		/* > 判断消息合法性 */
+		mesg_head := comm.MesgHeadNtoh([]byte(data))
+		if !comm.MesgHeadIsValid(mesg_head) {
+			ctx.log.Error("Message header is invalid!")
+			pl.Send("ZREM", key, mesg_list[idx])
+			pl.Send("HDEL", mesg_key, msgid)
 			continue
 		}
 
-		/* > 下发离线消息*/
-		ctx.send_data(comm.CMD_PRVT_MSG, head.GetSid(),
-			head.GetNid(), uint64(msgid), []byte(data), uint32(len(data)))
+		switch mesg_head.GetCmd() {
+		case comm.CMD_PRVT_CHAT: // 私聊消息
+			msg := &mesg.MesgPrvtChat{}
+
+			err = proto.Unmarshal([]byte(data[comm.MESG_HEAD_SIZE:]), msg)
+			if nil != err {
+				ctx.log.Error("Unmarshal offline message failed! uid:%d msgid:%d errmsg:%s",
+					uid, msgid, err.Error())
+				pl.Send("ZREM", key, mesg_list[idx])
+				pl.Send("HDEL", mesg_key, msgid)
+				continue
+			}
+
+			/* > 下发离线消息*/
+			ctx.send_data(comm.CMD_PRVT_CHAT, head.GetSid(), head.GetNid(),
+				uint64(msgid), []byte(data[comm.MESG_HEAD_SIZE:]), mesg_head.GetLength())
+		}
 	}
 	return 0, nil
 }
