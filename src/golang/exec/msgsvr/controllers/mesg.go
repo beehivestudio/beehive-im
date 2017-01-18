@@ -329,7 +329,7 @@ func (ctx *MsgSvrCntx) send_err_sync_ack(head *comm.MesgHeader,
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgRoomJoinAck{
+	rsp := &mesg.MesgSyncAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
