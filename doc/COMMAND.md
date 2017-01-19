@@ -65,26 +65,6 @@
 | 13 | 0x030D | 群组踢人 | GROUP-KICK | 暂无 |
 | 14 | 0x030E | 群组踢人应答 | GROUP-KICK-ACK | 暂无 |
 | 15 | 0x0310 | 群组禁言 | GROUP-BAN-ADD | 暂无 |
-
-#群聊消息
----
-| **序号** | **键值** | **命令含义** | **关键字** | **备注** |
-|:------:|:------:|:-------|:---------|:-------|
-| 01 | 0x0301 | 创建群组 | GROUP-CREAT | 暂无 |
-| 02 | 0x0302 | 创建群组应答 | GROUP-CREAT-ACK | 暂无 |
-| 03 | 0x0303 | 遣散群组 | GROUP-DIMISS | 暂无 |
-| 04 | 0x0304 | 遣散群组应答 | GROUP-DIMISS-ACK | 暂无 |
-| 05 | 0x0305 | 申请入群 | GROUP-APPLY | 暂无 |
-| 06 | 0x0306 | 申请入群应答 | GROUP-APPLY-ACK | 暂无 |
-| 07 | 0x0307 | 退群 | GROUP-QUIT | 暂无 |
-| 08 | 0x0308 | 退群应答 | GROUP-QUIT-ACK | 暂无 |
-| 09 | 0x0309 | 邀请入群 | GROUP-INVITE | 暂无 |
-| 10 | 0x030A | 邀请入群应答 | GROUP-INVITE-ACK | 暂无 |
-| 11 | 0x030B | 群聊消息 | GROUP-CHAT | 暂无 |
-| 12 | 0x030C | 群聊消息应答 | GROUP-CHAT-ACK | 暂无 |
-| 13 | 0x030D | 群组踢人 | GROUP-KICK | 暂无 |
-| 14 | 0x030E | 群组踢人应答 | GROUP-KICK-ACK | 暂无 |
-| 15 | 0x0310 | 群组禁言 | GROUP-BAN-ADD | 暂无 |
 | 16 | 0x0311 | 群组禁言应答 | GROUP-BAN-ADD-ACK | 暂无 |
 | 17 | 0x0312 | 解除群组禁言 | GROUP-BAN-DEL | 暂无 |
 | 18 | 0x0313 | 解除群组禁言应答 | GROUP-BAN-DEL-ACK | 暂无 |
