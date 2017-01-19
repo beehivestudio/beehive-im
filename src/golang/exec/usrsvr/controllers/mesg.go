@@ -1395,7 +1395,7 @@ func UsrSvrBlacklistDelHandler(cmd uint32, dest uint32, data []byte, length uint
  **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgBlacklistDel, code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgBanAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !comm.MesgHeadIsValid(head) {
@@ -1429,7 +1429,7 @@ func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
  **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_add_handler(
-	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) (code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgBanAdd) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -1467,13 +1467,13 @@ func (ctx *UsrSvrCntx) ban_add_handler(
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
-	req *mesg.MesgBlacklistDel, code uint32, errmsg string) int {
+	req *mesg.MesgBanAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
 	}
 
 	/* > 设置协议体 */
-	ack := &mesg.MesgBlacklistDelAck{
+	ack := &mesg.MesgBanAddAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -1523,9 +1523,9 @@ func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_ban_add_ack(
-	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) int {
+	head *comm.MesgHeader, req *mesg.MesgBanAdd) int {
 	/* > 设置协议体 */
-	ack := &mesg.MesgBlacklistDelAck{
+	ack := &mesg.MesgBanDelAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -1630,7 +1630,7 @@ func UsrSvrBanAddHandler(cmd uint32, dest uint32, data []byte, length uint32, pa
  **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgBlacklistDel, code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgBanDel, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !comm.MesgHeadIsValid(head) {
@@ -1664,7 +1664,7 @@ func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
  **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_del_handler(
-	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) (code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgBanDel) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -1700,13 +1700,13 @@ func (ctx *UsrSvrCntx) ban_del_handler(
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
-	req *mesg.MesgBlacklistDel, code uint32, errmsg string) int {
+	req *mesg.MesgBanDel, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
 	}
 
 	/* > 设置协议体 */
-	ack := &mesg.MesgBlacklistDelAck{
+	ack := &mesg.MesgBanDelAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -1756,9 +1756,9 @@ func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_ban_del_ack(
-	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) int {
+	head *comm.MesgHeader, req *mesg.MesgBanDel) int {
 	/* > 设置协议体 */
-	ack := &mesg.MesgBlacklistDelAck{
+	ack := &mesg.MesgBanDelAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
