@@ -1920,7 +1920,286 @@ func UsrSvrGroupUsrListHandler(cmd uint32, dest uint32, data []byte, length uint
 
 ////////////////////////////////////////////////////////////////////////////////
 /* 创建聊天室 */
+
+/******************************************************************************
+ **函数名称: room_creat_parse
+ **功    能: 解析ROOM-CREAT请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 22:32:20 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_creat_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgRoomCreat, code uint32, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		errmsg := "Header of room-creat failed!"
+		ctx.log.Error(errmsg)
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
+	}
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgRoomCreat{}
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal room-creat request failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_HEAD_INVALID, err
+	}
+
+	return head, req, 0, nil
+}
+
+/******************************************************************************
+ **函数名称: send_err_room_creat_ack
+ **功    能: 发送ROOM-CREAT应答(异常)
+ **输入参数:
+ **     head: 协议头
+ **     req: ROOM-CREAT请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ **     {
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **         required uint32 code = 3;   // M|错误码|数字|
+ **         required string errmsg = 4; // M|错误描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 22:33:42 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_err_room_creat_ack(
+	head *comm.MesgHeader, req *mesg.MesgRoomCreat, code uint32, err error) int {
+	if nil == head {
+		return -1
+	}
+
+	/* > 设置协议体 */
+	ack := &mesg.MesgRoomCreatAck{
+		Rid:    proto.Uint64(0),
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(err.Error()),
+	}
+
+	if nil != req {
+		ack.Uid = proto.Uint64(req.GetUid())
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_ROOM_CREAT_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_CREAT_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: send_room_creat_ack
+ **功    能: 发送ROOM-CREAT应答
+ **输入参数:
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ **     {
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **         required uint32 code = 3;   // M|错误码|数字|
+ **         required string errmsg = 4; // M|错误描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 22:28:40 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_room_creat_ack(
+	head *comm.MesgHeader, req *mesg.MesgRoomCreat, rid uint64) int {
+	/* > 设置协议体 */
+	ack := &mesg.MesgRoomCreatAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Rid:    proto.Uint64(rid),
+		Code:   proto.Uint32(0),
+		Errmsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_ROOM_CREAT_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_CREAT_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: alloc_rid
+ **功    能: 申请聊天室ID
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **     rid: 聊天室ID
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 22:24:23 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) alloc_rid() (rid uint64, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 申请聊天室ID */
+	rid_str, err := redis.String(rds.Do("INCR", comm.CHAT_KEY_RID_INCR))
+	if nil != err {
+		return 0, err
+	}
+
+	rid_int, _ := strconv.ParseInt(rid_str, 10, 64)
+
+	return uint64(rid_int), nil
+}
+
+/******************************************************************************
+ **函数名称: room_creat_handler
+ **功    能: ROOM-CREAT处理
+ **输入参数:
+ **     head: 协议头
+ **     req: ROOM-CREAT请求
+ **输出参数: NONE
+ **返    回:
+ **     rid: 聊天室ID
+ **     err: 错误描述
+ **实现描述:
+ **注意事项: 已验证了ROOM-CREAT请求的合法性
+ **作    者: # Qifeng.zou # 2017.01.19 22:22:50 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_creat_handler(
+	head *comm.MesgHeader, req *mesg.MesgRoomCreat) (rid uint64, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 分配聊天室ID */
+	rid, err = ctx.alloc_rid()
+	if nil != err {
+		ctx.log.Error("Alloc rid failed! errmsg:%s", err.Error())
+		return 0, err
+	}
+
+	/* > 设置聊天室所有者 */
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_ROLE_TAB, rid)
+
+	ok, err := redis.Int(rds.Do("HSETNX", key, req.GetUid(), chat.ROOM_ROLE_OWNER))
+	if nil != err {
+		ctx.log.Error("Set room owner failed! uid:%d errmsg:%s",
+			req.GetUid(), err.Error())
+		return 0, err
+	} else if 0 == ok {
+		ctx.log.Error("Set room owner failed! errmsg:%s", err.Error())
+		return 0, err
+	}
+
+	/* > 设置聊天室信息 */
+	key = fmt.Sprintf(comm.CHAT_KEY_ROOM_INFO_TAB, rid)
+
+	pl.Send("HMSET", key, "NAME", req.GetName(), "DESC", req.GetDesc())
+
+	return rid, nil
+}
+
+/******************************************************************************
+ **函数名称: UsrSvrRoomCreatHandler
+ **功    能: 创建聊天室
+ **输入参数:
+ **     cmd: 消息类型
+ **     dest: 业务层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **请求协议:
+ **     {
+ **        required uint64 uid = 1;    // M|用户ID|数字|
+ **        required string name = 2;   // M|聊天室名称|字串|
+ **        required string desc = 3;   // M|聊天室描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 22:21:48 #
+ ******************************************************************************/
 func UsrSvrRoomCreatHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*UsrSvrCntx)
+	if false == ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv join request! cmd:0x%04X dest:%d length:%d", cmd, dest, length)
+
+	/* > 解析创建请求 */
+	head, req, code, err := ctx.room_creat_parse(data)
+	if nil == req {
+		ctx.log.Error("Parse room-creat request failed!")
+		ctx.send_err_room_creat_ack(head, req, code, err)
+		return -1
+	}
+
+	/* > 创建聊天室处理 */
+	rid, err := ctx.room_creat_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Room creat handler failed!")
+		ctx.send_err_room_creat_ack(head, req, comm.ERR_SYS_SYSTEM, err)
+		return -1
+	}
+
+	/* > 发送应答 */
+	ctx.send_room_creat_ack(head, req, rid)
+
 	return 0
 }
 

@@ -752,9 +752,8 @@ TODO: 协议头中的to为群ID(GID)
 >message mesg_room_creat<br>
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
->   required uint64 rid = 2;        // M|聊天室ID|数字|<br>
->   required string name = 3;       // M|聊天室名称|字串|<br>
->   required string desc = 4;       // M|聊天室描述|字串|<br>
+>   required string name = 2;       // M|聊天室名称|字串|<br>
+>   required string desc = 3;       // M|聊天室描述|字串|<br>
 >}
 
 ---
