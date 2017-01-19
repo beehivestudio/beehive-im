@@ -288,17 +288,17 @@ func (ctx *MsgSvrCntx) send_err_sync_ack(head *comm.MesgHeader,
 	}
 
 	/* > 设置协议体 */
-	rsp := &mesg.MesgSyncAck{
+	ack := &mesg.MesgSyncAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
 
 	if nil != req {
-		rsp.Uid = proto.Uint64(req.GetUid())
+		ack.Uid = proto.Uint64(req.GetUid())
 	}
 
 	/* 生成PB数据 */
-	body, err := proto.Marshal(rsp)
+	body, err := proto.Marshal(ack)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
@@ -342,14 +342,14 @@ func (ctx *MsgSvrCntx) send_err_sync_ack(head *comm.MesgHeader,
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgSyncAck{
+	ack := &mesg.MesgSyncAck{
 		Uid:    proto.Uint64(req.GetUid()),
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
 
 	/* 生成PB数据 */
-	body, err := proto.Marshal(rsp)
+	body, err := proto.Marshal(ack)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1

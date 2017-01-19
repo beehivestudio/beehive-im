@@ -75,13 +75,13 @@ func (ctx *MsgSvrCntx) send_err_room_chat_ack(head *comm.MesgHeader,
 	}
 
 	/* > 设置协议体 */
-	rsp := &mesg.MesgRoomChatAck{
+	ack := &mesg.MesgRoomChatAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
 
 	/* 生成PB数据 */
-	body, err := proto.Marshal(rsp)
+	body, err := proto.Marshal(ack)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
@@ -110,13 +110,13 @@ func (ctx *MsgSvrCntx) send_err_room_chat_ack(head *comm.MesgHeader,
  ******************************************************************************/
 func (ctx *MsgSvrCntx) send_room_chat_ack(head *comm.MesgHeader, req *mesg.MesgRoomChat) int {
 	/* > 设置协议体 */
-	rsp := &mesg.MesgRoomChatAck{
+	ack := &mesg.MesgRoomChatAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
 
 	/* 生成PB数据 */
-	body, err := proto.Marshal(rsp)
+	body, err := proto.Marshal(ack)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
