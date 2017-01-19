@@ -143,8 +143,8 @@ func (ctx *MsgSvrCntx) Register() {
 	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
 
 	/* > 私聊消息 */
-	ctx.frwder.Register(comm.CMD_PRVT_CHAT, MsgSvrChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_PRVT_CHAT_ACK, MsgSvrChatAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_CHAT, MsgSvrChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_CHAT_ACK, MsgSvrChatAckHandler, ctx)
 
 	/* > 群聊消息 */
 	ctx.frwder.Register(comm.CMD_GROUP_CHAT, MsgSvrGroupChatHandler, ctx)

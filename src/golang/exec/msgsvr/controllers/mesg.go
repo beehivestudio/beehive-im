@@ -241,7 +241,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 		}
 
 		switch mesg_head.GetCmd() {
-		case comm.CMD_PRVT_CHAT: // 私聊消息
+		case comm.CMD_CHAT: // 私聊消息
 			msg := &mesg.MesgChat{}
 
 			err = proto.Unmarshal([]byte(data[comm.MESG_HEAD_SIZE:]), msg)
@@ -254,7 +254,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 			}
 
 			/* > 下发离线消息*/
-			ctx.send_data(comm.CMD_PRVT_CHAT, head.GetSid(), head.GetNid(),
+			ctx.send_data(comm.CMD_CHAT, head.GetSid(), head.GetNid(),
 				uint64(msgid), []byte(data[comm.MESG_HEAD_SIZE:]), mesg_head.GetLength())
 		}
 	}

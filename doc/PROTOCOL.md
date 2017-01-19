@@ -242,7 +242,7 @@
 ---
 命令ID: 0x0207<br>
 命令描述: 加入黑名单(BLACKLIST-ADD)<br>
-协议格式:
+协议格式: <br>
 >message mesg_blacklist_add<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
@@ -252,7 +252,12 @@
 ---
 命令ID: 0x0208<br>
 命令描述: 加入黑名单应答(BLACKLIST-ADD-ACK)<br>
-协议格式: NONE
+协议格式: <br>
+>message mesg_blacklist_add_ack<br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x0209<br>
@@ -267,7 +272,12 @@
 ---
 命令ID: 0x020A<br>
 命令描述: 移除黑名单应答(BLACKLIST-DEL-ACK)<br>
-协议格式: NONE
+协议格式: <br>
+>message mesg_blacklist_del_ack<br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x020B<br>
@@ -282,7 +292,12 @@
 ---
 命令ID: 0x020C<br>
 命令描述: 屏蔽此人应答(BAN-ADD-ACK)<br>
-协议格式: NONE
+协议格式: <br>
+>message mesg_ban_add_ack<br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x020D<br>
@@ -297,7 +312,12 @@
 ---
 命令ID: 0x020E<br>
 命令描述: 取消屏蔽此人应答(BAN-DEL-ACK)<br>
-协议格式: NONE
+协议格式: <br>
+>message mesg_ban_del_ack<br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
 
 ---
 命令ID: 0x0210<br>
@@ -314,6 +334,31 @@
 命令ID: 0x0211<br>
 命令描述: 添加备注此人应答(MARK-ADD-ACK)<br>
 协议格式: NONE
+>message mesg_mark_add_ack<br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
+
+---
+命令ID: 0x0212<br>
+命令描述: 添加备注此人(MARK-DEL)<br>
+协议格式:
+>message mesg_mark_del<br>
+>{<br>
+>   required uint64 orig = 1;       // M|源用户ID|数字|<br>
+>   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
+>}
+
+---
+命令ID: 0x0213<br>
+命令描述: 取消备注此人应答(MARK-DEL-ACK)<br>
+协议格式: NONE
+>message mesg_mark_del_ack<br>
+>{<br>
+>   required uint32 code = 1;       // M|错误码|数字|<br>
+>   required string errmsg = 2;     // M|错误描述|字串|<br>
+>}
 
 ////////////////////////////////////////////////////////////////////////////////
 #群聊消息

@@ -695,90 +695,176 @@ void   mesg_friend_del__free_unpacked
   assert(message->base.descriptor == &mesg_friend_del__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_bl_add__init
-                     (MesgBlAdd         *message)
+void   mesg_blacklist_add__init
+                     (MesgBlacklistAdd         *message)
 {
-  static MesgBlAdd init_value = MESG_BL_ADD__INIT;
+  static MesgBlacklistAdd init_value = MESG_BLACKLIST_ADD__INIT;
   *message = init_value;
 }
-size_t mesg_bl_add__get_packed_size
-                     (const MesgBlAdd *message)
+size_t mesg_blacklist_add__get_packed_size
+                     (const MesgBlacklistAdd *message)
 {
-  assert(message->base.descriptor == &mesg_bl_add__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_bl_add__pack
-                     (const MesgBlAdd *message,
+size_t mesg_blacklist_add__pack
+                     (const MesgBlacklistAdd *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_bl_add__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_bl_add__pack_to_buffer
-                     (const MesgBlAdd *message,
+size_t mesg_blacklist_add__pack_to_buffer
+                     (const MesgBlacklistAdd *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_bl_add__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgBlAdd *
-       mesg_bl_add__unpack
+MesgBlacklistAdd *
+       mesg_blacklist_add__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgBlAdd *)
-     protobuf_c_message_unpack (&mesg_bl_add__descriptor,
+  return (MesgBlacklistAdd *)
+     protobuf_c_message_unpack (&mesg_blacklist_add__descriptor,
                                 allocator, len, data);
 }
-void   mesg_bl_add__free_unpacked
-                     (MesgBlAdd *message,
+void   mesg_blacklist_add__free_unpacked
+                     (MesgBlacklistAdd *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_bl_add__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_bl_del__init
-                     (MesgBlDel         *message)
+void   mesg_blacklist_add_ack__init
+                     (MesgBlacklistAddAck         *message)
 {
-  static MesgBlDel init_value = MESG_BL_DEL__INIT;
+  static MesgBlacklistAddAck init_value = MESG_BLACKLIST_ADD_ACK__INIT;
   *message = init_value;
 }
-size_t mesg_bl_del__get_packed_size
-                     (const MesgBlDel *message)
+size_t mesg_blacklist_add_ack__get_packed_size
+                     (const MesgBlacklistAddAck *message)
 {
-  assert(message->base.descriptor == &mesg_bl_del__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add_ack__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_bl_del__pack
-                     (const MesgBlDel *message,
+size_t mesg_blacklist_add_ack__pack
+                     (const MesgBlacklistAddAck *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_bl_del__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add_ack__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_bl_del__pack_to_buffer
-                     (const MesgBlDel *message,
+size_t mesg_blacklist_add_ack__pack_to_buffer
+                     (const MesgBlacklistAddAck *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_bl_del__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add_ack__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgBlDel *
-       mesg_bl_del__unpack
+MesgBlacklistAddAck *
+       mesg_blacklist_add_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgBlDel *)
-     protobuf_c_message_unpack (&mesg_bl_del__descriptor,
+  return (MesgBlacklistAddAck *)
+     protobuf_c_message_unpack (&mesg_blacklist_add_ack__descriptor,
                                 allocator, len, data);
 }
-void   mesg_bl_del__free_unpacked
-                     (MesgBlDel *message,
+void   mesg_blacklist_add_ack__free_unpacked
+                     (MesgBlacklistAddAck *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_bl_del__descriptor);
+  assert(message->base.descriptor == &mesg_blacklist_add_ack__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   mesg_blacklist_del__init
+                     (MesgBlacklistDel         *message)
+{
+  static MesgBlacklistDel init_value = MESG_BLACKLIST_DEL__INIT;
+  *message = init_value;
+}
+size_t mesg_blacklist_del__get_packed_size
+                     (const MesgBlacklistDel *message)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t mesg_blacklist_del__pack
+                     (const MesgBlacklistDel *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t mesg_blacklist_del__pack_to_buffer
+                     (const MesgBlacklistDel *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+MesgBlacklistDel *
+       mesg_blacklist_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (MesgBlacklistDel *)
+     protobuf_c_message_unpack (&mesg_blacklist_del__descriptor,
+                                allocator, len, data);
+}
+void   mesg_blacklist_del__free_unpacked
+                     (MesgBlacklistDel *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   mesg_blacklist_del_ack__init
+                     (MesgBlacklistDelAck         *message)
+{
+  static MesgBlacklistDelAck init_value = MESG_BLACKLIST_DEL_ACK__INIT;
+  *message = init_value;
+}
+size_t mesg_blacklist_del_ack__get_packed_size
+                     (const MesgBlacklistDelAck *message)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del_ack__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t mesg_blacklist_del_ack__pack
+                     (const MesgBlacklistDelAck *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del_ack__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t mesg_blacklist_del_ack__pack_to_buffer
+                     (const MesgBlacklistDelAck *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del_ack__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+MesgBlacklistDelAck *
+       mesg_blacklist_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (MesgBlacklistDelAck *)
+     protobuf_c_message_unpack (&mesg_blacklist_del_ack__descriptor,
+                                allocator, len, data);
+}
+void   mesg_blacklist_del_ack__free_unpacked
+                     (MesgBlacklistDelAck *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &mesg_blacklist_del_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   mesg_ban_add__init
@@ -824,6 +910,49 @@ void   mesg_ban_add__free_unpacked
   assert(message->base.descriptor == &mesg_ban_add__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   mesg_ban_add_ack__init
+                     (MesgBanAddAck         *message)
+{
+  static MesgBanAddAck init_value = MESG_BAN_ADD_ACK__INIT;
+  *message = init_value;
+}
+size_t mesg_ban_add_ack__get_packed_size
+                     (const MesgBanAddAck *message)
+{
+  assert(message->base.descriptor == &mesg_ban_add_ack__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t mesg_ban_add_ack__pack
+                     (const MesgBanAddAck *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &mesg_ban_add_ack__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t mesg_ban_add_ack__pack_to_buffer
+                     (const MesgBanAddAck *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &mesg_ban_add_ack__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+MesgBanAddAck *
+       mesg_ban_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (MesgBanAddAck *)
+     protobuf_c_message_unpack (&mesg_ban_add_ack__descriptor,
+                                allocator, len, data);
+}
+void   mesg_ban_add_ack__free_unpacked
+                     (MesgBanAddAck *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &mesg_ban_add_ack__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   mesg_ban_del__init
                      (MesgBanDel         *message)
 {
@@ -867,6 +996,49 @@ void   mesg_ban_del__free_unpacked
   assert(message->base.descriptor == &mesg_ban_del__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   mesg_ban_del_ack__init
+                     (MesgBanDelAck         *message)
+{
+  static MesgBanDelAck init_value = MESG_BAN_DEL_ACK__INIT;
+  *message = init_value;
+}
+size_t mesg_ban_del_ack__get_packed_size
+                     (const MesgBanDelAck *message)
+{
+  assert(message->base.descriptor == &mesg_ban_del_ack__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t mesg_ban_del_ack__pack
+                     (const MesgBanDelAck *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &mesg_ban_del_ack__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t mesg_ban_del_ack__pack_to_buffer
+                     (const MesgBanDelAck *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &mesg_ban_del_ack__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+MesgBanDelAck *
+       mesg_ban_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (MesgBanDelAck *)
+     protobuf_c_message_unpack (&mesg_ban_del_ack__descriptor,
+                                allocator, len, data);
+}
+void   mesg_ban_del_ack__free_unpacked
+                     (MesgBanDelAck *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &mesg_ban_del_ack__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   mesg_mark_add__init
                      (MesgMarkAdd         *message)
 {
@@ -908,6 +1080,135 @@ void   mesg_mark_add__free_unpacked
                       ProtobufCAllocator *allocator)
 {
   assert(message->base.descriptor == &mesg_mark_add__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   mesg_mark_add_ack__init
+                     (MesgMarkAddAck         *message)
+{
+  static MesgMarkAddAck init_value = MESG_MARK_ADD_ACK__INIT;
+  *message = init_value;
+}
+size_t mesg_mark_add_ack__get_packed_size
+                     (const MesgMarkAddAck *message)
+{
+  assert(message->base.descriptor == &mesg_mark_add_ack__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t mesg_mark_add_ack__pack
+                     (const MesgMarkAddAck *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &mesg_mark_add_ack__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t mesg_mark_add_ack__pack_to_buffer
+                     (const MesgMarkAddAck *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &mesg_mark_add_ack__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+MesgMarkAddAck *
+       mesg_mark_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (MesgMarkAddAck *)
+     protobuf_c_message_unpack (&mesg_mark_add_ack__descriptor,
+                                allocator, len, data);
+}
+void   mesg_mark_add_ack__free_unpacked
+                     (MesgMarkAddAck *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &mesg_mark_add_ack__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   mesg_mark_del__init
+                     (MesgMarkDel         *message)
+{
+  static MesgMarkDel init_value = MESG_MARK_DEL__INIT;
+  *message = init_value;
+}
+size_t mesg_mark_del__get_packed_size
+                     (const MesgMarkDel *message)
+{
+  assert(message->base.descriptor == &mesg_mark_del__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t mesg_mark_del__pack
+                     (const MesgMarkDel *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &mesg_mark_del__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t mesg_mark_del__pack_to_buffer
+                     (const MesgMarkDel *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &mesg_mark_del__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+MesgMarkDel *
+       mesg_mark_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (MesgMarkDel *)
+     protobuf_c_message_unpack (&mesg_mark_del__descriptor,
+                                allocator, len, data);
+}
+void   mesg_mark_del__free_unpacked
+                     (MesgMarkDel *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &mesg_mark_del__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   mesg_mark_del_ack__init
+                     (MesgMarkDelAck         *message)
+{
+  static MesgMarkDelAck init_value = MESG_MARK_DEL_ACK__INIT;
+  *message = init_value;
+}
+size_t mesg_mark_del_ack__get_packed_size
+                     (const MesgMarkDelAck *message)
+{
+  assert(message->base.descriptor == &mesg_mark_del_ack__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t mesg_mark_del_ack__pack
+                     (const MesgMarkDelAck *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &mesg_mark_del_ack__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t mesg_mark_del_ack__pack_to_buffer
+                     (const MesgMarkDelAck *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &mesg_mark_del_ack__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+MesgMarkDelAck *
+       mesg_mark_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (MesgMarkDelAck *)
+     protobuf_c_message_unpack (&mesg_mark_del_ack__descriptor,
+                                allocator, len, data);
+}
+void   mesg_mark_del_ack__free_unpacked
+                     (MesgMarkDelAck *message,
+                      ProtobufCAllocator *allocator)
+{
+  assert(message->base.descriptor == &mesg_mark_del_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   mesg_group_creat__init
@@ -4424,7 +4725,7 @@ const ProtobufCMessageDescriptor mesg_friend_del__descriptor =
   (ProtobufCMessageInit) mesg_friend_del__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_bl_add__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_blacklist_add__field_descriptors[2] =
 {
   {
     "orig",
@@ -4432,7 +4733,7 @@ static const ProtobufCFieldDescriptor mesg_bl_add__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlAdd, orig),
+    offsetof(MesgBlacklistAdd, orig),
     NULL,
     NULL,
     0,             /* flags */
@@ -4444,38 +4745,89 @@ static const ProtobufCFieldDescriptor mesg_bl_add__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlAdd, dest),
+    offsetof(MesgBlacklistAdd, dest),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_bl_add__field_indices_by_name[] = {
+static const unsigned mesg_blacklist_add__field_indices_by_name[] = {
   1,   /* field[1] = dest */
   0,   /* field[0] = orig */
 };
-static const ProtobufCIntRange mesg_bl_add__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_blacklist_add__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_bl_add__descriptor =
+const ProtobufCMessageDescriptor mesg_blacklist_add__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_bl_add",
-  "MesgBlAdd",
-  "MesgBlAdd",
+  "mesg_blacklist_add",
+  "MesgBlacklistAdd",
+  "MesgBlacklistAdd",
   "",
-  sizeof(MesgBlAdd),
+  sizeof(MesgBlacklistAdd),
   2,
-  mesg_bl_add__field_descriptors,
-  mesg_bl_add__field_indices_by_name,
-  1,  mesg_bl_add__number_ranges,
-  (ProtobufCMessageInit) mesg_bl_add__init,
+  mesg_blacklist_add__field_descriptors,
+  mesg_blacklist_add__field_indices_by_name,
+  1,  mesg_blacklist_add__number_ranges,
+  (ProtobufCMessageInit) mesg_blacklist_add__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_bl_del__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_blacklist_add_ack__field_descriptors[2] =
+{
+  {
+    "code",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgBlacklistAddAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgBlacklistAddAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned mesg_blacklist_add_ack__field_indices_by_name[] = {
+  0,   /* field[0] = code */
+  1,   /* field[1] = errmsg */
+};
+static const ProtobufCIntRange mesg_blacklist_add_ack__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor mesg_blacklist_add_ack__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "mesg_blacklist_add_ack",
+  "MesgBlacklistAddAck",
+  "MesgBlacklistAddAck",
+  "",
+  sizeof(MesgBlacklistAddAck),
+  2,
+  mesg_blacklist_add_ack__field_descriptors,
+  mesg_blacklist_add_ack__field_indices_by_name,
+  1,  mesg_blacklist_add_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_blacklist_add_ack__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor mesg_blacklist_del__field_descriptors[2] =
 {
   {
     "orig",
@@ -4483,7 +4835,7 @@ static const ProtobufCFieldDescriptor mesg_bl_del__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlDel, orig),
+    offsetof(MesgBlacklistDel, orig),
     NULL,
     NULL,
     0,             /* flags */
@@ -4495,35 +4847,86 @@ static const ProtobufCFieldDescriptor mesg_bl_del__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlDel, dest),
+    offsetof(MesgBlacklistDel, dest),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_bl_del__field_indices_by_name[] = {
+static const unsigned mesg_blacklist_del__field_indices_by_name[] = {
   1,   /* field[1] = dest */
   0,   /* field[0] = orig */
 };
-static const ProtobufCIntRange mesg_bl_del__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_blacklist_del__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_bl_del__descriptor =
+const ProtobufCMessageDescriptor mesg_blacklist_del__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_bl_del",
-  "MesgBlDel",
-  "MesgBlDel",
+  "mesg_blacklist_del",
+  "MesgBlacklistDel",
+  "MesgBlacklistDel",
   "",
-  sizeof(MesgBlDel),
+  sizeof(MesgBlacklistDel),
   2,
-  mesg_bl_del__field_descriptors,
-  mesg_bl_del__field_indices_by_name,
-  1,  mesg_bl_del__number_ranges,
-  (ProtobufCMessageInit) mesg_bl_del__init,
+  mesg_blacklist_del__field_descriptors,
+  mesg_blacklist_del__field_indices_by_name,
+  1,  mesg_blacklist_del__number_ranges,
+  (ProtobufCMessageInit) mesg_blacklist_del__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor mesg_blacklist_del_ack__field_descriptors[2] =
+{
+  {
+    "code",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgBlacklistDelAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgBlacklistDelAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned mesg_blacklist_del_ack__field_indices_by_name[] = {
+  0,   /* field[0] = code */
+  1,   /* field[1] = errmsg */
+};
+static const ProtobufCIntRange mesg_blacklist_del_ack__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor mesg_blacklist_del_ack__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "mesg_blacklist_del_ack",
+  "MesgBlacklistDelAck",
+  "MesgBlacklistDelAck",
+  "",
+  sizeof(MesgBlacklistDelAck),
+  2,
+  mesg_blacklist_del_ack__field_descriptors,
+  mesg_blacklist_del_ack__field_indices_by_name,
+  1,  mesg_blacklist_del_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_blacklist_del_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_ban_add__field_descriptors[2] =
@@ -4577,6 +4980,57 @@ const ProtobufCMessageDescriptor mesg_ban_add__descriptor =
   (ProtobufCMessageInit) mesg_ban_add__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+static const ProtobufCFieldDescriptor mesg_ban_add_ack__field_descriptors[2] =
+{
+  {
+    "code",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgBanAddAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgBanAddAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned mesg_ban_add_ack__field_indices_by_name[] = {
+  0,   /* field[0] = code */
+  1,   /* field[1] = errmsg */
+};
+static const ProtobufCIntRange mesg_ban_add_ack__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor mesg_ban_add_ack__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "mesg_ban_add_ack",
+  "MesgBanAddAck",
+  "MesgBanAddAck",
+  "",
+  sizeof(MesgBanAddAck),
+  2,
+  mesg_ban_add_ack__field_descriptors,
+  mesg_ban_add_ack__field_indices_by_name,
+  1,  mesg_ban_add_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_ban_add_ack__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 static const ProtobufCFieldDescriptor mesg_ban_del__field_descriptors[2] =
 {
   {
@@ -4626,6 +5080,57 @@ const ProtobufCMessageDescriptor mesg_ban_del__descriptor =
   mesg_ban_del__field_indices_by_name,
   1,  mesg_ban_del__number_ranges,
   (ProtobufCMessageInit) mesg_ban_del__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor mesg_ban_del_ack__field_descriptors[2] =
+{
+  {
+    "code",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgBanDelAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgBanDelAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned mesg_ban_del_ack__field_indices_by_name[] = {
+  0,   /* field[0] = code */
+  1,   /* field[1] = errmsg */
+};
+static const ProtobufCIntRange mesg_ban_del_ack__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor mesg_ban_del_ack__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "mesg_ban_del_ack",
+  "MesgBanDelAck",
+  "MesgBanDelAck",
+  "",
+  sizeof(MesgBanDelAck),
+  2,
+  mesg_ban_del_ack__field_descriptors,
+  mesg_ban_del_ack__field_indices_by_name,
+  1,  mesg_ban_del_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_ban_del_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_mark_add__field_descriptors[3] =
@@ -4690,6 +5195,159 @@ const ProtobufCMessageDescriptor mesg_mark_add__descriptor =
   mesg_mark_add__field_indices_by_name,
   1,  mesg_mark_add__number_ranges,
   (ProtobufCMessageInit) mesg_mark_add__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor mesg_mark_add_ack__field_descriptors[2] =
+{
+  {
+    "code",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgMarkAddAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgMarkAddAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned mesg_mark_add_ack__field_indices_by_name[] = {
+  0,   /* field[0] = code */
+  1,   /* field[1] = errmsg */
+};
+static const ProtobufCIntRange mesg_mark_add_ack__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor mesg_mark_add_ack__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "mesg_mark_add_ack",
+  "MesgMarkAddAck",
+  "MesgMarkAddAck",
+  "",
+  sizeof(MesgMarkAddAck),
+  2,
+  mesg_mark_add_ack__field_descriptors,
+  mesg_mark_add_ack__field_indices_by_name,
+  1,  mesg_mark_add_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_mark_add_ack__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor mesg_mark_del__field_descriptors[2] =
+{
+  {
+    "orig",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgMarkDel, orig),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "dest",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgMarkDel, dest),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned mesg_mark_del__field_indices_by_name[] = {
+  1,   /* field[1] = dest */
+  0,   /* field[0] = orig */
+};
+static const ProtobufCIntRange mesg_mark_del__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor mesg_mark_del__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "mesg_mark_del",
+  "MesgMarkDel",
+  "MesgMarkDel",
+  "",
+  sizeof(MesgMarkDel),
+  2,
+  mesg_mark_del__field_descriptors,
+  mesg_mark_del__field_indices_by_name,
+  1,  mesg_mark_del__number_ranges,
+  (ProtobufCMessageInit) mesg_mark_del__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+static const ProtobufCFieldDescriptor mesg_mark_del_ack__field_descriptors[2] =
+{
+  {
+    "code",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgMarkDelAck, code),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "errmsg",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgMarkDelAck, errmsg),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned mesg_mark_del_ack__field_indices_by_name[] = {
+  0,   /* field[0] = code */
+  1,   /* field[1] = errmsg */
+};
+static const ProtobufCIntRange mesg_mark_del_ack__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 2 }
+};
+const ProtobufCMessageDescriptor mesg_mark_del_ack__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "mesg_mark_del_ack",
+  "MesgMarkDelAck",
+  "MesgMarkDelAck",
+  "",
+  sizeof(MesgMarkDelAck),
+  2,
+  mesg_mark_del_ack__field_descriptors,
+  mesg_mark_del_ack__field_indices_by_name,
+  1,  mesg_mark_del_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_mark_del_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_group_creat__field_descriptors[2] =

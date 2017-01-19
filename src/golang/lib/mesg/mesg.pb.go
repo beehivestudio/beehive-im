@@ -25,11 +25,18 @@ It has these top-level messages:
 	MesgChatAck
 	MesgFriendAdd
 	MesgFriendDel
-	MesgBlAdd
-	MesgBlDel
+	MesgBlacklistAdd
+	MesgBlacklistAddAck
+	MesgBlacklistDel
+	MesgBlacklistDelAck
 	MesgBanAdd
+	MesgBanAddAck
 	MesgBanDel
+	MesgBanDelAck
 	MesgMarkAdd
+	MesgMarkAddAck
+	MesgMarkDel
+	MesgMarkDelAck
 	MesgGroupCreat
 	MesgGroupCreatAck
 	MesgGroupDismiss
@@ -723,27 +730,27 @@ func (m *MesgFriendDel) GetDest() uint64 {
 
 //
 // 命令ID: 0x0207
-// 命令描述: 加入黑名单(BL-ADD)
+// 命令描述: 加入黑名单(BLACKLIST-ADD)
 // 协议格式:
-type MesgBlAdd struct {
+type MesgBlacklistAdd struct {
 	Orig             *uint64 `protobuf:"varint,1,req,name=orig" json:"orig,omitempty"`
 	Dest             *uint64 `protobuf:"varint,2,req,name=dest" json:"dest,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgBlAdd) Reset()                    { *m = MesgBlAdd{} }
-func (m *MesgBlAdd) String() string            { return proto.CompactTextString(m) }
-func (*MesgBlAdd) ProtoMessage()               {}
-func (*MesgBlAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
+func (m *MesgBlacklistAdd) Reset()                    { *m = MesgBlacklistAdd{} }
+func (m *MesgBlacklistAdd) String() string            { return proto.CompactTextString(m) }
+func (*MesgBlacklistAdd) ProtoMessage()               {}
+func (*MesgBlacklistAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
 
-func (m *MesgBlAdd) GetOrig() uint64 {
+func (m *MesgBlacklistAdd) GetOrig() uint64 {
 	if m != nil && m.Orig != nil {
 		return *m.Orig
 	}
 	return 0
 }
 
-func (m *MesgBlAdd) GetDest() uint64 {
+func (m *MesgBlacklistAdd) GetDest() uint64 {
 	if m != nil && m.Dest != nil {
 		return *m.Dest
 	}
@@ -751,32 +758,90 @@ func (m *MesgBlAdd) GetDest() uint64 {
 }
 
 //
-// 命令ID: 0x0209
-// 命令描述: 移除黑名单(BL-DEL)
+// 命令ID: 0x0208
+// 命令描述: 加入黑名单应答(BLACKLIST-ADD-ACK)
 // 协议格式:
-type MesgBlDel struct {
+type MesgBlacklistAddAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgBlacklistAddAck) Reset()                    { *m = MesgBlacklistAddAck{} }
+func (m *MesgBlacklistAddAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgBlacklistAddAck) ProtoMessage()               {}
+func (*MesgBlacklistAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
+
+func (m *MesgBlacklistAddAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgBlacklistAddAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0209
+// 命令描述: 移除黑名单(BLACKLIST-DEL)
+// 协议格式:
+type MesgBlacklistDel struct {
 	Orig             *uint64 `protobuf:"varint,1,req,name=orig" json:"orig,omitempty"`
 	Dest             *uint64 `protobuf:"varint,2,req,name=dest" json:"dest,omitempty"`
 	XXX_unrecognized []byte  `json:"-"`
 }
 
-func (m *MesgBlDel) Reset()                    { *m = MesgBlDel{} }
-func (m *MesgBlDel) String() string            { return proto.CompactTextString(m) }
-func (*MesgBlDel) ProtoMessage()               {}
-func (*MesgBlDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
+func (m *MesgBlacklistDel) Reset()                    { *m = MesgBlacklistDel{} }
+func (m *MesgBlacklistDel) String() string            { return proto.CompactTextString(m) }
+func (*MesgBlacklistDel) ProtoMessage()               {}
+func (*MesgBlacklistDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
 
-func (m *MesgBlDel) GetOrig() uint64 {
+func (m *MesgBlacklistDel) GetOrig() uint64 {
 	if m != nil && m.Orig != nil {
 		return *m.Orig
 	}
 	return 0
 }
 
-func (m *MesgBlDel) GetDest() uint64 {
+func (m *MesgBlacklistDel) GetDest() uint64 {
 	if m != nil && m.Dest != nil {
 		return *m.Dest
 	}
 	return 0
+}
+
+//
+// 命令ID: 0x020A
+// 命令描述: 移除黑名单应答(BLACKLIST-DEL-ACK)
+// 协议格式:
+type MesgBlacklistDelAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgBlacklistDelAck) Reset()                    { *m = MesgBlacklistDelAck{} }
+func (m *MesgBlacklistDelAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgBlacklistDelAck) ProtoMessage()               {}
+func (*MesgBlacklistDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
+
+func (m *MesgBlacklistDelAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgBlacklistDelAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
 }
 
 //
@@ -792,7 +857,7 @@ type MesgBanAdd struct {
 func (m *MesgBanAdd) Reset()                    { *m = MesgBanAdd{} }
 func (m *MesgBanAdd) String() string            { return proto.CompactTextString(m) }
 func (*MesgBanAdd) ProtoMessage()               {}
-func (*MesgBanAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
+func (*MesgBanAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
 
 func (m *MesgBanAdd) GetOrig() uint64 {
 	if m != nil && m.Orig != nil {
@@ -809,6 +874,35 @@ func (m *MesgBanAdd) GetDest() uint64 {
 }
 
 //
+// 命令ID: 0x020C
+// 命令描述: 屏蔽此人应答(BAN-ADD-ACK)
+// 协议格式:
+type MesgBanAddAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgBanAddAck) Reset()                    { *m = MesgBanAddAck{} }
+func (m *MesgBanAddAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgBanAddAck) ProtoMessage()               {}
+func (*MesgBanAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{21} }
+
+func (m *MesgBanAddAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgBanAddAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
 // 命令ID: 0x020D
 // 命令描述: 取消屏蔽此人(BAN-DEL)
 // 协议格式:
@@ -821,7 +915,7 @@ type MesgBanDel struct {
 func (m *MesgBanDel) Reset()                    { *m = MesgBanDel{} }
 func (m *MesgBanDel) String() string            { return proto.CompactTextString(m) }
 func (*MesgBanDel) ProtoMessage()               {}
-func (*MesgBanDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
+func (*MesgBanDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{22} }
 
 func (m *MesgBanDel) GetOrig() uint64 {
 	if m != nil && m.Orig != nil {
@@ -838,6 +932,35 @@ func (m *MesgBanDel) GetDest() uint64 {
 }
 
 //
+// 命令ID: 0x020E
+// 命令描述: 取消屏蔽此人应答(BAN-DEL-ACK)
+// 协议格式:
+type MesgBanDelAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgBanDelAck) Reset()                    { *m = MesgBanDelAck{} }
+func (m *MesgBanDelAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgBanDelAck) ProtoMessage()               {}
+func (*MesgBanDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{23} }
+
+func (m *MesgBanDelAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgBanDelAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
 // 命令ID: 0x0210
 // 命令描述: 备注此人(MARK-ADD)
 // 协议格式:
@@ -851,7 +974,7 @@ type MesgMarkAdd struct {
 func (m *MesgMarkAdd) Reset()                    { *m = MesgMarkAdd{} }
 func (m *MesgMarkAdd) String() string            { return proto.CompactTextString(m) }
 func (*MesgMarkAdd) ProtoMessage()               {}
-func (*MesgMarkAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
+func (*MesgMarkAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{24} }
 
 func (m *MesgMarkAdd) GetOrig() uint64 {
 	if m != nil && m.Orig != nil {
@@ -875,6 +998,93 @@ func (m *MesgMarkAdd) GetMark() uint64 {
 }
 
 //
+// 命令ID: 0x0211
+// 命令描述: 备注此人应答(MARK-ADD-ACK)
+// 协议格式: NONE
+type MesgMarkAddAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgMarkAddAck) Reset()                    { *m = MesgMarkAddAck{} }
+func (m *MesgMarkAddAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgMarkAddAck) ProtoMessage()               {}
+func (*MesgMarkAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{25} }
+
+func (m *MesgMarkAddAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgMarkAddAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
+// 命令ID: 0x0212
+// 命令描述: 取消备注此人(MARK-DEL)
+// 协议格式:
+type MesgMarkDel struct {
+	Orig             *uint64 `protobuf:"varint,1,req,name=orig" json:"orig,omitempty"`
+	Dest             *uint64 `protobuf:"varint,2,req,name=dest" json:"dest,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgMarkDel) Reset()                    { *m = MesgMarkDel{} }
+func (m *MesgMarkDel) String() string            { return proto.CompactTextString(m) }
+func (*MesgMarkDel) ProtoMessage()               {}
+func (*MesgMarkDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{26} }
+
+func (m *MesgMarkDel) GetOrig() uint64 {
+	if m != nil && m.Orig != nil {
+		return *m.Orig
+	}
+	return 0
+}
+
+func (m *MesgMarkDel) GetDest() uint64 {
+	if m != nil && m.Dest != nil {
+		return *m.Dest
+	}
+	return 0
+}
+
+//
+// 命令ID: 0x0213
+// 命令描述: 取消备注此人应答(MARK-DEL-ACK)
+// 协议格式: NONE
+type MesgMarkDelAck struct {
+	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
+	Errmsg           *string `protobuf:"bytes,2,req,name=errmsg" json:"errmsg,omitempty"`
+	XXX_unrecognized []byte  `json:"-"`
+}
+
+func (m *MesgMarkDelAck) Reset()                    { *m = MesgMarkDelAck{} }
+func (m *MesgMarkDelAck) String() string            { return proto.CompactTextString(m) }
+func (*MesgMarkDelAck) ProtoMessage()               {}
+func (*MesgMarkDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{27} }
+
+func (m *MesgMarkDelAck) GetCode() uint32 {
+	if m != nil && m.Code != nil {
+		return *m.Code
+	}
+	return 0
+}
+
+func (m *MesgMarkDelAck) GetErrmsg() string {
+	if m != nil && m.Errmsg != nil {
+		return *m.Errmsg
+	}
+	return ""
+}
+
+//
 // 命令ID: 0x0301
 // 命令描述: 创建群组(GROUP-CREAT)
 // 协议格式:
@@ -887,7 +1097,7 @@ type MesgGroupCreat struct {
 func (m *MesgGroupCreat) Reset()                    { *m = MesgGroupCreat{} }
 func (m *MesgGroupCreat) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupCreat) ProtoMessage()               {}
-func (*MesgGroupCreat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{21} }
+func (*MesgGroupCreat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{28} }
 
 func (m *MesgGroupCreat) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -916,7 +1126,7 @@ type MesgGroupCreatAck struct {
 func (m *MesgGroupCreatAck) Reset()                    { *m = MesgGroupCreatAck{} }
 func (m *MesgGroupCreatAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupCreatAck) ProtoMessage()               {}
-func (*MesgGroupCreatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{22} }
+func (*MesgGroupCreatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{29} }
 
 func (m *MesgGroupCreatAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -945,7 +1155,7 @@ type MesgGroupDismiss struct {
 func (m *MesgGroupDismiss) Reset()                    { *m = MesgGroupDismiss{} }
 func (m *MesgGroupDismiss) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupDismiss) ProtoMessage()               {}
-func (*MesgGroupDismiss) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{23} }
+func (*MesgGroupDismiss) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{30} }
 
 func (m *MesgGroupDismiss) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -974,7 +1184,7 @@ type MesgGroupDismissAck struct {
 func (m *MesgGroupDismissAck) Reset()                    { *m = MesgGroupDismissAck{} }
 func (m *MesgGroupDismissAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupDismissAck) ProtoMessage()               {}
-func (*MesgGroupDismissAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{24} }
+func (*MesgGroupDismissAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{31} }
 
 func (m *MesgGroupDismissAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1003,7 +1213,7 @@ type MesgGroupApply struct {
 func (m *MesgGroupApply) Reset()                    { *m = MesgGroupApply{} }
 func (m *MesgGroupApply) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupApply) ProtoMessage()               {}
-func (*MesgGroupApply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{25} }
+func (*MesgGroupApply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{32} }
 
 func (m *MesgGroupApply) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1032,7 +1242,7 @@ type MesgGroupApplyAck struct {
 func (m *MesgGroupApplyAck) Reset()                    { *m = MesgGroupApplyAck{} }
 func (m *MesgGroupApplyAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupApplyAck) ProtoMessage()               {}
-func (*MesgGroupApplyAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{26} }
+func (*MesgGroupApplyAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{33} }
 
 func (m *MesgGroupApplyAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1061,7 +1271,7 @@ type MesgGroupQuit struct {
 func (m *MesgGroupQuit) Reset()                    { *m = MesgGroupQuit{} }
 func (m *MesgGroupQuit) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupQuit) ProtoMessage()               {}
-func (*MesgGroupQuit) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{27} }
+func (*MesgGroupQuit) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{34} }
 
 func (m *MesgGroupQuit) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1090,7 +1300,7 @@ type MesgGroupQuitAck struct {
 func (m *MesgGroupQuitAck) Reset()                    { *m = MesgGroupQuitAck{} }
 func (m *MesgGroupQuitAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupQuitAck) ProtoMessage()               {}
-func (*MesgGroupQuitAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{28} }
+func (*MesgGroupQuitAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{35} }
 
 func (m *MesgGroupQuitAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1120,7 +1330,7 @@ type MesgGroupInvite struct {
 func (m *MesgGroupInvite) Reset()                    { *m = MesgGroupInvite{} }
 func (m *MesgGroupInvite) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupInvite) ProtoMessage()               {}
-func (*MesgGroupInvite) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{29} }
+func (*MesgGroupInvite) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{36} }
 
 func (m *MesgGroupInvite) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1156,7 +1366,7 @@ type MesgGroupInviteAck struct {
 func (m *MesgGroupInviteAck) Reset()                    { *m = MesgGroupInviteAck{} }
 func (m *MesgGroupInviteAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupInviteAck) ProtoMessage()               {}
-func (*MesgGroupInviteAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{30} }
+func (*MesgGroupInviteAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{37} }
 
 func (m *MesgGroupInviteAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1189,7 +1399,7 @@ type MesgGroupChat struct {
 func (m *MesgGroupChat) Reset()                    { *m = MesgGroupChat{} }
 func (m *MesgGroupChat) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupChat) ProtoMessage()               {}
-func (*MesgGroupChat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{31} }
+func (*MesgGroupChat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{38} }
 
 func (m *MesgGroupChat) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1246,7 +1456,7 @@ type MesgGroupChatAck struct {
 func (m *MesgGroupChatAck) Reset()                    { *m = MesgGroupChatAck{} }
 func (m *MesgGroupChatAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupChatAck) ProtoMessage()               {}
-func (*MesgGroupChatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{32} }
+func (*MesgGroupChatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{39} }
 
 func (m *MesgGroupChatAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1275,7 +1485,7 @@ type MesgGroupKick struct {
 func (m *MesgGroupKick) Reset()                    { *m = MesgGroupKick{} }
 func (m *MesgGroupKick) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupKick) ProtoMessage()               {}
-func (*MesgGroupKick) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{33} }
+func (*MesgGroupKick) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{40} }
 
 func (m *MesgGroupKick) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1304,7 +1514,7 @@ type MesgGroupKickAck struct {
 func (m *MesgGroupKickAck) Reset()                    { *m = MesgGroupKickAck{} }
 func (m *MesgGroupKickAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupKickAck) ProtoMessage()               {}
-func (*MesgGroupKickAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{34} }
+func (*MesgGroupKickAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{41} }
 
 func (m *MesgGroupKickAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1333,7 +1543,7 @@ type MesgGroupBanAdd struct {
 func (m *MesgGroupBanAdd) Reset()                    { *m = MesgGroupBanAdd{} }
 func (m *MesgGroupBanAdd) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBanAdd) ProtoMessage()               {}
-func (*MesgGroupBanAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{35} }
+func (*MesgGroupBanAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{42} }
 
 func (m *MesgGroupBanAdd) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1362,7 +1572,7 @@ type MesgGroupBanAddAck struct {
 func (m *MesgGroupBanAddAck) Reset()                    { *m = MesgGroupBanAddAck{} }
 func (m *MesgGroupBanAddAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBanAddAck) ProtoMessage()               {}
-func (*MesgGroupBanAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{36} }
+func (*MesgGroupBanAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{43} }
 
 func (m *MesgGroupBanAddAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1391,7 +1601,7 @@ type MesgGroupBanDel struct {
 func (m *MesgGroupBanDel) Reset()                    { *m = MesgGroupBanDel{} }
 func (m *MesgGroupBanDel) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBanDel) ProtoMessage()               {}
-func (*MesgGroupBanDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{37} }
+func (*MesgGroupBanDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{44} }
 
 func (m *MesgGroupBanDel) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1420,7 +1630,7 @@ type MesgGroupBanDelAck struct {
 func (m *MesgGroupBanDelAck) Reset()                    { *m = MesgGroupBanDelAck{} }
 func (m *MesgGroupBanDelAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBanDelAck) ProtoMessage()               {}
-func (*MesgGroupBanDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{38} }
+func (*MesgGroupBanDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{45} }
 
 func (m *MesgGroupBanDelAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1438,7 +1648,7 @@ func (m *MesgGroupBanDelAck) GetErrmsg() string {
 
 //
 // 命令ID: 0x0314
-// 命令描述: 加入群组黑名单(GROUP-BL-ADD)
+// 命令描述: 加入群组黑名单(GROUP-BLACKLIST-ADD)
 // 协议格式:
 type MesgGroupBlAdd struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
@@ -1449,7 +1659,7 @@ type MesgGroupBlAdd struct {
 func (m *MesgGroupBlAdd) Reset()                    { *m = MesgGroupBlAdd{} }
 func (m *MesgGroupBlAdd) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBlAdd) ProtoMessage()               {}
-func (*MesgGroupBlAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{39} }
+func (*MesgGroupBlAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{46} }
 
 func (m *MesgGroupBlAdd) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1467,7 +1677,7 @@ func (m *MesgGroupBlAdd) GetGid() uint64 {
 
 //
 // 命令ID: 0x0315
-// 命令描述: 加入群组黑名单应答(GROUP-BL-ADD-ACK)
+// 命令描述: 加入群组黑名单应答(GROUP-BLACKLIST-ADD-ACK)
 // 协议格式:
 type MesgGroupBlAddAck struct {
 	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
@@ -1478,7 +1688,7 @@ type MesgGroupBlAddAck struct {
 func (m *MesgGroupBlAddAck) Reset()                    { *m = MesgGroupBlAddAck{} }
 func (m *MesgGroupBlAddAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBlAddAck) ProtoMessage()               {}
-func (*MesgGroupBlAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{40} }
+func (*MesgGroupBlAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{47} }
 
 func (m *MesgGroupBlAddAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1496,7 +1706,7 @@ func (m *MesgGroupBlAddAck) GetErrmsg() string {
 
 //
 // 命令ID: 0x0316
-// 命令描述: 移除群组黑名单(GROUP-BL-DEL)
+// 命令描述: 移除群组黑名单(GROUP-BLACKLIST-DEL)
 // 协议格式:
 type MesgGroupBlDel struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
@@ -1507,7 +1717,7 @@ type MesgGroupBlDel struct {
 func (m *MesgGroupBlDel) Reset()                    { *m = MesgGroupBlDel{} }
 func (m *MesgGroupBlDel) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBlDel) ProtoMessage()               {}
-func (*MesgGroupBlDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{41} }
+func (*MesgGroupBlDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{48} }
 
 func (m *MesgGroupBlDel) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1525,7 +1735,7 @@ func (m *MesgGroupBlDel) GetGid() uint64 {
 
 //
 // 命令ID: 0x0317
-// 命令描述: 移除群组黑名单应答(GROUP-BL-DEL-ACK)
+// 命令描述: 移除群组黑名单应答(GROUP-BLACKLIST-DEL-ACK)
 // 协议格式:
 type MesgGroupBlDelAck struct {
 	Code             *uint32 `protobuf:"varint,1,req,name=code" json:"code,omitempty"`
@@ -1536,7 +1746,7 @@ type MesgGroupBlDelAck struct {
 func (m *MesgGroupBlDelAck) Reset()                    { *m = MesgGroupBlDelAck{} }
 func (m *MesgGroupBlDelAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBlDelAck) ProtoMessage()               {}
-func (*MesgGroupBlDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{42} }
+func (*MesgGroupBlDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{49} }
 
 func (m *MesgGroupBlDelAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1565,7 +1775,7 @@ type MesgGroupMgrAdd struct {
 func (m *MesgGroupMgrAdd) Reset()                    { *m = MesgGroupMgrAdd{} }
 func (m *MesgGroupMgrAdd) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupMgrAdd) ProtoMessage()               {}
-func (*MesgGroupMgrAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{43} }
+func (*MesgGroupMgrAdd) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{50} }
 
 func (m *MesgGroupMgrAdd) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1594,7 +1804,7 @@ type MesgGroupMgrAddAck struct {
 func (m *MesgGroupMgrAddAck) Reset()                    { *m = MesgGroupMgrAddAck{} }
 func (m *MesgGroupMgrAddAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupMgrAddAck) ProtoMessage()               {}
-func (*MesgGroupMgrAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{44} }
+func (*MesgGroupMgrAddAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{51} }
 
 func (m *MesgGroupMgrAddAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1623,7 +1833,7 @@ type MesgGroupMgrDel struct {
 func (m *MesgGroupMgrDel) Reset()                    { *m = MesgGroupMgrDel{} }
 func (m *MesgGroupMgrDel) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupMgrDel) ProtoMessage()               {}
-func (*MesgGroupMgrDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{45} }
+func (*MesgGroupMgrDel) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{52} }
 
 func (m *MesgGroupMgrDel) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1652,7 +1862,7 @@ type MesgGroupMgrDelAck struct {
 func (m *MesgGroupMgrDelAck) Reset()                    { *m = MesgGroupMgrDelAck{} }
 func (m *MesgGroupMgrDelAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupMgrDelAck) ProtoMessage()               {}
-func (*MesgGroupMgrDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{46} }
+func (*MesgGroupMgrDelAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{53} }
 
 func (m *MesgGroupMgrDelAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -1681,7 +1891,7 @@ type MesgGroupUsrListReq struct {
 func (m *MesgGroupUsrListReq) Reset()                    { *m = MesgGroupUsrListReq{} }
 func (m *MesgGroupUsrListReq) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupUsrListReq) ProtoMessage()               {}
-func (*MesgGroupUsrListReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{47} }
+func (*MesgGroupUsrListReq) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{54} }
 
 func (m *MesgGroupUsrListReq) GetGid() uint64 {
 	if m != nil && m.Gid != nil {
@@ -1710,7 +1920,7 @@ type MesgGroupUsrListAck struct {
 func (m *MesgGroupUsrListAck) Reset()                    { *m = MesgGroupUsrListAck{} }
 func (m *MesgGroupUsrListAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupUsrListAck) ProtoMessage()               {}
-func (*MesgGroupUsrListAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{48} }
+func (*MesgGroupUsrListAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{55} }
 
 func (m *MesgGroupUsrListAck) GetGid() uint64 {
 	if m != nil && m.Gid != nil {
@@ -1739,7 +1949,7 @@ type MesgGroupJoinNtc struct {
 func (m *MesgGroupJoinNtc) Reset()                    { *m = MesgGroupJoinNtc{} }
 func (m *MesgGroupJoinNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupJoinNtc) ProtoMessage()               {}
-func (*MesgGroupJoinNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{49} }
+func (*MesgGroupJoinNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{56} }
 
 func (m *MesgGroupJoinNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1768,7 +1978,7 @@ type MesgGroupQuitNtc struct {
 func (m *MesgGroupQuitNtc) Reset()                    { *m = MesgGroupQuitNtc{} }
 func (m *MesgGroupQuitNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupQuitNtc) ProtoMessage()               {}
-func (*MesgGroupQuitNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{50} }
+func (*MesgGroupQuitNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{57} }
 
 func (m *MesgGroupQuitNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1797,7 +2007,7 @@ type MesgGroupKickNtc struct {
 func (m *MesgGroupKickNtc) Reset()                    { *m = MesgGroupKickNtc{} }
 func (m *MesgGroupKickNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupKickNtc) ProtoMessage()               {}
-func (*MesgGroupKickNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{51} }
+func (*MesgGroupKickNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{58} }
 
 func (m *MesgGroupKickNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1826,7 +2036,7 @@ type MesgGroupBanAddNtc struct {
 func (m *MesgGroupBanAddNtc) Reset()                    { *m = MesgGroupBanAddNtc{} }
 func (m *MesgGroupBanAddNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBanAddNtc) ProtoMessage()               {}
-func (*MesgGroupBanAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{52} }
+func (*MesgGroupBanAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{59} }
 
 func (m *MesgGroupBanAddNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1855,7 +2065,7 @@ type MesgGroupBanDelNtc struct {
 func (m *MesgGroupBanDelNtc) Reset()                    { *m = MesgGroupBanDelNtc{} }
 func (m *MesgGroupBanDelNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBanDelNtc) ProtoMessage()               {}
-func (*MesgGroupBanDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{53} }
+func (*MesgGroupBanDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{60} }
 
 func (m *MesgGroupBanDelNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1873,7 +2083,7 @@ func (m *MesgGroupBanDelNtc) GetGid() uint64 {
 
 //
 // 命令ID: 0x0355
-// 命令描述: 加入黑名单通知(GROUP-BL-ADD-NTC)
+// 命令描述: 加入黑名单通知(GROUP-BLACKLIST-ADD-NTC)
 // 协议格式:
 type MesgGroupBlAddNtc struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
@@ -1884,7 +2094,7 @@ type MesgGroupBlAddNtc struct {
 func (m *MesgGroupBlAddNtc) Reset()                    { *m = MesgGroupBlAddNtc{} }
 func (m *MesgGroupBlAddNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBlAddNtc) ProtoMessage()               {}
-func (*MesgGroupBlAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{54} }
+func (*MesgGroupBlAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{61} }
 
 func (m *MesgGroupBlAddNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1902,7 +2112,7 @@ func (m *MesgGroupBlAddNtc) GetGid() uint64 {
 
 //
 // 命令ID: 0x0356
-// 命令描述: 移除黑名单通知(GROUP-BL-DEL-NTC)
+// 命令描述: 移除黑名单通知(GROUP-BLACKLIST-DEL-NTC)
 // 协议格式:
 type MesgGroupBlDelNtc struct {
 	Uid              *uint64 `protobuf:"varint,1,req,name=uid" json:"uid,omitempty"`
@@ -1913,7 +2123,7 @@ type MesgGroupBlDelNtc struct {
 func (m *MesgGroupBlDelNtc) Reset()                    { *m = MesgGroupBlDelNtc{} }
 func (m *MesgGroupBlDelNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupBlDelNtc) ProtoMessage()               {}
-func (*MesgGroupBlDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{55} }
+func (*MesgGroupBlDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{62} }
 
 func (m *MesgGroupBlDelNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1942,7 +2152,7 @@ type MesgGroupMgrAddNtc struct {
 func (m *MesgGroupMgrAddNtc) Reset()                    { *m = MesgGroupMgrAddNtc{} }
 func (m *MesgGroupMgrAddNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupMgrAddNtc) ProtoMessage()               {}
-func (*MesgGroupMgrAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{56} }
+func (*MesgGroupMgrAddNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{63} }
 
 func (m *MesgGroupMgrAddNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -1971,7 +2181,7 @@ type MesgGroupMgrDelNtc struct {
 func (m *MesgGroupMgrDelNtc) Reset()                    { *m = MesgGroupMgrDelNtc{} }
 func (m *MesgGroupMgrDelNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgGroupMgrDelNtc) ProtoMessage()               {}
-func (*MesgGroupMgrDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{57} }
+func (*MesgGroupMgrDelNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{64} }
 
 func (m *MesgGroupMgrDelNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2002,7 +2212,7 @@ type MesgRoomCreat struct {
 func (m *MesgRoomCreat) Reset()                    { *m = MesgRoomCreat{} }
 func (m *MesgRoomCreat) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomCreat) ProtoMessage()               {}
-func (*MesgRoomCreat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{58} }
+func (*MesgRoomCreat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{65} }
 
 func (m *MesgRoomCreat) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2047,7 +2257,7 @@ type MesgRoomCreatAck struct {
 func (m *MesgRoomCreatAck) Reset()                    { *m = MesgRoomCreatAck{} }
 func (m *MesgRoomCreatAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomCreatAck) ProtoMessage()               {}
-func (*MesgRoomCreatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{59} }
+func (*MesgRoomCreatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{66} }
 
 func (m *MesgRoomCreatAck) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2090,7 +2300,7 @@ type MesgRoomDismiss struct {
 func (m *MesgRoomDismiss) Reset()                    { *m = MesgRoomDismiss{} }
 func (m *MesgRoomDismiss) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomDismiss) ProtoMessage()               {}
-func (*MesgRoomDismiss) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{60} }
+func (*MesgRoomDismiss) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{67} }
 
 func (m *MesgRoomDismiss) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2119,7 +2329,7 @@ type MesgRoomDismissAck struct {
 func (m *MesgRoomDismissAck) Reset()                    { *m = MesgRoomDismissAck{} }
 func (m *MesgRoomDismissAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomDismissAck) ProtoMessage()               {}
-func (*MesgRoomDismissAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{61} }
+func (*MesgRoomDismissAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{68} }
 
 func (m *MesgRoomDismissAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -2149,7 +2359,7 @@ type MesgRoomJoin struct {
 func (m *MesgRoomJoin) Reset()                    { *m = MesgRoomJoin{} }
 func (m *MesgRoomJoin) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomJoin) ProtoMessage()               {}
-func (*MesgRoomJoin) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{62} }
+func (*MesgRoomJoin) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{69} }
 
 func (m *MesgRoomJoin) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2181,7 +2391,7 @@ type MesgRoomJoinAck struct {
 func (m *MesgRoomJoinAck) Reset()                    { *m = MesgRoomJoinAck{} }
 func (m *MesgRoomJoinAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomJoinAck) ProtoMessage()               {}
-func (*MesgRoomJoinAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{63} }
+func (*MesgRoomJoinAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{70} }
 
 func (m *MesgRoomJoinAck) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2231,7 +2441,7 @@ type MesgRoomQuit struct {
 func (m *MesgRoomQuit) Reset()                    { *m = MesgRoomQuit{} }
 func (m *MesgRoomQuit) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomQuit) ProtoMessage()               {}
-func (*MesgRoomQuit) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{64} }
+func (*MesgRoomQuit) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{71} }
 
 func (m *MesgRoomQuit) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2262,7 +2472,7 @@ type MesgRoomQuitAck struct {
 func (m *MesgRoomQuitAck) Reset()                    { *m = MesgRoomQuitAck{} }
 func (m *MesgRoomQuitAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomQuitAck) ProtoMessage()               {}
-func (*MesgRoomQuitAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{65} }
+func (*MesgRoomQuitAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{72} }
 
 func (m *MesgRoomQuitAck) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2305,7 +2515,7 @@ type MesgRoomKick struct {
 func (m *MesgRoomKick) Reset()                    { *m = MesgRoomKick{} }
 func (m *MesgRoomKick) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomKick) ProtoMessage()               {}
-func (*MesgRoomKick) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{66} }
+func (*MesgRoomKick) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{73} }
 
 func (m *MesgRoomKick) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2336,7 +2546,7 @@ type MesgRoomKickAck struct {
 func (m *MesgRoomKickAck) Reset()                    { *m = MesgRoomKickAck{} }
 func (m *MesgRoomKickAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomKickAck) ProtoMessage()               {}
-func (*MesgRoomKickAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{67} }
+func (*MesgRoomKickAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{74} }
 
 func (m *MesgRoomKickAck) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2384,7 +2594,7 @@ type MesgRoomChat struct {
 func (m *MesgRoomChat) Reset()                    { *m = MesgRoomChat{} }
 func (m *MesgRoomChat) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomChat) ProtoMessage()               {}
-func (*MesgRoomChat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{68} }
+func (*MesgRoomChat) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{75} }
 
 func (m *MesgRoomChat) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2448,7 +2658,7 @@ type MesgRoomChatAck struct {
 func (m *MesgRoomChatAck) Reset()                    { *m = MesgRoomChatAck{} }
 func (m *MesgRoomChatAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomChatAck) ProtoMessage()               {}
-func (*MesgRoomChatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{69} }
+func (*MesgRoomChatAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{76} }
 
 func (m *MesgRoomChatAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -2480,7 +2690,7 @@ type MesgRoomBc struct {
 func (m *MesgRoomBc) Reset()                    { *m = MesgRoomBc{} }
 func (m *MesgRoomBc) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomBc) ProtoMessage()               {}
-func (*MesgRoomBc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{70} }
+func (*MesgRoomBc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{77} }
 
 func (m *MesgRoomBc) GetRid() uint64 {
 	if m != nil && m.Rid != nil {
@@ -2530,7 +2740,7 @@ type MesgRoomBcAck struct {
 func (m *MesgRoomBcAck) Reset()                    { *m = MesgRoomBcAck{} }
 func (m *MesgRoomBcAck) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomBcAck) ProtoMessage()               {}
-func (*MesgRoomBcAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{71} }
+func (*MesgRoomBcAck) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{78} }
 
 func (m *MesgRoomBcAck) GetCode() uint32 {
 	if m != nil && m.Code != nil {
@@ -2559,7 +2769,7 @@ type MesgRoomUsrNum struct {
 func (m *MesgRoomUsrNum) Reset()                    { *m = MesgRoomUsrNum{} }
 func (m *MesgRoomUsrNum) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomUsrNum) ProtoMessage()               {}
-func (*MesgRoomUsrNum) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{72} }
+func (*MesgRoomUsrNum) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{79} }
 
 func (m *MesgRoomUsrNum) GetRid() uint64 {
 	if m != nil && m.Rid != nil {
@@ -2587,7 +2797,7 @@ type MesgRoomJoinNtc struct {
 func (m *MesgRoomJoinNtc) Reset()                    { *m = MesgRoomJoinNtc{} }
 func (m *MesgRoomJoinNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomJoinNtc) ProtoMessage()               {}
-func (*MesgRoomJoinNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{73} }
+func (*MesgRoomJoinNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{80} }
 
 func (m *MesgRoomJoinNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2608,7 +2818,7 @@ type MesgRoomQuitNtc struct {
 func (m *MesgRoomQuitNtc) Reset()                    { *m = MesgRoomQuitNtc{} }
 func (m *MesgRoomQuitNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomQuitNtc) ProtoMessage()               {}
-func (*MesgRoomQuitNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{74} }
+func (*MesgRoomQuitNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{81} }
 
 func (m *MesgRoomQuitNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2629,7 +2839,7 @@ type MesgRoomKickNtc struct {
 func (m *MesgRoomKickNtc) Reset()                    { *m = MesgRoomKickNtc{} }
 func (m *MesgRoomKickNtc) String() string            { return proto.CompactTextString(m) }
 func (*MesgRoomKickNtc) ProtoMessage()               {}
-func (*MesgRoomKickNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{75} }
+func (*MesgRoomKickNtc) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{82} }
 
 func (m *MesgRoomKickNtc) GetUid() uint64 {
 	if m != nil && m.Uid != nil {
@@ -2654,7 +2864,7 @@ type MesgLsnRpt struct {
 func (m *MesgLsnRpt) Reset()                    { *m = MesgLsnRpt{} }
 func (m *MesgLsnRpt) String() string            { return proto.CompactTextString(m) }
 func (*MesgLsnRpt) ProtoMessage()               {}
-func (*MesgLsnRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{76} }
+func (*MesgLsnRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{83} }
 
 func (m *MesgLsnRpt) GetNid() uint32 {
 	if m != nil && m.Nid != nil {
@@ -2706,7 +2916,7 @@ type MesgFrwdRpt struct {
 func (m *MesgFrwdRpt) Reset()                    { *m = MesgFrwdRpt{} }
 func (m *MesgFrwdRpt) String() string            { return proto.CompactTextString(m) }
 func (*MesgFrwdRpt) ProtoMessage()               {}
-func (*MesgFrwdRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{77} }
+func (*MesgFrwdRpt) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{84} }
 
 func (m *MesgFrwdRpt) GetNid() uint32 {
 	if m != nil && m.Nid != nil {
@@ -2753,11 +2963,18 @@ func init() {
 	proto.RegisterType((*MesgChatAck)(nil), "mesg_chat_ack")
 	proto.RegisterType((*MesgFriendAdd)(nil), "mesg_friend_add")
 	proto.RegisterType((*MesgFriendDel)(nil), "mesg_friend_del")
-	proto.RegisterType((*MesgBlAdd)(nil), "mesg_bl_add")
-	proto.RegisterType((*MesgBlDel)(nil), "mesg_bl_del")
+	proto.RegisterType((*MesgBlacklistAdd)(nil), "mesg_blacklist_add")
+	proto.RegisterType((*MesgBlacklistAddAck)(nil), "mesg_blacklist_add_ack")
+	proto.RegisterType((*MesgBlacklistDel)(nil), "mesg_blacklist_del")
+	proto.RegisterType((*MesgBlacklistDelAck)(nil), "mesg_blacklist_del_ack")
 	proto.RegisterType((*MesgBanAdd)(nil), "mesg_ban_add")
+	proto.RegisterType((*MesgBanAddAck)(nil), "mesg_ban_add_ack")
 	proto.RegisterType((*MesgBanDel)(nil), "mesg_ban_del")
+	proto.RegisterType((*MesgBanDelAck)(nil), "mesg_ban_del_ack")
 	proto.RegisterType((*MesgMarkAdd)(nil), "mesg_mark_add")
+	proto.RegisterType((*MesgMarkAddAck)(nil), "mesg_mark_add_ack")
+	proto.RegisterType((*MesgMarkDel)(nil), "mesg_mark_del")
+	proto.RegisterType((*MesgMarkDelAck)(nil), "mesg_mark_del_ack")
 	proto.RegisterType((*MesgGroupCreat)(nil), "mesg_group_creat")
 	proto.RegisterType((*MesgGroupCreatAck)(nil), "mesg_group_creat_ack")
 	proto.RegisterType((*MesgGroupDismiss)(nil), "mesg_group_dismiss")
@@ -2820,66 +3037,68 @@ func init() {
 func init() { proto.RegisterFile("mesg.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 968 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x9c, 0x58, 0xdb, 0x6e, 0xe3, 0x36,
-	0x10, 0x85, 0x65, 0x3b, 0x69, 0x18, 0x3b, 0x49, 0xdd, 0xb4, 0x35, 0x50, 0x14, 0x48, 0xf5, 0x94,
-	0xa6, 0x4d, 0xd2, 0x5c, 0x5a, 0x20, 0xdd, 0x0f, 0x58, 0x2c, 0xb0, 0xfb, 0xba, 0x97, 0x27, 0xad,
-	0x2c, 0x31, 0x5a, 0xc6, 0x12, 0xa5, 0x50, 0x52, 0x2e, 0x7f, 0xbf, 0xe4, 0x68, 0x64, 0x8b, 0x92,
-	0xac, 0x8b, 0xdf, 0x42, 0x73, 0xce, 0x9c, 0x99, 0xe1, 0x70, 0x78, 0x14, 0x42, 0x02, 0x1a, 0x7b,
-	0x17, 0x91, 0x08, 0x93, 0xd0, 0x7c, 0x20, 0x87, 0x6a, 0x65, 0x85, 0xdc, 0x67, 0x9c, 0x5a, 0x82,
-	0x3e, 0xce, 0xf6, 0xc9, 0x30, 0x65, 0xee, 0x7c, 0x70, 0x62, 0x9c, 0x8e, 0xd4, 0x22, 0x96, 0x0b,
-	0x03, 0x16, 0x53, 0x32, 0x4e, 0xc2, 0x25, 0xe5, 0xf3, 0xa1, 0x5c, 0xee, 0xa9, 0x3d, 0x3b, 0x8a,
-	0xe6, 0x23, 0x58, 0x1c, 0x92, 0xdd, 0x27, 0x2a, 0x62, 0x16, 0xf2, 0xf9, 0x18, 0x7e, 0x38, 0x22,
-	0x3f, 0x24, 0x54, 0x04, 0x8c, 0xdb, 0xfe, 0x7c, 0xe7, 0x64, 0x70, 0x3a, 0x35, 0x5f, 0x75, 0x2e,
-	0xdb, 0x59, 0x36, 0x70, 0xa1, 0xf3, 0x61, 0xd9, 0xf9, 0xa8, 0xe2, 0x7c, 0xac, 0x9c, 0xcf, 0x26,
-	0x64, 0xe4, 0x84, 0x2e, 0x95, 0x54, 0x86, 0x5c, 0x1d, 0x90, 0x1d, 0x2a, 0x44, 0x10, 0x7b, 0xf3,
-	0x5d, 0x65, 0x6f, 0xfe, 0x46, 0x26, 0x40, 0x1d, 0xa7, 0x8b, 0x3c, 0x47, 0xf9, 0xa7, 0xe4, 0x55,
-	0x71, 0xdd, 0x15, 0x36, 0x31, 0xa8, 0x6c, 0xd3, 0x28, 0xf8, 0x35, 0x4a, 0x7e, 0x21, 0x30, 0xf3,
-	0x77, 0x72, 0x00, 0xd0, 0x94, 0x57, 0x3c, 0x4b, 0x73, 0xf3, 0x8d, 0xb6, 0xdd, 0xd3, 0xf7, 0x15,
-	0xf9, 0x11, 0xc1, 0x69, 0x9c, 0xda, 0x7e, 0xe6, 0x3e, 0x87, 0x0c, 0x4a, 0x10, 0x03, 0x20, 0x73,
-	0xb2, 0x97, 0x65, 0xf2, 0xca, 0x1d, 0xad, 0xb6, 0xe6, 0xff, 0x64, 0xba, 0xda, 0xa9, 0x56, 0xbe,
-	0x39, 0x90, 0x33, 0xcc, 0xc2, 0xf6, 0xfd, 0xd0, 0xb1, 0xe2, 0x9a, 0x16, 0xe1, 0x69, 0x90, 0x61,
-	0xcd, 0x2f, 0x64, 0xa6, 0xdb, 0xd6, 0x1f, 0x33, 0x7d, 0x5c, 0x1f, 0xb3, 0x02, 0x0f, 0xb5, 0x7a,
-	0x8c, 0x4a, 0x61, 0x40, 0x43, 0x99, 0xe7, 0x98, 0xc2, 0x92, 0x39, 0xcb, 0x0e, 0xb5, 0xf8, 0x8a,
-	0xb5, 0x70, 0xbe, 0xd9, 0x89, 0x32, 0x0d, 0x05, 0xf3, 0xd6, 0xe9, 0xba, 0x34, 0x4e, 0xd6, 0x5d,
-	0xed, 0xd3, 0x27, 0xea, 0xaf, 0x83, 0x48, 0x58, 0x90, 0x05, 0x01, 0xa6, 0x09, 0x7d, 0x49, 0xb0,
-	0xa7, 0x15, 0xd0, 0x4e, 0x6c, 0xe8, 0xe7, 0x89, 0xf9, 0x0e, 0x03, 0x52, 0x0c, 0x90, 0x66, 0x13,
-	0x4b, 0x1e, 0xec, 0xb0, 0x14, 0x2c, 0xf4, 0xb3, 0x6c, 0x94, 0xec, 0x6a, 0xdc, 0x0b, 0x46, 0xb9,
-	0x6b, 0xd9, 0xae, 0xdb, 0xe6, 0x2c, 0xb0, 0xc5, 0x12, 0xcf, 0xe7, 0x5c, 0x07, 0xbb, 0xd4, 0x6f,
-	0x02, 0x9b, 0x7f, 0x92, 0x7d, 0x30, 0x5f, 0xf8, 0x6d, 0x3c, 0x45, 0xd3, 0x36, 0xaf, 0x67, 0x78,
-	0x89, 0x16, 0x36, 0x6f, 0x75, 0x5b, 0xb4, 0x6d, 0xf3, 0x7b, 0x87, 0x45, 0x56, 0xf9, 0xf6, 0xaa,
-	0xcb, 0xc8, 0xfc, 0x9b, 0x1c, 0x01, 0xd4, 0x13, 0x61, 0x1a, 0x59, 0x8e, 0xa0, 0xb2, 0x11, 0xca,
-	0x9d, 0xe8, 0xe5, 0x03, 0xc7, 0xbc, 0x25, 0xc7, 0x65, 0xeb, 0xfc, 0x50, 0x1b, 0xba, 0xec, 0x02,
-	0xfb, 0x3d, 0x43, 0xb9, 0x2c, 0x0e, 0x58, 0x1c, 0x37, 0xb0, 0xfc, 0x47, 0x7e, 0xa9, 0xda, 0x77,
-	0xe0, 0xd1, 0x73, 0x91, 0x93, 0xd1, 0x7f, 0xed, 0x9c, 0x0b, 0x58, 0x77, 0xe0, 0xf8, 0x0b, 0xfb,
-	0x28, 0x43, 0x3d, 0xa6, 0xac, 0xa9, 0x5c, 0x37, 0xe4, 0xa7, 0x92, 0x71, 0x07, 0x86, 0x3b, 0x1c,
-	0x69, 0x19, 0x88, 0xf1, 0x27, 0x96, 0xd0, 0xcd, 0x1c, 0x33, 0x42, 0x8c, 0x24, 0xc4, 0xc3, 0xfc,
-	0x97, 0xfc, 0x5c, 0x81, 0x76, 0x60, 0x74, 0xb5, 0x9c, 0x60, 0x16, 0x6c, 0xe6, 0xdb, 0x7a, 0x12,
-	0xe8, 0xc5, 0x28, 0xce, 0x83, 0xce, 0xe5, 0x56, 0x53, 0xad, 0x73, 0xb9, 0x61, 0x04, 0xf6, 0x6d,
-	0xce, 0xfc, 0x66, 0x76, 0x6d, 0x4e, 0xb4, 0xdf, 0x8a, 0x47, 0xdd, 0xea, 0x3e, 0x3c, 0xd2, 0xbe,
-	0x03, 0xcf, 0xb9, 0xd6, 0x3e, 0x38, 0xbf, 0x36, 0xd3, 0xe8, 0x2d, 0x93, 0x99, 0x6f, 0xc3, 0xd2,
-	0x9c, 0x4c, 0x85, 0xa5, 0x5b, 0x2e, 0x7a, 0xcd, 0x02, 0x4f, 0xf4, 0x3a, 0x1b, 0xb4, 0xdf, 0x8a,
-	0xa7, 0xcf, 0xd9, 0xa0, 0x7d, 0x07, 0x9e, 0x1b, 0xf2, 0x6b, 0x01, 0x97, 0xc6, 0xc2, 0xf2, 0x59,
-	0x9c, 0xe4, 0x92, 0xc8, 0xab, 0x57, 0x0b, 0xb7, 0xf5, 0x20, 0x94, 0x0c, 0x5e, 0x51, 0x9f, 0xa8,
-	0x0d, 0xa4, 0xba, 0xd4, 0xee, 0xc2, 0x43, 0xc8, 0xb8, 0xc5, 0x13, 0xa7, 0x21, 0xa7, 0xcb, 0xea,
-	0xac, 0xea, 0x03, 0x80, 0xdb, 0xd6, 0x0c, 0xb8, 0xae, 0xbd, 0x39, 0x7d, 0x31, 0xaa, 0xd2, 0xcd,
-	0x98, 0xab, 0xba, 0x96, 0xee, 0x09, 0x69, 0x67, 0xb9, 0xae, 0xed, 0xb5, 0xbe, 0x98, 0x76, 0x9e,
-	0xb7, 0x38, 0x01, 0x45, 0x18, 0x06, 0x1b, 0xde, 0x67, 0xb1, 0x1a, 0xce, 0xb2, 0x07, 0xb8, 0x1d,
-	0x50, 0xfc, 0x22, 0xc8, 0xde, 0x7d, 0x07, 0xe5, 0xd3, 0x07, 0x3c, 0xaf, 0xb5, 0xa3, 0x5a, 0xd9,
-	0xa9, 0x39, 0x6b, 0x50, 0x63, 0xf9, 0x04, 0x00, 0x77, 0x9b, 0xde, 0x74, 0x51, 0x99, 0x00, 0x45,
-	0xf3, 0x0e, 0x37, 0x26, 0x97, 0xd5, 0x00, 0x53, 0x5d, 0xdc, 0x40, 0x91, 0xcb, 0xea, 0x95, 0x6d,
-	0x4b, 0x7e, 0x58, 0xe6, 0x2e, 0xb2, 0x5a, 0x0b, 0xa3, 0xf6, 0xd1, 0x5f, 0x87, 0xf1, 0xbe, 0x18,
-	0xc6, 0xea, 0xcd, 0xdf, 0xb6, 0xcc, 0x1a, 0x73, 0xed, 0xfb, 0xb7, 0x81, 0x79, 0xf5, 0xfc, 0x6d,
-	0xcb, 0x1c, 0x15, 0x99, 0x6b, 0x45, 0xc1, 0x86, 0x52, 0xae, 0x14, 0xc2, 0x48, 0x53, 0x08, 0x63,
-	0x4d, 0x21, 0xec, 0x68, 0x0a, 0x61, 0x17, 0x14, 0xc2, 0x75, 0x31, 0xfe, 0x8e, 0x02, 0xe1, 0x23,
-	0xca, 0x64, 0xc0, 0x2c, 0x9c, 0x3c, 0xac, 0x81, 0xae, 0x55, 0x0c, 0x2d, 0x12, 0x10, 0x4b, 0xe0,
-	0xe9, 0x25, 0x62, 0x82, 0xae, 0xe3, 0x84, 0x58, 0x54, 0x9c, 0x13, 0xf3, 0x1f, 0xd4, 0x92, 0xe8,
-	0xb7, 0xc7, 0x93, 0x08, 0x08, 0x35, 0xa6, 0xe5, 0x08, 0xd7, 0xc3, 0xd1, 0xc6, 0xfa, 0x1f, 0x95,
-	0x6e, 0x2d, 0xcf, 0x01, 0xdd, 0xa4, 0x76, 0x22, 0xeb, 0x26, 0xb5, 0x33, 0xd8, 0xfc, 0x84, 0x15,
-	0xf2, 0x63, 0x6e, 0x89, 0x08, 0x4e, 0x91, 0xe3, 0x26, 0x24, 0xc1, 0xed, 0x44, 0xfd, 0xcf, 0xc0,
-	0xc8, 0x0f, 0xa4, 0x30, 0x40, 0xe4, 0x2e, 0x8b, 0xe4, 0x58, 0x13, 0xf8, 0x1f, 0x05, 0xb9, 0x1b,
-	0x85, 0x22, 0x93, 0x77, 0x53, 0xf3, 0x33, 0x7e, 0x75, 0xdc, 0x8b, 0x67, 0xb7, 0xd6, 0x33, 0x62,
-	0x33, 0xcf, 0xc7, 0x64, 0x72, 0x1f, 0x8a, 0x67, 0x5b, 0xb8, 0x16, 0xf8, 0xc8, 0x7a, 0x45, 0xfe,
-	0xba, 0x90, 0xa5, 0x55, 0x9f, 0x64, 0xf0, 0x2b, 0x1c, 0xc5, 0xf7, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0xfd, 0x87, 0xd7, 0xe2, 0x7d, 0x11, 0x00, 0x00,
+	// 996 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x9c, 0x58, 0x59, 0x6f, 0xe3, 0x36,
+	0x10, 0x86, 0x65, 0x3b, 0x69, 0x58, 0x3b, 0x87, 0x9b, 0xb6, 0x06, 0x8a, 0x02, 0xa9, 0x9e, 0x82,
+	0xb4, 0xb9, 0xd3, 0x02, 0x69, 0x7f, 0x40, 0xb1, 0xc0, 0xee, 0xeb, 0x1e, 0x4f, 0x5a, 0x59, 0x62,
+	0xb4, 0x8c, 0x25, 0x4a, 0xa1, 0xa4, 0x1c, 0xff, 0x7e, 0x49, 0x6a, 0x74, 0x50, 0x92, 0x25, 0xca,
+	0x6f, 0xa6, 0x38, 0xdf, 0x7c, 0x73, 0x71, 0x38, 0x34, 0x42, 0x01, 0x8e, 0xbd, 0x8b, 0x88, 0x85,
+	0x49, 0x68, 0x3e, 0xa2, 0x03, 0xb1, 0xb2, 0x42, 0xea, 0x13, 0x8a, 0x2d, 0x86, 0x9f, 0x16, 0x3f,
+	0xa2, 0x71, 0x4a, 0xdc, 0xe5, 0xe8, 0xc4, 0x38, 0x9d, 0x88, 0x45, 0xcc, 0x17, 0x86, 0x5c, 0xcc,
+	0xd1, 0x34, 0x09, 0xd7, 0x98, 0x2e, 0xc7, 0x7c, 0xb9, 0x27, 0xf6, 0xec, 0x28, 0x5a, 0x4e, 0xe4,
+	0xe2, 0x00, 0xed, 0x3e, 0x63, 0x16, 0x93, 0x90, 0x2e, 0xa7, 0xf2, 0xc3, 0x21, 0xfa, 0x21, 0xc1,
+	0x2c, 0x20, 0xd4, 0xf6, 0x97, 0x3b, 0x27, 0xa3, 0xd3, 0xb9, 0xf9, 0xa6, 0x72, 0xd9, 0xce, 0xba,
+	0x83, 0x0b, 0x94, 0x8f, 0xeb, 0xca, 0x27, 0x0d, 0xe5, 0x53, 0xa1, 0x7c, 0x31, 0x43, 0x13, 0x27,
+	0x74, 0x31, 0xa7, 0x32, 0xf8, 0x6a, 0x1f, 0xed, 0x60, 0xc6, 0x82, 0xd8, 0x5b, 0xee, 0x0a, 0x79,
+	0xf3, 0x37, 0x34, 0x93, 0xd4, 0x71, 0xba, 0xca, 0x7d, 0xe4, 0x3f, 0x39, 0xaf, 0xb0, 0xeb, 0xbe,
+	0xb2, 0x09, 0x46, 0x65, 0x9b, 0x46, 0x45, 0xaf, 0x51, 0xd3, 0x2b, 0x0d, 0x33, 0x7f, 0x47, 0xfb,
+	0x12, 0x9a, 0xd2, 0x86, 0x66, 0x2e, 0x6e, 0xfe, 0xa7, 0x6c, 0x0f, 0xd4, 0x7d, 0x8d, 0x8e, 0x00,
+	0x9c, 0xc6, 0xa9, 0xed, 0x67, 0xea, 0x73, 0xc8, 0xa8, 0x06, 0x31, 0x24, 0x64, 0x89, 0xf6, 0x32,
+	0x4f, 0xde, 0xa8, 0xa3, 0xc4, 0xd6, 0xfc, 0x17, 0xcd, 0x8b, 0x9d, 0x66, 0xe4, 0xbb, 0x0d, 0x39,
+	0x03, 0x2f, 0x6c, 0xdf, 0x0f, 0x1d, 0x2b, 0x6e, 0x29, 0x11, 0x9a, 0x06, 0x19, 0xd6, 0xfc, 0x82,
+	0x16, 0xaa, 0x6c, 0x7b, 0x9a, 0xf1, 0x53, 0x99, 0x66, 0x01, 0x1e, 0x2b, 0xf1, 0x98, 0xd4, 0xcc,
+	0x90, 0x05, 0x65, 0x9e, 0x83, 0x0b, 0x6b, 0xe2, 0xac, 0x35, 0x62, 0xf1, 0x15, 0x62, 0xe1, 0x7c,
+	0xb3, 0x13, 0x21, 0x1a, 0x32, 0xe2, 0x95, 0xee, 0xba, 0x38, 0x4e, 0xca, 0xaa, 0xf6, 0xf1, 0x33,
+	0xf6, 0x4b, 0x23, 0x12, 0x12, 0x64, 0x46, 0x48, 0xd1, 0x04, 0xbf, 0x26, 0x50, 0xd3, 0x02, 0x68,
+	0x27, 0xb6, 0xac, 0xe7, 0x99, 0xf9, 0x0e, 0x0c, 0x12, 0x0c, 0xd2, 0xcd, 0x2e, 0x96, 0xdc, 0xd8,
+	0x71, 0xcd, 0x58, 0x59, 0xcf, 0xbc, 0x50, 0xb2, 0xa3, 0xf1, 0xc0, 0x08, 0xa6, 0xae, 0x65, 0xbb,
+	0x6e, 0x9f, 0xb2, 0xc0, 0x66, 0x6b, 0xc8, 0xcf, 0xb9, 0x0a, 0x76, 0xb1, 0xdf, 0x05, 0x36, 0xaf,
+	0x20, 0x45, 0x2b, 0x9f, 0xdb, 0xec, 0x93, 0x38, 0xe9, 0xa3, 0x33, 0xff, 0x41, 0xbf, 0x34, 0x11,
+	0xb9, 0xc7, 0x1d, 0x29, 0x68, 0x32, 0xf5, 0xd9, 0xd6, 0x64, 0xe2, 0x08, 0x0d, 0xa6, 0x33, 0x38,
+	0xc2, 0x2b, 0x9b, 0xf6, 0x7a, 0x73, 0x85, 0x0e, 0xab, 0xb2, 0x03, 0xb5, 0xf7, 0x47, 0xf7, 0xb0,
+	0x2a, 0xab, 0xa1, 0xfd, 0x1e, 0xca, 0x48, 0x64, 0x74, 0x50, 0xe6, 0x27, 0x45, 0x8b, 0xc8, 0xa1,
+	0x1a, 0x6c, 0x7f, 0x56, 0xd9, 0xfa, 0x9c, 0x51, 0xf4, 0xeb, 0x79, 0xf3, 0x17, 0xf8, 0xef, 0xb1,
+	0x30, 0x8d, 0x2c, 0x87, 0x61, 0x7e, 0xfa, 0xea, 0xc7, 0xdf, 0xcb, 0xbb, 0xbc, 0x79, 0x87, 0x8e,
+	0xeb, 0xd2, 0x1a, 0x1c, 0x17, 0x50, 0x57, 0x19, 0xca, 0x25, 0x71, 0x40, 0xe2, 0xb8, 0x83, 0x25,
+	0xaf, 0x2a, 0x45, 0x7e, 0xb0, 0x2f, 0xfc, 0x3a, 0xf2, 0xdf, 0xb4, 0x7d, 0x91, 0xd2, 0x5a, 0xf9,
+	0x38, 0xa8, 0xa0, 0x9e, 0x52, 0xd2, 0x15, 0xae, 0x5b, 0xf4, 0x53, 0x4d, 0x58, 0xab, 0xbe, 0x8e,
+	0x2a, 0x20, 0x42, 0x9f, 0x49, 0x82, 0x37, 0x73, 0x2c, 0x10, 0x32, 0x92, 0x10, 0xea, 0xeb, 0x6f,
+	0xf4, 0x73, 0x03, 0xaa, 0xc1, 0xe8, 0x2a, 0x3e, 0xc9, 0x06, 0xbc, 0x99, 0x6f, 0xeb, 0xf6, 0xab,
+	0x06, 0xa3, 0xda, 0x84, 0xb5, 0xc3, 0x2d, 0xae, 0x12, 0xed, 0x70, 0xcb, 0x7b, 0x67, 0x68, 0x71,
+	0xe6, 0x0d, 0x49, 0xb7, 0x38, 0xf5, 0x9b, 0x52, 0x93, 0x47, 0x9c, 0xe6, 0x21, 0x3c, 0x7a, 0x07,
+	0xfa, 0x5c, 0x29, 0x9f, 0x95, 0xdf, 0xe3, 0x8e, 0x5a, 0x32, 0x99, 0xf8, 0x36, 0x2c, 0xdd, 0xce,
+	0x34, 0x58, 0xf4, 0x7c, 0x51, 0x63, 0x16, 0x78, 0x6c, 0x50, 0x6e, 0x40, 0x7e, 0x2b, 0x9e, 0x21,
+	0xb9, 0x01, 0x79, 0x0d, 0x9e, 0x5b, 0xf4, 0x6b, 0x05, 0x97, 0xc6, 0xcc, 0x92, 0x77, 0x26, 0xcc,
+	0xa1, 0x5e, 0xfb, 0x88, 0x76, 0xd7, 0x0e, 0x82, 0x39, 0xcd, 0xab, 0x0e, 0x85, 0x62, 0x03, 0xa8,
+	0x2e, 0x95, 0xb3, 0xf0, 0x18, 0x12, 0x6a, 0xd1, 0xc4, 0xe9, 0xf0, 0xe9, 0xb2, 0xd9, 0xab, 0x86,
+	0x00, 0xe4, 0x69, 0xeb, 0x06, 0xdc, 0xb4, 0x9e, 0x9c, 0xa1, 0x18, 0x11, 0xe9, 0x6e, 0xcc, 0x75,
+	0x5b, 0x49, 0x0f, 0x84, 0xf4, 0xb3, 0xdc, 0xb4, 0xd6, 0xda, 0x50, 0x4c, 0x3f, 0xcf, 0xff, 0xd0,
+	0x01, 0x59, 0x18, 0x06, 0x1b, 0xee, 0x67, 0x56, 0x34, 0x67, 0x5e, 0x03, 0xd4, 0x0e, 0x30, 0x3c,
+	0xc3, 0xb2, 0xe1, 0xc0, 0x81, 0x99, 0xf5, 0x03, 0xe4, 0xab, 0x54, 0xd4, 0x3a, 0xeb, 0x2b, 0xca,
+	0x3a, 0x46, 0xe0, 0xbc, 0x03, 0x48, 0x75, 0x9b, 0xee, 0x74, 0xd6, 0xe8, 0x00, 0x55, 0x71, 0xad,
+	0x51, 0x6e, 0xbf, 0x84, 0x89, 0x2a, 0xee, 0xa0, 0xc8, 0xdf, 0x32, 0x85, 0x6c, 0x8f, 0x7f, 0x10,
+	0x66, 0x9d, 0xb7, 0x8c, 0x62, 0x46, 0xeb, 0xa5, 0x5f, 0x9a, 0xf1, 0xbe, 0x6a, 0x46, 0x71, 0xe7,
+	0x6f, 0x1b, 0x66, 0x85, 0xb9, 0xf5, 0xfe, 0xdb, 0xc0, 0x5c, 0x5c, 0x7f, 0xdb, 0x32, 0x47, 0x55,
+	0xe6, 0xd6, 0xa1, 0x60, 0x43, 0x28, 0x8b, 0x09, 0x61, 0xa2, 0x4c, 0x08, 0x53, 0x65, 0x42, 0xd8,
+	0x51, 0x26, 0x84, 0x5d, 0x39, 0x21, 0xdc, 0x54, 0xed, 0xd7, 0x1c, 0x10, 0x3e, 0xc2, 0xac, 0x2f,
+	0x31, 0x2b, 0x27, 0x37, 0x6b, 0xa4, 0xce, 0x2a, 0x86, 0x62, 0x89, 0x1c, 0x96, 0xa4, 0xa6, 0xd7,
+	0x88, 0x30, 0x5c, 0xda, 0x29, 0x6d, 0x11, 0x76, 0xce, 0x8a, 0x77, 0x01, 0xe8, 0x1d, 0x70, 0x25,
+	0x4a, 0x84, 0x68, 0xd3, 0xbc, 0x85, 0xab, 0xe6, 0x28, 0x6d, 0xfd, 0x8f, 0x46, 0xb5, 0xd6, 0xfb,
+	0x80, 0x2a, 0xd2, 0xda, 0x91, 0x55, 0x91, 0xd6, 0x1e, 0x6c, 0x7e, 0x82, 0x08, 0xf9, 0x31, 0xb5,
+	0x58, 0x24, 0xb3, 0x48, 0x61, 0x53, 0x3a, 0x41, 0xed, 0x44, 0xfc, 0x51, 0x63, 0xe4, 0x09, 0xa9,
+	0x34, 0x10, 0xbe, 0x4b, 0x22, 0xde, 0xd6, 0x18, 0xfc, 0x8d, 0xc3, 0x77, 0xa3, 0x90, 0x65, 0xe3,
+	0xdd, 0xdc, 0xfc, 0x0c, 0x4f, 0x93, 0x07, 0xf6, 0xe2, 0xb6, 0x6a, 0x06, 0x6c, 0xa6, 0xf9, 0x18,
+	0xcd, 0x1e, 0x42, 0xf6, 0x62, 0x33, 0xd7, 0x92, 0x3a, 0xb2, 0x5a, 0xe1, 0x5f, 0x57, 0x3c, 0xb4,
+	0xe2, 0x1d, 0x2c, 0xbf, 0xca, 0x54, 0x7c, 0x0f, 0x00, 0x00, 0xff, 0xff, 0x57, 0x1c, 0xd1, 0x48,
+	0xf2, 0x12, 0x00, 0x00,
 }

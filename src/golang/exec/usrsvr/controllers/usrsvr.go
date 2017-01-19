@@ -129,6 +129,12 @@ func (ctx *UsrSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_UNSUB_REQ, UsrSvrUnsubReqHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ALLOC_SEQ, UsrSvrAllocSeqHandler, ctx)
 
+	/* > 私聊消息 */
+	ctx.frwder.Register(comm.CMD_BLACKLIST_ADD, UsrSvrBlacklistAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BLACKLIST_DEL, UsrSvrBlacklistDelHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BAN_ADD, UsrSvrBanAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BAN_DEL, UsrSvrBanDelHandler, ctx)
+
 	/* > 群聊消息 */
 	ctx.frwder.Register(comm.CMD_GROUP_CREAT, UsrSvrGroupCreatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_DISMISS, UsrSvrGroupDismissHandler, ctx)

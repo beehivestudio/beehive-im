@@ -83,7 +83,7 @@ func (ctx *MsgSvrCntx) send_err_chat_ack(head *comm.MesgHeader,
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_PRVT_CHAT_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
@@ -116,7 +116,7 @@ func (ctx *MsgSvrCntx) send_chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) 
 		return -1
 	}
 
-	return ctx.send_data(comm.CMD_PRVT_CHAT_ACK, head.GetSid(),
+	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
@@ -178,7 +178,7 @@ func (ctx *MsgSvrCntx) chat_handler(
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_CHAT, uint64(sid), uint32(attr.nid),
+		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -206,7 +206,7 @@ func (ctx *MsgSvrCntx) chat_handler(
 			continue
 		}
 
-		ctx.send_data(comm.CMD_PRVT_CHAT, uint64(sid), uint32(attr.nid),
+		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -431,39 +431,3 @@ func (ctx *MsgSvrCntx) mesg_store_proc(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/******************************************************************************
- **函数名称: friend_add_parse
- **功    能: 解析PRVT-FRIEND-ADD消息
- **输入参数:
- **     data: 接收的数据
- **输出参数: NONE
- **返    回:
- **     head: 通用协议头
- **     req: 协议体内容
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2017.01.19 08:07:28 #
- ******************************************************************************/
-func (ctx *MsgSvrCntx) friend_add_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgFriendAdd, code uint32, err error) {
-	/* > 字节序转换 */
-	head = comm.MesgHeadNtoh(data)
-	if !comm.MesgHeadIsValid(head) {
-		ctx.log.Error("Header of friend-add is invalid!")
-		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Header is invalid!")
-	}
-
-	/* > 解析PB协议 */
-	req = &mesg.MesgFriendAdd{}
-	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
-	if nil != err {
-		ctx.log.Error("Unmarshal friend-add failed! errmsg:%s", err.Error())
-		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Body is invalid!")
-	} else if 0 == req.GetOrig() || 0 == req.GetDest() {
-		ctx.log.Error("Paramter is invalid! orig:%d dest:%d", req.GetOrig(), req.GetDest())
-		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Paramter is invalid!")
-	}
-
-	return head, req, 0, nil
-}

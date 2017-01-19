@@ -46,8 +46,24 @@ typedef enum
     , CMD_OFFLINE_NTC           = 0x0152    /* 下线通知 */
 
     /* 私聊消息 */
-    , CMD_PRVT_CHAT             = 0x0201    /* 私聊消息 */
-    , CMD_PRVT_CHAT_ACK         = 0x0202    /* 私聊消息应答 */
+    , CMD_CHAT                  = 0x0201    /* 私聊消息 */
+    , CMD_CHAT_ACK              = 0x0202    /* 私聊消息应答 */
+    , CMD_FRIEND_ADD            = 0x0203    /* 添加好友 */
+    , CMD_FRIEND_ADD_ACK        = 0x0204    /* 添加好友应答 */
+    , CMD_FRIEND_DEL            = 0x0205    /* 移除好友 */
+    , CMD_FRIEND_DEL_ACK        = 0x0206    /* 移除好友应答 */
+    , CMD_BLACKLIST_ADD         = 0x0207    /* 加入黑名单 */
+    , CMD_BLACKLIST_ADD_ACK     = 0x0208    /* 加入黑名单应答 */
+    , CMD_BLACKLIST_DEL         = 0x0209    /* 移除黑名单 */
+    , CMD_BLACKLIST_DEL_ACK     = 0x020A    /* 移除黑名单应答 */
+    , CMD_BAN_ADD               = 0x020B    /* 设置禁言 */
+    , CMD_BAN_ADD_ACK           = 0x020C    /* 设置禁言应答 */
+    , CMD_BAN_DEL               = 0x020D    /* 移除禁言 */
+    , CMD_BAN_DEL_ACK           = 0x020E    /* 移除禁言应答 */
+    , CMD_MARK_ADD              = 0x0210    /* 设置备注 */
+    , CMD_MARK_ADD_ACK          = 0x0211    /* 设置备注应答 */
+    , CMD_MARK_DEL              = 0x0212    /* 移除备注 */
+    , CMD_MARK_DEL_ACK          = 0x0213    /* 移除备注应答 */
 
     /* 群聊消息 */
     , CMD_GROUP_CREAT           = 0x0301    /* 创建群组 */

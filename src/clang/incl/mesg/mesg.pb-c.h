@@ -31,11 +31,18 @@ typedef struct _MesgChat MesgChat;
 typedef struct _MesgChatAck MesgChatAck;
 typedef struct _MesgFriendAdd MesgFriendAdd;
 typedef struct _MesgFriendDel MesgFriendDel;
-typedef struct _MesgBlAdd MesgBlAdd;
-typedef struct _MesgBlDel MesgBlDel;
+typedef struct _MesgBlacklistAdd MesgBlacklistAdd;
+typedef struct _MesgBlacklistAddAck MesgBlacklistAddAck;
+typedef struct _MesgBlacklistDel MesgBlacklistDel;
+typedef struct _MesgBlacklistDelAck MesgBlacklistDelAck;
 typedef struct _MesgBanAdd MesgBanAdd;
+typedef struct _MesgBanAddAck MesgBanAddAck;
 typedef struct _MesgBanDel MesgBanDel;
+typedef struct _MesgBanDelAck MesgBanDelAck;
 typedef struct _MesgMarkAdd MesgMarkAdd;
+typedef struct _MesgMarkAddAck MesgMarkAddAck;
+typedef struct _MesgMarkDel MesgMarkDel;
+typedef struct _MesgMarkDelAck MesgMarkDelAck;
 typedef struct _MesgGroupCreat MesgGroupCreat;
 typedef struct _MesgGroupCreatAck MesgGroupCreatAck;
 typedef struct _MesgGroupDismiss MesgGroupDismiss;
@@ -299,26 +306,48 @@ struct  _MesgFriendDel
     , 0, 0 }
 
 
-struct  _MesgBlAdd
+struct  _MesgBlacklistAdd
 {
   ProtobufCMessage base;
   uint64_t orig;
   uint64_t dest;
 };
-#define MESG_BL_ADD__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_bl_add__descriptor) \
+#define MESG_BLACKLIST_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_blacklist_add__descriptor) \
     , 0, 0 }
 
 
-struct  _MesgBlDel
+struct  _MesgBlacklistAddAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_BLACKLIST_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_blacklist_add_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgBlacklistDel
 {
   ProtobufCMessage base;
   uint64_t orig;
   uint64_t dest;
 };
-#define MESG_BL_DEL__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_bl_del__descriptor) \
+#define MESG_BLACKLIST_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_blacklist_del__descriptor) \
     , 0, 0 }
+
+
+struct  _MesgBlacklistDelAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_BLACKLIST_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_blacklist_del_ack__descriptor) \
+    , 0, NULL }
 
 
 struct  _MesgBanAdd
@@ -332,6 +361,17 @@ struct  _MesgBanAdd
     , 0, 0 }
 
 
+struct  _MesgBanAddAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_BAN_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_add_ack__descriptor) \
+    , 0, NULL }
+
+
 struct  _MesgBanDel
 {
   ProtobufCMessage base;
@@ -341,6 +381,17 @@ struct  _MesgBanDel
 #define MESG_BAN_DEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_del__descriptor) \
     , 0, 0 }
+
+
+struct  _MesgBanDelAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_BAN_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_del_ack__descriptor) \
+    , 0, NULL }
 
 
 struct  _MesgMarkAdd
@@ -353,6 +404,39 @@ struct  _MesgMarkAdd
 #define MESG_MARK_ADD__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_mark_add__descriptor) \
     , 0, 0, 0 }
+
+
+struct  _MesgMarkAddAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_MARK_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_mark_add_ack__descriptor) \
+    , 0, NULL }
+
+
+struct  _MesgMarkDel
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+};
+#define MESG_MARK_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_mark_del__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgMarkDelAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_MARK_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_mark_del_ack__descriptor) \
+    , 0, NULL }
 
 
 struct  _MesgGroupCreat
@@ -1314,43 +1398,81 @@ MesgFriendDel *
 void   mesg_friend_del__free_unpacked
                      (MesgFriendDel *message,
                       ProtobufCAllocator *allocator);
-/* MesgBlAdd methods */
-void   mesg_bl_add__init
-                     (MesgBlAdd         *message);
-size_t mesg_bl_add__get_packed_size
-                     (const MesgBlAdd   *message);
-size_t mesg_bl_add__pack
-                     (const MesgBlAdd   *message,
+/* MesgBlacklistAdd methods */
+void   mesg_blacklist_add__init
+                     (MesgBlacklistAdd         *message);
+size_t mesg_blacklist_add__get_packed_size
+                     (const MesgBlacklistAdd   *message);
+size_t mesg_blacklist_add__pack
+                     (const MesgBlacklistAdd   *message,
                       uint8_t             *out);
-size_t mesg_bl_add__pack_to_buffer
-                     (const MesgBlAdd   *message,
+size_t mesg_blacklist_add__pack_to_buffer
+                     (const MesgBlacklistAdd   *message,
                       ProtobufCBuffer     *buffer);
-MesgBlAdd *
-       mesg_bl_add__unpack
+MesgBlacklistAdd *
+       mesg_blacklist_add__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_bl_add__free_unpacked
-                     (MesgBlAdd *message,
+void   mesg_blacklist_add__free_unpacked
+                     (MesgBlacklistAdd *message,
                       ProtobufCAllocator *allocator);
-/* MesgBlDel methods */
-void   mesg_bl_del__init
-                     (MesgBlDel         *message);
-size_t mesg_bl_del__get_packed_size
-                     (const MesgBlDel   *message);
-size_t mesg_bl_del__pack
-                     (const MesgBlDel   *message,
+/* MesgBlacklistAddAck methods */
+void   mesg_blacklist_add_ack__init
+                     (MesgBlacklistAddAck         *message);
+size_t mesg_blacklist_add_ack__get_packed_size
+                     (const MesgBlacklistAddAck   *message);
+size_t mesg_blacklist_add_ack__pack
+                     (const MesgBlacklistAddAck   *message,
                       uint8_t             *out);
-size_t mesg_bl_del__pack_to_buffer
-                     (const MesgBlDel   *message,
+size_t mesg_blacklist_add_ack__pack_to_buffer
+                     (const MesgBlacklistAddAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgBlDel *
-       mesg_bl_del__unpack
+MesgBlacklistAddAck *
+       mesg_blacklist_add_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_bl_del__free_unpacked
-                     (MesgBlDel *message,
+void   mesg_blacklist_add_ack__free_unpacked
+                     (MesgBlacklistAddAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgBlacklistDel methods */
+void   mesg_blacklist_del__init
+                     (MesgBlacklistDel         *message);
+size_t mesg_blacklist_del__get_packed_size
+                     (const MesgBlacklistDel   *message);
+size_t mesg_blacklist_del__pack
+                     (const MesgBlacklistDel   *message,
+                      uint8_t             *out);
+size_t mesg_blacklist_del__pack_to_buffer
+                     (const MesgBlacklistDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBlacklistDel *
+       mesg_blacklist_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_blacklist_del__free_unpacked
+                     (MesgBlacklistDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgBlacklistDelAck methods */
+void   mesg_blacklist_del_ack__init
+                     (MesgBlacklistDelAck         *message);
+size_t mesg_blacklist_del_ack__get_packed_size
+                     (const MesgBlacklistDelAck   *message);
+size_t mesg_blacklist_del_ack__pack
+                     (const MesgBlacklistDelAck   *message,
+                      uint8_t             *out);
+size_t mesg_blacklist_del_ack__pack_to_buffer
+                     (const MesgBlacklistDelAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBlacklistDelAck *
+       mesg_blacklist_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_blacklist_del_ack__free_unpacked
+                     (MesgBlacklistDelAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgBanAdd methods */
 void   mesg_ban_add__init
@@ -1371,6 +1493,25 @@ MesgBanAdd *
 void   mesg_ban_add__free_unpacked
                      (MesgBanAdd *message,
                       ProtobufCAllocator *allocator);
+/* MesgBanAddAck methods */
+void   mesg_ban_add_ack__init
+                     (MesgBanAddAck         *message);
+size_t mesg_ban_add_ack__get_packed_size
+                     (const MesgBanAddAck   *message);
+size_t mesg_ban_add_ack__pack
+                     (const MesgBanAddAck   *message,
+                      uint8_t             *out);
+size_t mesg_ban_add_ack__pack_to_buffer
+                     (const MesgBanAddAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBanAddAck *
+       mesg_ban_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_ban_add_ack__free_unpacked
+                     (MesgBanAddAck *message,
+                      ProtobufCAllocator *allocator);
 /* MesgBanDel methods */
 void   mesg_ban_del__init
                      (MesgBanDel         *message);
@@ -1390,6 +1531,25 @@ MesgBanDel *
 void   mesg_ban_del__free_unpacked
                      (MesgBanDel *message,
                       ProtobufCAllocator *allocator);
+/* MesgBanDelAck methods */
+void   mesg_ban_del_ack__init
+                     (MesgBanDelAck         *message);
+size_t mesg_ban_del_ack__get_packed_size
+                     (const MesgBanDelAck   *message);
+size_t mesg_ban_del_ack__pack
+                     (const MesgBanDelAck   *message,
+                      uint8_t             *out);
+size_t mesg_ban_del_ack__pack_to_buffer
+                     (const MesgBanDelAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBanDelAck *
+       mesg_ban_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_ban_del_ack__free_unpacked
+                     (MesgBanDelAck *message,
+                      ProtobufCAllocator *allocator);
 /* MesgMarkAdd methods */
 void   mesg_mark_add__init
                      (MesgMarkAdd         *message);
@@ -1408,6 +1568,63 @@ MesgMarkAdd *
                       const uint8_t       *data);
 void   mesg_mark_add__free_unpacked
                      (MesgMarkAdd *message,
+                      ProtobufCAllocator *allocator);
+/* MesgMarkAddAck methods */
+void   mesg_mark_add_ack__init
+                     (MesgMarkAddAck         *message);
+size_t mesg_mark_add_ack__get_packed_size
+                     (const MesgMarkAddAck   *message);
+size_t mesg_mark_add_ack__pack
+                     (const MesgMarkAddAck   *message,
+                      uint8_t             *out);
+size_t mesg_mark_add_ack__pack_to_buffer
+                     (const MesgMarkAddAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgMarkAddAck *
+       mesg_mark_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_mark_add_ack__free_unpacked
+                     (MesgMarkAddAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgMarkDel methods */
+void   mesg_mark_del__init
+                     (MesgMarkDel         *message);
+size_t mesg_mark_del__get_packed_size
+                     (const MesgMarkDel   *message);
+size_t mesg_mark_del__pack
+                     (const MesgMarkDel   *message,
+                      uint8_t             *out);
+size_t mesg_mark_del__pack_to_buffer
+                     (const MesgMarkDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgMarkDel *
+       mesg_mark_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_mark_del__free_unpacked
+                     (MesgMarkDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgMarkDelAck methods */
+void   mesg_mark_del_ack__init
+                     (MesgMarkDelAck         *message);
+size_t mesg_mark_del_ack__get_packed_size
+                     (const MesgMarkDelAck   *message);
+size_t mesg_mark_del_ack__pack
+                     (const MesgMarkDelAck   *message,
+                      uint8_t             *out);
+size_t mesg_mark_del_ack__pack_to_buffer
+                     (const MesgMarkDelAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgMarkDelAck *
+       mesg_mark_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_mark_del_ack__free_unpacked
+                     (MesgMarkDelAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgGroupCreat methods */
 void   mesg_group_creat__init
@@ -2542,20 +2759,41 @@ typedef void (*MesgFriendAdd_Closure)
 typedef void (*MesgFriendDel_Closure)
                  (const MesgFriendDel *message,
                   void *closure_data);
-typedef void (*MesgBlAdd_Closure)
-                 (const MesgBlAdd *message,
+typedef void (*MesgBlacklistAdd_Closure)
+                 (const MesgBlacklistAdd *message,
                   void *closure_data);
-typedef void (*MesgBlDel_Closure)
-                 (const MesgBlDel *message,
+typedef void (*MesgBlacklistAddAck_Closure)
+                 (const MesgBlacklistAddAck *message,
+                  void *closure_data);
+typedef void (*MesgBlacklistDel_Closure)
+                 (const MesgBlacklistDel *message,
+                  void *closure_data);
+typedef void (*MesgBlacklistDelAck_Closure)
+                 (const MesgBlacklistDelAck *message,
                   void *closure_data);
 typedef void (*MesgBanAdd_Closure)
                  (const MesgBanAdd *message,
                   void *closure_data);
+typedef void (*MesgBanAddAck_Closure)
+                 (const MesgBanAddAck *message,
+                  void *closure_data);
 typedef void (*MesgBanDel_Closure)
                  (const MesgBanDel *message,
                   void *closure_data);
+typedef void (*MesgBanDelAck_Closure)
+                 (const MesgBanDelAck *message,
+                  void *closure_data);
 typedef void (*MesgMarkAdd_Closure)
                  (const MesgMarkAdd *message,
+                  void *closure_data);
+typedef void (*MesgMarkAddAck_Closure)
+                 (const MesgMarkAddAck *message,
+                  void *closure_data);
+typedef void (*MesgMarkDel_Closure)
+                 (const MesgMarkDel *message,
+                  void *closure_data);
+typedef void (*MesgMarkDelAck_Closure)
+                 (const MesgMarkDelAck *message,
                   void *closure_data);
 typedef void (*MesgGroupCreat_Closure)
                  (const MesgGroupCreat *message,
@@ -2750,11 +2988,18 @@ extern const ProtobufCMessageDescriptor mesg_chat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_chat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_friend_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_friend_del__descriptor;
-extern const ProtobufCMessageDescriptor mesg_bl_add__descriptor;
-extern const ProtobufCMessageDescriptor mesg_bl_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_blacklist_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_blacklist_add_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_blacklist_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_blacklist_del_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_ban_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_ban_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_ban_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_ban_del_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_mark_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_mark_add_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_mark_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_mark_del_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_creat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_creat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_dismiss__descriptor;
