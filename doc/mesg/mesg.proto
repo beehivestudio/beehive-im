@@ -168,9 +168,9 @@ message mesg_kick_req
 
 /*
    命令ID: 0x0201
-   命令描述: 私聊消息(PRVT-CHAT)
+   命令描述: 私聊消息(CHAT)
    协议格式: */
-message mesg_prvt_chat
+message mesg_chat
 {
     required uint64 orig = 1;       // M|发送方UID
     required uint64 dest = 2;       // M|接收方UID
@@ -182,15 +182,122 @@ message mesg_prvt_chat
 
 /*
    命令ID: 0x0202
-   命令描述: 私聊消息应答(PRVT-CHAT-ACK)
+   命令描述: 私聊消息应答(CHAT-ACK)
    协议格式: */
-message mesg_prvt_chat_ack
+message mesg_chat_ack
 {
     required uint64 orig = 1;       // M|发送方UID
     required uint64 dest = 2;       // M|接收方UID
     required uint32 code = 3;       // M|错误码|数字|
     required string errmsg = 4;     // M|错误描述|字串|
 }
+
+/*
+   命令ID: 0x0203
+   命令描述: 添加好友(FRIEND-ADD)
+   协议格式: */
+message mesg_friend_add
+{
+   required uint64 orig = 1;       // M|源用户ID|数字|
+   required uint64 dest = 2;       // M|目标用户ID|数字|
+   required string mark = 3;       // M|备注信息|字串|
+}
+
+/*
+   命令ID: 0x0204
+   命令描述: 添加好友应答(FRIEND-ADD-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0205
+   命令描述: 删除好友(FRIEND-DEL)
+   协议格式: */
+message mesg_friend_del
+{
+    required uint64 orig = 1;       // M|源用户ID|数字|
+    required uint64 dest = 2;       // M|目标用户ID|数字|
+}
+
+/*
+   命令ID: 0x0206
+   命令描述: 删除好友应答(FRIEND-DEL-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0207
+   命令描述: 加入黑名单(BL-ADD)
+   协议格式: */
+message mesg_bl_add
+{
+    required uint64 orig = 1;       // M|源用户ID|数字|
+    required uint64 dest = 2;       // M|目标用户ID|数字|
+}
+
+/*
+   命令ID: 0x0208
+   命令描述: 加入黑名单应答(BL-ADD-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0209
+   命令描述: 移除黑名单(BL-DEL)
+   协议格式: */
+message mesg_bl_del
+{
+    required uint64 orig = 1;       // M|源用户ID|数字|
+    required uint64 dest = 2;       // M|目标用户ID|数字|
+}
+
+/*
+   命令ID: 0x020A
+   命令描述: 移除黑名单应答(BL-DEL-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x020B
+   命令描述: 屏蔽此人(BAN-ADD)
+   协议格式: */
+message mesg_ban_add
+{
+    required uint64 orig = 1;       // M|源用户ID|数字|
+    required uint64 dest = 2;       // M|目标用户ID|数字|
+}
+
+/*
+   命令ID: 0x020C
+   命令描述: 屏蔽此人应答(BAN-ADD-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x020D
+   命令描述: 取消屏蔽此人(BAN-DEL)
+   协议格式: */
+message mesg_ban_del
+{
+    required uint64 orig = 1;       // M|源用户ID|数字|
+    required uint64 dest = 2;       // M|目标用户ID|数字|
+}
+
+/*
+   命令ID: 0x020E
+   命令描述: 取消屏蔽此人应答(BAN-DEL-ACK)
+   协议格式: NONE */
+
+/*
+   命令ID: 0x0210
+   命令描述: 备注此人(MARK-ADD)
+   协议格式: */
+message mesg_mark_add
+{
+    required uint64 orig = 1;       // M|源用户ID|数字|
+    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 mark = 3;       // M|备注名|字串|
+}
+
+/*
+   命令ID: 0x0211
+   命令描述: 备注此人应答(MARK-ADD-ACK)
+   协议格式: NONE */
 
 ////////////////////////////////////////////////////////////////////////////////
 //群聊消息

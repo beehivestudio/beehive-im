@@ -27,8 +27,15 @@ typedef struct _MesgSyncAck MesgSyncAck;
 typedef struct _MesgAllocSeq MesgAllocSeq;
 typedef struct _MesgAllocSeqAck MesgAllocSeqAck;
 typedef struct _MesgKickReq MesgKickReq;
-typedef struct _MesgPrvtChat MesgPrvtChat;
-typedef struct _MesgPrvtChatAck MesgPrvtChatAck;
+typedef struct _MesgChat MesgChat;
+typedef struct _MesgChatAck MesgChatAck;
+typedef struct _MesgFriendAdd MesgFriendAdd;
+typedef struct _MesgFriendDel MesgFriendDel;
+typedef struct _MesgBlAdd MesgBlAdd;
+typedef struct _MesgBlDel MesgBlDel;
+typedef struct _MesgBanAdd MesgBanAdd;
+typedef struct _MesgBanDel MesgBanDel;
+typedef struct _MesgMarkAdd MesgMarkAdd;
 typedef struct _MesgGroupCreat MesgGroupCreat;
 typedef struct _MesgGroupCreatAck MesgGroupCreatAck;
 typedef struct _MesgGroupDismiss MesgGroupDismiss;
@@ -240,7 +247,7 @@ struct  _MesgKickReq
     , 0, NULL }
 
 
-struct  _MesgPrvtChat
+struct  _MesgChat
 {
   ProtobufCMessage base;
   uint64_t orig;
@@ -251,12 +258,12 @@ struct  _MesgPrvtChat
   protobuf_c_boolean has_data;
   ProtobufCBinaryData data;
 };
-#define MESG_PRVT_CHAT__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_prvt_chat__descriptor) \
+#define MESG_CHAT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_chat__descriptor) \
     , 0, 0, 0, 0, NULL, 0,{0,NULL} }
 
 
-struct  _MesgPrvtChatAck
+struct  _MesgChatAck
 {
   ProtobufCMessage base;
   uint64_t orig;
@@ -264,9 +271,88 @@ struct  _MesgPrvtChatAck
   uint32_t code;
   char *errmsg;
 };
-#define MESG_PRVT_CHAT_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_prvt_chat_ack__descriptor) \
+#define MESG_CHAT_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_chat_ack__descriptor) \
     , 0, 0, 0, NULL }
+
+
+struct  _MesgFriendAdd
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+  char *mark;
+};
+#define MESG_FRIEND_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_friend_add__descriptor) \
+    , 0, 0, NULL }
+
+
+struct  _MesgFriendDel
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+};
+#define MESG_FRIEND_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_friend_del__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgBlAdd
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+};
+#define MESG_BL_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_bl_add__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgBlDel
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+};
+#define MESG_BL_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_bl_del__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgBanAdd
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+};
+#define MESG_BAN_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_add__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgBanDel
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+};
+#define MESG_BAN_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_del__descriptor) \
+    , 0, 0 }
+
+
+struct  _MesgMarkAdd
+{
+  ProtobufCMessage base;
+  uint64_t orig;
+  uint64_t dest;
+  uint64_t mark;
+};
+#define MESG_MARK_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_mark_add__descriptor) \
+    , 0, 0, 0 }
 
 
 struct  _MesgGroupCreat
@@ -1152,43 +1238,176 @@ MesgKickReq *
 void   mesg_kick_req__free_unpacked
                      (MesgKickReq *message,
                       ProtobufCAllocator *allocator);
-/* MesgPrvtChat methods */
-void   mesg_prvt_chat__init
-                     (MesgPrvtChat         *message);
-size_t mesg_prvt_chat__get_packed_size
-                     (const MesgPrvtChat   *message);
-size_t mesg_prvt_chat__pack
-                     (const MesgPrvtChat   *message,
+/* MesgChat methods */
+void   mesg_chat__init
+                     (MesgChat         *message);
+size_t mesg_chat__get_packed_size
+                     (const MesgChat   *message);
+size_t mesg_chat__pack
+                     (const MesgChat   *message,
                       uint8_t             *out);
-size_t mesg_prvt_chat__pack_to_buffer
-                     (const MesgPrvtChat   *message,
+size_t mesg_chat__pack_to_buffer
+                     (const MesgChat   *message,
                       ProtobufCBuffer     *buffer);
-MesgPrvtChat *
-       mesg_prvt_chat__unpack
+MesgChat *
+       mesg_chat__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_prvt_chat__free_unpacked
-                     (MesgPrvtChat *message,
+void   mesg_chat__free_unpacked
+                     (MesgChat *message,
                       ProtobufCAllocator *allocator);
-/* MesgPrvtChatAck methods */
-void   mesg_prvt_chat_ack__init
-                     (MesgPrvtChatAck         *message);
-size_t mesg_prvt_chat_ack__get_packed_size
-                     (const MesgPrvtChatAck   *message);
-size_t mesg_prvt_chat_ack__pack
-                     (const MesgPrvtChatAck   *message,
+/* MesgChatAck methods */
+void   mesg_chat_ack__init
+                     (MesgChatAck         *message);
+size_t mesg_chat_ack__get_packed_size
+                     (const MesgChatAck   *message);
+size_t mesg_chat_ack__pack
+                     (const MesgChatAck   *message,
                       uint8_t             *out);
-size_t mesg_prvt_chat_ack__pack_to_buffer
-                     (const MesgPrvtChatAck   *message,
+size_t mesg_chat_ack__pack_to_buffer
+                     (const MesgChatAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgPrvtChatAck *
-       mesg_prvt_chat_ack__unpack
+MesgChatAck *
+       mesg_chat_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_prvt_chat_ack__free_unpacked
-                     (MesgPrvtChatAck *message,
+void   mesg_chat_ack__free_unpacked
+                     (MesgChatAck *message,
+                      ProtobufCAllocator *allocator);
+/* MesgFriendAdd methods */
+void   mesg_friend_add__init
+                     (MesgFriendAdd         *message);
+size_t mesg_friend_add__get_packed_size
+                     (const MesgFriendAdd   *message);
+size_t mesg_friend_add__pack
+                     (const MesgFriendAdd   *message,
+                      uint8_t             *out);
+size_t mesg_friend_add__pack_to_buffer
+                     (const MesgFriendAdd   *message,
+                      ProtobufCBuffer     *buffer);
+MesgFriendAdd *
+       mesg_friend_add__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_friend_add__free_unpacked
+                     (MesgFriendAdd *message,
+                      ProtobufCAllocator *allocator);
+/* MesgFriendDel methods */
+void   mesg_friend_del__init
+                     (MesgFriendDel         *message);
+size_t mesg_friend_del__get_packed_size
+                     (const MesgFriendDel   *message);
+size_t mesg_friend_del__pack
+                     (const MesgFriendDel   *message,
+                      uint8_t             *out);
+size_t mesg_friend_del__pack_to_buffer
+                     (const MesgFriendDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgFriendDel *
+       mesg_friend_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_friend_del__free_unpacked
+                     (MesgFriendDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgBlAdd methods */
+void   mesg_bl_add__init
+                     (MesgBlAdd         *message);
+size_t mesg_bl_add__get_packed_size
+                     (const MesgBlAdd   *message);
+size_t mesg_bl_add__pack
+                     (const MesgBlAdd   *message,
+                      uint8_t             *out);
+size_t mesg_bl_add__pack_to_buffer
+                     (const MesgBlAdd   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBlAdd *
+       mesg_bl_add__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_bl_add__free_unpacked
+                     (MesgBlAdd *message,
+                      ProtobufCAllocator *allocator);
+/* MesgBlDel methods */
+void   mesg_bl_del__init
+                     (MesgBlDel         *message);
+size_t mesg_bl_del__get_packed_size
+                     (const MesgBlDel   *message);
+size_t mesg_bl_del__pack
+                     (const MesgBlDel   *message,
+                      uint8_t             *out);
+size_t mesg_bl_del__pack_to_buffer
+                     (const MesgBlDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBlDel *
+       mesg_bl_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_bl_del__free_unpacked
+                     (MesgBlDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgBanAdd methods */
+void   mesg_ban_add__init
+                     (MesgBanAdd         *message);
+size_t mesg_ban_add__get_packed_size
+                     (const MesgBanAdd   *message);
+size_t mesg_ban_add__pack
+                     (const MesgBanAdd   *message,
+                      uint8_t             *out);
+size_t mesg_ban_add__pack_to_buffer
+                     (const MesgBanAdd   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBanAdd *
+       mesg_ban_add__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_ban_add__free_unpacked
+                     (MesgBanAdd *message,
+                      ProtobufCAllocator *allocator);
+/* MesgBanDel methods */
+void   mesg_ban_del__init
+                     (MesgBanDel         *message);
+size_t mesg_ban_del__get_packed_size
+                     (const MesgBanDel   *message);
+size_t mesg_ban_del__pack
+                     (const MesgBanDel   *message,
+                      uint8_t             *out);
+size_t mesg_ban_del__pack_to_buffer
+                     (const MesgBanDel   *message,
+                      ProtobufCBuffer     *buffer);
+MesgBanDel *
+       mesg_ban_del__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_ban_del__free_unpacked
+                     (MesgBanDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgMarkAdd methods */
+void   mesg_mark_add__init
+                     (MesgMarkAdd         *message);
+size_t mesg_mark_add__get_packed_size
+                     (const MesgMarkAdd   *message);
+size_t mesg_mark_add__pack
+                     (const MesgMarkAdd   *message,
+                      uint8_t             *out);
+size_t mesg_mark_add__pack_to_buffer
+                     (const MesgMarkAdd   *message,
+                      ProtobufCBuffer     *buffer);
+MesgMarkAdd *
+       mesg_mark_add__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_mark_add__free_unpacked
+                     (MesgMarkAdd *message,
                       ProtobufCAllocator *allocator);
 /* MesgGroupCreat methods */
 void   mesg_group_creat__init
@@ -2311,11 +2530,32 @@ typedef void (*MesgAllocSeqAck_Closure)
 typedef void (*MesgKickReq_Closure)
                  (const MesgKickReq *message,
                   void *closure_data);
-typedef void (*MesgPrvtChat_Closure)
-                 (const MesgPrvtChat *message,
+typedef void (*MesgChat_Closure)
+                 (const MesgChat *message,
                   void *closure_data);
-typedef void (*MesgPrvtChatAck_Closure)
-                 (const MesgPrvtChatAck *message,
+typedef void (*MesgChatAck_Closure)
+                 (const MesgChatAck *message,
+                  void *closure_data);
+typedef void (*MesgFriendAdd_Closure)
+                 (const MesgFriendAdd *message,
+                  void *closure_data);
+typedef void (*MesgFriendDel_Closure)
+                 (const MesgFriendDel *message,
+                  void *closure_data);
+typedef void (*MesgBlAdd_Closure)
+                 (const MesgBlAdd *message,
+                  void *closure_data);
+typedef void (*MesgBlDel_Closure)
+                 (const MesgBlDel *message,
+                  void *closure_data);
+typedef void (*MesgBanAdd_Closure)
+                 (const MesgBanAdd *message,
+                  void *closure_data);
+typedef void (*MesgBanDel_Closure)
+                 (const MesgBanDel *message,
+                  void *closure_data);
+typedef void (*MesgMarkAdd_Closure)
+                 (const MesgMarkAdd *message,
                   void *closure_data);
 typedef void (*MesgGroupCreat_Closure)
                  (const MesgGroupCreat *message,
@@ -2506,8 +2746,15 @@ extern const ProtobufCMessageDescriptor mesg_sync_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_alloc_seq__descriptor;
 extern const ProtobufCMessageDescriptor mesg_alloc_seq_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_kick_req__descriptor;
-extern const ProtobufCMessageDescriptor mesg_prvt_chat__descriptor;
-extern const ProtobufCMessageDescriptor mesg_prvt_chat_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_chat__descriptor;
+extern const ProtobufCMessageDescriptor mesg_chat_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_friend_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_friend_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_bl_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_bl_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_ban_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_ban_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_mark_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_creat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_creat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_dismiss__descriptor;

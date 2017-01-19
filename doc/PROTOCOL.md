@@ -185,9 +185,9 @@
 
 ---
 命令ID: 0x0201<br>
-命令描述: 私聊消息(PRVT-CHAT)<br>
+命令描述: 私聊消息(CHAT)<br>
 协议格式: 透传<br>
->message mesg_prvt_chat<br>
+>message mesg_chat<br>
 >{<br>
 >   required uint64 orig = 1;       // M|发送方UID<br>
 >   required uint64 dest = 2;       // M|接收方UID<br>
@@ -199,9 +199,9 @@
 
 ---
 命令ID: 0x0202<br>
-命令描述: 私聊消息应答(PRVT-CHAT-ACK)<br>
+命令描述: 私聊消息应答(CHAT-ACK)<br>
 协议格式:
->message mesg_prvt_chat_ack<br>
+>message mesg_chat_ack<br>
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint32 code = 2;       // M|错误码|数字|<br>
@@ -210,9 +210,9 @@
 
 ---
 命令ID: 0x0203<br>
-命令描述: 添加好友(PRVT-FRIEND-ADD)<br>
+命令描述: 添加好友(FRIEND-ADD)<br>
 协议格式:
->message mesg_prvt_friend_add<br>
+>message mesg_friend_add<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -221,14 +221,14 @@
 
 ---
 命令ID: 0x0204<br>
-命令描述: 添加好友应答(PRVT-FRIEND-ADD-ACK)<br>
+命令描述: 添加好友应答(FRIEND-ADD-ACK)<br>
 协议格式: NONE
 
 ---
 命令ID: 0x0205<br>
-命令描述: 删除好友(PRVT-FRIEND-DEL)<br>
+命令描述: 删除好友(FRIEND-DEL)<br>
 协议格式:
->message mesg_prvt_friend_del<br>
+>message mesg_friend_del<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -236,14 +236,14 @@
 
 ---
 命令ID: 0x0206<br>
-命令描述: 删除好友应答(PRVT-FRIEND-DEL-ACK)<br>
+命令描述: 删除好友应答(FRIEND-DEL-ACK)<br>
 协议格式: NONE
 
 ---
 命令ID: 0x0207<br>
-命令描述: 加入黑名单(PRVT-BL-ADD)<br>
+命令描述: 加入黑名单(BLACKLIST-ADD)<br>
 协议格式:
->message mesg_prvt_bl_add<br>
+>message mesg_blacklist_add<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -251,14 +251,14 @@
 
 ---
 命令ID: 0x0208<br>
-命令描述: 加入黑名单应答(PRVT-BL-ADD-ACK)<br>
+命令描述: 加入黑名单应答(BLACKLIST-ADD-ACK)<br>
 协议格式: NONE
 
 ---
 命令ID: 0x0209<br>
-命令描述: 移除黑名单(PRVT-BL-DEL)<br>
+命令描述: 移除黑名单(BLACKLIST-DEL)<br>
 协议格式:
->message mesg_prvt_bl_del<br>
+>message mesg_blacklist_del<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -266,14 +266,14 @@
 
 ---
 命令ID: 0x020A<br>
-命令描述: 移除黑名单应答(PRVT-BL-DEL-ACK)<br>
+命令描述: 移除黑名单应答(BLACKLIST-DEL-ACK)<br>
 协议格式: NONE
 
 ---
 命令ID: 0x020B<br>
-命令描述: 屏蔽此人(PRVT-BAN-ADD)<br>
+命令描述: 屏蔽此人(BAN-ADD)<br>
 协议格式:
->message mesg_prvt_ban_add<br>
+>message mesg_ban_add<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -281,14 +281,14 @@
 
 ---
 命令ID: 0x020C<br>
-命令描述: 屏蔽此人应答(PRVT-BAN-ADD-ACK)<br>
+命令描述: 屏蔽此人应答(BAN-ADD-ACK)<br>
 协议格式: NONE
 
 ---
 命令ID: 0x020D<br>
-命令描述: 取消屏蔽此人(PRVT-BAN-DEL)<br>
+命令描述: 取消屏蔽此人(BAN-DEL)<br>
 协议格式:
->message mesg_prvt_ban_del<br>
+>message mesg_ban_del<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -296,14 +296,14 @@
 
 ---
 命令ID: 0x020E<br>
-命令描述: 取消屏蔽此人应答(PRVT-BAN-DEL-ACK)<br>
+命令描述: 取消屏蔽此人应答(BAN-DEL-ACK)<br>
 协议格式: NONE
 
 ---
 命令ID: 0x0210<br>
-命令描述: 备注此人(PRVT-MARK)<br>
+命令描述: 添加备注此人(MARK-ADD)<br>
 协议格式:
->message mesg_prvt_mark<br>
+>message mesg_mark_add<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -312,7 +312,7 @@
 
 ---
 命令ID: 0x0211<br>
-命令描述: 备注此人应答(PRVT-MARK-ACK)<br>
+命令描述: 添加备注此人应答(MARK-ADD-ACK)<br>
 协议格式: NONE
 
 ////////////////////////////////////////////////////////////////////////////////

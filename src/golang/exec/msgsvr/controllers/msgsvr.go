@@ -26,10 +26,10 @@ type MsgSvrGidToNidMap struct {
 }
 
 /* 私聊消息 */
-type mesg_private_item struct {
-	head *comm.MesgHeader   /* 头部信息 */
-	req  *mesg.MesgPrvtChat /* 请求内容 */
-	raw  []byte             /* 原始消息 */
+type mesg_chat_item struct {
+	head *comm.MesgHeader /* 头部信息 */
+	req  *mesg.MesgChat   /* 请求内容 */
+	raw  []byte           /* 原始消息 */
 }
 
 /* 群组消息 */
@@ -55,9 +55,9 @@ type MsgSvrCntx struct {
 	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
 	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
 
-	room_mesg_chan    chan *mesg_room_item    /* 聊天室消息存储队列 */
-	group_mesg_chan   chan *mesg_group_item   /* 组聊消息存储队列 */
-	private_mesg_chan chan *mesg_private_item /* 私聊消息存储队列 */
+	room_mesg_chan  chan *mesg_room_item  /* 聊天室消息存储队列 */
+	group_mesg_chan chan *mesg_group_item /* 组聊消息存储队列 */
+	chat_chan       chan *mesg_chat_item  /* 私聊消息存储队列 */
 }
 
 /******************************************************************************
@@ -119,7 +119,7 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	/* > 初始化存储队列 */
 	ctx.room_mesg_chan = make(chan *mesg_room_item, 100000)
 	ctx.group_mesg_chan = make(chan *mesg_group_item, 100000)
-	ctx.private_mesg_chan = make(chan *mesg_private_item, 100000)
+	ctx.chat_chan = make(chan *mesg_chat_item, 100000)
 
 	return ctx, nil
 }
@@ -143,8 +143,8 @@ func (ctx *MsgSvrCntx) Register() {
 	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
 
 	/* > 私聊消息 */
-	ctx.frwder.Register(comm.CMD_PRVT_CHAT, MsgSvrPrvtChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_PRVT_CHAT_ACK, MsgSvrPrvtChatAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_PRVT_CHAT, MsgSvrChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_PRVT_CHAT_ACK, MsgSvrChatAckHandler, ctx)
 
 	/* > 群聊消息 */
 	ctx.frwder.Register(comm.CMD_GROUP_CHAT, MsgSvrGroupChatHandler, ctx)

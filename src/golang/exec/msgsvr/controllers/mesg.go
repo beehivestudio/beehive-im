@@ -242,7 +242,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 
 		switch mesg_head.GetCmd() {
 		case comm.CMD_PRVT_CHAT: // 私聊消息
-			msg := &mesg.MesgPrvtChat{}
+			msg := &mesg.MesgChat{}
 
 			err = proto.Unmarshal([]byte(data[comm.MESG_HEAD_SIZE:]), msg)
 			if nil != err {
