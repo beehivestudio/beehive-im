@@ -965,10 +965,12 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
+	ctm := time.Now().Unix()
+
 	/* > 加入用户黑名单 */
 	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetOrig())
 
-	_, err = rds.Do("ZADD", key, req.GetDest())
+	_, err = rds.Do("ZADD", key, ctm, req.GetDest())
 	if nil != err {
 		ctx.log.Error("Add into blacklist failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
@@ -1055,7 +1057,7 @@ func (ctx *UsrSvrCntx) send_err_blacklist_add_ack(head *comm.MesgHeader,
 func (ctx *UsrSvrCntx) send_blacklist_add_ack(
 	head *comm.MesgHeader, req *mesg.MesgBlacklistAdd) int {
 	/* > 设置协议体 */
-	ack := &mesg.MesgOnlineAck{
+	ack := &mesg.MesgBlacklistAddAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -1143,19 +1145,702 @@ func UsrSvrBlacklistAddHandler(cmd uint32, dest uint32, data []byte, length uint
 
 ////////////////////////////////////////////////////////////////////////////////
 /* 移除黑名单 */
+
+/******************************************************************************
+ **函数名称: blacklist_del_parse
+ **功    能: 解析BLACKLIST-DEL请求
+ **输入参数:
+ **     data: 原始数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 协议头
+ **     req: 请求内容
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) blacklist_del_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel, code uint32, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		errmsg := "Header of blacklist-del is invalid!"
+		ctx.log.Error(errmsg)
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
+	}
+
+	/* > 解析PB协议 */
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal body of blacklist-add failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
+	}
+
+	return head, req, 0, nil
+}
+
+/******************************************************************************
+ **函数名称: blacklist_del_handler
+ **功    能: 进行BLACKLIST-DEL处理
+ **输入参数:
+ **     head: 协议头
+ **     req: 请求内容
+ **输出参数: NONE
+ **返    回:
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) blacklist_del_handler(
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) (code uint32, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 移除用户黑名单 */
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetOrig())
+
+	_, err = rds.Do("ZREM", key, req.GetDest())
+	if nil != err {
+		ctx.log.Error("Remove blacklist failed! errmsg:%s", err.Error())
+		return comm.ERR_SYS_SYSTEM, err
+	}
+
+	return 0, nil
+}
+
+/******************************************************************************
+ **函数名称: send_err_blacklist_del_ack
+ **功    能: 发送BLACKLIST-DEL应答
+ **输入参数:
+ **     head: 协议头
+ **     req: BLACKLIST-DEL请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 code = 1;       // M|错误码|数字|
+ **     required string errmsg = 2;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_err_blacklist_del_ack(head *comm.MesgHeader,
+	req *mesg.MesgBlacklistDel, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
+	/* > 设置协议体 */
+	ack := &mesg.MesgBlacklistDelAck{
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_BLACKLIST_DEL_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_BLACKLIST_DEL_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: send_blacklist_del_ack
+ **功    能: 发送BLACKLIST-DEL应答
+ **输入参数:
+ **     head: 协议头
+ **     req: BLACKLIST-DEL请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 code = 1;       // M|错误码|数字|
+ **     required string errmsg = 2;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_blacklist_del_ack(
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) int {
+	/* > 设置协议体 */
+	ack := &mesg.MesgBlacklistDelAck{
+		Code:   proto.Uint32(0),
+		Errmsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_BLACKLIST_DEL_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_BLACKLIST_DEL_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: UsrSvrBlacklistDelHandler
+ **功    能: 移除黑名单
+ **输入参数:
+ **     cmd: 消息类型
+ **     dest: 业务层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
+ ******************************************************************************/
 func UsrSvrBlacklistDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*UsrSvrCntx)
+	if false == ok {
+		return -1
+	}
+
+	/* > 解析BLACKLIST-DEL请求 */
+	head, req, code, err := ctx.blacklist_del_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse blacklist-del failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_blacklist_del_ack(head, req, code, err.Error())
+		return -1
+	}
+
+	/* > 验证请求合法性 */
+	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
+	if nil != err {
+		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
+		ctx.send_err_blacklist_del_ack(head, req, code, err.Error())
+		return -1
+	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
+		errmsg := "Uid is collision!"
+		ctx.log.Error("errmsg:%s", errmsg)
+		ctx.send_err_blacklist_del_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		return -1
+	}
+
+	/* > 进行BLACKLIST-DEL处理 */
+	code, err = ctx.blacklist_del_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Handle blacklist-del failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_blacklist_del_ack(head, req, code, err.Error())
+		return -1
+	}
+
+	/* > 发送BLACKLIST-DEL应答 */
+	ctx.send_blacklist_del_ack(head, req)
+
 	return 0
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /* 设置禁言 */
+
+/******************************************************************************
+ **函数名称: ban_add_parse
+ **功    能: 解析BAN-ADD请求
+ **输入参数:
+ **     data: 原始数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 协议头
+ **     req: 请求内容
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel, code uint32, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		errmsg := "Header of ban-add is invalid!"
+		ctx.log.Error(errmsg)
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
+	}
+
+	/* > 解析PB协议 */
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal body of ban-add failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
+	}
+
+	return head, req, 0, nil
+}
+
+/******************************************************************************
+ **函数名称: ban_add_handler
+ **功    能: 进行BAN-ADD处理
+ **输入参数:
+ **     head: 协议头
+ **     req: 请求内容
+ **输出参数: NONE
+ **返    回:
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) ban_add_handler(
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) (code uint32, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	ctm := time.Now().Unix()
+
+	/* > 移除用户黑名单 */
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_BAN_ZSET, req.GetOrig())
+
+	_, err = rds.Do("ZADD", key, ctm, req.GetDest())
+	if nil != err {
+		ctx.log.Error("Add into ban-list failed! errmsg:%s", err.Error())
+		return comm.ERR_SYS_SYSTEM, err
+	}
+
+	return 0, nil
+}
+
+/******************************************************************************
+ **函数名称: send_err_ban_add_ack
+ **功    能: 发送BAN-ADD应答
+ **输入参数:
+ **     head: 协议头
+ **     req: BAN-ADD请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 code = 1;       // M|错误码|数字|
+ **     required string errmsg = 2;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
+	req *mesg.MesgBlacklistDel, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
+	/* > 设置协议体 */
+	ack := &mesg.MesgBlacklistDelAck{
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: send_ban_add_ack
+ **功    能: 发送BAN-ADD应答
+ **输入参数:
+ **     head: 协议头
+ **     req: BAN-ADD请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 code = 1;       // M|错误码|数字|
+ **     required string errmsg = 2;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_ban_add_ack(
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) int {
+	/* > 设置协议体 */
+	ack := &mesg.MesgBlacklistDelAck{
+		Code:   proto.Uint32(0),
+		Errmsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: UsrSvrBanAddHandler
+ **功    能: 设置禁言
+ **输入参数:
+ **     cmd: 消息类型
+ **     dest: 业务层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
+ ******************************************************************************/
 func UsrSvrBanAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*UsrSvrCntx)
+	if false == ok {
+		return -1
+	}
+
+	/* > 解析BAN-ADD请求 */
+	head, req, code, err := ctx.ban_add_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse ban-add failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_ban_add_ack(head, req, code, err.Error())
+		return -1
+	}
+
+	/* > 验证请求合法性 */
+	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
+	if nil != err {
+		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
+		ctx.send_err_ban_add_ack(head, req, code, err.Error())
+		return -1
+	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
+		errmsg := "Uid is collision!"
+		ctx.log.Error("errmsg:%s", errmsg)
+		ctx.send_err_ban_add_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		return -1
+	}
+
+	/* > 进行BAN-ADD处理 */
+	code, err = ctx.ban_add_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Handle ban-add failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_ban_add_ack(head, req, code, err.Error())
+		return -1
+	}
+
+	/* > 发送BAN-ADD应答 */
+	ctx.send_ban_add_ack(head, req)
+
 	return 0
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /* 解除禁言 */
+
+/******************************************************************************
+ **函数名称: ban_del_parse
+ **功    能: 解析BAN-ADD请求
+ **输入参数:
+ **     data: 原始数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 协议头
+ **     req: 请求内容
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel, code uint32, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !comm.MesgHeadIsValid(head) {
+		errmsg := "Header of ban-del is invalid!"
+		ctx.log.Error(errmsg)
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
+	}
+
+	/* > 解析PB协议 */
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal body of ban-del failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
+	}
+
+	return head, req, 0, nil
+}
+
+/******************************************************************************
+ **函数名称: ban_del_handler
+ **功    能: 进行BAN-ADD处理
+ **输入参数:
+ **     head: 协议头
+ **     req: 请求内容
+ **输出参数: NONE
+ **返    回:
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) ban_del_handler(
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) (code uint32, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 移除用户黑名单 */
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_BAN_ZSET, req.GetOrig())
+
+	_, err = rds.Do("ZREM", key, req.GetDest())
+	if nil != err {
+		ctx.log.Error("Remove ban failed! errmsg:%s", err.Error())
+		return comm.ERR_SYS_SYSTEM, err
+	}
+
+	return 0, nil
+}
+
+/******************************************************************************
+ **函数名称: send_err_ban_del_ack
+ **功    能: 发送BAN-ADD应答
+ **输入参数:
+ **     head: 协议头
+ **     req: BAN-ADD请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 code = 1;       // M|错误码|数字|
+ **     required string errmsg = 2;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
+	req *mesg.MesgBlacklistDel, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
+	/* > 设置协议体 */
+	ack := &mesg.MesgBlacklistDelAck{
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: send_ban_del_ack
+ **功    能: 发送BAN-ADD应答
+ **输入参数:
+ **     head: 协议头
+ **     req: BAN-ADD请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 code = 1;       // M|错误码|数字|
+ **     required string errmsg = 2;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) send_ban_del_ack(
+	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) int {
+	/* > 设置协议体 */
+	ack := &mesg.MesgBlacklistDelAck{
+		Code:   proto.Uint32(0),
+		Errmsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: UsrSvrBanDelHandler
+ **功    能: 解除禁言
+ **输入参数:
+ **     cmd: 消息类型
+ **     dest: 业务层ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
+ ******************************************************************************/
 func UsrSvrBanDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*UsrSvrCntx)
+	if false == ok {
+		return -1
+	}
+
+	/* > 解析BAN-ADD请求 */
+	head, req, code, err := ctx.ban_del_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse ban-del failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_ban_del_ack(head, req, code, err.Error())
+		return -1
+	}
+
+	/* > 验证请求合法性 */
+	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
+	if nil != err {
+		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
+		ctx.send_err_ban_del_ack(head, req, code, err.Error())
+		return -1
+	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
+		errmsg := "Uid is collision!"
+		ctx.log.Error("errmsg:%s", errmsg)
+		ctx.send_err_ban_del_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		return -1
+	}
+
+	/* > 进行BAN-ADD处理 */
+	code, err = ctx.ban_del_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Handle ban-del failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_ban_del_ack(head, req, code, err.Error())
+		return -1
+	}
+
+	/* > 发送BAN-ADD应答 */
+	ctx.send_ban_del_ack(head, req)
+
 	return 0
 }
 

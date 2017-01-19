@@ -17,6 +17,7 @@ const (
 	UID_MSGID_STR                      = "uid:%d:msgid:%d"
 	CHAT_KEY_USR_MSGID_INCR            = "chat:uid:%d:msgid:incr"     //| STRING | 私人消息序列递增记录 |
 	CHAT_KEY_USR_BLACKLIST_ZSET        = "chat:uid:%d:blacklist:zset" //| ZSET | 用户黑名单记录 | 成员:用户UID 分值:加入黑名单的时间 |
+	CHAT_KEY_USR_BAN_ZSET              = "chat:uid:%d:ban:zset"       //| ZSET | 用户禁言记录 | 成员:用户UID 分值:设置禁言的时间 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//聊天室
 	CHAT_KEY_RID_ZSET               = "chat:rid:zset"                 //*| ZSET | 聊天室RID集合 | 成员:RID 分值:TTL |
