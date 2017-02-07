@@ -13,7 +13,7 @@ package lws
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.06 23:19:44 #
  ******************************************************************************/
-func conn_handler(ctx *LsnCntx, w http.ResponseWriter, r *http.Request) {
+func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if nil != err {
 		log.Println(err)

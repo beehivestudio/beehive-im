@@ -20,7 +20,7 @@ const (
 	LWS_CALLBACK_REASON_CLOSE = 4 /* 关闭连接 */
 )
 
-type lws_callback_t func(ctx *LsnCtx, client *socket_t,
+type lws_callback_t func(ctx *LwsCntx, client *socket_t,
 	reason int, user interface{}, in interface{}, length int, param interface{}) int
 type lws_get_packet_body_size_cb func(void *head) uint32
 
@@ -39,7 +39,7 @@ type ConnPool struct {
 }
 
 /* 全局对象 */
-type LsnCtx struct {
+type LwsCntx struct {
 	conf       *Conf        // 配置参数
 	protocol   *Protocol    // 注册协议
 	log        *Beego.Logs  // 日志对象
@@ -65,8 +65,8 @@ type Conf struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.06 22:44:04 #
  ******************************************************************************/
-func Init(conf *Conf, log *Beego.Logs) *LsnCtx {
-	ctx := &LsnCtx{
+func Init(conf *Conf, log *Beego.Logs) *LwsCntx {
+	ctx := &LwsCntx{
 		cid:  0,
 		log:  log,
 		conf: Conf,
@@ -88,7 +88,7 @@ func Init(conf *Conf, log *Beego.Logs) *LsnCtx {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.07 08:36:08 #
  ******************************************************************************/
-func (ctx *LsnCtx) Register(path string) int {
+func (ctx *LwsCntx) Register(path string) int {
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		conn_handler(ctx, w, r)
 	})
@@ -106,7 +106,7 @@ func (ctx *LsnCtx) Register(path string) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.07 22:50:25 #
  ******************************************************************************/
-func (ctx *LsnCntx) run() {
+func (ctx *LwsCntx) run() {
 	for {
 		select {
 		case client := <-ctx.unregister:
@@ -129,7 +129,7 @@ func (ctx *LsnCntx) run() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.05 20:25:27 #
  ******************************************************************************/
-func (ctx *LsnCtx) Launch(protocol *Protocol) int {
+func (ctx *LwsCntx) Launch(protocol *Protocol) int {
 	ctx.protocol = protocol
 
 	go ctx.run()
@@ -154,7 +154,7 @@ func (ctx *LsnCtx) Launch(protocol *Protocol) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.06 23:05:54 #
  ******************************************************************************/
-func (ctx *LsnCtx) AsyncSend(cid uint64, data []byte) int {
+func (ctx *LwsCntx) AsyncSend(cid uint64, data []byte) int {
 	ctx.conn_pool.RLock()
 	client, ok := ctx.conn_pool.clients[cid]
 	if !ok {
