@@ -8,19 +8,20 @@ import (
 	"path/filepath"
 
 	"beehive-im/src/golang/lib/log"
+	"beehive-im/src/golang/lib/lws"
 	"beehive-im/src/golang/lib/rtmq"
 )
 
 /* 侦听层配置 */
 type LsndConf struct {
-	NodeId   uint32                  // 结点ID
-	WorkPath string                  // 工作路径(自动获取)
-	AppPath  string                  // 程序路径(自动获取)
-	ConfPath string                  // 配置路径(自动获取)
-	Log      log.LogConf             // 日志配置
-	Operator LsndConfOperatorXmlData // 运营商信息
-	Access   LsndConfAccessXmlData   // ACCESS配置
-	frwder   rtmq.RtmqProxyConf      // RTMQ配置
+	NodeId    uint32                  // 结点ID
+	WorkPath  string                  // 工作路径(自动获取)
+	AppPath   string                  // 程序路径(自动获取)
+	ConfPath  string                  // 配置路径(自动获取)
+	Log       log.LogConf             // 日志配置
+	Operator  LsndConfOperatorXmlData // 运营商信息
+	Websocket lws.Conf                // WEBSOCKET配置
+	frwder    rtmq.RtmqProxyConf      // RTMQ配置
 }
 
 /* 运营商配置 */
@@ -52,30 +53,27 @@ type LsndConfRtmqAuthXmlData struct {
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
-/* ACCESS-CONNECTIONS配置 */
-type LsndConfAccConnectionsXmlData struct {
-	Name    xml.Name `xml:"ACCESS"`  // 结点名
-	Max     uint32   `xml:"MAX"`     // 最大连接数
-	Timeout uint32   `xml:"TIMEOUT"` // 连接超时时间
+/* WEBSOCKET-CONNECTIONS配置 */
+type LsndConfWsConncetionsXmlData struct {
+	Name    xml.Name `xml:"CONNECTIONS"` // 结点名
+	Max     uint32   `xml:"MAX"`         // 最大连接数
+	Timeout uint32   `xml:"TIMEOUT"`     // 连接超时时间
 }
 
-/* ACCESS-SENDQ配置 */
-type LsndConfAccSendqXmlData struct {
+/* WEBSOCKET-SENDQ配置 */
+type LsndConfWsSendqXmlData struct {
 	Name xml.Name `xml:"SENDQ"` // 结点名
 	Max  uint32   `xml:"MAX"`   // 队列长度
 	Size uint32   `xml:"SIZE"`  // 队列SIZE
 }
 
-/* ACCESS代理配置 */
-type LsndConfAccessXmlData struct {
-	Name        xml.Name                      `xml:"ACCESS"`        // 结点名
-	Ip          string                        `xml:"IP,attr"`       // 对端IP
-	Port        uint32                        `xml:"PORT,attr"`     // 对端PORT
-	Connections LsndConfAccConnectionsXmlData `xml:"CONNECTIONS"`   // 连接配置
-	Sendq       LsndConfAccSendqXmlData       `xml:"SENDQ"`         // 发送队列配置
-	WorkerNum   uint32                        `xml:"WORKER-NUM"`    // 协程数
-	SendChanLen uint32                        `xml:"SEND-CHAN-LEN"` // 发送队列长度
-	RecvChanLen uint32                        `xml:"RECV-CHAN-LEN"` // 接收队列长度
+/* WEBSOCKET代理配置 */
+type LsndConfWebsocketXmlData struct {
+	Name        xml.Name                     `xml:"WEBSOCKET"`   // 结点名
+	Ip          string                       `xml:"IP,attr"`     // 对端IP
+	Port        uint32                       `xml:"PORT,attr"`   // 对端PORT
+	Connections LsndConfWsConncetionsXmlData `xml:"CONNECTIONS"` // 连接配置
+	Sendq       LsndConfWsSendqXmlData       `xml:"SENDQ"`       // 发送队列配置
 }
 
 /* FRWDER代理配置 */
@@ -90,12 +88,12 @@ type LsndConfRtmqProxyXmlData struct {
 
 /* 侦听层XML配置 */
 type LsndConfXmlData struct {
-	Name     xml.Name                 `xml:"LISTEND"`  // 根结点名
-	Id       uint32                   `xml:"ID,attr"`  // 结点ID
-	Log      LsndConfLogXmlData       `xml:"LOG"`      // 日志配置
-	Operator LsndConfOperatorXmlData  `xml:"OPERATOR"` // 运营商信息
-	Access   LsndConfAccessXmlData    `xml:"ACCESS"`   // ACCESS配置
-	Frwder   LsndConfRtmqProxyXmlData `xml:"FRWDER"`   // RTMQ PROXY配置
+	Name      xml.Name                 `xml:"LISTEND"`   // 根结点名
+	Id        uint32                   `xml:"ID,attr"`   // 结点ID
+	Log       LsndConfLogXmlData       `xml:"LOG"`       // 日志配置
+	Operator  LsndConfOperatorXmlData  `xml:"OPERATOR"`  // 运营商信息
+	Websocket LsndConfWebsocketXmlData `xml:"WEBSOCKET"` // WEBSOCKET配置
+	Frwder    LsndConfRtmqProxyXmlData `xml:"FRWDER"`    // RTMQ PROXY配置
 }
 
 /******************************************************************************
@@ -172,7 +170,11 @@ func (conf *LsndConf) conf_parse() (err error) {
 	}
 
 	/* > 侦听配置 */
-	conf.Access = node.Access
+	conf.Websocket.Ip = node.Websocket.Ip                       // IP地址
+	conf.Websocket.Port = node.Websocket.Port                   // 端口号
+	conf.Websocket.Max = node.Websocket.Connections.Max         // 最大连接限制
+	conf.Websocket.Timeout = node.Websocket.Connections.Timeout // 连接超时时间
+	conf.Websocket.SendqMax = node.Websocket.Sendq.Max          // 发送队列长度
 
 	/* > FRWDER配置 */
 	conf.frwder.NodeId = conf.NodeId

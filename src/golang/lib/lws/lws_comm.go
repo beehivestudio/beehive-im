@@ -20,7 +20,7 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{ctx: ctx, conn: conn, sendq: make(chan []byte, 256)}
+	client := &Client{ctx: ctx, conn: conn, sendq: make(chan []byte, ctx.conf.SendqMax)}
 
 	/* 创建连接的回调 */
 	ret := ctx.protocol.callback(client.ctx, client,

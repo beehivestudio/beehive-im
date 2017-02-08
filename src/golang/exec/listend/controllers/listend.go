@@ -92,8 +92,13 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 		return nil, errors.New("Initialize rtmq proxy failed!")
 	}
 
-	/* > 初始化侦听模块 */
-	ctx.lws = lws.Init(conf.lws, ctx.log)
+	/* > 初始化LWS模块 */
+	addr := fmt.Sprintf("%s:%d", conf.Access.Ip, conf.Access.Port)
+	lws_conf := &lws.Conf{
+		addr: addr,
+	}
+
+	ctx.lws = lws.Init(lws_conf, ctx.log)
 	if nil == ctx.lws {
 		ctx.log.Error("Initialize lws failed!")
 		return nil, errors.New("Initialize lws failed!")

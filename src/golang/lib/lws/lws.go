@@ -50,7 +50,11 @@ type LwsCntx struct {
 
 /* 配置对象 */
 type Conf struct {
-	addr string // IP+端口
+	Ip       string // IP地址
+	Port     uint32 // 端口号
+	Max      uint32 // 最大连接数
+	Timeout  uint32 // 连接超时时间
+	SendqMax uint32 // 发送队列长度
 }
 
 /******************************************************************************
@@ -135,7 +139,9 @@ func (ctx *LwsCntx) Launch(protocol *Protocol) int {
 	go ctx.run()
 
 	/* 侦听指定端口 */
-	err := http.ListenAndServe(ctx.conf.addr, nil)
+	addr := fmt.Sprintf("%s:%d", ctx.conf.Ip, ctx.conf.Port)
+
+	err := http.ListenAndServe(addr, nil)
 	if nil != err {
 		log.Fatal("ListenAndServe: ", err)
 	}
