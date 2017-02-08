@@ -258,7 +258,7 @@ type UsrSvrConfXmlData struct {
  **输入参数: NONE
  **输出参数: NONE
  **返    回:
- **     err: 日志对象
+ **     err: 错误描述
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
@@ -278,7 +278,7 @@ func (conf *UsrSvrConf) LoadConf() (err error) {
  **输入参数: NONE
  **输出参数: NONE
  **返    回:
- **     err: 日志对象
+ **     err: 错误描述
  **实现描述: 加载配置并提取有效信息
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
