@@ -1,0 +1,34 @@
+<!-- 代理服务配置信息 -->
+<LISTEND ID="10001">
+    <!-- 日志配置 -->
+    <LOG LEVEL="error" PATH="../log/websocket.log" />
+
+    <!-- 运营商配置 -->
+    <OPERATOR NATION="CN" NAME="中国电信" />
+
+    <!-- 分发队列配置 -->
+    <DISTQ NUM="8" MAX="4096" SIZE="4KB" />
+
+    <!-- 帧听配置
+            1) IP: 外网IP
+            2) PORT: 帧听端口 -->
+    <ACCESS IP="127.0.0.1" PORT="9002">
+        <!-- 并发(连接)配置
+            1) MAX: 最大并发数
+            2) TIMEOUT: 连接超时时间
+            3) PORT: 侦听端口 -->
+        <CONNECTIONS MAX="1024" TIMEOUT="15" />
+
+        <!-- 发送队列配置
+            1) MAX: 队列容量(必须为2的次方)
+            2) SIZE: 队列单元大小(0:表示自定义) -->
+        <SENDQ MAX="8192" SIZE="4KB" />   <!-- 发送队列 -->
+    </ACCESS>
+    <!-- 转发层配置 -->
+    <FRWDER ADDR="127.0.0.1:28889"> <!-- RTMQ代理 -->
+      <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->
+      <WORKER-NUM>10</WORKER-NUM>                 <!-- 工作协程数 -->
+      <SEND-CHAN-LEN>20000</SEND-CHAN-LEN>        <!-- 发送队列长度 -->
+      <RECV-CHAN-LEN>20000</RECV-CHAN-LEN>        <!-- 接收队列长度 -->
+    </FRWDER>
+</LISTEND>
