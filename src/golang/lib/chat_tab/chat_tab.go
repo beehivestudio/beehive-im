@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 )
 
-type ChatTravProcCb func(data []byte, param interface{}) int
+type ChatTravProcCb func(obj interface{}, param interface{}) int
 
 /* 会话信息 */
 type ChatSession struct {
@@ -23,25 +23,25 @@ type ChatGroup struct {
 	sid_num      uint64          // 会话数目
 	create_tm    int64           // 创建时间
 	sync.RWMutex                 // 读写锁
-	sid_list     map[uint64]bool // 会话列表
+	sid_list     map[uint64]bool // 会话列表[sid]bool
 }
 
 /* ROOM信息 */
 type ChatRoom struct {
-	rid          uint64               // 聊天室ID
-	sid_num      uint64               // 会话数目
-	grp_num      uint32               // 分组数目
-	create_tm    int64                // 创建时间
-	sync.RWMutex                      // 读写锁
-	group        map[uint32]ChatGroup // 分组信息
+	rid          uint64                // 聊天室ID
+	sid_num      uint64                // 会话数目
+	grp_num      uint32                // 分组数目
+	create_tm    int64                 // 创建时间
+	sync.RWMutex                       // 读写锁
+	group        map[uint32]*ChatGroup // 分组信息[gid]*ChatGroup
 }
 
 /* 全局对象 */
 type ChatTab struct {
-	room_lck sync.RWMutex           // 读写锁
-	room     map[uint64]ChatRoom    // ROOM集合
-	ssn_lck  sync.RWMutex           // 读写锁
-	session  map[uint64]ChatSession // 会话集合
+	room_lck sync.RWMutex            // 读写锁
+	room     map[uint64]ChatRoom     // ROOM集合
+	ssn_lck  sync.RWMutex            // 读写锁
+	session  map[uint64]*ChatSession // 会话集合[sid]*ChatSession
 }
 
 /******************************************************************************
@@ -180,7 +180,7 @@ func (ctx *ChatTab) SessionDel(sid uint64) int {
  **作    者: # Qifeng.zou # 2017.02.22 21:16:08 #
  ******************************************************************************/
 func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
-	ctx.ssn_lck.Rlock()
+	ctx.ssn_lck.RLock()
 	defer ctx.ssn_lck.RUnlock()
 
 	ssn, ok := ctx.session[sid]
@@ -208,7 +208,7 @@ func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
  **作    者: # Qifeng.zou # 2017.02.22 21:23:25 #
  ******************************************************************************/
 func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
-	ctx.ssn_lck.Rlock()
+	ctx.ssn_lck.RLock()
 	defer ctx.ssn_lck.RUnlock()
 
 	ssn, ok := ctx.session[sid]
@@ -236,7 +236,7 @@ func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
  **作    者: # Qifeng.zou # 2017.02.22 21:31:37 #
  ******************************************************************************/
 func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
-	ctx.ssn_lck.Rlock()
+	ctx.ssn_lck.RLock()
 	defer ctx.ssn_lck.RUnlock()
 
 	ssn, ok := ctx.session[sid]
@@ -269,13 +269,19 @@ func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.20 23:52:36 #
  ******************************************************************************/
-func (ctx *ChatTab) Trav(rid uint64, gid uint32, ChatTravProcCb proc, param interface{}) int {
+func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param interface{}) int {
+	ctx.room_lck.RLock()
+	defer ctx.room_lck.RUnlock()
+
 	room, ok := ctx.room[rid]
 	if !ok {
 		return -1
 	} else if 0 == gid {
 		return ctx.trav_all_group(room, proc, param)
 	}
+
+	room.RLock()
+	defer room.RUnlock()
 
 	group, ok := room.group[gid]
 	if !ok {
