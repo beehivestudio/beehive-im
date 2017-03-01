@@ -3,9 +3,17 @@ package chat_tab
 import (
 	"fmt"
 	"strconv"
+	"sync"
 	"sync/atomic"
 )
 
+const (
+	CT_ROOM_NUM = 999 // 聊天室列表长度
+	CT_GRP_NUM  = 999 // 聊天室分组列表长度
+	CT_SSN_NUM  = 999 // 聊天室分组列表长度
+)
+
+/* 遍历回调 */
 type ChatTravProcCb func(obj interface{}, param interface{}) int
 
 /* 会话信息 */
@@ -17,6 +25,12 @@ type ChatSession struct {
 	sub          map[uint32]bool // 订阅列表(true:订阅 false:未订阅)
 }
 
+/* SESSION SET信息 */
+type ChatSessionSet struct {
+	sync.RWMutex                         // 读写锁
+	session      map[uint64]*ChatSession // 会话集合[sid]*ChatSession
+}
+
 /* 分组信息 */
 type ChatGroup struct {
 	gid          uint64          // 分组ID
@@ -26,22 +40,31 @@ type ChatGroup struct {
 	sid_list     map[uint64]bool // 会话列表[sid]bool
 }
 
-/* ROOM信息 */
-type ChatRoom struct {
-	rid          uint64                // 聊天室ID
-	sid_num      uint64                // 会话数目
-	grp_num      uint32                // 分组数目
-	create_tm    int64                 // 创建时间
+/* GROUP SET信息 */
+type ChatGroupSet struct {
 	sync.RWMutex                       // 读写锁
 	group        map[uint32]*ChatGroup // 分组信息[gid]*ChatGroup
 }
 
+/* ROOM信息 */
+type ChatRoom struct {
+	rid       uint64                     // 聊天室ID
+	sid_num   uint64                     // 会话数目
+	grp_num   uint32                     // 分组数目
+	create_tm int64                      // 创建时间
+	groups    [CT_GROUP_NUM]ChatGroupSet // 分组信息
+}
+
+/* ROOM SET信息 */
+type ChatRoomSet struct {
+	sync.RWMutex                      // 读写锁
+	room         map[uint64]*ChatRoom // ROOM集合[rid]*ChatRoom
+}
+
 /* 全局对象 */
 type ChatTab struct {
-	room_lck sync.RWMutex            // 读写锁
-	room     map[uint64]ChatRoom     // ROOM集合
-	ssn_lck  sync.RWMutex            // 读写锁
-	session  map[uint64]*ChatSession // 会话集合[sid]*ChatSession
+	rooms    [CT_ROOM_NUM]ChatRoomSet   // ROOM信息
+	sessions [CT_SSN_NUM]ChatSessionSet // SESSION信息
 }
 
 /******************************************************************************
@@ -50,14 +73,23 @@ type ChatTab struct {
  **输入参数: NONE
  **输出参数: NONE
  **返    回: 全局对象
- **实现描述:
+ **实现描述: 初始化ctx成员变量
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.20 23:46:50 #
  ******************************************************************************/
 func Init() *ChatTab {
-	ctx := &ChatTab{
-		room:    make(map[uint64]ChatRoom),
-		session: make(map[uint64]ChatSession),
+	ctx := &ChatTab{}
+
+	/* 初始化ROOM SET */
+	for idx := 0; idx < CT_ROOM_NUM; idx += 1 {
+		rs := ctx.rooms[idx]
+		rs.room = make(map[uint64]*ChatRoom)
+	}
+
+	/* 初始化SESSION SET */
+	for idx := 0; idx < CT_SSN_NUM; idx += 1 {
+		ss := ctx.sessions[idx]
+		ss.session = make(map[uint64]*ChatSession)
 	}
 
 	return ctx
@@ -66,58 +98,52 @@ func Init() *ChatTab {
 /******************************************************************************
  **函数名称: SessionAdd
  **功    能: 会话添加
- **输入参数: NONE
+ **输入参数:
+ **     rid: ROOM ID
+ **     gid: 分组GID
+ **     sid: 会话SID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 将会话SID挂载到聊天室指定分组上.
+ **注意事项: 各层级读写锁的操作, 降低锁粒度, 防止死锁.
  **作    者: # Qifeng.zou # 2017.02.22 20:32:20 #
  ******************************************************************************/
 func (ctx *ChatTab) SessionAdd(rid uint64, gid uint32, sid uint64) int {
-	/* > 判断会话是否存在 */
-	ssn, ok := ctx.session[sid]
+	/* > 加入会话管理表 */
+	ok := ctx.session_add(rid, gid, sid)
 	if ok {
-		if ssn.rid == rid && ssn.gid == gid {
-			return 0 // 已存在
-		}
-		return -1 // 数据不一致
+		return -1 // 异常
 	}
 
-	/* > 添加会话信息 */
-	ssn = &ChatSession{
-		sid: sid,                   // 会话ID
-		rid: rid,                   // 聊天室ID
-		gid: gid,                   // 分组ID
-		sub: make(map[uint32]bool), // 订阅列表
+ROOM:
+	ok = ctx.room_add(rid)
+	if ok {
+		return -1 // 异常
 	}
 
-	ctx.session[idx] = ssn
-
-	/* > 添加ROOM信息 */
-	room, ok := ctx.room[rid]
-	if !ok {
-		room = &ChatRoom{
-			rid:       rid,                        // 聊天室ID
-			sid_num:   0,                          // 会话数目
-			grp_num:   0,                          // 分组数目
-			create_tm: time.Now().Unix(),          // 创建时间
-			group:     make(map[uint32]ChatGroup), // 分组信息
-		}
-		atomic.AddUint64(&room.sid_num, 1)
-		ctx.room[rid] = room
+	room := ctx.room_query(rid, comm.RDLOCK)
+	if nil == room {
+		goto ROOM
 	}
 
-	group, ok := room.group[gid]
-	if !ok {
-		group = &ChatGroup{
-			gid:       gid,                   // 分组ID
-			sid_num:   0,                     // 会话数目
-			create_tm: time.Now().Unix(),     // 创建时间
-			sid_list:  make(map[uint64]bool), // 会话列表
-		}
-		atomic.AddUint64(&group.sid_num, 1)
-		room.group[gid] = group
+	defer ctx.room_unlock(rid, comm.RDLOCK)
+
+GROUP:
+	ok = ctx.group_add(room, gid)
+	if ok {
+		return -1 // 异常
 	}
+
+	group := ctx.group_query(room, gid, comm.RDLOCK)
+	if nil == group {
+		goto GROUP
+	}
+
+	defer ctx.group_unlock(room, gid, comm.RDLOCK)
+
+SIDLIST:
+	group.Lock()
+	defer group.Unlock()
 
 	ssn, ok = group.sid_list[sid]
 	if !ok {
@@ -292,14 +318,39 @@ func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param inte
 }
 
 /******************************************************************************
- **函数名称: TimeoutClean
- **功    能: 清理超时数据
+ **函数名称: Clean
+ **功    能: 清理人数为空的聊天室信息
  **输入参数: NONE
  **输出参数: NONE
- **返    回: true:订阅 false:未订阅
+ **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2017.02.20 23:57:50 #
+ **作    者: # Qifeng.zou # 2017.02.23 22:10:28 #
  ******************************************************************************/
-func (ctx *ChatTab) TimeoutClean(rid uint64, gid uint32, ChatTravProcCb proc, param interface{}) {
+func (ctx *ChatTab) Clean() int {
+	list := make(map[uint64]bool)
+
+	/* > 过滤连接数为0的聊天室 */
+	ctx.room_lck.RLock()
+	for rid, room := range ctx.room {
+		if 0 != room.sid_num {
+			continue
+		}
+		list[rid] = true
+	}
+	ctx.room_lck.RUnlock()
+
+	/* > 清理连接数为0的聊天室 */
+	for rid, _ := range list {
+		ctx.room_lck.Lock()
+		room, ok := ctx.room[rid]
+		if !ok {
+			ctx.room_lck.Unlock()
+			continue
+		}
+		delete(ctx.room, rid)
+		ctx.room_lck.Unlock()
+
+		room.clean(ctx)
+	}
 }
