@@ -137,9 +137,9 @@
 >   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "iplist":[              // 数组 | IP列表<br>
->       "${ipaddr:port}",<br>
->       "${ipaddr:port}",<br>
->       "${ipaddr:port}"],<br>
+>       "${ipaddr}:${port}",<br>
+>       "${ipaddr}:${port}",<br>
+>       "${ipaddr}:${port}"],<br>
 >   "token":"${token}"      // 字串 | 鉴权token(M) # 格式:"uid:${uid}:ttl:${ttl}:sid:${sid}:end"<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
