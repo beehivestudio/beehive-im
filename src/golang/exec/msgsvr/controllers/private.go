@@ -235,7 +235,7 @@ func (ctx *MsgSvrCntx) chat_handler(
 func MsgSvrChatHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -354,7 +354,7 @@ func (ctx *MsgSvrCntx) chat_ack_handler(
 func MsgSvrChatAckHandler(cmd uint32, orig uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 

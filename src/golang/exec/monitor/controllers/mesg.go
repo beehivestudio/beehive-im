@@ -197,7 +197,7 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
  ******************************************************************************/
 func MonLsnRptHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MonSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -385,7 +385,7 @@ func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrw
  ******************************************************************************/
 func MonFrwdRptHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MonSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 

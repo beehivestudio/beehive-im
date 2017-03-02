@@ -375,7 +375,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
  ******************************************************************************/
 func UsrSvrOnlineReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -462,7 +462,7 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
  ******************************************************************************/
 func UsrSvrOfflineReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -547,7 +547,7 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
  ******************************************************************************/
 func UsrSvrPingHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -859,7 +859,7 @@ func (ctx *UsrSvrCntx) send_alloc_seq_ack(head *comm.MesgHeader, req *mesg.MesgA
  ******************************************************************************/
 func UsrSvrAllocSeqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -1104,7 +1104,7 @@ func (ctx *UsrSvrCntx) send_blacklist_add_ack(
  ******************************************************************************/
 func UsrSvrBlacklistAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -1337,7 +1337,7 @@ func (ctx *UsrSvrCntx) send_blacklist_del_ack(
  ******************************************************************************/
 func UsrSvrBlacklistDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -1572,7 +1572,7 @@ func (ctx *UsrSvrCntx) send_ban_add_ack(
  ******************************************************************************/
 func UsrSvrBanAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -1805,7 +1805,7 @@ func (ctx *UsrSvrCntx) send_ban_del_ack(
  ******************************************************************************/
 func UsrSvrBanDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -2175,7 +2175,7 @@ func (ctx *UsrSvrCntx) room_creat_handler(
  ******************************************************************************/
 func UsrSvrRoomCreatHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -2487,7 +2487,7 @@ GET_GID:
 	if nil != err {
 		ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
 		return 0, err
-	} else if false == ok {
+	} else if !ok {
 		goto GET_GID /* 存在冲突 */
 	}
 
@@ -2531,7 +2531,7 @@ GET_GID:
  ******************************************************************************/
 func UsrSvrRoomJoinReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -2790,7 +2790,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
  ******************************************************************************/
 func UsrSvrRoomQuitReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -3102,7 +3102,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
  ******************************************************************************/
 func UsrSvrRoomKickHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 

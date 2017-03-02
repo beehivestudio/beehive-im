@@ -34,11 +34,11 @@ import (
 func LsndOnlineReqHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv group msg ack!")
+	ctx.log.Debug("Recv online request!")
 
 	return 0
 }
@@ -63,7 +63,7 @@ func LsndOnlineReqHandler(cmd uint32, dest uint32,
  ******************************************************************************/
 func LsndBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -98,7 +98,7 @@ func LsndBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param
 func LsndP2pMsgHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -128,7 +128,7 @@ func LsndP2pMsgHandler(cmd uint32, dest uint32,
 func LsndP2pMsgAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -391,7 +391,7 @@ func (ctx *LsndCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) in
 func LsndSyncHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 

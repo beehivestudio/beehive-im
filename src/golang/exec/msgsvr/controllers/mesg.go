@@ -34,7 +34,7 @@ import (
 func MsgSvrBcHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -63,7 +63,7 @@ func MsgSvrBcHandler(cmd uint32, dest uint32,
  ******************************************************************************/
 func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -98,7 +98,7 @@ func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, par
 func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -128,7 +128,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
 func MsgSvrP2pMsgAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -391,7 +391,7 @@ func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) 
 func MsgSvrSyncHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
