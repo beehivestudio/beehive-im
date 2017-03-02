@@ -323,33 +323,34 @@ func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param inte
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项:
+ **注意事项: 无需对room对象中的各个数据逐一处理, 其内存会被自动回收.
  **作    者: # Qifeng.zou # 2017.02.23 22:10:28 #
  ******************************************************************************/
 func (ctx *ChatTab) Clean() int {
-	list := make(map[uint64]bool)
+	rlist := make(map[uint64]bool)
 
-	/* > 过滤连接数为0的聊天室 */
-	ctx.room_lck.RLock()
-	for rid, room := range ctx.room {
-		if 0 != room.sid_num {
-			continue
+	/* > 过滤会话数为0的聊天室 */
+	for _, rs := range ctx.rooms {
+		rs.RLock()
+		for rid, room := range rs.room {
+			if room.sid_num {
+				continue
+			}
+			rlist[rid] = true
 		}
-		list[rid] = true
+		rs.RUnlock()
 	}
-	ctx.room_lck.RUnlock()
 
-	/* > 清理连接数为0的聊天室 */
-	for rid, _ := range list {
-		ctx.room_lck.Lock()
-		room, ok := ctx.room[rid]
-		if !ok {
-			ctx.room_lck.Unlock()
+	/* > 清理会话数为0的聊天室 */
+	for rid, _ := range rlist {
+		rs := ctx.rooms[rid%CT_ROOM_NUM]
+		rs.Lock()
+		room, ok := rs.room[rid]
+		if !ok || room.sid_num {
+			rs.Unlock()
 			continue
 		}
-		delete(ctx.room, rid)
-		ctx.room_lck.Unlock()
-
-		room.clean(ctx)
+		delete(rs.room, rid)
+		rs.Unlock()
 	}
 }
