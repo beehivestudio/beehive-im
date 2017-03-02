@@ -52,6 +52,33 @@ func (ctx *ChatTab) session_add(rid uint64, gid uint32, sid uint64) int {
 	return 0
 }
 
+/******************************************************************************
+ **函数名称: session_del
+ **功    能: 移除会话管理表
+ **输入参数:
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 会话数据
+ **实现描述: 从session[]表中删除sid的会话数据
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.02 10:13:34 #
+ ******************************************************************************/
+func (ctx *ChatTab) session_del(sid uint64) *ChatSession {
+	ss := ctx.sessions[sid%CT_SSN_NUM]
+
+	ss.Lock()
+	defer ss.Unlock()
+
+	/* > 判断会话是否存在 */
+	ssn, ok := ss.session[sid]
+	if !ok {
+		return nil // 无数据
+	}
+	delete(ss.session, sid)
+
+	return ssn
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -149,6 +176,59 @@ func (ctx *ChatTab) room_unlock(rid uint64, lck int) *ChatRoom {
 	return 0
 }
 
+/******************************************************************************
+ **函数名称: room_del_session
+ **功    能: 移除聊天室指定会话
+ **输入参数:
+ **     rid: 聊天室ID
+ **     gid: 分组ID
+ **     sid: 会话ID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 判断聊天室不存在的话, 则新建聊天室.
+ **注意事项: 尽量使用读锁, 降低锁冲突.
+ **作    者: # Qifeng.zou # 2017.03.02 10:20:10 #
+ ******************************************************************************/
+func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
+	rs := ctx.rooms[rid%CT_ROOM_NUM]
+
+	/* > 查找ROOM对象 */
+	rs.RLock()
+	defer rs.RUnlock()
+
+	room, ok := rs.room[rid]
+	if !ok {
+		return 0 // 无数据
+	}
+
+	/* > 查找GROUP对象 */
+	room.RLock()
+	defer room.RUnlock()
+
+	gs := room.groups[gid%CT_GRP_NUM]
+
+	group, ok := gs.group[gid]
+	if !ok {
+		return 0 // 无数据
+	}
+
+	/* > 清理会话数据 */
+	group.Lock()
+	defer group.Unlock()
+
+	_, ok := group.sid_list[sid]
+	if ok {
+		return 0 // 无数据
+	}
+
+	delete(group.sid_list, sid)
+
+	atomic.AddUint64(&room.sid_num, -1)  // 人数减1
+	atomic.AddUint64(&group.sid_num, -1) // 人数减1
+
+	return 0
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -226,7 +306,6 @@ func (ctx *ChatTab) group_query(room *ChatRoom, gid uint32, lck int) *ChatGroup 
  **函数名称: group_trav
  **功    能: 遍历聊天室指定分组
  **输入参数:
- **     room: 聊天室
  **     group: 聊天室群组
  **     proc: 处理回调
  **     param: 附加参数
@@ -236,19 +315,12 @@ func (ctx *ChatTab) group_query(room *ChatRoom, gid uint32, lck int) *ChatGroup 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.23 20:26:40 #
  ******************************************************************************/
-func (ctx *ChatTab) group_trav(room *ChatRoom, group *ChatGroup, proc ChatTravProcCb, param interface{}) int {
+func (ctx *ChatTab) group_trav(group *ChatGroup, proc ChatTravProcCb, param interface{}) int {
 	group.RLock()
 	defer group.RUnlock()
 
-	for sid, exist := range group.sid_list {
-		ctx.session.RLock()
-		ssn, ok := ctx.session[sid]
-		if !ok {
-			ctx.session.RUnlock()
-			continue
-		}
-		proc(ssn, param)
-		ctx.session.RUnlock()
+	for sid, ok := range group.sid_list {
+		proc(sid, param)
 	}
 }
 
@@ -263,11 +335,15 @@ func (ctx *ChatTab) group_trav(room *ChatRoom, group *ChatGroup, proc ChatTravPr
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2017.02.23 20:26:40 #
+ **作    者: # Qifeng.zou # 2017.03.02 13:45:05 #
  ******************************************************************************/
 func (ctx *ChatTab) group_all_trav(room *ChatRoom, proc ChatTravProcCb, param interface{}) int {
-	for gid, group := range room.group {
-		ctx.group_trav(room, group, proc, param)
+	for _, gs := range room.groups {
+		gs.RLock()
+		for _, group := range gs.group {
+			ctx.group_trav(group, proc, param)
+		}
+		gs.RUnlock()
 	}
 }
 
@@ -280,9 +356,9 @@ func (ctx *ChatTab) group_all_trav(room *ChatRoom, proc ChatTravProcCb, param in
  **     ctx: TAB对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 将人数为0的聊天室数据
  **注意事项:
- **作    者: # Qifeng.zou # 2017.02.23 20:26:40 #
+ **作    者: # Qifeng.zou # 2017.03.02 13:44:22 #
  ******************************************************************************/
 func (room *ChatRoom) clean(ctx *ChatTab) {
 }

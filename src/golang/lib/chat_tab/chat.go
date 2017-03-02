@@ -14,7 +14,7 @@ const (
 )
 
 /* 遍历回调 */
-type ChatTravProcCb func(obj interface{}, param interface{}) int
+type ChatTravProcCb func(sid uint64, param interface{}) int
 
 /* 会话信息 */
 type ChatSession struct {
@@ -157,38 +157,25 @@ SIDLIST:
 /******************************************************************************
  **函数名称: SessionDel
  **功    能: 会话删除
- **输入参数: NONE
+ **输入参数:
+ **     sid: 会话ID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
+ **     1. 清理会话表中的数据
+ **     2. 清理聊天室各层级数据
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.22 20:54:53 #
  ******************************************************************************/
 func (ctx *ChatTab) SessionDel(sid uint64) int {
-	/* > 判断会话是否存在 */
-	ssn, ok := ctx.session[sid]
-	if !ok {
+	/* > 清理会话数据 */
+	ssn := ctx.session_del(sid)
+	if nil == ssn {
 		return 0 // 无数据
 	}
 
-	delete(ctx.session, sid)
-
-	/* > 清理ROOM信息 */
-	room, ok := ctx.room[rid]
-	if !ok {
-		return 0 // 无数据
-	}
-
-	atomic.AddUint64(&room.sid_num, -1)
-
-	group, ok := room.group[gid]
-	if !ok {
-		return 0 // 无数据
-	}
-
-	atomic.AddUint64(&group.sid_num, -1)
-
-	delete(group.sid_list, sid)
+	/* > 清理ROOM会话数据 */
+	ctx.room_del_session(ssn.rid, ssn.gid, sid)
 
 	return 0
 }
@@ -203,20 +190,23 @@ func (ctx *ChatTab) SessionDel(sid uint64) int {
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2017.02.22 21:16:08 #
+ **作    者: # Qifeng.zou # 2017.03.02 10:31:44 #
  ******************************************************************************/
 func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
-	ctx.ssn_lck.RLock()
-	defer ctx.ssn_lck.RUnlock()
+	ss := ctx.sessions[sid%CT_SSN_NUM]
 
-	ssn, ok := ctx.session[sid]
+	ss.RLock()
+	defer ss.RUnlock()
+
+	ssn, ok := ss.session[sid]
 	if !ok {
 		return -1 // 无数据
 	}
 
 	ssn.Lock()
+	defer ssn.Unlock()
+
 	ssn.sub[cmd] = true
-	ssn.Unlock()
 
 	return 0
 }
@@ -229,22 +219,25 @@ func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
  **     cmd: 订阅消息
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 移除会话对象中sub[cmd]便可.
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.22 21:23:25 #
  ******************************************************************************/
 func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
-	ctx.ssn_lck.RLock()
-	defer ctx.ssn_lck.RUnlock()
+	ss := ctx.sessions[sid%CT_SSN_NUM]
 
-	ssn, ok := ctx.session[sid]
+	ss.RLock()
+	defer ss.RUnlock()
+
+	ssn, ok := ss.session[sid]
 	if !ok {
-		return -1 // 无数据
+		return 0 // 无数据
 	}
 
 	ssn.Lock()
+	defer ssn.Unlock()
+
 	delete(ssn.sub, cmd)
-	ssn.Unlock()
 
 	return 0
 }
@@ -262,21 +255,20 @@ func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
  **作    者: # Qifeng.zou # 2017.02.22 21:31:37 #
  ******************************************************************************/
 func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
-	ctx.ssn_lck.RLock()
-	defer ctx.ssn_lck.RUnlock()
+	ss := ctx.sessions[sid%CT_SSN_NUM]
 
-	ssn, ok := ctx.session[sid]
+	ss.RLock()
+	defer ss.RUnlock()
+
+	ssn, ok := ss.session[sid]
 	if !ok {
-		return false
+		return false // 无数据
 	}
 
-	ssn.Lock()
-	defer ssn.Unlock()
+	ssn.RLock()
+	defer ssn.RUnlock()
 
 	v, ok := ssn.sub[cmd]
-	if !ok {
-		return false
-	}
 
 	return v
 }
@@ -296,25 +288,32 @@ func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
  **作    者: # Qifeng.zou # 2017.02.20 23:52:36 #
  ******************************************************************************/
 func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param interface{}) int {
-	ctx.room_lck.RLock()
-	defer ctx.room_lck.RUnlock()
+	rs := ctx.rooms[rid%CT_ROOM_NUM]
 
-	room, ok := ctx.room[rid]
+	rs.RLock()
+	defer rs.RUnlock()
+
+	room, ok := rs.room[rid]
 	if !ok {
-		return -1
+		return -1 // 无数据
 	} else if 0 == gid {
-		return ctx.trav_all_group(room, proc, param)
+		return ctx.group_all_trav(room, proc, param) // 遍历所有分组
 	}
 
 	room.RLock()
 	defer room.RUnlock()
 
-	group, ok := room.group[gid]
+	gs := room.groups[gid%CT_GRP_NUM]
+
+	gs.RLock()
+	defer gs.RUnlock()
+
+	group, ok := gs.group[gid]
 	if !ok {
-		return -1
+		return -1 // 无数据
 	}
 
-	return ctx.trav_group(room, group, proc, param)
+	return ctx.group_trav(group, proc, param)
 }
 
 /******************************************************************************
