@@ -77,6 +77,14 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 		return nil, errors.New("Initialize lws failed!")
 	}
 
+	/* > 初始化LWS协议 */
+	ctx.protocol = &lws.Protocol{
+		callback:             LsndLwsCallBack,              /* 处理回调 */
+		per_packet_head_size: binary.Size(comm.MesgHeader), /* 每个包的报头长度 */
+		get_packet_body_size: LsndGetMesgBodyLen,           /* 每个包的报体长度 */
+		param:                ctx,                          /* 附加参数 */
+	}
+
 	return ctx, nil
 }
 

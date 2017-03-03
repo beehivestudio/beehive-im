@@ -16,6 +16,9 @@ import (
 	"beehive-im/src/golang/lib/mesg"
 )
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /******************************************************************************
  **函数名称: LsndOnlineReqHandler
  **功    能: ONLINE消息的处理
@@ -31,8 +34,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.20 23:10:58 #
  ******************************************************************************/
-func LsndOnlineReqHandler(cmd uint32, dest uint32,
-	data []byte, length uint32, param interface{}) int {
+func LsndOnlineReqHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -61,7 +63,7 @@ func LsndOnlineReqHandler(cmd uint32, dest uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:54:37 #
  ******************************************************************************/
-func LsndBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func LsndBcAckHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -95,8 +97,7 @@ func LsndBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
  ******************************************************************************/
-func LsndP2pMsgHandler(cmd uint32, dest uint32,
-	data []byte, length uint32, param interface{}) int {
+func LsndP2pMsgHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -125,8 +126,7 @@ func LsndP2pMsgHandler(cmd uint32, dest uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:58:12 #
  ******************************************************************************/
-func LsndP2pMsgAckHandler(cmd uint32, dest uint32,
-	data []byte, length uint32, param interface{}) int {
+func LsndP2pMsgAckHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -388,8 +388,7 @@ func (ctx *LsndCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) in
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 22:49:17 #
  ******************************************************************************/
-func LsndSyncHandler(cmd uint32, dest uint32,
-	data []byte, length uint32, param interface{}) int {
+func LsndSyncHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
