@@ -232,15 +232,15 @@ func (ctx *MsgSvrCntx) sync_handler(
 		}
 
 		/* > 判断消息合法性 */
-		mesg_head := comm.MesgHeadNtoh([]byte(data))
-		if !mesg_head.IsValid() {
+		hhead := comm.MesgHeadNtoh([]byte(data))
+		if !hhead.IsValid() {
 			ctx.log.Error("Message header is invalid!")
 			pl.Send("ZREM", key, mesg_list[idx])
 			pl.Send("HDEL", mesg_key, msgid)
 			continue
 		}
 
-		switch mesg_head.GetCmd() {
+		switch hhead.GetCmd() {
 		case comm.CMD_CHAT: // 私聊消息
 			msg := &mesg.MesgChat{}
 
@@ -255,7 +255,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 
 			/* > 下发离线消息*/
 			ctx.send_data(comm.CMD_CHAT, head.GetSid(), head.GetNid(),
-				uint64(msgid), []byte(data[comm.MESG_HEAD_SIZE:]), mesg_head.GetLength())
+				uint64(msgid), []byte(data[comm.MESG_HEAD_SIZE:]), hhead.GetLength())
 		}
 	}
 	return 0, nil
