@@ -23,6 +23,7 @@ import (
  **函数名称: LsndOnlineReqHandler
  **功    能: ONLINE消息的处理
  **输入参数:
+ **     conn: 连接数据
  **     cmd: 消息类型
  **     orig: 帧听层ID
  **     data: 收到数据
@@ -34,7 +35,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.20 23:10:58 #
  ******************************************************************************/
-func LsndOnlineReqHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
+func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -52,6 +53,7 @@ func LsndOnlineReqHandler(conn *LsndConnObj, cmd uint32, data interface{}, lengt
  **函数名称: LsndBcAckHandler
  **功    能: 广播消息应答处理(待商议)
  **输入参数:
+ **     conn: 连接数据
  **     cmd: 消息类型
  **     orig: 帧听层ID
  **     data: 收到数据
@@ -63,7 +65,7 @@ func LsndOnlineReqHandler(conn *LsndConnObj, cmd uint32, data interface{}, lengt
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:54:37 #
  ******************************************************************************/
-func LsndBcAckHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
+func LsndBcAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -81,6 +83,7 @@ func LsndBcAckHandler(conn *LsndConnObj, cmd uint32, data interface{}, length ui
  **函数名称: LsndP2pMsgHandler
  **功    能: 点到点消息的处理
  **输入参数:
+ **     conn: 连接数据
  **     cmd: 消息类型
  **     orig: 帧听层ID
  **     data: 收到数据
@@ -97,7 +100,7 @@ func LsndBcAckHandler(conn *LsndConnObj, cmd uint32, data interface{}, length ui
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
  ******************************************************************************/
-func LsndP2pMsgHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
+func LsndP2pMsgHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -115,6 +118,7 @@ func LsndP2pMsgHandler(conn *LsndConnObj, cmd uint32, data interface{}, length u
  **函数名称: LsndP2pMsgAckHandler
  **功    能: 点到点应答的处理
  **输入参数:
+ **     conn: 连接数据
  **     cmd: 消息类型
  **     orig: 帧听层ID
  **     data: 收到数据
@@ -126,7 +130,7 @@ func LsndP2pMsgHandler(conn *LsndConnObj, cmd uint32, data interface{}, length u
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:58:12 #
  ******************************************************************************/
-func LsndP2pMsgAckHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
+func LsndP2pMsgAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -377,6 +381,7 @@ func (ctx *LsndCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) in
  **函数名称: LsndSyncHandler
  **功    能: 同步请求的处理
  **输入参数:
+ **     conn: 连接数据
  **     cmd: 消息类型
  **     orig: 帧听层ID
  **     data: 收到数据
@@ -388,7 +393,7 @@ func (ctx *LsndCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) in
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 22:49:17 #
  ******************************************************************************/
-func LsndSyncHandler(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int {
+func LsndSyncHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1

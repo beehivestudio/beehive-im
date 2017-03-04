@@ -42,7 +42,7 @@ func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
 func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int) int {
 	conn, ok := client.GetUserData().(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Get connection extra failed!")
+		ctx.log.Error("Get connection extra data failed!")
 		return -1
 	}
 
@@ -60,7 +60,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 		return 0
 	}
 
-	cb(extra, head.GetCmd(), data, length, param)
+	cb(conn, head.GetCmd(), data, length, param)
 
 	return 0
 }
@@ -81,7 +81,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int) int {
 	conn, ok := client.GetUserData().(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Get connection extra failed!")
+		ctx.log.Error("Get connection extra data failed!")
 		return -1
 	}
 
@@ -104,7 +104,7 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
 func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length int) int {
 	conn, ok := client.GetUserData().(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Get connection extra failed!")
+		ctx.log.Error("Get connection extra data failed!")
 		return -1
 	}
 

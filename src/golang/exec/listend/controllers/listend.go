@@ -20,6 +20,7 @@ type MesgCallBack func(conn *LsndConnExtra, cmd uint32, data interface{}, length
 type MesgCallBackItem struct {
 	cmd      uint32       /* 消息ID */
 	callback MesgCallBack /* 处理回调 */
+	param    interface{}  /* 附加参数 */
 }
 
 type MesgCallBackTab struct {
