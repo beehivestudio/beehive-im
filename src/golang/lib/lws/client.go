@@ -39,3 +39,8 @@ func (c *Client) GetUserData() interface{} {
 func (c *Client) SetUserData(user interface{}) {
 	c.user = user
 }
+
+/* 设置用户数据 */
+func (c *Client) SetUserData(user interface{}) {
+	c.user = user
+}

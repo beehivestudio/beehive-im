@@ -13,12 +13,14 @@ import (
  **输出参数:
  **返    回: 0:正常 !0:异常
  **实现描述:
- **注意事项: 返回!0值将导致连接断开
+ **注意事项: 每个连接只会调用此函数1次
  **作    者: # Qifeng.zou # 2017.03.04 18:53:16 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
 	conn := &LsndConnExtra{
-		sid: 0,
+		sid:    0,
+		cid:    client.GetCid(),
+		status: CONN_STAT_READY,
 	}
 
 	client.SetUserData(conn)
@@ -48,8 +50,10 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 
 	/* > 字节序转化 */
 	head := comm.MesgHeadNtoh(data)
+	head.SetNid(ctx.get_nid())
 	if !head.IsValid() {
-		ctx.log.Error("Mesg head is invalid!")
+		ctx.log.Error("Mesg head is invalid! cmd:0x%04X sid:%d nid:%d chksum:0x%X",
+			head.GetCmd(), head.GetSid(), head.GetNid(), head.GetChkSum())
 		return -1
 	}
 
@@ -84,6 +88,11 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
 	}
+
+	head := comm.MesgHeadNtoh(data)
+
+	ctx.log.Debug("Send data to cid [%d]! cmd:0x%04X sid:%d flag:%d chksum:0x%08X",
+		conn.cid, head.GetCmd(), head.GetSid(), head.GetFlag(), head.GetChkSum())
 
 	return 0
 }

@@ -14,8 +14,18 @@ import (
 	"beehive-im/src/golang/lib/rtmq"
 )
 
+/* 连接状态定义 */
+const (
+	CONN_STATUS_READY  = 1 // 预备状态: 已建立好网络连接
+	CONN_STATUS_CHECK  = 2 // 登录校验: 正在进行上线校验
+	CONN_STATUS_LOGON  = 3 // 登录成功: 上线校验成功
+	CONN_STATUS_KICK   = 4 // 连接被踢: 已加入到被踢列表
+	CONN_STATUS_LOGOUT = 5 // 退出登录: 收到退出指令
+	CONN_STATUS_CLOSE  = 6 // 连接关闭: 连接已经关闭 等待数据释放
+)
+
 /* 上行消息处理回调类型 */
-type MesgCallBack func(conn *LsndConnExtra, cmd uint32, data interface{}, length uint32, param interface{}) int
+type MesgCallBack func(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int
 
 type MesgCallBackItem struct {
 	cmd      uint32       /* 消息ID */
@@ -39,7 +49,9 @@ type LsndCntx struct {
 
 /* CONN扩展数据 */
 type LsndConnExtra struct {
-	sid uint64 /* 会话ID */
+	sid    uint64 /* 会话ID */
+	cid    uint64 /* 连接ID */
+	status int    /* 连接状态(CONN_STATUS_READY...) */
 }
 
 /******************************************************************************
@@ -91,10 +103,10 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 
 	/* > 初始化LWS协议 */
 	ctx.protocol = &lws.Protocol{
-		Callback:           LsndLwsCallBack,              /* 处理回调 */
-		PerPacketHeadSize:  binary.Size(comm.MesgHeader), /* 每个包的报头长度 */
-		GetPacketBodyLenCb: LsndGetMesgBodyLen,           /* 每个包的报体长度 */
-		Param:              ctx,                          /* 附加参数 */
+		Callback:           LsndLwsCallBack,     /* 处理回调 */
+		PerPacketHeadSize:  comm.MESG_HEAD_SIZE, /* 每个包的报头长度 */
+		GetPacketBodyLenCb: LsndGetMesgBodyLen,  /* 每个包的报体长度 */
+		Param:              ctx,                 /* 附加参数 */
 	}
 
 	return ctx, nil
