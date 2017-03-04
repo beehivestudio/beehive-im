@@ -21,7 +21,7 @@ import (
  **功    能: 广播消息的处理(待商议)
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -51,7 +51,7 @@ func MsgSvrBcHandler(cmd uint32, dest uint32,
  **功    能: 广播消息应答处理(待商议)
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -80,7 +80,7 @@ func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, par
  **功    能: 点到点消息的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -115,7 +115,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
  **功    能: 点到点应答的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -378,7 +378,7 @@ func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) 
  **功    能: 同步请求的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参

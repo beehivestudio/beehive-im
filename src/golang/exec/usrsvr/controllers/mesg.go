@@ -455,7 +455,7 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
  **     length: 数据长度
  **     param: 附加参数
  **输出参数: NONE
- **返    回: VOID
+ **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
@@ -2773,7 +2773,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
- **     orig: 业务层ID
+ **     dest: 业务层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
