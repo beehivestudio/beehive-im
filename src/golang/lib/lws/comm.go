@@ -1,5 +1,10 @@
 package lws
 
+import (
+	"sync"
+	"sync/atomic"
+)
+
 /******************************************************************************
  **函数名称: conn_handler
  **功    能: 连接请求处理
@@ -20,11 +25,16 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &Client{ctx: ctx, conn: conn, sendq: make(chan []byte, ctx.conf.SendqMax)}
+	client := &Client{
+		ctx:   ctx,                                  /* 全局对象 */
+		cid:   atomic.AddUint64(&ctx.cid),           /* 连接ID */
+		conn:  conn,                                 /* 连接对象 */
+		sendq: make(chan []byte, ctx.conf.SendqMax), /* 发送队列 */
+	}
 
 	/* 创建连接的回调 */
 	ret := ctx.protocol.Callback(client.ctx, client,
-		LWS_CALLBACK_REASON_CREAT, client.user, nil, 0, ctx.protocol.Param)
+		LWS_CALLBACK_REASON_CREAT, nil, 0, ctx.protocol.Param)
 	if 0 != ret {
 		log.Println("Create socket failed!")
 		return
@@ -47,10 +57,10 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 func (client *Client) recv_routine() {
 	ctx := client.ctx
 	defer func() {
-		client.ctx.unregister <- client
+		ctx.unregister <- client
 		client.conn.Close()
 		ctx.protocol.Callback(ctx, client,
-			LWS_CALLBACK_REASON_CLOSE, client.user, nil, 0, ctx.protocol.Param)
+			LWS_CALLBACK_REASON_CLOSE, nil, 0, ctx.protocol.Param)
 	}()
 
 	for {
@@ -67,7 +77,7 @@ func (client *Client) recv_routine() {
 
 		/* 调用回调函数(注意:返回非0值将导致连接被关闭) */
 		if ctx.protocol.Callback(ctx, client,
-			LWS_CALLBACK_REASON_RECEIVE, client.user, data, len(data), ctx.protocol.Param) {
+			LWS_CALLBACK_REASON_RECEIVE, data, len(data), ctx.protocol.Param) {
 			break
 		}
 	}

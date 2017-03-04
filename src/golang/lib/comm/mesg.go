@@ -211,7 +211,7 @@ func MesgHeadNtoh(data []byte) *MesgHeader {
 }
 
 /* 校验头部数据的合法性 */
-func MesgHeadIsValid(header *MesgHeader) bool {
+func (header *MesgHeader) IsValid() bool {
 	if MSG_CHKSUM_VAL != header.ChkSum ||
 		0 == header.Sid || 0 == header.Nid {
 		return false

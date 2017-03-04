@@ -19,8 +19,8 @@ const (
 	LWS_CALLBACK_REASON_CLOSE = 4 /* 关闭连接 */
 )
 
-type LwsCallback func(ctx *LwsCntx, client *socket_t,
-	reason int, user interface{}, in interface{}, length int, param interface{}) int
+type LwsCallback func(ctx *LwsCntx, client *Client,
+	reason int, data interface{}, length int, param interface{}) int
 type LwsGetPacketBodyLenFunc func(void *head) uint32
 
 /* 帧听协议 */

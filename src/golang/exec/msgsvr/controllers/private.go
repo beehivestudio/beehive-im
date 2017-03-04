@@ -281,7 +281,7 @@ func (ctx *MsgSvrCntx) chat_ack_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgChatAck, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !comm.MesgHeadIsValid(head) {
+	if !head.IsValid() {
 		ctx.log.Error("Header of private chat message failed!")
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID,
 			errors.New("Header of private chat message failed!")

@@ -15,11 +15,16 @@ import (
 )
 
 /* 上行消息处理回调类型 */
-type MesgCallback func(conn *LsndConnObj, cmd uint32, data interface{}, length uint32, param interface{}) int
+type MesgCallBack func(conn *LsndConnExtra, cmd uint32, data interface{}, length uint32, param interface{}) int
 
-type MesgCallbackObj struct {
-	sync.RWLock
-	callback map[uint32]MesgCallback /* 消息处理回调(上行) */
+type MesgCallBackItem struct {
+	cmd      uint32       /* 消息ID */
+	callback MesgCallBack /* 处理回调 */
+}
+
+type MesgCallBackTab struct {
+	sync.RWLock                             /* 读写锁 */
+	callback    map[uint32]MesgCallBackItem /* 消息处理回调(上行) */
 }
 
 /* LISTEND上下文 */
@@ -27,8 +32,13 @@ type LsndCntx struct {
 	conf     *LsndConf           /* 配置信息 */
 	log      *logs.BeeLogger     /* 日志对象 */
 	frwder   *rtmq.RtmqProxyCntx /* 代理对象 */
-	callback MesgCallbackObj     /* 处理回调 */
+	callback MesgCallBackTab     /* 处理回调 */
 	protocol *lws.Protocol       /* LWS.PROTOCOL */
+}
+
+/* CONN扩展数据 */
+type LsndConnExtra struct {
+	sid uint64 /* 会话ID */
 }
 
 /******************************************************************************

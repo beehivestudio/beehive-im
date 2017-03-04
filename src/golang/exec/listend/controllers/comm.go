@@ -11,16 +11,24 @@ import ()
  **输入参数:
  **     cmd: 消息类型
  **     cb: 处理回调
+ **     param: 附加数据
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项: 使用读锁
  **作    者: # Qifeng.zou # 2017.02.09 23:50:28 #
  ******************************************************************************/
-func (obj *MesgCallbackObj) Register(cmd uint32, cb MesgCallback) {
-	obj.Lock()
-	obj.callback[cmd] = cb
-	obj.Unlock()
+func (tab *MesgCallBackTab) Register(cmd uint32, cb MesgCallBack, param interface{}) int {
+	item := &MesgCallBackItem{
+		cmd:   cmd,
+		cb:    cb,
+		param: param,
+	}
+
+	tab.Lock()
+	tab.callback[cmd] = item
+	tab.Unlock()
+
 	return 0
 }
 
@@ -30,21 +38,25 @@ func (obj *MesgCallbackObj) Register(cmd uint32, cb MesgCallback) {
  **输入参数:
  **     cmd: 消息类型
  **输出参数: NONE
- **返    回: 回调函数指针
+ **返    回:
+ **     cb: 回调函数
+ **     param: 附加数据
  **实现描述:
  **注意事项: 使用读锁
  **作    者: # Qifeng.zou # 2017.02.09 23:50:28 #
  ******************************************************************************/
-func (obj *MesgCallbackObj) Query(cmd uint32) MesgCallback {
-	obj.RLock()
-	cb, ok := obj.callback[cmd]
+func (tab *MesgCallBackTab) Query(cmd uint32) (cb MesgCallBack, param interface{}) {
+	tab.RLock()
+	item, ok := tab.callback[cmd]
 	if !ok {
-		obj.RUnlock()
-		return nil
+		tab.RUnlock()
+		return nil, nil
 	}
-	obj.RUnlock()
+	cb := item.cb
+	param := item.param
+	tab.RUnlock()
 
-	return cb
+	return cb, param
 }
 
 ////////////////////////////////////////////////////////////////////////////////
