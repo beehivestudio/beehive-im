@@ -15,3 +15,10 @@ const (
 	TIME_DAY  = 86400     // 天
 	TIME_WEEK = 7 * 86400 // 周
 )
+
+/* 加锁方式 */
+const (
+	NOLOCK = 0 // 不加锁
+	RDLOCK = 1 // 加读锁
+	WRLOCK = 2 // 加写锁
+)

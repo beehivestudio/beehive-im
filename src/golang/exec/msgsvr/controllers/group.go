@@ -150,7 +150,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 	/* 2. 下发群聊消息 */
 	ctx.gid_to_nid_map.RLock()
 	nid_list, ok := ctx.gid_to_nid_map.m[req.GetGid()]
-	if false == ok {
+	if !ok {
 		ctx.gid_to_nid_map.RUnlock()
 		return nil
 	}
@@ -189,7 +189,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 func MsgSvrGroupChatHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -236,7 +236,7 @@ func MsgSvrGroupChatHandler(cmd uint32, dest uint32,
 func MsgSvrGroupChatAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 

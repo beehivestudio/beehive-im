@@ -69,13 +69,12 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log); // OK
 
 uint32_t chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid); // OK
 int chat_del_session(chat_tab_t *chat, uint64_t sid); // OK
-int chat_timeout_hdl(chat_tab_t *chat);
 
 int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 
 int chat_room_trav(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc, void *args); // OK
-int chat_timeout_clean_hdl(chat_tab_t *chat);
+int chat_clean_hdl(chat_tab_t *chat);
 
 #endif /*__CHAT_H__*/

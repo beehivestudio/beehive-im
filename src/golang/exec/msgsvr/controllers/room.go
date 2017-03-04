@@ -32,7 +32,7 @@ func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomChat, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !comm.MesgHeadIsValid(head) {
+	if !head.IsValid() {
 		ctx.log.Error("Message header of room-chat is invalid!")
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Header is invalid!")
 	}
@@ -155,7 +155,7 @@ func (ctx *MsgSvrCntx) room_chat_handler(
 	/* 2. 下发聊天室消息 */
 	ctx.rid_to_nid_map.RLock()
 	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
-	if false == ok {
+	if !ok {
 		ctx.rid_to_nid_map.RUnlock()
 		return nil
 	}
@@ -194,7 +194,7 @@ func (ctx *MsgSvrCntx) room_chat_handler(
 func MsgSvrRoomChatHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -239,7 +239,7 @@ func MsgSvrRoomChatHandler(cmd uint32, dest uint32,
 func MsgSvrRoomChatAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -274,7 +274,7 @@ func MsgSvrRoomChatAckHandler(cmd uint32, dest uint32,
 func MsgSvrRoomBcHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -304,7 +304,7 @@ func MsgSvrRoomBcHandler(cmd uint32, dest uint32,
 func MsgSvrRoomBcAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 

@@ -21,7 +21,7 @@ import (
  **功    能: 广播消息的处理(待商议)
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -34,7 +34,7 @@ import (
 func MsgSvrBcHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -51,7 +51,7 @@ func MsgSvrBcHandler(cmd uint32, dest uint32,
  **功    能: 广播消息应答处理(待商议)
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -63,7 +63,7 @@ func MsgSvrBcHandler(cmd uint32, dest uint32,
  ******************************************************************************/
 func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -80,7 +80,7 @@ func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, par
  **功    能: 点到点消息的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -98,7 +98,7 @@ func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, par
 func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -115,7 +115,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
  **功    能: 点到点应答的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -128,7 +128,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
 func MsgSvrP2pMsgAckHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 
@@ -159,7 +159,7 @@ func (ctx *MsgSvrCntx) sync_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgSync, code uint32, err error) {
 	/* 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !comm.MesgHeadIsValid(head) {
+	if !head.IsValid() {
 		ctx.log.Error("Message header of sync is invalid!")
 		return nil, nil, comm.ERR_SVR_PARSE_PARAM, errors.New("Header of sync-req invalid!")
 	}
@@ -232,15 +232,15 @@ func (ctx *MsgSvrCntx) sync_handler(
 		}
 
 		/* > 判断消息合法性 */
-		mesg_head := comm.MesgHeadNtoh([]byte(data))
-		if !comm.MesgHeadIsValid(mesg_head) {
+		hhead := comm.MesgHeadNtoh([]byte(data))
+		if !hhead.IsValid() {
 			ctx.log.Error("Message header is invalid!")
 			pl.Send("ZREM", key, mesg_list[idx])
 			pl.Send("HDEL", mesg_key, msgid)
 			continue
 		}
 
-		switch mesg_head.GetCmd() {
+		switch hhead.GetCmd() {
 		case comm.CMD_CHAT: // 私聊消息
 			msg := &mesg.MesgChat{}
 
@@ -255,7 +255,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 
 			/* > 下发离线消息*/
 			ctx.send_data(comm.CMD_CHAT, head.GetSid(), head.GetNid(),
-				uint64(msgid), []byte(data[comm.MESG_HEAD_SIZE:]), mesg_head.GetLength())
+				uint64(msgid), []byte(data[comm.MESG_HEAD_SIZE:]), hhead.GetLength())
 		}
 	}
 	return 0, nil
@@ -378,7 +378,7 @@ func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) 
  **功    能: 同步请求的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     dest: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -391,7 +391,7 @@ func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) 
 func MsgSvrSyncHandler(cmd uint32, dest uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
-	if false == ok {
+	if !ok {
 		return -1
 	}
 

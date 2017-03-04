@@ -267,7 +267,6 @@ static int lsnd_conf_parse_access_queue(xml_tree_t *xml, acc_conf_t *conf, log_c
 
     /* > 获取队列配置 */
     LSND_LOAD_QUEUE(xml, fix, ".CONNQ", &conf->connq);
-    LSND_LOAD_QUEUE(xml, fix, ".RECVQ", &conf->recvq);
     LSND_LOAD_QUEUE(xml, fix, ".SENDQ", &conf->sendq);
 
     return 0;
@@ -465,35 +464,6 @@ static int lsnd_conf_load_frwder(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t 
 
     conf->recv_buff_size = str_to_num(node->value.str) * MB;
     if (0 == conf->recv_buff_size) {
-        return -1;
-    }
-
-    /* > 接收队列 */
-    node = xml_search(xml, parent, "RECVQ.MAX");
-    if (NULL == node
-        || 0 == node->value.len)
-    {
-        log_error(log, "Didn't find RECVQ.MAX!");
-        return -1;
-    }
-
-    conf->recvq.max = str_to_num(node->value.str);
-    if (0 == conf->recvq.max) {
-        log_error(log, "RECVQ.MAX is zero!");
-        return -1;
-    }
-
-    node = xml_search(xml, parent, "RECVQ.SIZE");
-    if (NULL == node
-        || 0 == node->value.len)
-    {
-        log_error(log, "Didn't find RECVQ.SIZE!");
-        return -1;
-    }
-
-    conf->recvq.size = str_to_num(node->value.str);
-    if (0 == conf->recvq.size) {
-        log_error(log, "RECVQ.SIZE is zero!");
         return -1;
     }
 
