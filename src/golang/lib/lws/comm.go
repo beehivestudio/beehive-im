@@ -23,8 +23,8 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 	client := &Client{ctx: ctx, conn: conn, sendq: make(chan []byte, ctx.conf.SendqMax)}
 
 	/* 创建连接的回调 */
-	ret := ctx.protocol.callback(client.ctx, client,
-		LWS_CALLBACK_REASON_CREAT, client.user, nil, 0, ctx.protocol.param)
+	ret := ctx.protocol.Callback(client.ctx, client,
+		LWS_CALLBACK_REASON_CREAT, client.user, nil, 0, ctx.protocol.Param)
 	if 0 != ret {
 		log.Println("Create socket failed!")
 		return
@@ -49,8 +49,8 @@ func (client *Client) recv_routine() {
 	defer func() {
 		client.ctx.unregister <- client
 		client.conn.Close()
-		ctx.protocol.callback(ctx, client,
-			LWS_CALLBACK_REASON_CLOSE, client.user, nil, 0, ctx.protocol.param)
+		ctx.protocol.Callback(ctx, client,
+			LWS_CALLBACK_REASON_CLOSE, client.user, nil, 0, ctx.protocol.Param)
 	}()
 
 	for {
@@ -63,11 +63,11 @@ func (client *Client) recv_routine() {
 			break
 		}
 
-		length := ctx.protocol.get_packet_body_size(data) // 获取报体长度
+		length := ctx.protocol.GetPacketBodyLenCb(data) // 获取报体长度
 
 		/* 调用回调函数(注意:返回非0值将导致连接被关闭) */
-		if ctx.protocol.callback(ctx, client,
-			LWS_CALLBACK_REASON_RECEIVE, client.user, data, len(data), ctx.protocol.param) {
+		if ctx.protocol.Callback(ctx, client,
+			LWS_CALLBACK_REASON_RECEIVE, client.user, data, len(data), ctx.protocol.Param) {
 			break
 		}
 	}

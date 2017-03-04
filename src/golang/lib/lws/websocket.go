@@ -9,27 +9,26 @@ const (
 	LWS_WRITE_WAIT_SEC  = 10 * time.Second             /* 最大发送阻塞时间 */
 	LWS_PONG_WAIT_SEC   = 60 * time.Second             /* 接收PONG的间隔时间 */
 	LWS_PING_PERIOD_SEC = (LWS_PONG_WAIT_SEC * 9) / 10 /* 发送PING的间隔时间 */
-	maxMessageSize      = 8192                         /* 一次接收最大消息长度 */
 )
 
 /* 回调原因 */
 const (
 	LWS_CALLBACK_REASON_CREAT = 1 /* 创建连接 */
 	LWS_CALLBACK_REASON_RECV  = 2 /* 接收数据 */
-	LWS_CALLBACK_REASON_WRITE = 3 /* 发送数据 */
+	LWS_CALLBACK_REASON_SEND  = 3 /* 发送数据 */
 	LWS_CALLBACK_REASON_CLOSE = 4 /* 关闭连接 */
 )
 
-type lws_callback_t func(ctx *LwsCntx, client *socket_t,
+type LwsCallback func(ctx *LwsCntx, client *socket_t,
 	reason int, user interface{}, in interface{}, length int, param interface{}) int
-type lws_get_packet_body_size_cb func(void *head) uint32
+type LwsGetPacketBodyLenFunc func(void *head) uint32
 
 /* 帧听协议 */
 type Protocol struct {
-	callback             lws_callback_t              /* 处理回调 */
-	per_packet_head_size uint32                      /* 每个包的报头长度 */
-	get_packet_body_size lws_get_packet_body_size_cb /* 每个包的报体长度 */
-	param                interface{}                 /* 附加参数 */
+	Callback           LwsCallback             /* 处理回调 */
+	PerPacketHeadSize  uint32                  /* 每个包的报头长度 */
+	GetPacketBodyLenCb LwsGetPacketBodyLenFunc /* 每个包的报体长度 */
+	Param              interface{}             /* 附加参数 */
 }
 
 /* 连接池对象 */
