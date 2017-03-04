@@ -20,7 +20,7 @@ type LsndConf struct {
 	ConfPath  string                  // 配置路径(自动获取)
 	Log       log.LogConf             // 日志配置
 	Operator  LsndConfOperatorXmlData // 运营商信息
-	Websocket lws.Conf                // WEBSOCKET配置
+	WebSocket lws.Conf                // WEBSOCKET配置
 	frwder    rtmq.RtmqProxyConf      // RTMQ配置
 }
 
@@ -92,7 +92,7 @@ type LsndConfXmlData struct {
 	Id        uint32                   `xml:"ID,attr"`   // 结点ID
 	Log       LsndConfLogXmlData       `xml:"LOG"`       // 日志配置
 	Operator  LsndConfOperatorXmlData  `xml:"OPERATOR"`  // 运营商信息
-	Websocket LsndConfWebsocketXmlData `xml:"WEBSOCKET"` // WEBSOCKET配置
+	WebSocket LsndConfWebsocketXmlData `xml:"WEBSOCKET"` // WEBSOCKET配置
 	Frwder    LsndConfRtmqProxyXmlData `xml:"FRWDER"`    // RTMQ PROXY配置
 }
 
@@ -170,11 +170,11 @@ func (conf *LsndConf) conf_parse() (err error) {
 	}
 
 	/* > 侦听配置 */
-	conf.Websocket.Ip = node.Websocket.Ip                       // IP地址
-	conf.Websocket.Port = node.Websocket.Port                   // 端口号
-	conf.Websocket.Max = node.Websocket.Connections.Max         // 最大连接限制
-	conf.Websocket.Timeout = node.Websocket.Connections.Timeout // 连接超时时间
-	conf.Websocket.SendqMax = node.Websocket.Sendq.Max          // 发送队列长度
+	conf.WebSocket.Ip = node.WebSocket.Ip                       // IP地址
+	conf.WebSocket.Port = node.WebSocket.Port                   // 端口号
+	conf.WebSocket.Max = node.WebSocket.Connections.Max         // 最大连接限制
+	conf.WebSocket.Timeout = node.WebSocket.Connections.Timeout // 连接超时时间
+	conf.WebSocket.SendqMax = node.WebSocket.Sendq.Max          // 发送队列长度
 
 	/* > FRWDER配置 */
 	conf.frwder.NodeId = conf.NodeId

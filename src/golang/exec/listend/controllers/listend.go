@@ -28,6 +28,7 @@ type LsndCntx struct {
 	log      *logs.BeeLogger     /* 日志对象 */
 	frwder   *rtmq.RtmqProxyCntx /* 代理对象 */
 	callback MesgCallbackObj     /* 处理回调 */
+	protocol *lws.Protocol       /* LWS.PROTOCOL */
 }
 
 /******************************************************************************
@@ -44,9 +45,9 @@ type LsndCntx struct {
  **作    者: # Qifeng.zou # 2017.02.08 22:42:49 #
  ******************************************************************************/
 func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
-	ctx = &LsndCntx{}
-
-	ctx.conf = conf
+	ctx = &LsndCntx{
+		conf: conf,
+	}
 
 	/* > 初始化日志 */
 	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "websocket.log")
@@ -64,11 +65,11 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 	/* > 初始化LWS模块 */
 	addr := fmt.Sprintf("%s:%d", conf.Access.Ip, conf.Access.Port)
 	lws_conf := &lws.Conf{
-		Ip:       conf.Websocket.Ip,
-		Port:     conf.Websocket.Port,
-		Max:      conf.Websocket.Max,
-		Timeout:  conf.Websocket.Timeout,
-		SendqMax: conf.Websocket.SendqMax,
+		Ip:       conf.WebSocket.Ip,
+		Port:     conf.WebSocket.Port,
+		Max:      conf.WebSocket.Max,
+		Timeout:  conf.WebSocket.Timeout,
+		SendqMax: conf.WebSocket.SendqMax,
 	}
 
 	ctx.lws = lws.Init(lws_conf, ctx.log)
@@ -79,10 +80,10 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 
 	/* > 初始化LWS协议 */
 	ctx.protocol = &lws.Protocol{
-		callback:             LsndLwsCallBack,              /* 处理回调 */
-		per_packet_head_size: binary.Size(comm.MesgHeader), /* 每个包的报头长度 */
-		get_packet_body_size: LsndGetMesgBodyLen,           /* 每个包的报体长度 */
-		param:                ctx,                          /* 附加参数 */
+		Callback:           LsndLwsCallBack,              /* 处理回调 */
+		PerPacketHeadSize:  binary.Size(comm.MesgHeader), /* 每个包的报头长度 */
+		GetPacketBodyLenCb: LsndGetMesgBodyLen,           /* 每个包的报体长度 */
+		Param:              ctx,                          /* 附加参数 */
 	}
 
 	return ctx, nil
@@ -168,6 +169,6 @@ func (ctx *LsndCntx) Register() {
  ******************************************************************************/
 func (ctx *LsndCntx) Launch() {
 	go ctx.task()
-	ctx.lws.Launch()
+	ctx.lws.Launch(ctx.protocol)
 	ctx.frwder.Launch()
 }
