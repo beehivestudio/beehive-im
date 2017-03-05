@@ -1,22 +1,17 @@
 package controllers
 
 import (
-	_ "encoding/binary"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-	_ "time"
 
-	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
-	"beehive-im/src/golang/lib/im"
 	"beehive-im/src/golang/lib/mesg"
 )
 
-////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -32,7 +27,7 @@ import (
  **返    回: 0:成功 !0:失败
  **实现描述: 将ONLINE请求转发给上游模块
  **注意事项:
- **作    者: # Qifeng.zou # 2017.02.20 23:10:58 #
+ **作    者: # Qifeng.zou # 2017.03.04 23:10:58 #
  ******************************************************************************/
 func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
@@ -75,11 +70,10 @@ func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndBcAckHandler
- **功    能: 广播消息应答处理(待商议)
+ **函数名称: LsndPingHandler
+ **功    能: PING处理
  **输入参数:
  **     conn: 连接数据
  **     cmd: 消息类型
@@ -88,11 +82,11 @@ func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
  **     param: 附加参
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述: 直接转发给上游模块
+ **实现描述: 回复PONG, 并转发给上游模块
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 23:40:55 #
  ******************************************************************************/
-func LsndBcAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -110,6 +104,11 @@ func LsndBcAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint3
 
 	comm.MesgHeadHton(head, p)
 
+	/* > 回复PONG */
+	head.SetCmd(comm.CMD_PONG)
+
+	ctx.lws.AsyncSend(conn.cid, []byte(head))
+
 	/* > 转发给上游模块 */
 	ctx.frwder.AsyncSend(cmd, data, length)
 
@@ -119,11 +118,10 @@ func LsndBcAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint3
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndP2pMsgHandler
- **功    能: 点到点消息的处理
+ **函数名称: LsndSubReqHandler
+ **功    能: 订阅请求处理
  **输入参数:
  **     conn: 连接数据
  **     cmd: 消息类型
@@ -134,15 +132,15 @@ func LsndBcAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint3
  **返    回: 0:成功 !0:失败
  **实现描述: 直接转发给上游模块
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
+ **作    者: # Qifeng.zou # 2017.03.04 21:56:56 #
  ******************************************************************************/
-func LsndP2pMsgHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndSubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv p2p message!")
+	ctx.log.Debug("Recv sub request!")
 
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
@@ -163,11 +161,10 @@ func LsndP2pMsgHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndP2pMsgAckHandler
- **功    能: 点到点应答的处理
+ **函数名称: LsndUnsubReqHandler
+ **功    能: 取消订阅处理
  **输入参数:
  **     conn: 连接数据
  **     cmd: 消息类型
@@ -176,41 +173,50 @@ func LsndP2pMsgHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint
  **     param: 附加参
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述: 将离线消息从离线队列中删除.
+ **实现描述: 移除订阅消息, 再转发给上游模块
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.09 21:58:12 #
+ **作    者: # Qifeng.zou # 2017.03.04 22:58:12 #
  ******************************************************************************/
-func LsndP2pMsgAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndUnsubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv p2p message ack!")
+	ctx.log.Debug("Recv unsub request!")
 
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
 	head.SetNid(ctx.get_nid())
 
-	/* > 主机->网络字节序 */
-	p := &comm.MesgPacket{Buff: data}
+	/* > 移除订阅消息 */
+	req := &mesg.MesgUnsubReq{}
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal unsub request failed! errmsg:%s", err.Error())
+		return -1
+	}
 
-	comm.MesgHeadHton(head, p)
+	ctx.chat.SubDel(head.GetSid(), req.GetSub()) /* 移除订阅消息 */
 
 	/* > 转发给上游模块 */
-	ctx.frwder.AsyncSend(cmd, data, length)
+	p := &comm.MesgPacket{Buff: data}
+
+	comm.MesgHeadHton(head, p) /* 字节序转换 */
+
+	ctx.frwder.AsyncSend(cmd, data, length) /* 转发给上游 */
 
 	ctx.log.Debug("Header data! cmd:0x%04X sid:%d", head.GetCmd(), head.GetSid())
 
+	return 0
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndSyncHandler
- **功    能: 同步请求的处理
+ **函数名称: LsndMesgForwardHandler
+ **功    能: 直接转发给上游模块
  **输入参数:
  **     conn: 连接数据
  **     cmd: 消息类型
@@ -221,15 +227,13 @@ func LsndP2pMsgAckHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
  **返    回: 0:成功 !0:失败
  **实现描述: 直接将消息转发给上游模块
  **注意事项:
- **作    者: # Qifeng.zou # 2017.01.14 22:49:17 #
+ **作    者: # Qifeng.zou # 2017.03.04 22:49:17 #
  ******************************************************************************/
-func LsndSyncHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgForwardHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
-
-	ctx.log.Debug("Recv sync request!")
 
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
@@ -248,6 +252,3 @@ func LsndSyncHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32
 
 	return 0
 }
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////

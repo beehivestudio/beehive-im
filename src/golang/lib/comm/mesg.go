@@ -94,10 +94,10 @@ const (
 	CMD_GROUP_MGR_DEL_NTC  = 0x0358 /* 解除群组管理员通知 */
 
 	/* 聊天室消息 */
-	CMD_ROOM_CREAT       = 0x0401 /* 加入聊天室 */
-	CMD_ROOM_CREAT_ACK   = 0x0402 /* 加入聊天室应答 */
-	CMD_ROOM_DISMISS     = 0x0403 /* 退出聊天室 */
-	CMD_ROOM_DISMISS_ACK = 0x0404 /* 退出聊天室应答 */
+	CMD_ROOM_CREAT       = 0x0401 /* 创建聊天室 */
+	CMD_ROOM_CREAT_ACK   = 0x0402 /* 创建聊天室应答 */
+	CMD_ROOM_DISMISS     = 0x0403 /* 解散聊天室 */
+	CMD_ROOM_DISMISS_ACK = 0x0404 /* 解散聊天室应答 */
 	CMD_ROOM_JOIN_REQ    = 0x0405 /* 加入聊天室 */
 	CMD_ROOM_JOIN_ACK    = 0x0406 /* 加入聊天室应答 */
 	CMD_ROOM_QUIT_REQ    = 0x0407 /* 退出聊天室 */

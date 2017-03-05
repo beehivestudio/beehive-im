@@ -7,6 +7,7 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
+	"beehive-im/src/golang/lib/chat_tab"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/lws"
@@ -45,6 +46,7 @@ type LsndCntx struct {
 	frwder   *rtmq.RtmqProxyCntx /* 代理对象 */
 	callback MesgCallBackTab     /* 处理回调 */
 	protocol *lws.Protocol       /* LWS.PROTOCOL */
+	chat     *chat_tab.ChatTab   /* 聊天关系组织表 */
 }
 
 /* CONN扩展数据 */
@@ -128,26 +130,30 @@ func (ctx *LsndCntx) Register() {
 	/* > 通用消息 */
 	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)
 	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_SYNC, LsndOfflineReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_PING, LsndPingHandler, ctx)
+	ctx.callback.Register(comm.CMD_SUB_REQ, LsndSubReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_UNSUB_REQ, LsndUnsubReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_SYNC, LsndMesgForwardHandler, ctx)
+	ctx.callback.Register(comm.CMD_ALLOC_SEQ, LsndMesgForwardHandler, ctx)
 
 	/* > 私聊消息 */
-	ctx.callback.Register(comm.CMD_CHAT, LsndChatHandler, ctx)
-	ctx.callback.Register(comm.CMD_CHAT_ACK, LsndChatAckHandler, ctx)
+	ctx.callback.Register(comm.CMD_CHAT, LsndMesgForwardHandler, ctx)
+	ctx.callback.Register(comm.CMD_CHAT_ACK, LsndMesgForwardHandler, ctx)
 
 	/* > 群聊消息 */
-	ctx.callback.Register(comm.CMD_GROUP_CHAT, LsndGroupChatHandler, ctx)
-	ctx.callback.Register(comm.CMD_GROUP_CHAT_ACK, LsndGroupChatAckHandler, ctx)
+	ctx.callback.Register(comm.CMD_GROUP_CHAT, LsndMesgForwardHandler, ctx)
+	ctx.callback.Register(comm.CMD_GROUP_CHAT_ACK, LsndMesgForwardHandler, ctx)
 
 	/* > 聊天室消息 */
-	ctx.callback.Register(comm.CMD_ROOM_CHAT, LsndRoomChatHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_CHAT_ACK, LsndRoomChatAckHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_CHAT, LsndMesgForwardHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_CHAT_ACK, LsndMesgForwardHandler, ctx)
 
-	ctx.callback.Register(comm.CMD_ROOM_BC, LsndRoomBcHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_BC_ACK, LsndRoomBcAckHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_BC, LsndMesgForwardHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_BC_ACK, LsndMesgForwardHandler, ctx)
 
 	/* > 推送消息 */
-	ctx.callback.Register(comm.CMD_BC, LsndBcHandler, ctx)
-	ctx.callback.Register(comm.CMD_BC_ACK, LsndBcAckHandler, ctx)
+	ctx.callback.Register(comm.CMD_BC, LsndMesgForwardHandler, ctx)
+	ctx.callback.Register(comm.CMD_BC_ACK, LsndMesgForwardHandler, ctx)
 
 	////////////////////////////////////////////////////////////////////////////
 	// FRWDER注册回调(下行)
