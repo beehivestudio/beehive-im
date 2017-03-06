@@ -27,6 +27,9 @@ import (
  **作    者: # Qifeng.zou # 2017.03.06 17:54:26 #
  ******************************************************************************/
 func (ctx *LsndCntx) DownlinkRegister() {
+	/* > 未知消息 */
+	ctx.frwder.Register(comm.CMD_UNKNOWN, LsndFrwderCommHandler, ctx)
+
 	/* > 通用消息 */
 	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndFrwderOnlineAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_OFFLINE_ACK, LsndFrwderOfflineAckHandler, ctx)

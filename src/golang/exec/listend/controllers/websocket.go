@@ -60,8 +60,11 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 	/* > 查找&执行回调 */
 	cb, param := ctx.callback.Query(head.GetCmd())
 	if !cb {
-		ctx.log.Error("Unknown command! cmd:0x%04X", head.GetCmd())
-		return 0
+		cb, param := ctx.callback.Query(comm.CMD_UNKNOWN)
+		if !cb {
+			ctx.log.Error("Didn't find command handler! cmd:0x%04X", head.GetCmd())
+			return 0
+		}
 	}
 
 	cb(conn, head.GetCmd(), data, length, param)

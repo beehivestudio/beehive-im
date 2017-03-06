@@ -23,6 +23,9 @@ import (
  **作    者: # Qifeng.zou # 2017.03.06 17:59:58 #
  ******************************************************************************/
 func (ctx *LsndCntx) UplinkRegister() {
+	/* > 未知消息 */
+	ctx.callback.Register(comm.CMD_UNKNOWN, LsndMesgCommHandler, ctx)
+
 	/* > 通用消息 */
 	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)
 	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx)
