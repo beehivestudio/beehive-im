@@ -59,6 +59,7 @@ func (client *Client) recv_routine() {
 	defer func() {
 		ctx.unregister <- client
 		client.conn.Close()
+		/* 关闭连接的处理 */
 		ctx.protocol.Callback(ctx, client,
 			LWS_CALLBACK_REASON_CLOSE, nil, 0, ctx.protocol.Param)
 	}()
@@ -77,7 +78,7 @@ func (client *Client) recv_routine() {
 
 		/* 调用回调函数(注意:返回非0值将导致连接被关闭) */
 		if ctx.protocol.Callback(ctx, client,
-			LWS_CALLBACK_REASON_RECEIVE, data, len(data), ctx.protocol.Param) {
+			LWS_CALLBACK_REASON_RECV, data, len(data), ctx.protocol.Param) {
 			break
 		}
 	}
@@ -100,6 +101,10 @@ func (client *Client) send_routine() {
 	defer func() {
 		ticker.Stop()
 		client.conn.Close()
+		if ctx.protocol.Callback(ctx, client,
+			LWS_CALLBACK_REASON_CREAT, data, len(data), ctx.protocol.Param) {
+			break
+		}
 	}()
 
 	for {

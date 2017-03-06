@@ -34,7 +34,7 @@ type Protocol struct {
 /* 连接池对象 */
 type ConnPool struct {
 	sync.RWMutex                 // 读写锁
-	clients      map[int]*Client // 连接管理池
+	list         map[int]*Client // 连接管理池
 }
 
 /* 全局对象 */
@@ -43,7 +43,7 @@ type LwsCntx struct {
 	protocol   *Protocol    // 注册协议
 	log        *Beego.Logs  // 日志对象
 	cid        uint64       // 连接序列号(原子递增)
-	conn_pool  ConnPool     // 连接池
+	conn       ConnPool     // 连接池
 	unregister chan *Client // Unregister requests from clients.
 }
 
@@ -75,7 +75,7 @@ func Init(conf *Conf, log *Beego.Logs) *LwsCntx {
 		conf: Conf,
 	}
 
-	ctx.conn_pool.clients = make(map[int]*Client)
+	ctx.conn.list = make(map[int]*Client)
 
 	return ctx
 }
@@ -113,8 +113,8 @@ func (ctx *LwsCntx) run() {
 	for {
 		select {
 		case client := <-ctx.unregister:
-			if _, ok := ctx.clients[client]; ok {
-				delete(ctx.clients, client)
+			if _, ok := ctx.conn.list[client]; ok {
+				delete(ctx.conn.list, client)
 				close(client.sendq)
 			}
 		}
@@ -160,13 +160,35 @@ func (ctx *LwsCntx) Launch(protocol *Protocol) int {
  **作    者: # Qifeng.zou # 2017.02.06 23:05:54 #
  ******************************************************************************/
 func (ctx *LwsCntx) AsyncSend(cid uint64, data []byte) int {
-	ctx.conn_pool.RLock()
-	client, ok := ctx.conn_pool.clients[cid]
+	ctx.conn.RLock()
+	client, ok := ctx.conn.list[cid]
 	if !ok {
-		ctx.conn_pool.RUnlock()
+		ctx.conn.RUnlock()
 		return -1
 	}
 	client.sendq <- data
-	ctx.conn_pool.RUnlock()
+	ctx.conn.RUnlock()
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: Kick
+ **功    能: 踢除指定连接
+ **输入参数:
+ **     cid: 连接ID
+ **输出参数: NONE
+ **返    回: 错误码
+ **实现描述: 关闭发送队列
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.06 21:46:19 #
+ ******************************************************************************/
+func (ctx *LwsCntx) Kick(cid uint64) int {
+	ctx.conn.RLock()
+	client, ok := ctx.conn.list[cid]
+	if !ok {
+		ctx.conn.RUnlock()
+		return -1
+	}
+	close(client.sendq)
 	return 0
 }
