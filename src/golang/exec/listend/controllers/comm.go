@@ -62,15 +62,39 @@ func (tab *MesgCallBackTab) Query(cmd uint32) (cb MesgCallBack, param interface{
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: get_nid
- **功    能: 获取结点ID
+ **函数名称: add_sid_to_cid
+ **功    能: 添加会话SID->连接CID映射
  **输入参数:
+ **     sid: 会话SID
  **输出参数: NONE
- **返    回: 结点ID
+ **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2017.03.04 22:51:11 #
+ **作    者: # Qifeng.zou # 2017.03.06 14:44:21 #
  ******************************************************************************/
-func (ctx *LsndCntx) get_nid() uint32 {
-	return ctx.conf.NodeId
+func (ctx *LsndCntx) add_sid_to_cid(sid uint64, cid uint64) int {
+	tab := ctx.sid2cid.tab[sid%LSND_SID2CID_LEN]
+	tab.Lock()
+	tab.list[sid] = cid
+	tab.Unlock()
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: find_cid_by_sid
+ **功    能: 通过会话SID查找连接CID
+ **输入参数:
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 连接CID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.06 14:31:19 #
+ ******************************************************************************/
+func (ctx *LsndCntx) find_cid_by_sid(sid uint64) uint64 {
+	tab := ctx.sid2cid.tab[sid%LSND_SID2CID_LEN]
+	tab.RLock()
+	cid, _ := tab.list[sid]
+	tab.RUnlock()
+	return cid
 }

@@ -124,7 +124,7 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length i
  **函数名称: LsndLwsCallBack
  **功    能: LWS处理回调
  **输入参数:
- **     ctx: LWS对象
+ **     ws: LWS上下文
  **     client: 客户端对象
  **     reason: 回调原因
  **     data: 收到的数据
@@ -136,7 +136,7 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length i
  **注意事项: 返回!0值将导致连接断开
  **作    者: # Qifeng.zou # 2017.03.04 00:16:09 #
  ******************************************************************************/
-func LsndLwsCallBack(lc *lws.LwsCntx, client *lws.Client,
+func LsndLwsCallBack(ws *lws.LwsCntx, client *lws.Client,
 	reason int, data []byte, length int, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {

@@ -15,6 +15,10 @@ import (
 	"beehive-im/src/golang/lib/rtmq"
 )
 
+var (
+	LSND_SID2CID_LEN = 999
+)
+
 /* 连接状态定义 */
 const (
 	CONN_STATUS_READY  = 1 // 预备状态: 已建立好网络连接
@@ -39,6 +43,16 @@ type MesgCallBackTab struct {
 	callback    map[uint32]MesgCallBackItem /* 消息处理回调(上行) */
 }
 
+/* SID->CID映射管理 */
+type Sid2CidTab struct {
+	tab [LSND_SID2CID_LEN]Sid2CidList
+}
+
+type Sid2CidList struct {
+	sync.RWMutex                   /* 读写锁 */
+	list         map[uint64]uint64 /* SID->CID映射 */
+}
+
 /* LISTEND上下文 */
 type LsndCntx struct {
 	conf     *LsndConf           /* 配置信息 */
@@ -47,6 +61,7 @@ type LsndCntx struct {
 	callback MesgCallBackTab     /* 处理回调 */
 	protocol *lws.Protocol       /* LWS.PROTOCOL */
 	chat     *chat_tab.ChatTab   /* 聊天关系组织表 */
+	sid2cid  Sid2CidTab          /* SID->CID映射 */
 }
 
 /* CONN扩展数据 */
@@ -125,65 +140,9 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
  **作    者: # Qifeng.zou # 2017.02.09 23:10:38 #
  ******************************************************************************/
 func (ctx *LsndCntx) Register() {
-	////////////////////////////////////////////////////////////////////////////
-	// WEBSOCKET注册回调(上行)
-	/* > 通用消息 */
-	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_PING, LsndPingHandler, ctx)
-	ctx.callback.Register(comm.CMD_SUB_REQ, LsndSubReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_UNSUB_REQ, LsndUnsubReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_SYNC, LsndMesgForwardHandler, ctx)
-	ctx.callback.Register(comm.CMD_ALLOC_SEQ, LsndMesgForwardHandler, ctx)
-
-	/* > 私聊消息 */
-	ctx.callback.Register(comm.CMD_CHAT, LsndMesgForwardHandler, ctx)
-	ctx.callback.Register(comm.CMD_CHAT_ACK, LsndMesgForwardHandler, ctx)
-
-	/* > 群聊消息 */
-	ctx.callback.Register(comm.CMD_GROUP_CHAT, LsndMesgForwardHandler, ctx)
-	ctx.callback.Register(comm.CMD_GROUP_CHAT_ACK, LsndMesgForwardHandler, ctx)
-
-	/* > 聊天室消息 */
-	ctx.callback.Register(comm.CMD_ROOM_CHAT, LsndMesgForwardHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_CHAT_ACK, LsndMesgForwardHandler, ctx)
-
-	ctx.callback.Register(comm.CMD_ROOM_BC, LsndMesgForwardHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_BC_ACK, LsndMesgForwardHandler, ctx)
-
-	/* > 推送消息 */
-	ctx.callback.Register(comm.CMD_BC, LsndMesgForwardHandler, ctx)
-	ctx.callback.Register(comm.CMD_BC_ACK, LsndMesgForwardHandler, ctx)
-
-	////////////////////////////////////////////////////////////////////////////
-	// FRWDER注册回调(下行)
-	/* > 通用消息 */
-	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndFrwderOnlineAckHandler, ctx)
-	ctx.frwder.Register(comm.CMD_OFFLINE_ACK, LsndFrwderP2pMsgHandler, ctx)
-	ctx.frwder.Register(comm.CMD_SYNC_ACK, LsndSFrwderyncAckHandler, ctx)
-
-	/* > 私聊消息 */
-	ctx.frwder.Register(comm.CMD_CHAT, LsndFrwderChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_CHAT_ACK, LsndFrwderChatAckHandler, ctx)
-
-	/* > 群聊消息 */
-	ctx.frwder.Register(comm.CMD_GROUP_CHAT, LsndFrwderGroupChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_GROUP_CHAT_ACK, LsndFrwderGroupChatAckHandler, ctx)
-
-	/* > 聊天室消息 */
-	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndFrwderRoomChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_CHAT_ACK, LsndFrwderRoomChatAckHandler, ctx)
-
-	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndFrwderRoomBcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_BC_ACK, LsndFrwderRoomBcAckHandler, ctx)
-
-	/* > 推送消息 */
-	ctx.frwder.Register(comm.CMD_BC, LsndFrwderBcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_BC_ACK, LsndFrwderBcAckHandler, ctx)
-
-	////////////////////////////////////////////////////////////////////////////
-	/* > WS注册 */
-	ctx.lws.Reigster("/im") /* WS注册路径 */
+	ctx.UplinkRegister()    // 上行消息注册回调
+	ctx.DownlinkRegister()  // 下行消息注册回调
+	ctx.lws.Reigster("/im") // LWS路径注册回调
 }
 
 /******************************************************************************

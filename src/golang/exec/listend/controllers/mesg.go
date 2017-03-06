@@ -12,6 +12,46 @@ import (
 	"beehive-im/src/golang/lib/mesg"
 )
 
+/******************************************************************************
+ **函数名称: UplinkRegister
+ **功    能: 上行消息回调注册
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.06 17:59:58 #
+ ******************************************************************************/
+func (ctx *LsndCntx) UplinkRegister() {
+	/* > 通用消息 */
+	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_PING, LsndPingHandler, ctx)
+	ctx.callback.Register(comm.CMD_SUB_REQ, LsndSubReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_UNSUB_REQ, LsndUnsubReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_SYNC, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_ALLOC_SEQ, LsndMesgCommHandler, ctx)
+
+	/* > 私聊消息 */
+	ctx.callback.Register(comm.CMD_CHAT, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_CHAT_ACK, LsndMesgCommHandler, ctx)
+
+	/* > 群聊消息 */
+	ctx.callback.Register(comm.CMD_GROUP_CHAT, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_GROUP_CHAT_ACK, LsndMesgCommHandler, ctx)
+
+	/* > 聊天室消息 */
+	ctx.callback.Register(comm.CMD_ROOM_CHAT, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_CHAT_ACK, LsndMesgCommHandler, ctx)
+
+	ctx.callback.Register(comm.CMD_ROOM_BC, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_BC_ACK, LsndMesgCommHandler, ctx)
+
+	/* > 推送消息 */
+	ctx.callback.Register(comm.CMD_BC, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_BC_ACK, LsndMesgCommHandler, ctx)
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
@@ -51,7 +91,7 @@ func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 	ctx.log.Debug("Header data! cmd:0x%04X sid:%d", head.GetCmd(), head.GetSid())
 
 	head.SetSid(conn.cid)
-	head.SetNid(ctx.get_nid())
+	head.SetNid(ctx.conf.GetNid())
 
 	/* > 主机->网络字节序 */
 	p := &comm.MesgPacket{Buff: data}
@@ -97,7 +137,7 @@ func LsndPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
-	head.SetNid(ctx.get_nid())
+	head.SetNid(ctx.conf.GetNid())
 
 	/* > 主机->网络字节序 */
 	p := &comm.MesgPacket{Buff: data}
@@ -145,7 +185,7 @@ func LsndSubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
-	head.SetNid(ctx.get_nid())
+	head.SetNid(ctx.conf.GetNid())
 
 	/* > 主机->网络字节序 */
 	p := &comm.MesgPacket{Buff: data}
@@ -188,7 +228,7 @@ func LsndUnsubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
-	head.SetNid(ctx.get_nid())
+	head.SetNid(ctx.conf.GetNid())
 
 	/* > 移除订阅消息 */
 	req := &mesg.MesgUnsubReq{}
@@ -215,8 +255,8 @@ func LsndUnsubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndMesgForwardHandler
- **功    能: 直接转发给上游模块
+ **函数名称: LsndMesgCommHandler
+ **功    能: 消息通用处理 - 直接将消息转发给上游模块
  **输入参数:
  **     conn: 连接数据
  **     cmd: 消息类型
@@ -229,7 +269,7 @@ func LsndUnsubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 22:49:17 #
  ******************************************************************************/
-func LsndMesgForwardHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -238,7 +278,7 @@ func LsndMesgForwardHandler(conn *LsndConnExtra, cmd uint32, data []byte, length
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
-	head.SetNid(ctx.get_nid())
+	head.SetNid(ctx.conf.GetNid())
 
 	/* > 主机->网络字节序 */
 	p := &comm.MesgPacket{Buff: data}

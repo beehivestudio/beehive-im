@@ -17,11 +17,53 @@ import (
 )
 
 /******************************************************************************
- **函数名称: LsndBcHandler
- **功    能: 广播消息的处理(待商议)
+ **函数名称: DownlinkRegister
+ **功    能: 下行消息回调注册
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.06 17:54:26 #
+ ******************************************************************************/
+func (ctx *LsndCntx) DownlinkRegister() {
+	/* > 通用消息 */
+	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndFrwderOnlineAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_OFFLINE_ACK, LsndFrwderOfflineAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_SUB_ACK, LsndFrwderSubAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndFrwderUnsubAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_SYNC_ACK, LsndFrwderCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ALLOC_SEQ_ACK, LsndFrwderCommHandler, ctx)
+
+	/* > 私聊消息 */
+	ctx.frwder.Register(comm.CMD_CHAT, LsndFrwderCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_CHAT_ACK, LsndFrwderCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRIEND_ADD_ACK, LsndFrwderCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRIEND_DEL_ACK, LsndFrwderCommHandler, ctx)
+
+	/* > 群聊消息 */
+	ctx.frwder.Register(comm.CMD_GROUP_CHAT, LsndFrwderGroupChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_CHAT_ACK, LsndFrwderGroupChatAckHandler, ctx)
+
+	/* > 聊天室消息 */
+	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndFrwderRoomChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_CHAT_ACK, LsndFrwderRoomChatAckHandler, ctx)
+
+	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndFrwderRoomBcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_BC_ACK, LsndFrwderRoomBcAckHandler, ctx)
+
+	/* > 推送消息 */
+	ctx.frwder.Register(comm.CMD_BC, LsndFrwderCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BC_ACK, LsndFrwderCommHandler, ctx)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndFrwderCommHandler
+ **功    能: 通用消息处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -29,16 +71,32 @@ import (
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.09 21:48:07 #
+ **作    者: # Qifeng.zou # 2017.03.06 17:54:26 #
  ******************************************************************************/
-func LsndBcHandler(cmd uint32, dest uint32,
-	data []byte, length uint32, param interface{}) int {
+func LsndFrwderCommHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	var req mesg.MesgChat
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv group msg ack!")
+	ctx.log.Debug("Recv command [%d]!", cmd)
+
+	/* > 验证合法性 */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Mesg head is invalid!")
+		return -1
+	}
+
+	/* > 下发私聊消息 */
+	cid := ctx.find_cid_by_sid(head.GetSid())
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	ctx.lws.AsyncSend(cid, data)
 
 	return 0
 }
