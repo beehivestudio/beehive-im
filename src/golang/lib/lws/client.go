@@ -18,11 +18,12 @@ var upgrader = websocket.Upgrader{
 
 /* 客户端对象 */
 type Client struct {
-	ctx   *LwsCntx        /* 全局对象 */
-	cid   uint64          /* 连接ID */
-	conn  *websocket.Conn /* WS连接对象 */
-	sendq chan []byte     /* 发送队列 */
-	user  interface{}     /* 附加数据 */
+	ctx    *LwsCntx        /* 全局对象 */
+	cid    uint64          /* 连接ID */
+	conn   *websocket.Conn /* WS连接对象 */
+	sendq  chan []byte     /* 发送队列 */
+	iskick bool            /* 是否被踢 */
+	user   interface{}     /* 附加数据 */
 }
 
 /* 获取连接ID */
