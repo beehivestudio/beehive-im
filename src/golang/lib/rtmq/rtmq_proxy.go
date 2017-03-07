@@ -215,8 +215,11 @@ func (svr *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqRecvPacket) bool 
 	/* 获取CMD对应的注册项 */
 	item, ok := ctx.reg[header.cmd]
 	if !ok {
-		ctx.log.Error("Drop unknown data! cmd:%d", header.cmd)
-		return false
+		item, ok := ctx.reg[0] /* 0:表示默认处理 */
+		if !ok {
+			ctx.log.Error("Drop unknown data! cmd:%d", header.cmd)
+			return false
+		}
 	}
 
 	/* 调用注册处理函数 */
