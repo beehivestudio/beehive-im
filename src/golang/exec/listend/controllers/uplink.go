@@ -23,42 +23,17 @@ import (
  **作    者: # Qifeng.zou # 2017.03.06 17:59:58 #
  ******************************************************************************/
 func (ctx *LsndCntx) UplinkRegister() {
-	/* > 未知消息 */
-	ctx.callback.Register(comm.CMD_UNKNOWN, LsndMesgCommHandler, ctx)
-
-	/* > 通用消息 */
-	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_PING, LsndPingHandler, ctx)
-	ctx.callback.Register(comm.CMD_SUB_REQ, LsndMesgCommHandler, ctx)
-	ctx.callback.Register(comm.CMD_UNSUB_REQ, LsndUnsubReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_SYNC, LsndMesgCommHandler, ctx)
-	ctx.callback.Register(comm.CMD_ALLOC_SEQ, LsndMesgCommHandler, ctx)
-
-	/* > 私聊消息 */
-	ctx.callback.Register(comm.CMD_CHAT, LsndMesgCommHandler, ctx)
-	ctx.callback.Register(comm.CMD_CHAT_ACK, LsndMesgCommHandler, ctx)
-
-	/* > 群聊消息 */
-	ctx.callback.Register(comm.CMD_GROUP_CHAT, LsndMesgCommHandler, ctx)
-	ctx.callback.Register(comm.CMD_GROUP_CHAT_ACK, LsndMesgCommHandler, ctx)
-
-	/* > 聊天室消息 */
-	ctx.callback.Register(comm.CMD_ROOM_CHAT, LsndMesgCommHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_CHAT_ACK, LsndMesgCommHandler, ctx)
-
-	ctx.callback.Register(comm.CMD_ROOM_BC, LsndMesgCommHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_BC_ACK, LsndMesgCommHandler, ctx)
-
-	/* > 推送消息 */
-	ctx.callback.Register(comm.CMD_BC, LsndMesgCommHandler, ctx)
-	ctx.callback.Register(comm.CMD_BC_ACK, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_UNKNOWN, LsndUplinkCommHandler, ctx)     /* 未知消息 */
+	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)   /* 上线消息 */
+	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx) /* 下线消息 */
+	ctx.callback.Register(comm.CMD_PING, LsndPingHandler, ctx)              /* 心跳请求 */
+	ctx.callback.Register(comm.CMD_UNSUB_REQ, LsndUnsubReqHandler, ctx)     /* 取消订阅 */
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndMesgCommHandler
+ **函数名称: LsndUplinkCommHandler
  **功    能: 消息通用处理 - 直接将消息转发给上游模块
  **输入参数:
  **     conn: 连接数据
@@ -72,7 +47,7 @@ func (ctx *LsndCntx) UplinkRegister() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 22:49:17 #
  ******************************************************************************/
-func LsndMesgCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndUplinkCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -134,6 +109,7 @@ func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 	head := comm.MesgHeadNtoh(data)
 
 	conn.SetSid(head.GetSid())
+	ctx.chat.SessionSetParam(sid, conn)
 
 	head.SetSid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())

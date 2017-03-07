@@ -114,6 +114,9 @@ func (ctx *LsndCntx) find_cid_by_sid(sid uint64) uint64 {
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
 func (conn *LsndConnExtra) SetSid(sid uint64) {
+	conn.Lock()
+	defer conn.Unlock()
+
 	conn.sid = sid
 }
 
@@ -128,6 +131,9 @@ func (conn *LsndConnExtra) SetSid(sid uint64) {
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
 func (conn *LsndConnExtra) GetSid() uint64 {
+	conn.RLock()
+	defer conn.RUnlock()
+
 	return conn.sid
 }
 
@@ -143,6 +149,9 @@ func (conn *LsndConnExtra) GetSid() uint64 {
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
 func (conn *LsndConnExtra) SetCid(cid uint64) {
+	conn.Lock()
+	defer conn.Unlock()
+
 	conn.cid = cid
 }
 
@@ -157,6 +166,9 @@ func (conn *LsndConnExtra) SetCid(cid uint64) {
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
 func (conn *LsndConnExtra) GetCid() uint64 {
+	conn.RLock()
+	defer conn.RUnlock()
+
 	return conn.cid
 }
 
@@ -172,6 +184,9 @@ func (conn *LsndConnExtra) GetCid() uint64 {
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
 func (conn *LsndConnExtra) SetStatus(status int) {
+	conn.Lock()
+	defer conn.Unlock()
+
 	conn.status = status
 }
 
@@ -186,6 +201,9 @@ func (conn *LsndConnExtra) SetStatus(status int) {
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
 func (conn *LsndConnExtra) GetStatus() int {
+	conn.RLock()
+	defer conn.RUnlock()
+
 	return conn.status
 }
 
@@ -201,6 +219,9 @@ func (conn *LsndConnExtra) GetStatus() int {
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
 func (conn *LsndConnExtra) IsStatus(status int) bool {
+	conn.RLock()
+	defer conn.RUnlock()
+
 	if conn.status == status {
 		return true
 	}

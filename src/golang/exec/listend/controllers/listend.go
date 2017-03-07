@@ -53,6 +53,16 @@ type Sid2CidList struct {
 	list         map[uint64]uint64 /* SID->CID映射 */
 }
 
+/* CID->SID映射管理 */
+type Cid2SidTab struct {
+	tab [LSND_SID2CID_LEN]Cid2SidList
+}
+
+type Cid2SidList struct {
+	sync.RWMutex                   /* 读写锁 */
+	list         map[uint64]uint64 /* CID->SID映射 */
+}
+
 /* LISTEND上下文 */
 type LsndCntx struct {
 	conf     *LsndConf           /* 配置信息 */
@@ -66,9 +76,10 @@ type LsndCntx struct {
 
 /* CONN扩展数据 */
 type LsndConnExtra struct {
-	sid    uint64 /* 会话ID */
-	cid    uint64 /* 连接ID */
-	status int    /* 连接状态(CONN_STATUS_READY...) */
+	sid          uint64 /* 会话ID */
+	sync.RWMutex        /* 读写锁 */
+	cid          uint64 /* 连接ID */
+	status       int    /* 连接状态(CONN_STATUS_READY...) */
 }
 
 /******************************************************************************
