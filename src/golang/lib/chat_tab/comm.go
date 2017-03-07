@@ -25,30 +25,32 @@ import (
 func (ctx *ChatTab) session_add(rid uint64, gid uint32, sid uint64) int {
 	ss := ctx.sessions[sid%SESSION_MAX_LEN]
 
+	ss.Lock()
+	defer ss.Unlock()
+
 	/* > 判断会话是否存在 */
-	ss.RLock()
 	ssn, ok := ss.session[sid]
 	if ok {
-		if ssn.rid == rid && ssn.gid == gid {
-			ss.RUnlock()
+		_gid, ok := ssn.room[rid]
+		if !ok {
+			ssn.room[rid] = gid
+			return 0
+		} else if _gid == gid {
 			return 0 // 已存在
 		}
-		ss.RUnlock()
 		return -1 // 数据不一致
 	}
-	ss.RUnlock()
 
 	/* > 添加会话信息 */
 	ssn = &chat_session{
-		sid: sid,                   // 会话ID
-		rid: rid,                   // 聊天室ID
-		gid: gid,                   // 分组ID
-		sub: make(map[uint32]bool), // 订阅列表
+		sid:  sid,                     // 会话ID
+		room: make(map[uint64]uint32), // 聊天室信息
+		sub:  make(map[uint32]bool),   // 订阅列表
 	}
 
-	ss.Lock()
+	ssn.room[rid] = gid
+
 	ss.session[idx] = ssn
-	ss.Unlock()
 
 	return 0
 }

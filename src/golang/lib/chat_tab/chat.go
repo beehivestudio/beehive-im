@@ -18,11 +18,11 @@ type ChatTravProcCb func(sid uint64, param interface{}) int
 
 /* 会话信息 */
 type chat_session struct {
-	sid          uint64          // 会话ID
-	rid          uint64          // 聊天室ID
-	gid          uint32          // 分组ID
-	sync.RWMutex                 // 读写锁
-	sub          map[uint32]bool // 订阅列表(true:订阅 false:未订阅)
+	sid          uint64            // 会话ID
+	sync.RWMutex                   // 读写锁
+	room         map[uint64]uint32 // 聊天室信息map[rid]gid
+	sub          map[uint32]bool   // 订阅列表(true:订阅 false:未订阅)
+	param        interface{}       // 扩展数据
 }
 
 /* SESSION TAB信息 */
@@ -102,6 +102,7 @@ func Init() *ChatTab {
  **     rid: ROOM ID
  **     gid: 分组GID
  **     sid: 会话SID
+ **     param: 扩展数据
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 将会话SID挂载到聊天室指定分组上.
@@ -178,6 +179,67 @@ func (ctx *ChatTab) SessionDel(sid uint64) int {
 	ctx.room_del_session(ssn.rid, ssn.gid, sid)
 
 	return 0
+}
+
+/******************************************************************************
+ **函数名称: SessionSetParam
+ **功    能: 设置会话参数
+ **输入参数:
+ **     sid: 会话SID
+ **     param: 扩展数据
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.02.22 20:32:20 #
+ ******************************************************************************/
+func (ctx *ChatTab) SessionSetParam(sid uint64, param interface{}) int {
+	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+
+	ss.Lock()
+	defer ss.Unlock()
+
+	/* > 判断会话是否存在 */
+	ssn, ok := ss.session[sid]
+	if ok {
+		return -1 // 已存在
+	}
+
+	/* > 添加会话信息 */
+	ssn = &chat_session{
+		sid:   sid,                     // 会话ID
+		room:  make(map[uint64]uint32), // 聊天室信息
+		sub:   make(map[uint32]bool),   // 订阅列表
+		param: param,                   // 扩展数据
+	}
+
+	ss.session[idx] = ssn
+
+}
+
+/******************************************************************************
+ **函数名称: SessionGetParam
+ **功    能: 获取会话参数
+ **输入参数:
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 扩展数据
+ **实现描述:
+ **注意事项: 各层级读写锁的操作, 降低锁粒度, 防止死锁.
+ **作    者: # Qifeng.zou # 2017.03.07 17:02:35 #
+ ******************************************************************************/
+func (ctx *ChatTab) SessionGetParam(sid uint64) (param interface{}) {
+	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+
+	ss.RLock()
+	defer ss.RUnlock()
+
+	ssn, ok := ss.session[sid]
+	if !ok {
+		return nil
+	}
+
+	return ssn.param // 已存在
 }
 
 /******************************************************************************
