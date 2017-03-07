@@ -7,6 +7,7 @@ import (
 )
 
 ////////////////////////////////////////////////////////////////////////////////
+// 会话操作
 
 /******************************************************************************
  **函数名称: session_add
@@ -22,32 +23,34 @@ import (
  **作    者: # Qifeng.zou # 2017.03.01 23:37:33 #
  ******************************************************************************/
 func (ctx *ChatTab) session_add(rid uint64, gid uint32, sid uint64) int {
-	ss := ctx.sessions[sid%CT_SSN_NUM]
-
-	/* > 判断会话是否存在 */
-	ss.RLock()
-	ssn, ok := ss.session[sid]
-	if ok {
-		if ssn.rid == rid && ssn.gid == gid {
-			ss.RUnlock()
-			return 0 // 已存在
-		}
-		ss.RUnlock()
-		return -1 // 数据不一致
-	}
-	ss.RUnlock()
-
-	/* > 添加会话信息 */
-	ssn = &ChatSession{
-		sid: sid,                   // 会话ID
-		rid: rid,                   // 聊天室ID
-		gid: gid,                   // 分组ID
-		sub: make(map[uint32]bool), // 订阅列表
-	}
+	ss := ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
+	defer ss.Unlock()
+
+	/* > 判断会话是否存在 */
+	ssn, ok := ss.session[sid]
+	if ok {
+		_gid, ok := ssn.room[rid]
+		if !ok {
+			ssn.room[rid] = gid
+			return 0
+		} else if _gid == gid {
+			return 0 // 已存在
+		}
+		return -1 // 数据不一致
+	}
+
+	/* > 添加会话信息 */
+	ssn = &chat_session{
+		sid:  sid,                     // 会话ID
+		room: make(map[uint64]uint32), // 聊天室信息
+		sub:  make(map[uint32]bool),   // 订阅列表
+	}
+
+	ssn.room[rid] = gid
+
 	ss.session[idx] = ssn
-	ss.Unlock()
 
 	return 0
 }
@@ -63,8 +66,8 @@ func (ctx *ChatTab) session_add(rid uint64, gid uint32, sid uint64) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.02 10:13:34 #
  ******************************************************************************/
-func (ctx *ChatTab) session_del(sid uint64) *ChatSession {
-	ss := ctx.sessions[sid%CT_SSN_NUM]
+func (ctx *ChatTab) session_del(sid uint64) *chat_session {
+	ss := ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
 	defer ss.Unlock()
@@ -80,6 +83,7 @@ func (ctx *ChatTab) session_del(sid uint64) *ChatSession {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// 聊天室操作
 
 /******************************************************************************
  **函数名称: room_add
@@ -93,19 +97,19 @@ func (ctx *ChatTab) session_del(sid uint64) *ChatSession {
  **作    者: # Qifeng.zou # 2017.03.01 22:55:43 #
  ******************************************************************************/
 func (ctx *ChatTab) room_add(rid uint64) int {
-	rs := ctx.rooms[rid%CT_ROOM_NUM]
+	rs := ctx.rooms[rid%ROOM_MAX_LEN]
 
 	rs.Lock()
 	defer rs.Unlock()
 
 	room, ok := ctx.room[rid]
 	if !ok {
-		room = &ChatRoom{
-			rid:       rid,                        // 聊天室ID
-			sid_num:   0,                          // 会话数目
-			grp_num:   0,                          // 分组数目
-			create_tm: time.Now().Unix(),          // 创建时间
-			group:     make(map[uint32]ChatGroup), // 分组信息
+		room = &chat_room{
+			rid:       rid,                         // 聊天室ID
+			sid_num:   0,                           // 会话数目
+			grp_num:   0,                           // 分组数目
+			create_tm: time.Now().Unix(),           // 创建时间
+			group:     make(map[uint32]chat_group), // 分组信息
 		}
 
 		atomic.AddUint64(&room.sid_num, 1)
@@ -128,8 +132,8 @@ func (ctx *ChatTab) room_add(rid uint64) int {
  **注意事项: 如果获取对象失败, 则直接解锁.
  **作    者: # Qifeng.zou # 2017.03.01 22:59:15 #
  ******************************************************************************/
-func (ctx *ChatTab) room_query(rid uint64, lck int) *ChatRoom {
-	rs := ctx.rooms[rid%CT_ROOM_NUM]
+func (ctx *ChatTab) room_query(rid uint64, lck int) *chat_room {
+	rs := ctx.rooms[rid%ROOM_MAX_LEN]
 	switch lck {
 	case comm.RDLOCK: // 加读锁
 		rs.RLock()
@@ -163,8 +167,8 @@ func (ctx *ChatTab) room_query(rid uint64, lck int) *ChatRoom {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 23:57:28 #
  ******************************************************************************/
-func (ctx *ChatTab) room_unlock(rid uint64, lck int) *ChatRoom {
-	rs := ctx.rooms[rid%CT_ROOM_NUM]
+func (ctx *ChatTab) room_unlock(rid uint64, lck int) *chat_room {
+	rs := ctx.rooms[rid%ROOM_MAX_LEN]
 
 	switch lck {
 	case comm.RDLOCK: // 加读锁
@@ -190,7 +194,7 @@ func (ctx *ChatTab) room_unlock(rid uint64, lck int) *ChatRoom {
  **作    者: # Qifeng.zou # 2017.03.02 10:20:10 #
  ******************************************************************************/
 func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
-	rs := ctx.rooms[rid%CT_ROOM_NUM]
+	rs := ctx.rooms[rid%ROOM_MAX_LEN]
 
 	/* > 查找ROOM对象 */
 	rs.RLock()
@@ -205,7 +209,7 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
 	room.RLock()
 	defer room.RUnlock()
 
-	gs := room.groups[gid%CT_GRP_NUM]
+	gs := room.groups[gid%GROUP_MAX_LEN]
 
 	group, ok := gs.group[gid]
 	if !ok {
@@ -230,12 +234,12 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// 聊天室分组操作
 
 /******************************************************************************
  **函数名称: group_add
  **功    能: 新建分组
  **输入参数:
- **     room: 聊天室
  **     gid: 分组GID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
@@ -243,15 +247,15 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 22:55:43 #
  ******************************************************************************/
-func (ctx *ChatTab) group_add(room *ChatRoom, gid uint32) int {
-	gs := room.groups[gid%CT_GRP_NUM]
+func (room *chat_room) group_add(gid uint32) int {
+	gs := room.groups[gid%GROUP_MAX_LEN]
 
 	gs.Lock()
 	defer gs.Unlock()
 
 	group, ok := gs.group[gid]
 	if !ok {
-		group = &ChatGroup{
+		group = &chat_group{
 			gid:       gid,                   // 分组ID
 			sid_num:   0,                     // 会话数目
 			create_tm: time.Now().Unix(),     // 创建时间
@@ -270,7 +274,6 @@ func (ctx *ChatTab) group_add(room *ChatRoom, gid uint32) int {
  **函数名称: group_query
  **功    能: 查找聊天室指定分组
  **输入参数:
- **     room: 聊天室
  **     gid: 群组ID
  **输出参数: NONE
  **返    回: 群组对象
@@ -278,8 +281,8 @@ func (ctx *ChatTab) group_add(room *ChatRoom, gid uint32) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 23:50:25 #
  ******************************************************************************/
-func (ctx *ChatTab) group_query(room *ChatRoom, gid uint32, lck int) *ChatGroup {
-	gs := room.groups[gid%CT_GRP_NUM]
+func (room *chat_room) group_query(gid uint32, lck int) *chat_group {
+	gs := room.groups[gid%GROUP_MAX_LEN]
 
 	switch lck {
 	case comm.RDLOCK: // 加读锁
@@ -303,6 +306,31 @@ func (ctx *ChatTab) group_query(room *ChatRoom, gid uint32, lck int) *ChatGroup 
 }
 
 /******************************************************************************
+ **函数名称: group_unlock
+ **功    能: 解锁聊天室分组
+ **输入参数:
+ **     gid: 分组ID
+ **     lck: 解锁方式(0:不加锁 1:读锁 2:写锁)
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.06 17:44:36 #
+ ******************************************************************************/
+func (room *chat_room) group_unlock(gid uint32, lck int) *chat_room {
+	gs := room.groups[gid%GROUP_MAX_LEN]
+
+	switch lck {
+	case comm.RDLOCK: // 加读锁
+		rs.RUnlock()
+	case comm.WRLOCK: // 加写锁
+		rs.Unlock()
+	}
+
+	return 0
+}
+
+/******************************************************************************
  **函数名称: group_trav
  **功    能: 遍历聊天室指定分组
  **输入参数:
@@ -315,7 +343,7 @@ func (ctx *ChatTab) group_query(room *ChatRoom, gid uint32, lck int) *ChatGroup 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.23 20:26:40 #
  ******************************************************************************/
-func (ctx *ChatTab) group_trav(group *ChatGroup, proc ChatTravProcCb, param interface{}) int {
+func (room *chat_room) group_trav(group *chat_group, proc ChatTravProcCb, param interface{}) int {
 	group.RLock()
 	defer group.RUnlock()
 
@@ -328,7 +356,6 @@ func (ctx *ChatTab) group_trav(group *ChatGroup, proc ChatTravProcCb, param inte
  **函数名称: group_all_trav
  **功    能: 遍历聊天室所有分组
  **输入参数:
- **     room: 聊天室
  **     proc: 处理回调
  **     param: 附加参数
  **输出参数: NONE
@@ -337,11 +364,11 @@ func (ctx *ChatTab) group_trav(group *ChatGroup, proc ChatTravProcCb, param inte
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.02 13:45:05 #
  ******************************************************************************/
-func (ctx *ChatTab) group_all_trav(room *ChatRoom, proc ChatTravProcCb, param interface{}) int {
+func (room *chat_room) group_all_trav(proc ChatTravProcCb, param interface{}) int {
 	for _, gs := range room.groups {
 		gs.RLock()
 		for _, group := range gs.group {
-			ctx.group_trav(group, proc, param)
+			room.group_trav(group, proc, param)
 		}
 		gs.RUnlock()
 	}

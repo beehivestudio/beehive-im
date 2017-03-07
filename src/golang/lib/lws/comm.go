@@ -6,6 +6,59 @@ import (
 )
 
 /******************************************************************************
+ **函数名称: ConnPoolAdd
+ **功    能: 加入连接池操作
+ **输入参数:
+ **     cid: 连接CID
+ **     client: 客户端对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.07 15:45:03 #
+ ******************************************************************************/
+func (ctx *LwsCntx) ConnPoolAdd(cid uint64, client *Client) int {
+	pool := ctx.pool[cid%LWS_CONN_POOL_LEN]
+
+	pool.Lock()
+	defer pool.Unlock()
+
+	pool.list[cid] = client
+}
+
+/******************************************************************************
+ **函数名称: ConnPoolDel
+ **功    能: 移除连接池操作
+ **输入参数:
+ **     cid: 连接CID
+ **     client: 客户端对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.07 15:45:03 #
+ ******************************************************************************/
+func (ctx *LwsCntx) ConnPoolDel(cid uint64) int {
+	pool := ctx.pool[cid%LWS_CONN_POOL_LEN]
+
+	pool.Lock()
+	defer pool.Unlock()
+
+	client, ok := pool.list[cid]
+	if !ok {
+		return 0
+	}
+
+	delete(pool.list, cid)
+	if !client.iskick {
+		close(client.sendq)
+		client.iskick = true
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
  **函数名称: conn_handler
  **功    能: 连接请求处理
  **输入参数:
@@ -26,10 +79,11 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{
-		ctx:   ctx,                                  /* 全局对象 */
-		cid:   atomic.AddUint64(&ctx.cid),           /* 连接ID */
-		conn:  conn,                                 /* 连接对象 */
-		sendq: make(chan []byte, ctx.conf.SendqMax), /* 发送队列 */
+		ctx:    ctx,                                  /* 全局对象 */
+		cid:    atomic.AddUint64(&ctx.cid),           /* 连接ID */
+		conn:   conn,                                 /* 连接对象 */
+		sendq:  make(chan []byte, ctx.conf.SendqMax), /* 发送队列 */
+		iskick: false,                                /* 是否被踢 */
 	}
 
 	/* 创建连接的回调 */
@@ -39,6 +93,8 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 		log.Println("Create socket failed!")
 		return
 	}
+
+	ctx.ConnPoolAdd(client.cid, client)
 
 	go client.send_routine() // 发送协程
 	client.recv_routine()    // 接收协程
@@ -57,10 +113,11 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 func (client *Client) recv_routine() {
 	ctx := client.ctx
 	defer func() {
-		ctx.unregister <- client
+		/* 关闭连接的处理 */
 		client.conn.Close()
 		ctx.protocol.Callback(ctx, client,
 			LWS_CALLBACK_REASON_CLOSE, nil, 0, ctx.protocol.Param)
+		ctx.ConnPoolDel(client.cid)
 	}()
 
 	for {
@@ -77,7 +134,7 @@ func (client *Client) recv_routine() {
 
 		/* 调用回调函数(注意:返回非0值将导致连接被关闭) */
 		if ctx.protocol.Callback(ctx, client,
-			LWS_CALLBACK_REASON_RECEIVE, data, len(data), ctx.protocol.Param) {
+			LWS_CALLBACK_REASON_RECV, data, len(data), ctx.protocol.Param) {
 			break
 		}
 	}

@@ -17,13 +17,13 @@ import (
  **作    者: # Qifeng.zou # 2017.03.04 18:53:16 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
-	conn := &LsndConnExtra{
+	session := &LsndSessionExtra{
 		sid:    0,
 		cid:    client.GetCid(),
 		status: CONN_STAT_READY,
 	}
 
-	client.SetUserData(conn)
+	client.SetUserData(session)
 
 	return 0
 }
@@ -42,7 +42,7 @@ func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int) int {
-	conn, ok := client.GetUserData().(*LsndConnExtra)
+	session, ok := client.GetUserData().(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
@@ -60,11 +60,14 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 	/* > 查找&执行回调 */
 	cb, param := ctx.callback.Query(head.GetCmd())
 	if !cb {
-		ctx.log.Error("Unknown command! cmd:0x%04X", head.GetCmd())
-		return 0
+		cb, param := ctx.callback.Query(comm.CMD_UNKNOWN)
+		if !cb {
+			ctx.log.Error("Didn't find command handler! cmd:0x%04X", head.GetCmd())
+			return 0
+		}
 	}
 
-	cb(conn, head.GetCmd(), data, length, param)
+	cb(session, head.GetCmd(), data, length, param)
 
 	return 0
 }
@@ -83,7 +86,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int) int {
-	conn, ok := client.GetUserData().(*LsndConnExtra)
+	session, ok := client.GetUserData().(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
@@ -92,7 +95,7 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
 	head := comm.MesgHeadNtoh(data)
 
 	ctx.log.Debug("Send data to cid [%d]! cmd:0x%04X sid:%d flag:%d chksum:0x%08X",
-		conn.cid, head.GetCmd(), head.GetSid(), head.GetFlag(), head.GetChkSum())
+		session.cid, head.GetCmd(), head.GetSid(), head.GetFlag(), head.GetChkSum())
 
 	return 0
 }
@@ -111,11 +114,13 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length int) int {
-	conn, ok := client.GetUserData().(*LsndConnExtra)
+	session, ok := client.GetUserData().(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
 	}
+
+	ctx.log.Debug("Destroy session object! cid:%d sid:%d", session.GetCid(), session.GetSid())
 
 	return 0
 }
@@ -124,7 +129,7 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length i
  **函数名称: LsndLwsCallBack
  **功    能: LWS处理回调
  **输入参数:
- **     ctx: LWS对象
+ **     ws: LWS上下文
  **     client: 客户端对象
  **     reason: 回调原因
  **     data: 收到的数据
@@ -136,7 +141,7 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length i
  **注意事项: 返回!0值将导致连接断开
  **作    者: # Qifeng.zou # 2017.03.04 00:16:09 #
  ******************************************************************************/
-func LsndLwsCallBack(lc *lws.LwsCntx, client *lws.Client,
+func LsndLwsCallBack(ws *lws.LwsCntx, client *lws.Client,
 	reason int, data []byte, length int, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {

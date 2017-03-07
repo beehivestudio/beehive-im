@@ -6,6 +6,7 @@ import (
 
 /* 常量定义 */
 const (
+	LWS_CONN_POOL_LEN   = 999                          /* 连接池数组长度 */
 	LWS_WRITE_WAIT_SEC  = 10 * time.Second             /* 最大发送阻塞时间 */
 	LWS_PONG_WAIT_SEC   = 60 * time.Second             /* 接收PONG的间隔时间 */
 	LWS_PING_PERIOD_SEC = (LWS_PONG_WAIT_SEC * 9) / 10 /* 发送PING的间隔时间 */
@@ -34,17 +35,16 @@ type Protocol struct {
 /* 连接池对象 */
 type ConnPool struct {
 	sync.RWMutex                 // 读写锁
-	clients      map[int]*Client // 连接管理池
+	list         map[int]*Client // 连接管理池
 }
 
 /* 全局对象 */
 type LwsCntx struct {
-	conf       *Conf        // 配置参数
-	protocol   *Protocol    // 注册协议
-	log        *Beego.Logs  // 日志对象
-	cid        uint64       // 连接序列号(原子递增)
-	conn_pool  ConnPool     // 连接池
-	unregister chan *Client // Unregister requests from clients.
+	conf     *Conf                       // 配置参数
+	protocol *Protocol                   // 注册协议
+	log      *Beego.Logs                 // 日志对象
+	cid      uint64                      // 连接序列号(原子递增)
+	pool     [LWS_CONN_POOL_LEN]ConnPool // 连接池
 }
 
 /* 配置对象 */
@@ -75,7 +75,9 @@ func Init(conf *Conf, log *Beego.Logs) *LwsCntx {
 		conf: Conf,
 	}
 
-	ctx.conn_pool.clients = make(map[int]*Client)
+	for idx := 0; idx < LWS_CONN_POOL_LEN; idx += 1 {
+		ctx.pool[idx].list = make(map[int]*Client)
+	}
 
 	return ctx
 }
@@ -100,28 +102,6 @@ func (ctx *LwsCntx) Register(path string) int {
 }
 
 /******************************************************************************
- **函数名称: run
- **功    能: 工作协程
- **输入参数: NONE
- **输出参数: NONE
- **返    回: VOID
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2017.02.07 22:50:25 #
- ******************************************************************************/
-func (ctx *LwsCntx) run() {
-	for {
-		select {
-		case client := <-ctx.unregister:
-			if _, ok := ctx.clients[client]; ok {
-				delete(ctx.clients, client)
-				close(client.sendq)
-			}
-		}
-	}
-}
-
-/******************************************************************************
  **函数名称: Launch
  **功    能: 启动程序
  **输入参数:
@@ -134,8 +114,6 @@ func (ctx *LwsCntx) run() {
  ******************************************************************************/
 func (ctx *LwsCntx) Launch(protocol *Protocol) int {
 	ctx.protocol = protocol
-
-	go ctx.run()
 
 	/* 侦听指定端口 */
 	addr := fmt.Sprintf("%s:%d", ctx.conf.Ip, ctx.conf.Port)
@@ -154,19 +132,55 @@ func (ctx *LwsCntx) Launch(protocol *Protocol) int {
  **     cid: 连接ID
  **     data: 发送的数据
  **输出参数: NONE
- **返    回: 错误码
+ **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.06 23:05:54 #
  ******************************************************************************/
 func (ctx *LwsCntx) AsyncSend(cid uint64, data []byte) int {
-	ctx.conn_pool.RLock()
-	client, ok := ctx.conn_pool.clients[cid]
-	if !ok {
-		ctx.conn_pool.RUnlock()
+	pool := ctx.pool[cid%LWS_CONN_POOL_LEN]
+
+	pool.RLock()
+	defer pool.RUnlock()
+
+	client, ok := pool.list[cid]
+	if !ok || client.iskick {
 		return -1
 	}
-	client.sendq <- data
-	ctx.conn_pool.RUnlock()
+
+	select {
+	case client.sendq <- data: // 发送数据
+		return 0
+	case <-time.After(time.Secont): // 1秒超时
+		return -1
+	}
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: Kick
+ **功    能: 踢除指定连接
+ **输入参数:
+ **     cid: 连接ID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 关闭发送队列
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.06 21:46:19 #
+ ******************************************************************************/
+func (ctx *LwsCntx) Kick(cid uint64) int {
+	pool := ctx.pool[cid%LWS_CONN_POOL_LEN]
+
+	pool.Lock()
+	defer pool.Unlock()
+
+	client, ok := pool.list[cid]
+	if !ok || client.iskick {
+		return 0
+	}
+
+	close(client.sendq)
+	client.iskick = true
+
 	return 0
 }

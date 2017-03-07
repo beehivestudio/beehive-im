@@ -7,11 +7,16 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
+	"beehive-im/src/golang/lib/chat_tab"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/lws"
 	"beehive-im/src/golang/lib/mesg"
 	"beehive-im/src/golang/lib/rtmq"
+)
+
+var (
+	LSND_SID2CID_LEN = 999
 )
 
 /* 连接状态定义 */
@@ -25,7 +30,7 @@ const (
 )
 
 /* 上行消息处理回调类型 */
-type MesgCallBack func(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int
+type MesgCallBack func(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int
 
 type MesgCallBackItem struct {
 	cmd      uint32       /* 消息ID */
@@ -38,6 +43,16 @@ type MesgCallBackTab struct {
 	callback    map[uint32]MesgCallBackItem /* 消息处理回调(上行) */
 }
 
+/* SID->CID映射管理 */
+type Sid2CidTab struct {
+	tab [LSND_SID2CID_LEN]Sid2CidList
+}
+
+type Sid2CidList struct {
+	sync.RWMutex                   /* 读写锁 */
+	list         map[uint64]uint64 /* SID->CID映射 */
+}
+
 /* LISTEND上下文 */
 type LsndCntx struct {
 	conf     *LsndConf           /* 配置信息 */
@@ -45,13 +60,16 @@ type LsndCntx struct {
 	frwder   *rtmq.RtmqProxyCntx /* 代理对象 */
 	callback MesgCallBackTab     /* 处理回调 */
 	protocol *lws.Protocol       /* LWS.PROTOCOL */
+	chat     *chat_tab.ChatTab   /* 聊天关系组织表 */
+	sid2cid  Sid2CidTab          /* SID->CID映射 */
 }
 
-/* CONN扩展数据 */
-type LsndConnExtra struct {
-	sid    uint64 /* 会话ID */
-	cid    uint64 /* 连接ID */
-	status int    /* 连接状态(CONN_STATUS_READY...) */
+/* 会话扩展数据 */
+type LsndSessionExtra struct {
+	sid          uint64 /* 会话ID */
+	sync.RWMutex        /* 读写锁 */
+	cid          uint64 /* 连接ID */
+	status       int    /* 连接状态(CONN_STATUS_READY...) */
 }
 
 /******************************************************************************
@@ -121,63 +139,11 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
  **实现描述: 注册回调函数
  **注意事项: 请在调用Launch()前完成此函数调用
  **作    者: # Qifeng.zou # 2017.02.09 23:10:38 #
- ******************************************************************************/
+******************************************************************************/
 func (ctx *LsndCntx) Register() {
-	////////////////////////////////////////////////////////////////////////////
-	// WEBSOCKET注册回调(上行)
-	/* > 通用消息 */
-	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx)
-	ctx.callback.Register(comm.CMD_SYNC, LsndOfflineReqHandler, ctx)
-
-	/* > 私聊消息 */
-	ctx.callback.Register(comm.CMD_CHAT, LsndChatHandler, ctx)
-	ctx.callback.Register(comm.CMD_CHAT_ACK, LsndChatAckHandler, ctx)
-
-	/* > 群聊消息 */
-	ctx.callback.Register(comm.CMD_GROUP_CHAT, LsndGroupChatHandler, ctx)
-	ctx.callback.Register(comm.CMD_GROUP_CHAT_ACK, LsndGroupChatAckHandler, ctx)
-
-	/* > 聊天室消息 */
-	ctx.callback.Register(comm.CMD_ROOM_CHAT, LsndRoomChatHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_CHAT_ACK, LsndRoomChatAckHandler, ctx)
-
-	ctx.callback.Register(comm.CMD_ROOM_BC, LsndRoomBcHandler, ctx)
-	ctx.callback.Register(comm.CMD_ROOM_BC_ACK, LsndRoomBcAckHandler, ctx)
-
-	/* > 推送消息 */
-	ctx.callback.Register(comm.CMD_BC, LsndBcHandler, ctx)
-	ctx.callback.Register(comm.CMD_BC_ACK, LsndBcAckHandler, ctx)
-
-	////////////////////////////////////////////////////////////////////////////
-	// FRWDER注册回调(下行)
-	/* > 通用消息 */
-	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndFrwderOnlineAckHandler, ctx)
-	ctx.frwder.Register(comm.CMD_OFFLINE_ACK, LsndFrwderP2pMsgHandler, ctx)
-	ctx.frwder.Register(comm.CMD_SYNC_ACK, LsndSFrwderyncAckHandler, ctx)
-
-	/* > 私聊消息 */
-	ctx.frwder.Register(comm.CMD_CHAT, LsndFrwderChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_CHAT_ACK, LsndFrwderChatAckHandler, ctx)
-
-	/* > 群聊消息 */
-	ctx.frwder.Register(comm.CMD_GROUP_CHAT, LsndFrwderGroupChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_GROUP_CHAT_ACK, LsndFrwderGroupChatAckHandler, ctx)
-
-	/* > 聊天室消息 */
-	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndFrwderRoomChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_CHAT_ACK, LsndFrwderRoomChatAckHandler, ctx)
-
-	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndFrwderRoomBcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_BC_ACK, LsndFrwderRoomBcAckHandler, ctx)
-
-	/* > 推送消息 */
-	ctx.frwder.Register(comm.CMD_BC, LsndFrwderBcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_BC_ACK, LsndFrwderBcAckHandler, ctx)
-
-	////////////////////////////////////////////////////////////////////////////
-	/* > WS注册 */
-	ctx.lws.Reigster("/im") /* WS注册路径 */
+	ctx.UplinkRegister()    // 上行消息注册回调
+	ctx.DownlinkRegister()  // 下行消息注册回调
+	ctx.lws.Reigster("/im") // LWS路径注册回调
 }
 
 /******************************************************************************
