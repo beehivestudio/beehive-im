@@ -89,33 +89,76 @@ func LsndDownlinkCommHandler(cmd uint32, data []byte, length uint32, param inter
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndP2pMsgHandler
- **功    能: 点到点消息的处理
+ **函数名称: LsndDownlinkOnlineAckHandler
+ **功    能: ONLINE-ACK消息的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
- **     1. 判断点到点消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
- **        进行进行第2步的处理.
- **     2. 将消息放入离线队列
- **     3. 将消息发送给在线的人员.
- **     4. 回复发送成功应答给发送方.
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
+ **作    者: # Qifeng.zou # 2017.03.07 23:49:03 #
  ******************************************************************************/
-func LsndP2pMsgHandler(cmd uint32, dest uint32,
-	data []byte, length uint32, param interface{}) int {
+func LsndDownlinkOnlineAckHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv group msg ack!")
+	ctx.log.Debug("Recv online ack!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of online-ack is failed!")
+		return -1
+	}
+
+	cid := head.GetCid()
+
+	/* > 消息ONLINE-ACK的处理 */
+	ack = &mesg.MesgOnlineAck{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal online-ack failed! errmsg:%s", err.Error())
+		ctx.lws.Kick(cid)
+		return -1
+	} else if 0 != ack.GetCode() {
+		ctx.log.Error("Logon failed! cid:%d sid:%d code:%d errmsg:%s",
+			head.GetCid(), ack.GetSid(), ack.GetCode(), ack.GetErrmsg())
+		ctx.lws.Kick(cid)
+		return 0
+	}
+
+	head.SetSid(ack.GetSid())
+
+	/* > 获取&更新会话状态 */
+	param := ctx.chat.SessionGetParam(ack.GetSid())
+	if nil == param {
+		ctx.log.Error("Didn't find session data! cid:%d sid:%d", head.GetCid(), ack.GetSid())
+		ctx.lws.Kick(cid)
+		return -1
+	}
+
+	session, ok := param.(*LsndSessionExtra)
+	if !ok {
+		ctx.log.Error("Convert session extra failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
+		ctx.lws.Kick(cid)
+		return -1
+	}
+
+	session.SetStatus(CONN_STATUS_LOGON) /* 已登录 */
+
+	/* > 下发ONLINE-ACK消息 */
+	p := &comm.MesgPacket{Buff: data}
+
+	comm.MesgHeadHton(head, p) /* 字节序转换(主机 - > 网络) */
+
+	ctx.lws.AsyncSend(cid, data)
 
 	return 0
 }

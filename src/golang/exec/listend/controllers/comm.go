@@ -113,11 +113,11 @@ func (ctx *LsndCntx) find_cid_by_sid(sid uint64) uint64 {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
-func (conn *LsndConnExtra) SetSid(sid uint64) {
-	conn.Lock()
-	defer conn.Unlock()
+func (session *LsndSessionExtra) SetSid(sid uint64) {
+	session.Lock()
+	defer session.Unlock()
 
-	conn.sid = sid
+	session.sid = sid
 }
 
 /******************************************************************************
@@ -130,11 +130,11 @@ func (conn *LsndConnExtra) SetSid(sid uint64) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
-func (conn *LsndConnExtra) GetSid() uint64 {
-	conn.RLock()
-	defer conn.RUnlock()
+func (session *LsndSessionExtra) GetSid() uint64 {
+	session.RLock()
+	defer session.RUnlock()
 
-	return conn.sid
+	return session.sid
 }
 
 /******************************************************************************
@@ -148,11 +148,11 @@ func (conn *LsndConnExtra) GetSid() uint64 {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
-func (conn *LsndConnExtra) SetCid(cid uint64) {
-	conn.Lock()
-	defer conn.Unlock()
+func (session *LsndSessionExtra) SetCid(cid uint64) {
+	session.Lock()
+	defer session.Unlock()
 
-	conn.cid = cid
+	session.cid = cid
 }
 
 /******************************************************************************
@@ -165,11 +165,11 @@ func (conn *LsndConnExtra) SetCid(cid uint64) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
-func (conn *LsndConnExtra) GetCid() uint64 {
-	conn.RLock()
-	defer conn.RUnlock()
+func (session *LsndSessionExtra) GetCid() uint64 {
+	session.RLock()
+	defer session.RUnlock()
 
-	return conn.cid
+	return session.cid
 }
 
 /******************************************************************************
@@ -183,11 +183,11 @@ func (conn *LsndConnExtra) GetCid() uint64 {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
-func (conn *LsndConnExtra) SetStatus(status int) {
-	conn.Lock()
-	defer conn.Unlock()
+func (session *LsndSessionExtra) SetStatus(status int) {
+	session.Lock()
+	defer session.Unlock()
 
-	conn.status = status
+	session.status = status
 }
 
 /******************************************************************************
@@ -200,11 +200,11 @@ func (conn *LsndConnExtra) SetStatus(status int) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
-func (conn *LsndConnExtra) GetStatus() int {
-	conn.RLock()
-	defer conn.RUnlock()
+func (session *LsndSessionExtra) GetStatus() int {
+	session.RLock()
+	defer session.RUnlock()
 
-	return conn.status
+	return session.status
 }
 
 /******************************************************************************
@@ -218,11 +218,11 @@ func (conn *LsndConnExtra) GetStatus() int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 20:47:11 #
  ******************************************************************************/
-func (conn *LsndConnExtra) IsStatus(status int) bool {
-	conn.RLock()
-	defer conn.RUnlock()
+func (session *LsndSessionExtra) IsStatus(status int) bool {
+	session.RLock()
+	defer session.RUnlock()
 
-	if conn.status == status {
+	if session.status == status {
 		return true
 	}
 	return false

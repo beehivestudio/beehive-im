@@ -30,7 +30,7 @@ const (
 )
 
 /* 上行消息处理回调类型 */
-type MesgCallBack func(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int
+type MesgCallBack func(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int
 
 type MesgCallBackItem struct {
 	cmd      uint32       /* 消息ID */
@@ -53,16 +53,6 @@ type Sid2CidList struct {
 	list         map[uint64]uint64 /* SID->CID映射 */
 }
 
-/* CID->SID映射管理 */
-type Cid2SidTab struct {
-	tab [LSND_SID2CID_LEN]Cid2SidList
-}
-
-type Cid2SidList struct {
-	sync.RWMutex                   /* 读写锁 */
-	list         map[uint64]uint64 /* CID->SID映射 */
-}
-
 /* LISTEND上下文 */
 type LsndCntx struct {
 	conf     *LsndConf           /* 配置信息 */
@@ -74,8 +64,8 @@ type LsndCntx struct {
 	sid2cid  Sid2CidTab          /* SID->CID映射 */
 }
 
-/* CONN扩展数据 */
-type LsndConnExtra struct {
+/* 会话扩展数据 */
+type LsndSessionExtra struct {
 	sid          uint64 /* 会话ID */
 	sync.RWMutex        /* 读写锁 */
 	cid          uint64 /* 连接ID */

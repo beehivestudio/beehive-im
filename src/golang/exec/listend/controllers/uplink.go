@@ -36,7 +36,7 @@ func (ctx *LsndCntx) UplinkRegister() {
  **函数名称: LsndUplinkCommHandler
  **功    能: 消息通用处理 - 直接将消息转发给上游模块
  **输入参数:
- **     conn: 连接数据
+ **     session: 连接会话
  **     cmd: 消息类型
  **     data: 收到数据
  **     length: 数据长度
@@ -47,7 +47,7 @@ func (ctx *LsndCntx) UplinkRegister() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 22:49:17 #
  ******************************************************************************/
-func LsndUplinkCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndUplinkCommHandler(ssession *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -59,7 +59,7 @@ func LsndUplinkCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
 	head.SetNid(ctx.conf.GetNid())
 
 	ctx.log.Debug("Recv cmd [0x%04X] request! sid:%d cid:%d",
-		head.GetCmd(), conn.GetSid(), conn.GetCid())
+		head.GetCmd(), session.GetSid(), session.GetCid())
 
 	/* > 主机->网络字节序 */
 	p := &comm.MesgPacket{Buff: data}
@@ -80,7 +80,7 @@ func LsndUplinkCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
  **函数名称: LsndOnlineReqHandler
  **功    能: ONLINE消息的处理
  **输入参数:
- **     conn: 连接数据
+ **     session: 会话连接
  **     cmd: 消息类型
  **     data: 收到数据
  **     length: 数据长度
@@ -91,31 +91,31 @@ func LsndUplinkCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 23:10:58 #
  ******************************************************************************/
-func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndOnlineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
 	/* > 验证当前状态 */
-	if !conn.IsStatus(CONN_STATUS_READY) &&
-		!conn.IsStatus(CONN_STATUS_CHECK) {
+	if !session.IsStatus(CONN_STATUS_READY) &&
+		!session.IsStatus(CONN_STATUS_CHECK) {
 		ctx.log.Error("Drop online request! cid:%d sid:%d status:%d",
-			conn.GetCid(), conn.GetSid(), conn.GetStatus())
+			session.GetCid(), session.GetSid(), session.GetStatus())
 		return 0
 	}
 
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
 
-	conn.SetSid(head.GetSid())
-	ctx.chat.SessionSetParam(sid, conn)
+	session.SetSid(head.GetSid())
+	ctx.chat.SessionSetParam(sid, session)
 
-	head.SetSid(conn.GetCid())
+	head.SetSid(session.GetCid())
 	head.SetNid(ctx.conf.GetNid())
 
 	ctx.log.Debug("Recv online request! cmd:0x%04X sid:%d cid:%d",
-		head.GetCmd(), conn.GetSid(), conn.GetCid())
+		head.GetCmd(), session.GetSid(), session.GetCid())
 
 	/* > 转发给上游模块 */
 	p := &comm.MesgPacket{Buff: data}
@@ -125,8 +125,8 @@ func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 	ctx.frwder.AsyncSend(cmd, data, length) /* 转发给上游模块 */
 
 	/* > 更新连接状态 */
-	conn.SetStatus(CONN_STATUS_CHECK)
-	ctx.add_sid_to_cid(head.GetSid(), conn.GetCid())
+	session.SetStatus(CONN_STATUS_CHECK)
+	ctx.add_sid_to_cid(head.GetSid(), session.GetCid())
 
 	return 0
 }
@@ -137,7 +137,7 @@ func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
  **函数名称: LsndOfflineReqHandler
  **功    能: OFFLINE消息的处理
  **输入参数:
- **     conn: 连接数据
+ **     session: 会话连接
  **     cmd: 消息类型
  **     data: 收到数据
  **     length: 数据长度
@@ -148,20 +148,20 @@ func LsndOnlineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 21:39:22 #
  ******************************************************************************/
-func LsndOfflineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndOfflineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv offline request! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+	ctx.log.Debug("Recv offline request! sid:%d cid:%d", session.GetSid(), session.GetCid())
 
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
 
-	conn.SetSid(head.GetSid())
+	session.SetSid(head.GetSid())
 
-	head.SetSid(conn.GetCid())
+	head.SetSid(session.GetCid())
 	head.SetNid(ctx.conf.GetNid())
 
 	/* > 转发给上游模块 */
@@ -171,11 +171,11 @@ func LsndOfflineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
 
 	ctx.frwder.AsyncSend(cmd, data, length) /* 转发给上游模块 */
 
-	/* > 更新连接状态 */
-	conn.SetStatus(CONN_STATUS_LOGOUT)
+	/* > 更新会话状态 */
+	session.SetStatus(CONN_STATUS_LOGOUT)
 
 	/* > 将某连接踢下线 */
-	ctx.lws.Kick(conn.GetCid())
+	ctx.lws.Kick(session.GetCid())
 
 	return 0
 }
@@ -186,7 +186,7 @@ func LsndOfflineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
  **函数名称: LsndPingHandler
  **功    能: PING处理
  **输入参数:
- **     conn: 连接数据
+ **     session: 会话连接
  **     cmd: 消息类型
  **     data: 收到数据
  **     length: 数据长度
@@ -197,13 +197,13 @@ func LsndOfflineReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 23:40:55 #
  ******************************************************************************/
-func LsndPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndPingHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv ping! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+	ctx.log.Debug("Recv ping! sid:%d cid:%d", session.GetSid(), session.GetCid())
 
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
@@ -226,7 +226,7 @@ func LsndPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32
 
 	comm.MesgHeadHton(head, p) /* "主机->网络"字节序 */
 
-	ctx.lws.AsyncSend(conn.GetCid(), data)
+	ctx.lws.AsyncSend(session.GetCid(), data)
 
 	return 0
 }
@@ -237,7 +237,7 @@ func LsndPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32
  **函数名称: LsndUnsubReqHandler
  **功    能: 取消订阅处理
  **输入参数:
- **     conn: 连接数据
+ **     session: 会话连接
  **     cmd: 消息类型
  **     data: 收到数据
  **     length: 数据长度
@@ -248,13 +248,13 @@ func LsndPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 22:58:12 #
  ******************************************************************************/
-func LsndUnsubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndUnsubReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv unsub request! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+	ctx.log.Debug("Recv unsub request! sid:%d cid:%d", session.GetSid(), session.GetCid())
 
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
@@ -263,6 +263,7 @@ func LsndUnsubReqHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 
 	/* > 移除订阅消息 */
 	req := &mesg.MesgUnsubReq{}
+
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
 		ctx.log.Error("Unmarshal unsub request failed! errmsg:%s", err.Error())
