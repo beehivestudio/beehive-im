@@ -168,6 +168,10 @@ func (head *MesgHeader) GetChkSum() uint32 {
 	return head.ChkSum
 }
 
+func (head *MesgHeader) SetSid(sid uint64) {
+	head.Sid = sid
+}
+
 func (head *MesgHeader) GetSid() uint64 {
 	return head.Sid
 }
