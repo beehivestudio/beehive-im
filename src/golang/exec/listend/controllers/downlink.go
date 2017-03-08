@@ -52,7 +52,7 @@ func (ctx *LsndCntx) DownlinkRegister() {
  **     cmd: 消息类型
  **     data: 收到数据
  **     length: 数据长度
- **     param: 附加参
+ **     param: 附加参数
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -95,7 +95,7 @@ func LsndDownlinkCommHandler(cmd uint32, data []byte, length uint32, param inter
  **     cmd: 消息类型
  **     data: 收到数据
  **     length: 数据长度
- **     param: 附加参
+ **     param: 附加参数
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -113,7 +113,7 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, data []byte, length uint32, param 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
-		ctx.log.Error("Header of online-ack is failed!")
+		ctx.log.Error("Header of online-ack is invalid!")
 		return -1
 	}
 
@@ -164,3 +164,275 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, data []byte, length uint32, param 
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndDownlinkSubAckHandler
+ **功    能: SUB-ACK消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 10:25:58 #
+ ******************************************************************************/
+func LsndDownlinkSubAckHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv sub ack!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of sub-ack is invalid!")
+		return -1
+	}
+
+	/* > 消息SUB-ACK的处理 */
+	ack = &mesg.MesgSubAck{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal sub-ack failed! errmsg:%s", err.Error())
+		return -1
+	} else if 0 != ack.GetCode() {
+		ctx.log.Error("Sub command [0x%04X] failed! sid:%d code:%d errmsg:%s",
+			ack.GetSub(), head.GetSid(), ack.GetCode(), ack.GetErrmsg())
+		return 0
+	}
+
+	/* > 更新订阅列表 */
+	ctx.chat.SubAdd(head.GetSid(), ack.GetSub())
+
+	/* > 下发SUB-ACK消息 */
+	param := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == param {
+		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
+		return -1
+	}
+
+	session, ok := param.(*LsndSessionExtra)
+	if !ok {
+		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	ctx.lws.AsyncSend(session.GetCid(), data)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndDownlinkUnsubAckHandler
+ **功    能: UNSUB-ACK消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **     1. 取消指定消息的订阅
+ **     2. 转发UNSUB-ACK给对应客户端
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 10:33:30 #
+ ******************************************************************************/
+func LsndDownlinkUnsubAckHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv unsub ack!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of unsub-ack is invalid!")
+		return -1
+	}
+
+	/* > 消息UNSUB-ACK的处理 */
+	ack = &mesg.MesgUnsubAck{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal unsub-ack failed! errmsg:%s", err.Error())
+		return -1
+	} else if 0 != ack.GetCode() {
+		ctx.log.Error("Unsub command [0x%04X] failed! sid:%d code:%d errmsg:%s",
+			ack.GetSub(), head.GetSid(), ack.GetCode(), ack.GetErrmsg())
+		return 0
+	}
+
+	/* > 更新订阅列表 */
+	ctx.chat.SubDel(head.GetSid(), ack.GetSub())
+
+	/* > 获取会话数据 */
+	param := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == param {
+		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
+		return -1
+	}
+
+	session, ok := param.(*LsndSessionExtra)
+	if !ok {
+		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	/* > 下发SUB-ACK消息 */
+	ctx.lws.AsyncSend(session.GetCid(), data)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/* 聊天室待发消息参数 */
+type LsndRoomDataParam struct {
+	ctx  *LsndCntx // 全局对象
+	data []byte    // 待发数据
+}
+
+/******************************************************************************
+ **函数名称: lsnd_room_send_data_cb
+ **功    能: 将聊天室各种消息下发给指定客户端
+ **输入参数:
+ **     sid: 会话SID
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
+ ******************************************************************************/
+func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
+	dp, ok := param.(*LsndRoomDataParam)
+	if !ok {
+		return -1
+	}
+
+	ctx := dp.ctx
+
+	/* > 获取会话数据 */
+	sp := ctx.chat.SessionGetParam(sid)
+	if nil == sp {
+		ctx.log.Error("Didn't find session data! sid:%d", sid)
+		return -1
+	}
+
+	session, ok := sp.(*LsndSessionExtra)
+	if !ok {
+		ctx.log.Error("Convert session extra failed! sid:%d", sid)
+		return -1
+	}
+
+	/* > 下发ROOM各种消息 */
+	ctx.lws.AsyncSend(session.GetCid(), dp.data)
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: LsndDownlinkRoomChatHandler
+ **功    能: ROOM-CHAT消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
+ ******************************************************************************/
+func LsndDownlinkRoomChatHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room chat message!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of room-chat is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-CHAT消息 */
+	req = &mesg.MesgRoomChat{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room-chat failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	/* > 遍历下发ROOM-CHAT消息 */
+	param := &LsndRoomDataParam{ctx: ctx, data: data}
+
+	ctx.chat.Trav(req.GetRid(), req.GetGid(), lsnd_room_send_data_cb, param)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndDownlinkRoomBcHandler
+ **功    能: ROOM-BC消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
+ ******************************************************************************/
+func LsndDownlinkRoomBcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room chat message!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of room-chat is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-BC消息 */
+	req = &mesg.MesgRoomBc{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room broadcast failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	/* > 遍历下发ROOM-CHAT消息 */
+	param := &LsndRoomDataParam{ctx: ctx, data: data}
+
+	ctx.chat.Trav(req.GetRid(), 0, lsnd_room_send_data_cb, param)
+
+	return 0
+}
