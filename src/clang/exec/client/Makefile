@@ -16,9 +16,9 @@ INCLUDE = -I./incl \
 INCLUDE += $(GLOBAL_INCLUDE)
 
 # 静态链接库
-STATIC_LIB_LIST = libsdk.a libmesg.a libcore.a libcjson.a
+STATIC_LIB_LIST = libsdk.a libmesg.a libcore.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
-LIBS += -lpthread -lm -dl -lcurl -lprotobuf-c
+LIBS += -lpthread -lm -dl -lcurl -lprotobuf-c -lcjson
 LIBS += $(SHARED_LIB)
 
 SRC_LIST = client.c
