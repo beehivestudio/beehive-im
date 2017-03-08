@@ -17,9 +17,9 @@ INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib
 
 # 注: 静态库请放在动态库之前
-STATIC_LIB_LIST = libcjson.a libcore.a
+STATIC_LIB_LIST = libcore.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
-LIBS += -lpthread -lm -dl
+LIBS += -lpthread -lm -dl -lcjson
 LIBS += $(SHARED_LIB)
 
 SRC_LIST = sdk.c \
@@ -52,6 +52,7 @@ $(TARGET_A): $(OBJS)
 $(OBJS): %.o : %.c $(HEADS)
 	@$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDE)
 	@echo "CC $(PWD)/$<"
+	@echo "$(LIBS)"
 
 clean:
 	@rm -fr *.o
