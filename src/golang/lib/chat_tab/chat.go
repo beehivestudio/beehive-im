@@ -95,22 +95,21 @@ func Init() *ChatTab {
 }
 
 /******************************************************************************
- **函数名称: SessionAdd
- **功    能: 会话添加
+ **函数名称: RoomJoin
+ **功    能: 加入聊天室
  **输入参数:
  **     rid: ROOM ID
  **     gid: 分组GID
  **     sid: 会话SID
- **     param: 扩展数据
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 将会话SID挂载到聊天室指定分组上.
  **注意事项: 各层级读写锁的操作, 降低锁粒度, 防止死锁.
  **作    者: # Qifeng.zou # 2017.02.22 20:32:20 #
  ******************************************************************************/
-func (ctx *ChatTab) SessionAdd(rid uint64, gid uint32, sid uint64) int {
+func (ctx *ChatTab) RoomJoin(rid uint64, gid uint32, sid uint64) int {
 	/* > 加入会话管理表 */
-	ret := ctx.session_add(rid, gid, sid)
+	ret := ctx.session_join_room(rid, gid, sid)
 	if 0 != ret {
 		return -1 // 异常
 	}
@@ -151,6 +150,28 @@ GROUP:
 	}
 
 	return 0
+}
+
+/******************************************************************************
+ **函数名称: RoomQuit
+ **功    能: 退出聊天室
+ **输入参数:
+ **     rid: ROOM ID
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 移除会话SID在指定聊天室RID中的记录.
+ **注意事项: 各层级读写锁的操作, 降低锁粒度, 防止死锁.
+ **作    者: # Qifeng.zou # 2017.03.08 22:02:17 #
+ ******************************************************************************/
+func (ctx *ChatTab) RoomQuit(rid uint64, sid uint64) int {
+	/* > 移除指定聊天室数据 */
+	gid, ok := ctx.session_quit_room(rid, sid)
+	if !ok {
+		return 0 // 无数据
+	}
+
+	return ctx.room_del_session(rid, gid, sid)
 }
 
 /******************************************************************************

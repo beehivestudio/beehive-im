@@ -11,8 +11,8 @@ import (
 // 会话操作
 
 /******************************************************************************
- **函数名称: session_add
- **功    能: 加入会话管理表
+ **函数名称: session_join_room
+ **功    能: 会话JOIN聊天室
  **输入参数:
  **     rid: ROOM ID
  **     gid: 分组GID
@@ -23,7 +23,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 23:37:33 #
  ******************************************************************************/
-func (ctx *ChatTab) session_add(rid uint64, gid uint32, sid uint64) int {
+func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
 	ss := ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
@@ -54,6 +54,38 @@ func (ctx *ChatTab) session_add(rid uint64, gid uint32, sid uint64) int {
 	ss.session[sid] = ssn
 
 	return 0
+}
+
+/******************************************************************************
+ **函数名称: session_quit_room
+ **功    能: 会话QUIT聊天室
+ **输入参数:
+ **     rid: ROOM ID
+ **     gid: 分组GID
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 清理会话SID信息中的聊天室RID数据.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 22:36:01 #
+ ******************************************************************************/
+func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bool) {
+	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+
+	ss.Lock()
+	defer ss.Unlock()
+
+	/* > 判断会话是否存在 */
+	ssn, ok := ss.session[sid]
+	if ok {
+		gid, ok := ssn.room[rid]
+		if !ok {
+			delete(ssn.room, rid)
+			return gid, true
+		}
+		return 0, false // 数据不一致
+	}
+	return 0, false
 }
 
 /******************************************************************************
