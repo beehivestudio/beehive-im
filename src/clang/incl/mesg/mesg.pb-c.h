@@ -993,12 +993,15 @@ struct  _MesgRoomChat
 struct  _MesgRoomChatAck
 {
   ProtobufCMessage base;
+  uint64_t uid;
+  uint64_t rid;
+  uint32_t gid;
   uint32_t code;
   char *errmsg;
 };
 #define MESG_ROOM_CHAT_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_chat_ack__descriptor) \
-    , 0, NULL }
+    , 0, 0, 0, 0, NULL }
 
 
 struct  _MesgRoomBc
@@ -1018,12 +1021,13 @@ struct  _MesgRoomBc
 struct  _MesgRoomBcAck
 {
   ProtobufCMessage base;
+  uint64_t rid;
   uint32_t code;
   char *errmsg;
 };
 #define MESG_ROOM_BC_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_bc_ack__descriptor) \
-    , 0, NULL }
+    , 0, 0, NULL }
 
 
 struct  _MesgRoomUsrNum

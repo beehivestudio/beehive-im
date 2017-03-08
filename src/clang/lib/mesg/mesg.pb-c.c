@@ -8071,11 +8071,47 @@ const ProtobufCMessageDescriptor mesg_room_chat__descriptor =
   (ProtobufCMessageInit) mesg_room_chat__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_chat_ack__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_room_chat_ack__field_descriptors[5] =
 {
   {
-    "code",
+    "uid",
     1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomChatAck, uid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "rid",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomChatAck, rid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "gid",
+    3,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomChatAck, gid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "code",
+    4,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -8087,7 +8123,7 @@ static const ProtobufCFieldDescriptor mesg_room_chat_ack__field_descriptors[2] =
   },
   {
     "errmsg",
-    2,
+    5,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -8099,13 +8135,16 @@ static const ProtobufCFieldDescriptor mesg_room_chat_ack__field_descriptors[2] =
   },
 };
 static const unsigned mesg_room_chat_ack__field_indices_by_name[] = {
-  0,   /* field[0] = code */
-  1,   /* field[1] = errmsg */
+  3,   /* field[3] = code */
+  4,   /* field[4] = errmsg */
+  2,   /* field[2] = gid */
+  1,   /* field[1] = rid */
+  0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_room_chat_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 5 }
 };
 const ProtobufCMessageDescriptor mesg_room_chat_ack__descriptor =
 {
@@ -8115,7 +8154,7 @@ const ProtobufCMessageDescriptor mesg_room_chat_ack__descriptor =
   "MesgRoomChatAck",
   "",
   sizeof(MesgRoomChatAck),
-  2,
+  5,
   mesg_room_chat_ack__field_descriptors,
   mesg_room_chat_ack__field_indices_by_name,
   1,  mesg_room_chat_ack__number_ranges,
@@ -8212,11 +8251,23 @@ const ProtobufCMessageDescriptor mesg_room_bc__descriptor =
   (ProtobufCMessageInit) mesg_room_bc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[3] =
 {
   {
-    "code",
+    "rid",
     1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomBcAck, rid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "code",
+    2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -8228,7 +8279,7 @@ static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[2] =
   },
   {
     "errmsg",
-    2,
+    3,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -8240,13 +8291,14 @@ static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[2] =
   },
 };
 static const unsigned mesg_room_bc_ack__field_indices_by_name[] = {
-  0,   /* field[0] = code */
-  1,   /* field[1] = errmsg */
+  1,   /* field[1] = code */
+  2,   /* field[2] = errmsg */
+  0,   /* field[0] = rid */
 };
 static const ProtobufCIntRange mesg_room_bc_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 3 }
 };
 const ProtobufCMessageDescriptor mesg_room_bc_ack__descriptor =
 {
@@ -8256,7 +8308,7 @@ const ProtobufCMessageDescriptor mesg_room_bc_ack__descriptor =
   "MesgRoomBcAck",
   "",
   sizeof(MesgRoomBcAck),
-  2,
+  3,
   mesg_room_bc_ack__field_descriptors,
   mesg_room_bc_ack__field_indices_by_name,
   1,  mesg_room_bc_ack__number_ranges,
