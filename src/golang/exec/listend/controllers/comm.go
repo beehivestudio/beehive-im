@@ -1,7 +1,5 @@
 package controllers
 
-import ()
-
 ////////////////////////////////////////////////////////////////////////////////
 // 处理回调的管理
 
@@ -20,9 +18,9 @@ import ()
  ******************************************************************************/
 func (tab *MesgCallBackTab) Register(cmd uint32, cb MesgCallBack, param interface{}) int {
 	item := &MesgCallBackItem{
-		cmd:   cmd,
-		cb:    cb,
-		param: param,
+		cmd:      cmd,
+		callback: cb,
+		param:    param,
 	}
 
 	tab.Lock()
@@ -52,8 +50,8 @@ func (tab *MesgCallBackTab) Query(cmd uint32) (cb MesgCallBack, param interface{
 		tab.RUnlock()
 		return nil, nil
 	}
-	cb := item.cb
-	param := item.param
+	cb = item.callback
+	param = item.param
 	tab.RUnlock()
 
 	return cb, param

@@ -1,8 +1,6 @@
 package controllers
 
-import (
-	"fmt"
-)
+import ()
 
-func task() {
+func (ctx *LsndCntx) Task() {
 }

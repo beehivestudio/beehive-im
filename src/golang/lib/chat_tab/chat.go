@@ -1,15 +1,14 @@
 package chat_tab
 
 import (
-	"fmt"
-	"strconv"
 	"sync"
-	"sync/atomic"
+
+	"beehive-im/src/golang/lib/comm"
 )
 
 const (
 	ROOM_MAX_LEN    = 999 // 聊天室列表长度
-	GROUP_MAX_LEN   = 999 // 聊天室分组列表长度
+	GROUP_MAX_LEN   = 99  // 聊天室分组列表长度
 	SESSION_MAX_LEN = 999 // 聊天室分组列表长度
 )
 
@@ -33,8 +32,8 @@ type chat_session_tab struct {
 
 /* 分组信息 */
 type chat_group struct {
-	gid          uint64          // 分组ID
-	sid_num      uint64          // 会话数目
+	gid          uint32          // 分组ID
+	sid_num      int64           // 会话数目
 	create_tm    int64           // 创建时间
 	sync.RWMutex                 // 读写锁
 	sid_list     map[uint64]bool // 会话列表[sid]bool
@@ -48,11 +47,11 @@ type chat_group_tab struct {
 
 /* ROOM信息 */
 type chat_room struct {
-	rid       uint64                       // 聊天室ID
-	sid_num   uint64                       // 会话数目
-	grp_num   uint32                       // 分组数目
-	create_tm int64                        // 创建时间
-	groups    [CT_GROUP_NUM]chat_group_tab // 分组信息
+	rid       uint64                        // 聊天室ID
+	sid_num   int64                         // 会话数目
+	grp_num   int32                         // 分组数目
+	create_tm int64                         // 创建时间
+	groups    [GROUP_MAX_LEN]chat_group_tab // 分组信息
 }
 
 /* ROOM TAB信息 */
@@ -111,14 +110,14 @@ func Init() *ChatTab {
  ******************************************************************************/
 func (ctx *ChatTab) SessionAdd(rid uint64, gid uint32, sid uint64) int {
 	/* > 加入会话管理表 */
-	ok := ctx.session_add(rid, gid, sid)
-	if ok {
+	ret := ctx.session_add(rid, gid, sid)
+	if 0 != ret {
 		return -1 // 异常
 	}
 
 ROOM:
-	ok = ctx.room_add(rid)
-	if ok {
+	ret = ctx.room_add(rid)
+	if 0 != ret {
 		return -1 // 异常
 	}
 
@@ -130,8 +129,8 @@ ROOM:
 	defer ctx.room_unlock(rid, comm.RDLOCK)
 
 GROUP:
-	ok = room.group_add(gid)
-	if ok {
+	ret = room.group_add(gid)
+	if 0 != ret {
 		return -1 // 异常
 	}
 
@@ -142,11 +141,10 @@ GROUP:
 
 	defer room.group_unlock(gid, comm.RDLOCK)
 
-SIDLIST:
 	group.Lock()
 	defer group.Unlock()
 
-	ssn, ok = group.sid_list[sid]
+	_, ok := group.sid_list[sid]
 	if !ok {
 		group.sid_list[sid] = true
 		return 0
@@ -176,7 +174,9 @@ func (ctx *ChatTab) SessionDel(sid uint64) int {
 	}
 
 	/* > 清理ROOM会话数据 */
-	ctx.room_del_session(ssn.rid, ssn.gid, sid)
+	for rid, gid := range ssn.room {
+		ctx.room_del_session(rid, gid, sid)
+	}
 
 	return 0
 }
@@ -213,8 +213,9 @@ func (ctx *ChatTab) SessionSetParam(sid uint64, param interface{}) int {
 		param: param,                   // 扩展数据
 	}
 
-	ss.session[idx] = ssn
+	ss.session[sid] = ssn
 
+	return 0
 }
 
 /******************************************************************************
@@ -362,9 +363,6 @@ func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param inte
 		return room.group_all_trav(proc, param) // 遍历所有分组
 	}
 
-	room.RLock()
-	defer room.RUnlock()
-
 	gs := room.groups[gid%GROUP_MAX_LEN]
 
 	gs.RLock()
@@ -395,7 +393,7 @@ func (ctx *ChatTab) Clean() int {
 	for _, rs := range ctx.rooms {
 		rs.RLock()
 		for rid, room := range rs.room {
-			if room.sid_num {
+			if 0 != room.sid_num {
 				continue
 			}
 			rlist[rid] = true
@@ -408,11 +406,12 @@ func (ctx *ChatTab) Clean() int {
 		rs := ctx.rooms[rid%ROOM_MAX_LEN]
 		rs.Lock()
 		room, ok := rs.room[rid]
-		if !ok || room.sid_num {
+		if !ok || 0 != room.sid_num {
 			rs.Unlock()
 			continue
 		}
 		delete(rs.room, rid)
 		rs.Unlock()
 	}
+	return 0
 }

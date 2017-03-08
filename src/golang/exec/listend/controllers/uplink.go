@@ -1,11 +1,6 @@
 package controllers
 
 import (
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
@@ -47,7 +42,7 @@ func (ctx *LsndCntx) UplinkRegister() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 22:49:17 #
  ******************************************************************************/
-func LsndUplinkCommHandler(ssession *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndUplinkCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -59,7 +54,7 @@ func LsndUplinkCommHandler(ssession *LsndSessionExtra, cmd uint32, data []byte, 
 	head.SetNid(ctx.conf.GetNid())
 
 	ctx.log.Debug("Recv cmd [0x%04X] request! sid:%d cid:%d",
-		head.GetCmd(), session.GetSid(), session.GetCid())
+		head.GetCmd(), head.GetSid(), session.GetCid())
 
 	/* > 主机->网络字节序 */
 	p := &comm.MesgPacket{Buff: data}
@@ -109,7 +104,7 @@ func LsndOnlineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, le
 	head := comm.MesgHeadNtoh(data)
 
 	session.SetSid(head.GetSid())
-	ctx.chat.SessionSetParam(sid, session)
+	ctx.chat.SessionSetParam(head.GetSid(), session)
 
 	head.SetSid(session.GetCid())
 	head.SetNid(ctx.conf.GetNid())

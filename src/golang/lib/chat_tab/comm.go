@@ -1,9 +1,10 @@
 package chat_tab
 
 import (
-	"fmt"
-	"strconv"
 	"sync/atomic"
+	"time"
+
+	"beehive-im/src/golang/lib/comm"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +51,7 @@ func (ctx *ChatTab) session_add(rid uint64, gid uint32, sid uint64) int {
 
 	ssn.room[rid] = gid
 
-	ss.session[idx] = ssn
+	ss.session[sid] = ssn
 
 	return 0
 }
@@ -102,18 +103,21 @@ func (ctx *ChatTab) room_add(rid uint64) int {
 	rs.Lock()
 	defer rs.Unlock()
 
-	room, ok := ctx.room[rid]
+	room, ok := rs.room[rid]
 	if !ok {
 		room = &chat_room{
-			rid:       rid,                         // 聊天室ID
-			sid_num:   0,                           // 会话数目
-			grp_num:   0,                           // 分组数目
-			create_tm: time.Now().Unix(),           // 创建时间
-			group:     make(map[uint32]chat_group), // 分组信息
+			rid:       rid,               // 聊天室ID
+			sid_num:   0,                 // 会话数目
+			grp_num:   0,                 // 分组数目
+			create_tm: time.Now().Unix(), // 创建时间
 		}
 
-		atomic.AddUint64(&room.sid_num, 1)
-		ctx.room[rid] = room
+		for idx := uint32(0); idx < GROUP_MAX_LEN; idx += 1 {
+			room.groups[idx].group = make(map[uint32]*chat_group)
+		}
+
+		atomic.AddInt64(&room.sid_num, 1)
+		rs.room[rid] = room
 		return 0
 	}
 
@@ -167,7 +171,7 @@ func (ctx *ChatTab) room_query(rid uint64, lck int) *chat_room {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 23:57:28 #
  ******************************************************************************/
-func (ctx *ChatTab) room_unlock(rid uint64, lck int) *chat_room {
+func (ctx *ChatTab) room_unlock(rid uint64, lck int) int {
 	rs := ctx.rooms[rid%ROOM_MAX_LEN]
 
 	switch lck {
@@ -206,10 +210,10 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
 	}
 
 	/* > 查找GROUP对象 */
-	room.RLock()
-	defer room.RUnlock()
-
 	gs := room.groups[gid%GROUP_MAX_LEN]
+
+	gs.RLock()
+	defer gs.RUnlock()
 
 	group, ok := gs.group[gid]
 	if !ok {
@@ -220,15 +224,15 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
 	group.Lock()
 	defer group.Unlock()
 
-	_, ok := group.sid_list[sid]
+	_, ok = group.sid_list[sid]
 	if ok {
 		return 0 // 无数据
 	}
 
 	delete(group.sid_list, sid)
 
-	atomic.AddUint64(&room.sid_num, -1)  // 人数减1
-	atomic.AddUint64(&group.sid_num, -1) // 人数减1
+	atomic.AddInt64(&room.sid_num, -1)  // 人数减1
+	atomic.AddInt64(&group.sid_num, -1) // 人数减1
 
 	return 0
 }
@@ -262,7 +266,7 @@ func (room *chat_room) group_add(gid uint32) int {
 			sid_list:  make(map[uint64]bool), // 会话列表
 		}
 
-		atomic.AddUint64(&group.sid_num, 1)
+		atomic.AddInt64(&group.sid_num, 1)
 
 		gs.group[gid] = group
 	}
@@ -291,7 +295,7 @@ func (room *chat_room) group_query(gid uint32, lck int) *chat_group {
 		gs.Lock()
 	}
 
-	group, ok := gs.group[rid]
+	group, ok := gs.group[gid]
 	if !ok {
 		switch lck {
 		case comm.RDLOCK: // 加读锁
@@ -317,14 +321,14 @@ func (room *chat_room) group_query(gid uint32, lck int) *chat_group {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 17:44:36 #
  ******************************************************************************/
-func (room *chat_room) group_unlock(gid uint32, lck int) *chat_room {
+func (room *chat_room) group_unlock(gid uint32, lck int) int {
 	gs := room.groups[gid%GROUP_MAX_LEN]
 
 	switch lck {
 	case comm.RDLOCK: // 加读锁
-		rs.RUnlock()
+		gs.RUnlock()
 	case comm.WRLOCK: // 加写锁
-		rs.Unlock()
+		gs.Unlock()
 	}
 
 	return 0
@@ -347,9 +351,10 @@ func (room *chat_room) group_trav(group *chat_group, proc ChatTravProcCb, param 
 	group.RLock()
 	defer group.RUnlock()
 
-	for sid, ok := range group.sid_list {
+	for sid, _ := range group.sid_list {
 		proc(sid, param)
 	}
+	return 0
 }
 
 /******************************************************************************
@@ -372,4 +377,5 @@ func (room *chat_room) group_all_trav(proc ChatTravProcCb, param interface{}) in
 		}
 		gs.RUnlock()
 	}
+	return 0
 }

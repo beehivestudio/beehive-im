@@ -1,8 +1,11 @@
 package lws
 
 import (
-	"sync"
+	"net/http"
 	"sync/atomic"
+	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 /******************************************************************************
@@ -24,6 +27,7 @@ func (ctx *LwsCntx) ConnPoolAdd(cid uint64, client *Client) int {
 	defer pool.Unlock()
 
 	pool.list[cid] = client
+	return 0
 }
 
 /******************************************************************************
@@ -54,6 +58,7 @@ func (ctx *LwsCntx) ConnPoolDel(cid uint64) int {
 		close(client.sendq)
 		client.iskick = true
 	}
+	return 0
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -74,13 +79,13 @@ func (ctx *LwsCntx) ConnPoolDel(cid uint64) int {
 func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if nil != err {
-		log.Println(err)
+		ctx.log.Error("Upgrade websocket failed! errmsg:%d", err.Error())
 		return
 	}
 
 	client := &Client{
 		ctx:    ctx,                                  /* 全局对象 */
-		cid:    atomic.AddUint64(&ctx.cid),           /* 连接ID */
+		cid:    atomic.AddUint64(&ctx.cid, 1),        /* 连接ID */
 		conn:   conn,                                 /* 连接对象 */
 		sendq:  make(chan []byte, ctx.conf.SendqMax), /* 发送队列 */
 		iskick: false,                                /* 是否被踢 */
@@ -90,7 +95,7 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 	ret := ctx.protocol.Callback(client.ctx, client,
 		LWS_CALLBACK_REASON_CREAT, nil, 0, ctx.protocol.Param)
 	if 0 != ret {
-		log.Println("Create socket failed!")
+		ctx.log.Error("Create socket failed!")
 		return
 	}
 
@@ -125,15 +130,15 @@ func (client *Client) recv_routine() {
 		_, data, err := client.conn.ReadMessage()
 		if nil != err {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway) {
-				log.Printf("error: %v", err)
+				ctx.log.Error("Connections was closed! errmsg:%s", err.Error())
 			}
 			break
 		}
 
-		length := ctx.protocol.GetPacketBodyLenCb(data) // 获取报体长度
+		//length := ctx.protocol.GetPacketBodyLenCb(data) // 获取报体长度
 
 		/* 调用回调函数(注意:返回非0值将导致连接被关闭) */
-		if ctx.protocol.Callback(ctx, client,
+		if 0 != ctx.protocol.Callback(ctx, client,
 			LWS_CALLBACK_REASON_RECV, data, len(data), ctx.protocol.Param) {
 			break
 		}

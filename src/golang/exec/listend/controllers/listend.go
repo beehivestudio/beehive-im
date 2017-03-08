@@ -5,17 +5,15 @@ import (
 	"sync"
 
 	"github.com/astaxie/beego/logs"
-	"github.com/garyburd/redigo/redis"
 
 	"beehive-im/src/golang/lib/chat_tab"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/lws"
-	"beehive-im/src/golang/lib/mesg"
 	"beehive-im/src/golang/lib/rtmq"
 )
 
-var (
+const (
 	LSND_SID2CID_LEN = 999
 )
 
@@ -39,8 +37,8 @@ type MesgCallBackItem struct {
 }
 
 type MesgCallBackTab struct {
-	sync.RWLock                             /* 读写锁 */
-	callback    map[uint32]MesgCallBackItem /* 消息处理回调(上行) */
+	sync.RWMutex                              /* 读写锁 */
+	callback     map[uint32]*MesgCallBackItem /* 消息处理回调(上行) */
 }
 
 /* SID->CID映射管理 */
@@ -59,9 +57,10 @@ type LsndCntx struct {
 	log      *logs.BeeLogger     /* 日志对象 */
 	frwder   *rtmq.RtmqProxyCntx /* 代理对象 */
 	callback MesgCallBackTab     /* 处理回调 */
-	protocol *lws.Protocol       /* LWS.PROTOCOL */
 	chat     *chat_tab.ChatTab   /* 聊天关系组织表 */
 	sid2cid  Sid2CidTab          /* SID->CID映射 */
+	lws      *lws.LwsCntx        /* LWS环境 */
+	protocol *lws.Protocol       /* LWS.PROTOCOL */
 }
 
 /* 会话扩展数据 */
@@ -104,7 +103,6 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 	}
 
 	/* > 初始化LWS模块 */
-	addr := fmt.Sprintf("%s:%d", conf.Access.Ip, conf.Access.Port)
 	lws_conf := &lws.Conf{
 		Ip:       conf.WebSocket.Ip,
 		Port:     conf.WebSocket.Port,
@@ -121,10 +119,9 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 
 	/* > 初始化LWS协议 */
 	ctx.protocol = &lws.Protocol{
-		Callback:           LsndLwsCallBack,     /* 处理回调 */
-		PerPacketHeadSize:  comm.MESG_HEAD_SIZE, /* 每个包的报头长度 */
-		GetPacketBodyLenCb: LsndGetMesgBodyLen,  /* 每个包的报体长度 */
-		Param:              ctx,                 /* 附加参数 */
+		Callback:          LsndLwsCallBack,             /* 处理回调 */
+		PerPacketHeadSize: uint32(comm.MESG_HEAD_SIZE), /* 每个包的报头长度 */
+		Param:             ctx,                         /* 附加参数 */
 	}
 
 	return ctx, nil
@@ -143,7 +140,7 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 func (ctx *LsndCntx) Register() {
 	ctx.UplinkRegister()    // 上行消息注册回调
 	ctx.DownlinkRegister()  // 下行消息注册回调
-	ctx.lws.Reigster("/im") // LWS路径注册回调
+	ctx.lws.Register("/im") // LWS路径注册回调
 }
 
 /******************************************************************************
@@ -157,7 +154,7 @@ func (ctx *LsndCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *LsndCntx) Launch() {
-	go ctx.task()
+	go ctx.Task()
 	ctx.lws.Launch(ctx.protocol)
 	ctx.frwder.Launch()
 }

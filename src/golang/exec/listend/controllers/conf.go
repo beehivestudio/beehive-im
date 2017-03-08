@@ -28,7 +28,7 @@ type LsndConf struct {
 type LsndConfOperatorXmlData struct {
 	Name   xml.Name `xml:"OPERATOR"`    // 结点名
 	Nation string   `xml:"NATION,attr"` // 所属国家
-	Name   string   `xml:"NAME,attr"`   // 运营商名称
+	OpName string   `xml:"NAME,attr"`   // 运营商名称
 }
 
 /* 分发队列配置 */
@@ -158,14 +158,14 @@ func (conf *LsndConf) conf_parse() (err error) {
 	/* > 日志配置 */
 	conf.Log.Level = log.GetLevel(node.Log.Level) // 日志级别
 	conf.Log.Path = node.Log.Path                 // 日志路径
-	if !len(conf.Log.Path) {
+	if 0 == len(conf.Log.Path) {
 		return errors.New("Get log path failed!")
 	}
 
 	/* > 运营商配置 */
 	conf.Operator.Nation = node.Operator.Nation // 所属国家
-	conf.Operator.Name = node.Operator.Name     // 运营商名称
-	if !len(conf.Operator.Nation) || !len(conf.Operator.Name) {
+	conf.Operator.OpName = node.Operator.OpName // 运营商名称
+	if 0 == len(conf.Operator.Nation) || 0 == len(conf.Operator.OpName) {
 		return errors.New("Get operator information failed!")
 	}
 

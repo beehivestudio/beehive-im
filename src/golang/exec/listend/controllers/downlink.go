@@ -1,18 +1,9 @@
 package controllers
 
 import (
-	_ "encoding/binary"
-	"errors"
-	"fmt"
-	"strconv"
-	"strings"
-	_ "time"
-
-	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
-	"beehive-im/src/golang/lib/im"
 	"beehive-im/src/golang/lib/mesg"
 )
 
@@ -36,7 +27,7 @@ func (ctx *LsndCntx) DownlinkRegister() {
 	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndDownlinkUnsubAckHandler, ctx)
 
 	/* > 群聊消息 */
-	ctx.frwder.Register(comm.CMD_GROUP_CHAT, LsndDownlinkGroupChatHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_GROUP_CHAT, LsndDownlinkGroupChatHandler, ctx)
 
 	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndDownlinkRoomChatHandler, ctx)
@@ -63,7 +54,7 @@ func (ctx *LsndCntx) DownlinkRegister() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 17:54:26 #
  ******************************************************************************/
-func LsndDownlinkCommHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkCommHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -106,7 +97,7 @@ func LsndDownlinkCommHandler(cmd uint32, data []byte, length uint32, param inter
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.07 23:49:03 #
  ******************************************************************************/
-func LsndDownlinkOnlineAckHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkOnlineAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -124,7 +115,7 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, data []byte, length uint32, param 
 	cid := head.GetCid()
 
 	/* > 消息ONLINE-ACK的处理 */
-	ack = &mesg.MesgOnlineAck{}
+	ack := &mesg.MesgOnlineAck{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
 	if nil != err {
@@ -141,14 +132,14 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, data []byte, length uint32, param 
 	head.SetSid(ack.GetSid())
 
 	/* > 获取&更新会话状态 */
-	param := ctx.chat.SessionGetParam(ack.GetSid())
-	if nil == param {
+	sp := ctx.chat.SessionGetParam(ack.GetSid())
+	if nil == sp {
 		ctx.log.Error("Didn't find session data! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		ctx.lws.Kick(cid)
 		return -1
 	}
 
-	session, ok := param.(*LsndSessionExtra)
+	session, ok := sp.(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Convert session extra failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		ctx.lws.Kick(cid)
@@ -183,7 +174,7 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, data []byte, length uint32, param 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:25:58 #
  ******************************************************************************/
-func LsndDownlinkSubAckHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkSubAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -199,7 +190,7 @@ func LsndDownlinkSubAckHandler(cmd uint32, data []byte, length uint32, param int
 	}
 
 	/* > 消息SUB-ACK的处理 */
-	ack = &mesg.MesgSubAck{}
+	ack := &mesg.MesgSubAck{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
 	if nil != err {
@@ -215,13 +206,13 @@ func LsndDownlinkSubAckHandler(cmd uint32, data []byte, length uint32, param int
 	ctx.chat.SubAdd(head.GetSid(), ack.GetSub())
 
 	/* > 下发SUB-ACK消息 */
-	param := ctx.chat.SessionGetParam(head.GetSid())
-	if nil == param {
+	sp := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == sp {
 		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := param.(*LsndSessionExtra)
+	session, ok := sp.(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
 		return -1
@@ -250,7 +241,7 @@ func LsndDownlinkSubAckHandler(cmd uint32, data []byte, length uint32, param int
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:33:30 #
  ******************************************************************************/
-func LsndDownlinkUnsubAckHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkUnsubAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -266,7 +257,7 @@ func LsndDownlinkUnsubAckHandler(cmd uint32, data []byte, length uint32, param i
 	}
 
 	/* > 消息UNSUB-ACK的处理 */
-	ack = &mesg.MesgUnsubAck{}
+	ack := &mesg.MesgUnsubAck{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
 	if nil != err {
@@ -282,13 +273,13 @@ func LsndDownlinkUnsubAckHandler(cmd uint32, data []byte, length uint32, param i
 	ctx.chat.SubDel(head.GetSid(), ack.GetSub())
 
 	/* > 获取会话数据 */
-	param := ctx.chat.SessionGetParam(head.GetSid())
-	if nil == param {
+	sp := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == sp {
 		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := param.(*LsndSessionExtra)
+	session, ok := sp.(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
 		return -1
@@ -363,7 +354,7 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
  ******************************************************************************/
-func LsndDownlinkRoomChatHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkRoomChatHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -379,7 +370,7 @@ func LsndDownlinkRoomChatHandler(cmd uint32, data []byte, length uint32, param i
 	}
 
 	/* > 解析ROOM-CHAT消息 */
-	req = &mesg.MesgRoomChat{}
+	req := &mesg.MesgRoomChat{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -388,9 +379,9 @@ func LsndDownlinkRoomChatHandler(cmd uint32, data []byte, length uint32, param i
 	}
 
 	/* > 遍历下发ROOM-CHAT消息 */
-	param := &LsndRoomDataParam{ctx: ctx, data: data}
+	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.Trav(req.GetRid(), req.GetGid(), lsnd_room_send_data_cb, param)
+	ctx.chat.Trav(req.GetRid(), req.GetGid(), lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -411,7 +402,7 @@ func LsndDownlinkRoomChatHandler(cmd uint32, data []byte, length uint32, param i
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
  ******************************************************************************/
-func LsndDownlinkRoomBcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkRoomBcHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -427,7 +418,7 @@ func LsndDownlinkRoomBcHandler(cmd uint32, data []byte, length uint32, param int
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req = &mesg.MesgRoomBc{}
+	req := &mesg.MesgRoomBc{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -436,9 +427,9 @@ func LsndDownlinkRoomBcHandler(cmd uint32, data []byte, length uint32, param int
 	}
 
 	/* > 遍历下发ROOM-CHAT消息 */
-	param := &LsndRoomDataParam{ctx: ctx, data: data}
+	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.Trav(req.GetRid(), 0, lsnd_room_send_data_cb, param)
+	ctx.chat.Trav(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -459,7 +450,7 @@ func LsndDownlinkRoomBcHandler(cmd uint32, data []byte, length uint32, param int
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:25:28 #
  ******************************************************************************/
-func LsndDownlinkRoomUsrNumHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkRoomUsrNumHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -475,7 +466,7 @@ func LsndDownlinkRoomUsrNumHandler(cmd uint32, data []byte, length uint32, param
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req = &mesg.MesgRoomUsrNum{}
+	req := &mesg.MesgRoomUsrNum{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -484,9 +475,9 @@ func LsndDownlinkRoomUsrNumHandler(cmd uint32, data []byte, length uint32, param
 	}
 
 	/* > 遍历下发ROOM-USR-NUM消息 */
-	param := &LsndRoomDataParam{ctx: ctx, data: data}
+	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.Trav(req.GetRid(), 0, lsnd_room_send_data_cb, param)
+	ctx.chat.Trav(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -507,7 +498,7 @@ func LsndDownlinkRoomUsrNumHandler(cmd uint32, data []byte, length uint32, param
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:26:07 #
  ******************************************************************************/
-func LsndDownlinkRoomJoinNtcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkRoomJoinNtcHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -523,7 +514,7 @@ func LsndDownlinkRoomJoinNtcHandler(cmd uint32, data []byte, length uint32, para
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req = &mesg.MesgRoomJoinNtc{}
+	req := &mesg.MesgRoomJoinNtc{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -532,9 +523,9 @@ func LsndDownlinkRoomJoinNtcHandler(cmd uint32, data []byte, length uint32, para
 	}
 
 	/* > 遍历下发ROOM-JOIN-NTC消息 */
-	param := &LsndRoomDataParam{ctx: ctx, data: data}
+	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, param)
+	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -555,7 +546,7 @@ func LsndDownlinkRoomJoinNtcHandler(cmd uint32, data []byte, length uint32, para
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
  ******************************************************************************/
-func LsndDownlinkRoomQuitNtcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkRoomQuitNtcHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -571,7 +562,7 @@ func LsndDownlinkRoomQuitNtcHandler(cmd uint32, data []byte, length uint32, para
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req = &mesg.MesgRoomQuitNtc{}
+	req := &mesg.MesgRoomQuitNtc{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -580,9 +571,9 @@ func LsndDownlinkRoomQuitNtcHandler(cmd uint32, data []byte, length uint32, para
 	}
 
 	/* > 遍历下发ROOM-QUIT-NTC消息 */
-	param := &LsndRoomDataParam{ctx: ctx, data: data}
+	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, param)
+	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -603,7 +594,7 @@ func LsndDownlinkRoomQuitNtcHandler(cmd uint32, data []byte, length uint32, para
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
  ******************************************************************************/
-func LsndDownlinkRoomKickNtcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndDownlinkRoomKickNtcHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -619,7 +610,7 @@ func LsndDownlinkRoomKickNtcHandler(cmd uint32, data []byte, length uint32, para
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req = &mesg.MesgRoomKickNtc{}
+	req := &mesg.MesgRoomKickNtc{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -628,9 +619,9 @@ func LsndDownlinkRoomKickNtcHandler(cmd uint32, data []byte, length uint32, para
 	}
 
 	/* > 遍历下发ROOM-KICK-NTC消息 */
-	param := &LsndRoomDataParam{ctx: ctx, data: data}
+	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, param)
+	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }

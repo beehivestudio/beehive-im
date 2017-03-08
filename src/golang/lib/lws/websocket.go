@@ -1,7 +1,12 @@
 package lws
 
 import (
-	"github.com/gorilla/websocket"
+	"fmt"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 /* 常量定义 */
@@ -20,29 +25,26 @@ const (
 	LWS_CALLBACK_REASON_CLOSE = 4 /* 关闭连接 */
 )
 
-type LwsCallback func(ctx *LwsCntx, client *Client,
-	reason int, data interface{}, length int, param interface{}) int
-type LwsGetPacketBodyLenFunc func(void *head) uint32
+type LwsCallback func(ctx *LwsCntx, client *Client, reason int, data []byte, length int, param interface{}) int
 
 /* 帧听协议 */
 type Protocol struct {
-	Callback           LwsCallback             /* 处理回调 */
-	PerPacketHeadSize  uint32                  /* 每个包的报头长度 */
-	GetPacketBodyLenCb LwsGetPacketBodyLenFunc /* 每个包的报体长度 */
-	Param              interface{}             /* 附加参数 */
+	Callback          LwsCallback /* 处理回调 */
+	PerPacketHeadSize uint32      /* 每个包的报头长度 */
+	Param             interface{} /* 附加参数 */
 }
 
 /* 连接池对象 */
 type ConnPool struct {
-	sync.RWMutex                 // 读写锁
-	list         map[int]*Client // 连接管理池
+	sync.RWMutex                    // 读写锁
+	list         map[uint64]*Client // 连接管理池
 }
 
 /* 全局对象 */
 type LwsCntx struct {
 	conf     *Conf                       // 配置参数
 	protocol *Protocol                   // 注册协议
-	log      *Beego.Logs                 // 日志对象
+	log      *logs.BeeLogger             /* 日志对象 */
 	cid      uint64                      // 连接序列号(原子递增)
 	pool     [LWS_CONN_POOL_LEN]ConnPool // 连接池
 }
@@ -68,15 +70,15 @@ type Conf struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.06 22:44:04 #
  ******************************************************************************/
-func Init(conf *Conf, log *Beego.Logs) *LwsCntx {
+func Init(conf *Conf, log *logs.BeeLogger) *LwsCntx {
 	ctx := &LwsCntx{
 		cid:  0,
 		log:  log,
-		conf: Conf,
+		conf: conf,
 	}
 
 	for idx := 0; idx < LWS_CONN_POOL_LEN; idx += 1 {
-		ctx.pool[idx].list = make(map[int]*Client)
+		ctx.pool[idx].list = make(map[uint64]*Client)
 	}
 
 	return ctx
@@ -120,7 +122,7 @@ func (ctx *LwsCntx) Launch(protocol *Protocol) int {
 
 	err := http.ListenAndServe(addr, nil)
 	if nil != err {
-		log.Fatal("ListenAndServe: ", err)
+		ctx.log.Error("Listen port failed! addr:%s errmsg:%s", addr, err.Error())
 	}
 	return 0
 }
@@ -151,7 +153,7 @@ func (ctx *LwsCntx) AsyncSend(cid uint64, data []byte) int {
 	select {
 	case client.sendq <- data: // 发送数据
 		return 0
-	case <-time.After(time.Secont): // 1秒超时
+	case <-time.After(time.Second): // 1秒超时
 		return -1
 	}
 	return 0

@@ -1,14 +1,7 @@
 package lws
 
 import (
-	"bytes"
-	"log"
-	"net/http"
-	"time"
-
 	"github.com/gorilla/websocket"
-
-	"src/golang/lib/comm"
 )
 
 var upgrader = websocket.Upgrader{
@@ -34,11 +27,6 @@ func (c *Client) GetCid() uint64 {
 /* 获取用户数据 */
 func (c *Client) GetUserData() interface{} {
 	return c.user
-}
-
-/* 设置用户数据 */
-func (c *Client) SetUserData(user interface{}) {
-	c.user = user
 }
 
 /* 设置用户数据 */

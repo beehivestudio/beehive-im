@@ -1,4 +1,4 @@
-package controller
+package controllers
 
 import (
 	"beehive-im/src/golang/lib/comm"
@@ -20,7 +20,7 @@ func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
 	session := &LsndSessionExtra{
 		sid:    0,
 		cid:    client.GetCid(),
-		status: CONN_STAT_READY,
+		status: CONN_STATUS_READY,
 	}
 
 	client.SetUserData(session)
@@ -50,7 +50,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 
 	/* > 字节序转化 */
 	head := comm.MesgHeadNtoh(data)
-	head.SetNid(ctx.get_nid())
+	head.SetNid(ctx.conf.GetNid())
 	if !head.IsValid() {
 		ctx.log.Error("Mesg head is invalid! cmd:0x%04X sid:%d nid:%d chksum:0x%X",
 			head.GetCmd(), head.GetSid(), head.GetNid(), head.GetChkSum())
@@ -59,15 +59,15 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 
 	/* > 查找&执行回调 */
 	cb, param := ctx.callback.Query(head.GetCmd())
-	if !cb {
-		cb, param := ctx.callback.Query(comm.CMD_UNKNOWN)
-		if !cb {
+	if nil == cb {
+		cb, param = ctx.callback.Query(comm.CMD_UNKNOWN)
+		if nil == cb {
 			ctx.log.Error("Didn't find command handler! cmd:0x%04X", head.GetCmd())
 			return 0
 		}
 	}
 
-	cb(session, head.GetCmd(), data, length, param)
+	cb(session, head.GetCmd(), data, uint32(length), param)
 
 	return 0
 }
@@ -163,25 +163,4 @@ func LsndLwsCallBack(ws *lws.LwsCntx, client *lws.Client,
 		ctx.log.Error("Call LsndLwsCallBack()! Unknown reason:%d", reason)
 	}
 	return 0
-}
-
-/******************************************************************************
- **函数名称: LsndGetMesgBodyLen
- **功    能: 获取报体长度
- **输入参数:
- **     head: 报头(注: 网络字节序)
- **输出参数:
- **返    回: 报体长度
- **实现描述:
- **注意事项: 进行网络字节序的转换
- **作    者: # Qifeng.zou # 2017.03.04 00:16:09 #
- ******************************************************************************/
-func LsndGetMesgBodyLen(nhead *comm.MesgHeader) uint32 {
-	hhead := &comm.MesgHeader{
-		Length: head.Length,
-	}
-
-	comm.MesgHeadNtoh(hhead)
-
-	return hhead.GetLength()
 }
