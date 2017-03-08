@@ -41,6 +41,10 @@ func (ctx *LsndCntx) DownlinkRegister() {
 	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndDownlinkRoomChatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndDownlinkRoomBcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, LsndDownlinkRoomUsrNumHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN_NTC, LsndDownlinkRoomJoinNtcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_QUIT_NTC, LsndDownlinkRoomQuitNtcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_KICK_NTC, LsndDownlinkRoomKickNtcHandler, ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -297,6 +301,8 @@ func LsndDownlinkUnsubAckHandler(cmd uint32, data []byte, length uint32, param i
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// 聊天室相关操作
 
 /* 聊天室待发消息参数 */
 type LsndRoomDataParam struct {
@@ -433,6 +439,198 @@ func LsndDownlinkRoomBcHandler(cmd uint32, data []byte, length uint32, param int
 	param := &LsndRoomDataParam{ctx: ctx, data: data}
 
 	ctx.chat.Trav(req.GetRid(), 0, lsnd_room_send_data_cb, param)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndDownlinkRoomUsrNumHandler
+ **功    能: ROOM-USR-NUM消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 11:25:28 #
+ ******************************************************************************/
+func LsndDownlinkRoomUsrNumHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room usr number message!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of room-usr-num is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-BC消息 */
+	req = &mesg.MesgRoomUsrNum{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room user number failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	/* > 遍历下发ROOM-USR-NUM消息 */
+	param := &LsndRoomDataParam{ctx: ctx, data: data}
+
+	ctx.chat.Trav(req.GetRid(), 0, lsnd_room_send_data_cb, param)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndDownlinkRoomJoinNtcHandler
+ **功    能: ROOM-JOIN-NTC消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 11:26:07 #
+ ******************************************************************************/
+func LsndDownlinkRoomJoinNtcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room join notification!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of room-join-ntc is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-BC消息 */
+	req = &mesg.MesgRoomJoinNtc{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room-join-ntc failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	/* > 遍历下发ROOM-JOIN-NTC消息 */
+	param := &LsndRoomDataParam{ctx: ctx, data: data}
+
+	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, param)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndDownlinkRoomQuitNtcHandler
+ **功    能: ROOM-QUIT-NTC消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
+ ******************************************************************************/
+func LsndDownlinkRoomQuitNtcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room quit notification!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of room-quit-ntc is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-BC消息 */
+	req = &mesg.MesgRoomQuitNtc{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room-quit-ntc failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	/* > 遍历下发ROOM-QUIT-NTC消息 */
+	param := &LsndRoomDataParam{ctx: ctx, data: data}
+
+	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, param)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndDownlinkRoomKickNtcHandler
+ **功    能: ROOM-KICK-NTC消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
+ ******************************************************************************/
+func LsndDownlinkRoomKickNtcHandler(cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room kick notification!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of room-kick-ntc is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-BC消息 */
+	req = &mesg.MesgRoomKickNtc{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room-kick-ntc failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	/* > 遍历下发ROOM-KICK-NTC消息 */
+	param := &LsndRoomDataParam{ctx: ctx, data: data}
+
+	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, param)
 
 	return 0
 }
