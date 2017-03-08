@@ -30,6 +30,7 @@ func (ctx *LsndCntx) DownlinkRegister() {
 	//ctx.frwder.Register(comm.CMD_GROUP_CHAT, LsndDownlinkGroupChatHandler, ctx)
 
 	/* > 聊天室消息 */
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndDownlinkRoomJoinAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndDownlinkRoomChatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndDownlinkRoomBcHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, LsndDownlinkRoomUsrNumHandler, ctx)
@@ -134,14 +135,14 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, nid uint32, data []byte, length ui
 	head.SetSid(ack.GetSid())
 
 	/* > 获取&更新会话状态 */
-	sp := ctx.chat.SessionGetParam(ack.GetSid())
-	if nil == sp {
+	extra := ctx.chat.SessionGetParam(ack.GetSid())
+	if nil == extra {
 		ctx.log.Error("Didn't find session data! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		ctx.lws.Kick(cid)
 		return -1
 	}
 
-	session, ok := sp.(*LsndSessionExtra)
+	session, ok := extra.(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Convert session extra failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		ctx.lws.Kick(cid)
@@ -209,13 +210,13 @@ func LsndDownlinkSubAckHandler(cmd uint32, nid uint32, data []byte, length uint3
 	ctx.chat.SubAdd(head.GetSid(), ack.GetSub())
 
 	/* > 下发SUB-ACK消息 */
-	sp := ctx.chat.SessionGetParam(head.GetSid())
-	if nil == sp {
+	extra := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == extra {
 		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := sp.(*LsndSessionExtra)
+	session, ok := extra.(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
 		return -1
@@ -277,13 +278,13 @@ func LsndDownlinkUnsubAckHandler(cmd uint32, nid uint32, data []byte, length uin
 	ctx.chat.SubDel(head.GetSid(), ack.GetSub())
 
 	/* > 获取会话数据 */
-	sp := ctx.chat.SessionGetParam(head.GetSid())
-	if nil == sp {
+	extra := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == extra {
 		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := sp.(*LsndSessionExtra)
+	session, ok := extra.(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
 		return -1
@@ -326,13 +327,13 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
 	ctx := dp.ctx
 
 	/* > 获取会话数据 */
-	sp := ctx.chat.SessionGetParam(sid)
-	if nil == sp {
+	extra := ctx.chat.SessionGetParam(sid)
+	if nil == extra {
 		ctx.log.Error("Didn't find session data! sid:%d", sid)
 		return -1
 	}
 
-	session, ok := sp.(*LsndSessionExtra)
+	session, ok := extra.(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Convert session extra failed! sid:%d", sid)
 		return -1
@@ -340,6 +341,74 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
 
 	/* > 下发ROOM各种消息 */
 	ctx.lws.AsyncSend(session.GetCid(), dp.data)
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: LsndDownlinkRoomJoinAckHandler
+ **功    能: ROOM-JOIN-ACK消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 22:43:55 #
+ ******************************************************************************/
+func LsndDownlinkRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room-join-ack!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Header of room-join-ack is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-JOIN-ACK消息 */
+	ack := &mesg.MesgRoomJoinAck{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room-join-ack failed! errmsg:%s", err.Error())
+		return -1
+	} else if 0 != ack.GetCode() {
+		ctx.log.Debug("Join room failed. uid:%d rid:%d gid:%d code:%d errmsg:%s",
+			ack.GetUid(), ack.GetRid(), ack.GetGid(), ack.GetCode(), ack.GetErrmsg())
+		return 0
+	}
+
+	ctx.log.Debug("Room join ack. uid:%d rid:%d gid:%d code:%d errmsg:%s",
+		ack.GetUid(), ack.GetRid(), ack.GetGid(), ack.GetCode(), ack.GetErrmsg())
+
+	/* > 加入聊天室 */
+	ctx.chat.RoomJoin(ack.GetRid(), ack.GetGid(), head.GetSid())
+
+	/* > 获取会话数据 */
+	extra := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == extra {
+		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
+		return -1
+	}
+
+	session, ok := extra.(*LsndSessionExtra)
+	if !ok {
+		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	/* > 下发ROOM-JOIN-ACK消息 */
+	ctx.lws.AsyncSend(session.GetCid(), data)
 
 	return 0
 }

@@ -18,11 +18,17 @@ import (
  **作    者: # Qifeng.zou # 2017.03.06 17:59:58 #
  ******************************************************************************/
 func (ctx *LsndCntx) UplinkRegister() {
-	ctx.callback.Register(comm.CMD_UNKNOWN, LsndUplinkCommHandler, ctx)     /* 未知消息 */
+	/* 未知消息 */
+	ctx.callback.Register(comm.CMD_UNKNOWN, LsndUplinkCommHandler, ctx)
+
+	/* 通用消息 */
 	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)   /* 上线消息 */
 	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx) /* 下线消息 */
 	ctx.callback.Register(comm.CMD_PING, LsndPingHandler, ctx)              /* 心跳请求 */
 	ctx.callback.Register(comm.CMD_UNSUB_REQ, LsndUnsubReqHandler, ctx)     /* 取消订阅 */
+
+	/* 聊天室消息 */
+	ctx.callback.Register(comm.CMD_ROOM_QUIT_REQ, LsndRoomQuitReqHandler, ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -280,3 +286,54 @@ func LsndUnsubReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, len
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndRoomQuitReqHandler
+ **功    能: 退出聊天室的处理
+ **输入参数:
+ **     session: 会话连接
+ **     cmd: 消息类型
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 退出聊天室, 再转发给上游模块
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.08 21:55:26 #
+ ******************************************************************************/
+func LsndRoomQuitReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room quit request! sid:%d cid:%d", session.GetSid(), session.GetCid())
+
+	/* > 字节序转换(网络->主机) */
+	head := comm.MesgHeadNtoh(data)
+
+	head.SetNid(ctx.conf.GetNid())
+
+	/* > 退出指定聊天室 */
+	req := &mesg.MesgRoomQuit{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room quit request failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	ctx.chat.RoomQuit(req.GetRid(), session.GetSid())
+
+	/* > 转发给上游模块 */
+	p := &comm.MesgPacket{Buff: data}
+
+	comm.MesgHeadHton(head, p) /* 字节序转换 */
+
+	ctx.frwder.AsyncSend(cmd, data, length) /* 转发给上游 */
+
+	ctx.log.Debug("Header data! cmd:0x%04X sid:%d", head.GetCmd(), head.GetSid())
+
+	return 0
+}
