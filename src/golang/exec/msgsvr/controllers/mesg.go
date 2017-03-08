@@ -21,7 +21,7 @@ import (
  **功    能: 广播消息的处理(待商议)
  **输入参数:
  **     cmd: 消息类型
- **     dest: 帧听层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -31,7 +31,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:48:07 #
  ******************************************************************************/
-func MsgSvrBcHandler(cmd uint32, dest uint32,
+func MsgSvrBcHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {
@@ -51,7 +51,7 @@ func MsgSvrBcHandler(cmd uint32, dest uint32,
  **功    能: 广播消息应答处理(待商议)
  **输入参数:
  **     cmd: 消息类型
- **     dest: 帧听层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -61,7 +61,7 @@ func MsgSvrBcHandler(cmd uint32, dest uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:54:37 #
  ******************************************************************************/
-func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func MsgSvrBcAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {
 		return -1
@@ -80,7 +80,7 @@ func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, par
  **功    能: 点到点消息的处理
  **输入参数:
  **     cmd: 消息类型
- **     dest: 帧听层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -95,7 +95,7 @@ func MsgSvrBcAckHandler(cmd uint32, dest uint32, data []byte, length uint32, par
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
  ******************************************************************************/
-func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
+func MsgSvrP2pMsgHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {
@@ -115,7 +115,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
  **功    能: 点到点应答的处理
  **输入参数:
  **     cmd: 消息类型
- **     dest: 帧听层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -125,7 +125,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, dest uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:58:12 #
  ******************************************************************************/
-func MsgSvrP2pMsgAckHandler(cmd uint32, dest uint32,
+func MsgSvrP2pMsgAckHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {
@@ -378,7 +378,7 @@ func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) 
  **功    能: 同步请求的处理
  **输入参数:
  **     cmd: 消息类型
- **     dest: 帧听层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -388,7 +388,7 @@ func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 22:49:17 #
  ******************************************************************************/
-func MsgSvrSyncHandler(cmd uint32, dest uint32,
+func MsgSvrSyncHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {

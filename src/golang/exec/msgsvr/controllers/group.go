@@ -171,7 +171,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
  **功    能: 群消息的处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -186,7 +186,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 08:45:19 #
  ******************************************************************************/
-func MsgSvrGroupChatHandler(cmd uint32, dest uint32,
+func MsgSvrGroupChatHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {
@@ -223,7 +223,7 @@ func MsgSvrGroupChatHandler(cmd uint32, dest uint32,
  **功    能: 群消息应答处理
  **输入参数:
  **     cmd: 消息类型
- **     orig: 帧听层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参
@@ -233,7 +233,7 @@ func MsgSvrGroupChatHandler(cmd uint32, dest uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:43:01 #
  ******************************************************************************/
-func MsgSvrGroupChatAckHandler(cmd uint32, dest uint32,
+func MsgSvrGroupChatAckHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {

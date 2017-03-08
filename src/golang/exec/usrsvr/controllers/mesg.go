@@ -351,7 +351,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
  **功    能: 上线请求
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -373,13 +373,13 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
  **     3. 在上线请求中, req中的sid此时为会话sid
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrOnlineReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrOnlineReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv online request! cmd:0x%04X dest:%d length:%d", cmd, dest, length)
+	ctx.log.Debug("Recv online request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
 
 	/* > 解析上线请求 */
 	head, req, code, err := ctx.online_parse(data)
@@ -450,7 +450,7 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
  **功    能: 下线请求
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -460,7 +460,7 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrOfflineReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrOfflineReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -535,7 +535,7 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
  **功    能: 客户端PING
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -545,7 +545,7 @@ func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
  **注意事项: 由侦听层给各终端回复PONG请求
  **作    者: # Qifeng.zou # 2016.11.03 21:40:30 #
  ******************************************************************************/
-func UsrSvrPingHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrPingHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -624,12 +624,12 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 }
 
 /* 订阅请求 */
-func UsrSvrSubReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrSubReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 取消订阅请求 */
-func UsrSvrUnsubReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrUnsubReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
@@ -847,7 +847,7 @@ func (ctx *UsrSvrCntx) send_alloc_seq_ack(head *comm.MesgHeader, req *mesg.MesgA
  **功    能: 申请序列号请求
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -857,7 +857,7 @@ func (ctx *UsrSvrCntx) send_alloc_seq_ack(head *comm.MesgHeader, req *mesg.MesgA
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 08:48:51 #
  ******************************************************************************/
-func UsrSvrAllocSeqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrAllocSeqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -1092,7 +1092,7 @@ func (ctx *UsrSvrCntx) send_blacklist_add_ack(
  **功    能: 加入黑名单
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -1102,7 +1102,7 @@ func (ctx *UsrSvrCntx) send_blacklist_add_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 09:49:10 #
  ******************************************************************************/
-func UsrSvrBlacklistAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -1325,7 +1325,7 @@ func (ctx *UsrSvrCntx) send_blacklist_del_ack(
  **功    能: 移除黑名单
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -1335,7 +1335,7 @@ func (ctx *UsrSvrCntx) send_blacklist_del_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
  ******************************************************************************/
-func UsrSvrBlacklistDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -1560,7 +1560,7 @@ func (ctx *UsrSvrCntx) send_ban_add_ack(
  **功    能: 设置禁言
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -1570,7 +1570,7 @@ func (ctx *UsrSvrCntx) send_ban_add_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
  ******************************************************************************/
-func UsrSvrBanAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrBanAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -1793,7 +1793,7 @@ func (ctx *UsrSvrCntx) send_ban_del_ack(
  **功    能: 解除禁言
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -1803,7 +1803,7 @@ func (ctx *UsrSvrCntx) send_ban_del_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
  ******************************************************************************/
-func UsrSvrBanDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrBanDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -1850,67 +1850,67 @@ func UsrSvrBanDelHandler(cmd uint32, dest uint32, data []byte, length uint32, pa
 
 ////////////////////////////////////////////////////////////////////////////////
 /* 创建群组 */
-func UsrSvrGroupCreatHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 解散群组 */
-func UsrSvrGroupDismissHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupDismissHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 申请入群 */
-func UsrSvrGroupApplyHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupApplyHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 退群 */
-func UsrSvrGroupQuitHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 邀请入群 */
-func UsrSvrGroupInviteHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupInviteHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 群组踢人 */
-func UsrSvrGroupKickHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupKickHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 群组禁言 */
-func UsrSvrGroupBanAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupBanAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 解除群组禁言 */
-func UsrSvrGroupBanDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupBanDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 加入群组黑名单 */
-func UsrSvrGroupBlacklistAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 移除群组黑名单 */
-func UsrSvrGroupBlacklistDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 添加群组管理员 */
-func UsrSvrGroupMgrAddHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupMgrAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 移除群组管理员 */
-func UsrSvrGroupMgrDelHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupMgrDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 群组成员列表 */
-func UsrSvrGroupUsrListHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupUsrListHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
@@ -2157,7 +2157,7 @@ func (ctx *UsrSvrCntx) room_creat_handler(
  **功    能: 创建聊天室
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -2173,13 +2173,13 @@ func (ctx *UsrSvrCntx) room_creat_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 22:21:48 #
  ******************************************************************************/
-func UsrSvrRoomCreatHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv join request! cmd:0x%04X dest:%d length:%d", cmd, dest, length)
+	ctx.log.Debug("Recv join request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
 
 	/* > 解析创建请求 */
 	head, req, code, err := ctx.room_creat_parse(data)
@@ -2204,7 +2204,7 @@ func UsrSvrRoomCreatHandler(cmd uint32, dest uint32, data []byte, length uint32,
 }
 
 /* 解散聊天室 */
-func UsrSvrRoomDismissHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomDismissHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
@@ -2514,7 +2514,7 @@ GET_GID:
  **功    能: 加入聊天室
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -2529,13 +2529,13 @@ GET_GID:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrRoomJoinReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomJoinReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv join request! cmd:0x%04X dest:%d length:%d", cmd, dest, length)
+	ctx.log.Debug("Recv join request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
 
 	/* 1. > 解析ROOM-JOIN请求 */
 	head, req, code, err := ctx.room_join_parse(data)
@@ -2773,7 +2773,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -2788,7 +2788,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
  **注意事项: 需要对协议头进行字节序转换
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrRoomQuitReqHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomQuitReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -3083,7 +3083,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
  **功    能: 踢出聊天室
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -3100,13 +3100,13 @@ func (ctx *UsrSvrCntx) room_kick_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 23:58:49 #
  ******************************************************************************/
-func UsrSvrRoomKickHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
 	}
 
-	ctx.log.Debug("Recv room-kick request! cmd:0x%04X dest:%d length:%d", cmd, dest, length)
+	ctx.log.Debug("Recv room-kick request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
 
 	/* > 解析ROOM-KICK请求 */
 	head, req, code, err := ctx.room_kick_parse(data)
@@ -3134,6 +3134,6 @@ func UsrSvrRoomKickHandler(cmd uint32, dest uint32, data []byte, length uint32, 
 }
 
 /* 获取聊天室人数 */
-func UsrSvrRoomUsrNumHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }

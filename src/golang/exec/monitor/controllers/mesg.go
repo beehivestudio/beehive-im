@@ -177,7 +177,7 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
  **功    能: 帧听层上报
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -195,7 +195,7 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 06:32:03 #
  ******************************************************************************/
-func MonLsnRptHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func MonLsnRptHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MonSvrCntx)
 	if !ok {
 		return -1
@@ -366,7 +366,7 @@ func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrw
  **功    能: 转发层上报
  **输入参数:
  **     cmd: 消息类型
- **     dest: 业务层ID
+ **     nid: 结点ID
  **     data: 收到数据
  **     length: 数据长度
  **     param: 附加参数
@@ -383,7 +383,7 @@ func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrw
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:36 #
  ******************************************************************************/
-func MonFrwdRptHandler(cmd uint32, dest uint32, data []byte, length uint32, param interface{}) int {
+func MonFrwdRptHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MonSvrCntx)
 	if !ok {
 		return -1
