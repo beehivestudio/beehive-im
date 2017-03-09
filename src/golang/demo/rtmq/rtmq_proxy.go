@@ -96,8 +96,8 @@ func main() {
 	}
 
 	/* > 注册回调函数 */
-	pxy.Register(comm.CMD_ONLINE_REQ, chat_cmd_online_handler, pxy)
-	pxy.Register(comm.CMD_OFFLINE_REQ, chat_cmd_offline_handler, pxy)
+	pxy.Register(comm.CMD_ONLINE, chat_cmd_online_handler, pxy)
+	pxy.Register(comm.CMD_OFFLINE, chat_cmd_offline_handler, pxy)
 	pxy.Register(2, chat_cmd_2_handler, pxy)
 
 	/* > 启动PROXY服务 */

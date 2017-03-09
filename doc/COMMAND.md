@@ -54,10 +54,10 @@
 | 02 | 0x0302 | 创建群组应答 | GROUP-CREAT-ACK | 暂无 |
 | 03 | 0x0303 | 遣散群组 | GROUP-DIMISS | 暂无 |
 | 04 | 0x0304 | 遣散群组应答 | GROUP-DIMISS-ACK | 暂无 |
-| 05 | 0x0305 | 申请入群 | GROUP-APPLY | 暂无 |
-| 06 | 0x0306 | 申请入群应答 | GROUP-APPLY-ACK | 暂无 |
-| 07 | 0x0307 | 退群 | GROUP-QUIT | 暂无 |
-| 08 | 0x0308 | 退群应答 | GROUP-QUIT-ACK | 暂无 |
+| 05 | 0x0305 | 加入群组 | GROUP-JOIN | 暂无 |
+| 06 | 0x0306 | 加入群组应答 | GROUP-JOIN-ACK | 暂无 |
+| 07 | 0x0307 | 退出群组 | GROUP-QUIT | 暂无 |
+| 08 | 0x0308 | 退出群组应答 | GROUP-QUIT-ACK | 暂无 |
 | 09 | 0x0309 | 邀请入群 | GROUP-INVITE | 暂无 |
 | 10 | 0x030A | 邀请入群应答 | GROUP-INVITE-ACK | 暂无 |
 | 11 | 0x030B | 群聊消息 | GROUP-CHAT | 暂无 |
@@ -76,7 +76,7 @@
 | 24 | 0x0319 | 添加群组管理员应答 | GROUP-MGR-ADD-ACK | 暂无 |
 | 25 | 0x031A | 解除群组管理员 | GROUP-MGR-DEL | 暂无 |
 | 26 | 0x031B | 解除群组管理员应答 | GROUP-MGR-DEL-ACK | 暂无 |
-| 27 | 0x031C | 群员列表请求 | GROUP-USR-LIST-REQ | 暂无 |
+| 27 | 0x031C | 群员列表请求 | GROUP-USR-LIST | 暂无 |
 | 28 | 0x031D | 群员列表应答 | GROUP-USR-LIST-ACK | 暂无 |
 | 29 | 0x0350 | 入群通知 | GROUP-JOIN-NTC | 实时消息 |
 | 30 | 0x0351 | 退群通知 | GROUP-QUIT-NTC | 实时消息 |

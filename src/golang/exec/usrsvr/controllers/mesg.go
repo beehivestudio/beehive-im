@@ -91,7 +91,7 @@ func (ctx *UsrSvrCntx) online_token_decode(token string) *OnlineToken {
  **     2.头部数据(MesgHeader)中的SID此时表示的是客户端的连接CID.
  **作    者: # Qifeng.zou # 2016.11.02 10:20:57 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) online_req_check(req *mesg.MesgOnlineReq) error {
+func (ctx *UsrSvrCntx) online_req_check(req *mesg.MesgOnline) error {
 	token := ctx.online_token_decode(req.GetToken())
 	if nil == token {
 		ctx.log.Error("Decode token failed!")
@@ -124,7 +124,7 @@ func (ctx *UsrSvrCntx) online_req_check(req *mesg.MesgOnlineReq) error {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) online_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgOnlineReq, code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgOnline, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
@@ -139,7 +139,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 		head.GetSerial(), comm.MESG_HEAD_SIZE)
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgOnlineReq{}
+	req = &mesg.MesgOnline{}
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal body failed! errmsg:%s", err.Error())
@@ -181,7 +181,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
-	req *mesg.MesgOnlineReq, code uint32, errmsg string) int {
+	req *mesg.MesgOnline, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
 	}
@@ -246,7 +246,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnlineReq) int {
+func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnline) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
@@ -300,7 +300,7 @@ func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnli
  **     2. 在上线请求中, req中的sid此时为会话sid
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlineReq) (err error) {
+func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) (err error) {
 	var key string
 
 	rds := ctx.redis.Get()
@@ -347,7 +347,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 }
 
 /******************************************************************************
- **函数名称: UsrSvrOnlineReqHandler
+ **函数名称: UsrSvrOnlineHandler
  **功    能: 上线请求
  **输入参数:
  **     cmd: 消息类型
@@ -373,7 +373,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
  **     3. 在上线请求中, req中的sid此时为会话sid
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrOnlineReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrOnlineHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -446,7 +446,7 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
 }
 
 /******************************************************************************
- **函数名称: UsrSvrOfflineReqHandler
+ **函数名称: UsrSvrOfflineHandler
  **功    能: 下线请求
  **输入参数:
  **     cmd: 消息类型
@@ -460,7 +460,7 @@ func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrOfflineReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrOfflineHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -591,7 +591,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 	ctx.log.Debug("Send kick command! sid:%d nid:%d", sid, nid)
 
 	/* > 设置协议体 */
-	req := &mesg.MesgKickReq{
+	req := &mesg.MesgKick{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -624,12 +624,12 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 }
 
 /* 订阅请求 */
-func UsrSvrSubReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrSubHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 取消订阅请求 */
-func UsrSvrUnsubReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrUnsubHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
@@ -1860,7 +1860,7 @@ func UsrSvrGroupDismissHandler(cmd uint32, nid uint32, data []byte, length uint3
 }
 
 /* 申请入群 */
-func UsrSvrGroupApplyHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
@@ -2510,7 +2510,7 @@ GET_GID:
 }
 
 /******************************************************************************
- **函数名称: UsrSvrRoomJoinReqHandler
+ **函数名称: UsrSvrRoomJoinHandler
  **功    能: 加入聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -2529,7 +2529,7 @@ GET_GID:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrRoomJoinReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -2769,7 +2769,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
 }
 
 /******************************************************************************
- **函数名称: UsrSvrRoomQuitReqHandler
+ **函数名称: UsrSvrRoomQuitHandler
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -2788,7 +2788,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
  **注意事项: 需要对协议头进行字节序转换
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrRoomQuitReqHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1

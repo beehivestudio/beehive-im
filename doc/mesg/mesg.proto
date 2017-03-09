@@ -5,7 +5,7 @@
    命令ID: 0x0101
    命令描述: 上线请求(ONLINE)
    协议格式: */
-message mesg_online_req
+message mesg_online
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 sid = 2;        // M|会话ID|数字|
@@ -54,7 +54,7 @@ message mesg_online_ack
    命令ID: 0x0107
    命令描述: 订阅请求(SUB)
    协议格式: */
-message mesg_sub_req
+message mesg_sub
 {
     optional uint32 sub = 1;        // M|订阅的数据|数字| 
 }
@@ -74,7 +74,7 @@ message mesg_sub_ack
    命令ID: 0x0109
    命令描述: 取消订阅(UNSUB)
    协议格式: */
-message mesg_unsub_req
+message mesg_unsub
 {
     required uint32 sub = 1;        // M|取消订阅的数据|数字| 
 }
@@ -94,7 +94,7 @@ message mesg_unsub_ack
    命令ID: 0x010B
    命令描述: 通用异常消息(UNUSUAL)
    协议格式: */
-message mesg_unusualb_req
+message mesg_unusualb
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|
@@ -152,7 +152,7 @@ message mesg_alloc_seq_ack
    命令ID: 0x0112
    命令描述: 踢连接下线(KICK)
    协议格式: */
-message mesg_kick_req
+message mesg_kick
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|
@@ -615,9 +615,9 @@ message mesg_group_mgr_del_ack
 
 /*
    命令ID: 0x031C
-   命令描述: 群员列表请求(GROUP-USR-LIST-REQ)
+   命令描述: 群员列表请求(GROUP-USR-LIST)
    协议格式: */
-message mesg_group_usr_list_req
+message mesg_group_usr_list
 {
     required uint64 gid = 1;        // M|群组ID|数字|
     required uint32 num = 2;        // M|请求人数|数字|(备注:当num=0时, 表示获取所有人员列表; 当num>0时, 表示获取num个人员列表)

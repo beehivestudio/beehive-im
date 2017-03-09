@@ -56,7 +56,7 @@ int lsnd_mesg_def_handler(lsnd_conn_extra_t *conn, unsigned int type, void *data
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_online_req_handler
+ **函数名称: lsnd_mesg_online_handler
  **功    能: ONLINE请求处理
  **输入参数:
  **     conn: 连接信息
@@ -78,7 +78,7 @@ int lsnd_mesg_def_handler(lsnd_conn_extra_t *conn, unsigned int type, void *data
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int lsnd_mesg_online_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -227,7 +227,7 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_offline_req_handler
+ **函数名称: lsnd_mesg_offline_handler
  **功    能: 下线请求处理
  **输入参数:
  **     conn: 连接信息
@@ -241,7 +241,7 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.10.01 09:15:01 #
  ******************************************************************************/
-int lsnd_mesg_offline_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
@@ -279,7 +279,7 @@ int lsnd_mesg_offline_req_handler(lsnd_conn_extra_t *conn, int type, void *data,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_room_join_req_handler
+ **函数名称: lsnd_mesg_room_join_handler
  **功    能: JOIN请求处理
  **输入参数:
  **     conn: 连接信息
@@ -293,7 +293,7 @@ int lsnd_mesg_offline_req_handler(lsnd_conn_extra_t *conn, int type, void *data,
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int lsnd_mesg_room_join_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_room_join_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -401,8 +401,8 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_room_quit_req_handler
- **功    能: UNJOIN请求处理(退出聊天室)
+ **函数名称: lsnd_mesg_room_quit_handler
+ **功    能: ROOM-QUIT请求处理(退出聊天室)
  **输入参数:
  **     conn: 连接信息
  **     type: 全局对象
@@ -419,7 +419,7 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int lsnd_mesg_room_quit_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_room_quit_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -451,7 +451,7 @@ int lsnd_mesg_room_quit_req_handler(lsnd_conn_extra_t *conn, int type, void *dat
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_ping_req_handler
+ **函数名称: lsnd_mesg_ping_handler
  **功    能: PING请求处理(心跳)
  **输入参数:
  **     conn: 连接信息
@@ -469,7 +469,7 @@ int lsnd_mesg_room_quit_req_handler(lsnd_conn_extra_t *conn, int type, void *dat
  **注意事项: 需要将协议头转换为"本机"字节序
  **作    者: # Qifeng.zou # 2016.09.20 22:25:57 #
  ******************************************************************************/
-int lsnd_mesg_ping_req_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
+int lsnd_mesg_ping_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
@@ -614,7 +614,7 @@ int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void
 int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *args)
 {
     uint64_t cid;
-    MesgKickReq *kick;
+    MesgKick *kick;
     lsnd_conn_extra_t *conn, key;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -625,7 +625,7 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
     MESG_HEAD_PRINT(lsnd->log, &hhead)
 
     /* > 打印被踢原因 */
-    kick = mesg_kick_req__unpack(NULL, hhead.length, (void *)(head + 1));
+    kick = mesg_kick__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == kick) {
         log_error(lsnd->log, "Unpack kick command failed!");
         return -1;
@@ -633,7 +633,7 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
 
     log_debug(lsnd->log, "Kick session [%d]! code:%d errmsg:%s", hhead.sid, kick->code, kick->errmsg);
 
-    mesg_kick_req__free_unpacked(kick, NULL);
+    mesg_kick__free_unpacked(kick, NULL);
 
     /* > 查找对应的连接 */
     key.sid = hhead.sid;

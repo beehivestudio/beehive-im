@@ -52,7 +52,6 @@ $(TARGET_A): $(OBJS)
 $(OBJS): %.o : %.c $(HEADS)
 	@$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDE)
 	@echo "CC $(PWD)/$<"
-	@echo "$(LIBS)"
 
 clean:
 	@rm -fr *.o

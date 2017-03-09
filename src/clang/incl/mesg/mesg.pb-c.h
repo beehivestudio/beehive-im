@@ -15,18 +15,18 @@ PROTOBUF_C__BEGIN_DECLS
 #endif
 
 
-typedef struct _MesgOnlineReq MesgOnlineReq;
+typedef struct _MesgOnline MesgOnline;
 typedef struct _MesgOnlineAck MesgOnlineAck;
-typedef struct _MesgSubReq MesgSubReq;
+typedef struct _MesgSub MesgSub;
 typedef struct _MesgSubAck MesgSubAck;
-typedef struct _MesgUnsubReq MesgUnsubReq;
+typedef struct _MesgUnsub MesgUnsub;
 typedef struct _MesgUnsubAck MesgUnsubAck;
-typedef struct _MesgUnusualbReq MesgUnusualbReq;
+typedef struct _MesgUnusualb MesgUnusualb;
 typedef struct _MesgSync MesgSync;
 typedef struct _MesgSyncAck MesgSyncAck;
 typedef struct _MesgAllocSeq MesgAllocSeq;
 typedef struct _MesgAllocSeqAck MesgAllocSeqAck;
-typedef struct _MesgKickReq MesgKickReq;
+typedef struct _MesgKick MesgKick;
 typedef struct _MesgChat MesgChat;
 typedef struct _MesgChatAck MesgChatAck;
 typedef struct _MesgFriendAdd MesgFriendAdd;
@@ -69,7 +69,7 @@ typedef struct _MesgGroupMgrAdd MesgGroupMgrAdd;
 typedef struct _MesgGroupMgrAddAck MesgGroupMgrAddAck;
 typedef struct _MesgGroupMgrDel MesgGroupMgrDel;
 typedef struct _MesgGroupMgrDelAck MesgGroupMgrDelAck;
-typedef struct _MesgGroupUsrListReq MesgGroupUsrListReq;
+typedef struct _MesgGroupUsrList MesgGroupUsrList;
 typedef struct _MesgGroupUsrListAck MesgGroupUsrListAck;
 typedef struct _MesgGroupJoinNtc MesgGroupJoinNtc;
 typedef struct _MesgGroupQuitNtc MesgGroupQuitNtc;
@@ -107,7 +107,7 @@ typedef struct _MesgFrwdRpt MesgFrwdRpt;
 
 /* --- messages --- */
 
-struct  _MesgOnlineReq
+struct  _MesgOnline
 {
   ProtobufCMessage base;
   uint64_t uid;
@@ -118,8 +118,8 @@ struct  _MesgOnlineReq
   protobuf_c_boolean has_terminal;
   uint32_t terminal;
 };
-#define MESG_ONLINE_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_online_req__descriptor) \
+#define MESG_ONLINE__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_online__descriptor) \
     , 0, 0, NULL, NULL, NULL, 0,0 }
 
 
@@ -140,14 +140,14 @@ struct  _MesgOnlineAck
     , 0, 0, NULL, NULL, 0,0, 0, NULL }
 
 
-struct  _MesgSubReq
+struct  _MesgSub
 {
   ProtobufCMessage base;
   protobuf_c_boolean has_sub;
   uint32_t sub;
 };
-#define MESG_SUB_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_sub_req__descriptor) \
+#define MESG_SUB__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_sub__descriptor) \
     , 0,0 }
 
 
@@ -163,13 +163,13 @@ struct  _MesgSubAck
     , 0, 0, NULL }
 
 
-struct  _MesgUnsubReq
+struct  _MesgUnsub
 {
   ProtobufCMessage base;
   uint32_t sub;
 };
-#define MESG_UNSUB_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_unsub_req__descriptor) \
+#define MESG_UNSUB__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_unsub__descriptor) \
     , 0 }
 
 
@@ -185,14 +185,14 @@ struct  _MesgUnsubAck
     , 0, 0, NULL }
 
 
-struct  _MesgUnusualbReq
+struct  _MesgUnusualb
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_UNUSUALB_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_unusualb_req__descriptor) \
+#define MESG_UNUSUALB__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_unusualb__descriptor) \
     , 0, NULL }
 
 
@@ -243,14 +243,14 @@ struct  _MesgAllocSeqAck
     , 0, 0, 0, 0, NULL }
 
 
-struct  _MesgKickReq
+struct  _MesgKick
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_KICK_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_kick_req__descriptor) \
+#define MESG_KICK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_kick__descriptor) \
     , 0, NULL }
 
 
@@ -731,14 +731,14 @@ struct  _MesgGroupMgrDelAck
     , 0, NULL }
 
 
-struct  _MesgGroupUsrListReq
+struct  _MesgGroupUsrList
 {
   ProtobufCMessage base;
   uint64_t gid;
   uint32_t num;
 };
-#define MESG_GROUP_USR_LIST_REQ__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_usr_list_req__descriptor) \
+#define MESG_GROUP_USR_LIST__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_usr_list__descriptor) \
     , 0, 0 }
 
 
@@ -1098,24 +1098,24 @@ struct  _MesgFrwdRpt
     , 0, NULL, 0, 0 }
 
 
-/* MesgOnlineReq methods */
-void   mesg_online_req__init
-                     (MesgOnlineReq         *message);
-size_t mesg_online_req__get_packed_size
-                     (const MesgOnlineReq   *message);
-size_t mesg_online_req__pack
-                     (const MesgOnlineReq   *message,
+/* MesgOnline methods */
+void   mesg_online__init
+                     (MesgOnline         *message);
+size_t mesg_online__get_packed_size
+                     (const MesgOnline   *message);
+size_t mesg_online__pack
+                     (const MesgOnline   *message,
                       uint8_t             *out);
-size_t mesg_online_req__pack_to_buffer
-                     (const MesgOnlineReq   *message,
+size_t mesg_online__pack_to_buffer
+                     (const MesgOnline   *message,
                       ProtobufCBuffer     *buffer);
-MesgOnlineReq *
-       mesg_online_req__unpack
+MesgOnline *
+       mesg_online__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_online_req__free_unpacked
-                     (MesgOnlineReq *message,
+void   mesg_online__free_unpacked
+                     (MesgOnline *message,
                       ProtobufCAllocator *allocator);
 /* MesgOnlineAck methods */
 void   mesg_online_ack__init
@@ -1136,24 +1136,24 @@ MesgOnlineAck *
 void   mesg_online_ack__free_unpacked
                      (MesgOnlineAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgSubReq methods */
-void   mesg_sub_req__init
-                     (MesgSubReq         *message);
-size_t mesg_sub_req__get_packed_size
-                     (const MesgSubReq   *message);
-size_t mesg_sub_req__pack
-                     (const MesgSubReq   *message,
+/* MesgSub methods */
+void   mesg_sub__init
+                     (MesgSub         *message);
+size_t mesg_sub__get_packed_size
+                     (const MesgSub   *message);
+size_t mesg_sub__pack
+                     (const MesgSub   *message,
                       uint8_t             *out);
-size_t mesg_sub_req__pack_to_buffer
-                     (const MesgSubReq   *message,
+size_t mesg_sub__pack_to_buffer
+                     (const MesgSub   *message,
                       ProtobufCBuffer     *buffer);
-MesgSubReq *
-       mesg_sub_req__unpack
+MesgSub *
+       mesg_sub__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_sub_req__free_unpacked
-                     (MesgSubReq *message,
+void   mesg_sub__free_unpacked
+                     (MesgSub *message,
                       ProtobufCAllocator *allocator);
 /* MesgSubAck methods */
 void   mesg_sub_ack__init
@@ -1174,24 +1174,24 @@ MesgSubAck *
 void   mesg_sub_ack__free_unpacked
                      (MesgSubAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgUnsubReq methods */
-void   mesg_unsub_req__init
-                     (MesgUnsubReq         *message);
-size_t mesg_unsub_req__get_packed_size
-                     (const MesgUnsubReq   *message);
-size_t mesg_unsub_req__pack
-                     (const MesgUnsubReq   *message,
+/* MesgUnsub methods */
+void   mesg_unsub__init
+                     (MesgUnsub         *message);
+size_t mesg_unsub__get_packed_size
+                     (const MesgUnsub   *message);
+size_t mesg_unsub__pack
+                     (const MesgUnsub   *message,
                       uint8_t             *out);
-size_t mesg_unsub_req__pack_to_buffer
-                     (const MesgUnsubReq   *message,
+size_t mesg_unsub__pack_to_buffer
+                     (const MesgUnsub   *message,
                       ProtobufCBuffer     *buffer);
-MesgUnsubReq *
-       mesg_unsub_req__unpack
+MesgUnsub *
+       mesg_unsub__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_unsub_req__free_unpacked
-                     (MesgUnsubReq *message,
+void   mesg_unsub__free_unpacked
+                     (MesgUnsub *message,
                       ProtobufCAllocator *allocator);
 /* MesgUnsubAck methods */
 void   mesg_unsub_ack__init
@@ -1212,24 +1212,24 @@ MesgUnsubAck *
 void   mesg_unsub_ack__free_unpacked
                      (MesgUnsubAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgUnusualbReq methods */
-void   mesg_unusualb_req__init
-                     (MesgUnusualbReq         *message);
-size_t mesg_unusualb_req__get_packed_size
-                     (const MesgUnusualbReq   *message);
-size_t mesg_unusualb_req__pack
-                     (const MesgUnusualbReq   *message,
+/* MesgUnusualb methods */
+void   mesg_unusualb__init
+                     (MesgUnusualb         *message);
+size_t mesg_unusualb__get_packed_size
+                     (const MesgUnusualb   *message);
+size_t mesg_unusualb__pack
+                     (const MesgUnusualb   *message,
                       uint8_t             *out);
-size_t mesg_unusualb_req__pack_to_buffer
-                     (const MesgUnusualbReq   *message,
+size_t mesg_unusualb__pack_to_buffer
+                     (const MesgUnusualb   *message,
                       ProtobufCBuffer     *buffer);
-MesgUnusualbReq *
-       mesg_unusualb_req__unpack
+MesgUnusualb *
+       mesg_unusualb__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_unusualb_req__free_unpacked
-                     (MesgUnusualbReq *message,
+void   mesg_unusualb__free_unpacked
+                     (MesgUnusualb *message,
                       ProtobufCAllocator *allocator);
 /* MesgSync methods */
 void   mesg_sync__init
@@ -1307,24 +1307,24 @@ MesgAllocSeqAck *
 void   mesg_alloc_seq_ack__free_unpacked
                      (MesgAllocSeqAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgKickReq methods */
-void   mesg_kick_req__init
-                     (MesgKickReq         *message);
-size_t mesg_kick_req__get_packed_size
-                     (const MesgKickReq   *message);
-size_t mesg_kick_req__pack
-                     (const MesgKickReq   *message,
+/* MesgKick methods */
+void   mesg_kick__init
+                     (MesgKick         *message);
+size_t mesg_kick__get_packed_size
+                     (const MesgKick   *message);
+size_t mesg_kick__pack
+                     (const MesgKick   *message,
                       uint8_t             *out);
-size_t mesg_kick_req__pack_to_buffer
-                     (const MesgKickReq   *message,
+size_t mesg_kick__pack_to_buffer
+                     (const MesgKick   *message,
                       ProtobufCBuffer     *buffer);
-MesgKickReq *
-       mesg_kick_req__unpack
+MesgKick *
+       mesg_kick__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_kick_req__free_unpacked
-                     (MesgKickReq *message,
+void   mesg_kick__free_unpacked
+                     (MesgKick *message,
                       ProtobufCAllocator *allocator);
 /* MesgChat methods */
 void   mesg_chat__init
@@ -2124,24 +2124,24 @@ MesgGroupMgrDelAck *
 void   mesg_group_mgr_del_ack__free_unpacked
                      (MesgGroupMgrDelAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupUsrListReq methods */
-void   mesg_group_usr_list_req__init
-                     (MesgGroupUsrListReq         *message);
-size_t mesg_group_usr_list_req__get_packed_size
-                     (const MesgGroupUsrListReq   *message);
-size_t mesg_group_usr_list_req__pack
-                     (const MesgGroupUsrListReq   *message,
+/* MesgGroupUsrList methods */
+void   mesg_group_usr_list__init
+                     (MesgGroupUsrList         *message);
+size_t mesg_group_usr_list__get_packed_size
+                     (const MesgGroupUsrList   *message);
+size_t mesg_group_usr_list__pack
+                     (const MesgGroupUsrList   *message,
                       uint8_t             *out);
-size_t mesg_group_usr_list_req__pack_to_buffer
-                     (const MesgGroupUsrListReq   *message,
+size_t mesg_group_usr_list__pack_to_buffer
+                     (const MesgGroupUsrList   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupUsrListReq *
-       mesg_group_usr_list_req__unpack
+MesgGroupUsrList *
+       mesg_group_usr_list__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_usr_list_req__free_unpacked
-                     (MesgGroupUsrListReq *message,
+void   mesg_group_usr_list__free_unpacked
+                     (MesgGroupUsrList *message,
                       ProtobufCAllocator *allocator);
 /* MesgGroupUsrListAck methods */
 void   mesg_group_usr_list_ack__init
@@ -2715,26 +2715,26 @@ void   mesg_frwd_rpt__free_unpacked
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
-typedef void (*MesgOnlineReq_Closure)
-                 (const MesgOnlineReq *message,
+typedef void (*MesgOnline_Closure)
+                 (const MesgOnline *message,
                   void *closure_data);
 typedef void (*MesgOnlineAck_Closure)
                  (const MesgOnlineAck *message,
                   void *closure_data);
-typedef void (*MesgSubReq_Closure)
-                 (const MesgSubReq *message,
+typedef void (*MesgSub_Closure)
+                 (const MesgSub *message,
                   void *closure_data);
 typedef void (*MesgSubAck_Closure)
                  (const MesgSubAck *message,
                   void *closure_data);
-typedef void (*MesgUnsubReq_Closure)
-                 (const MesgUnsubReq *message,
+typedef void (*MesgUnsub_Closure)
+                 (const MesgUnsub *message,
                   void *closure_data);
 typedef void (*MesgUnsubAck_Closure)
                  (const MesgUnsubAck *message,
                   void *closure_data);
-typedef void (*MesgUnusualbReq_Closure)
-                 (const MesgUnusualbReq *message,
+typedef void (*MesgUnusualb_Closure)
+                 (const MesgUnusualb *message,
                   void *closure_data);
 typedef void (*MesgSync_Closure)
                  (const MesgSync *message,
@@ -2748,8 +2748,8 @@ typedef void (*MesgAllocSeq_Closure)
 typedef void (*MesgAllocSeqAck_Closure)
                  (const MesgAllocSeqAck *message,
                   void *closure_data);
-typedef void (*MesgKickReq_Closure)
-                 (const MesgKickReq *message,
+typedef void (*MesgKick_Closure)
+                 (const MesgKick *message,
                   void *closure_data);
 typedef void (*MesgChat_Closure)
                  (const MesgChat *message,
@@ -2877,8 +2877,8 @@ typedef void (*MesgGroupMgrDel_Closure)
 typedef void (*MesgGroupMgrDelAck_Closure)
                  (const MesgGroupMgrDelAck *message,
                   void *closure_data);
-typedef void (*MesgGroupUsrListReq_Closure)
-                 (const MesgGroupUsrListReq *message,
+typedef void (*MesgGroupUsrList_Closure)
+                 (const MesgGroupUsrList *message,
                   void *closure_data);
 typedef void (*MesgGroupUsrListAck_Closure)
                  (const MesgGroupUsrListAck *message,
@@ -2976,18 +2976,18 @@ typedef void (*MesgFrwdRpt_Closure)
 
 /* --- descriptors --- */
 
-extern const ProtobufCMessageDescriptor mesg_online_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_online__descriptor;
 extern const ProtobufCMessageDescriptor mesg_online_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_sub_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_sub__descriptor;
 extern const ProtobufCMessageDescriptor mesg_sub_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_unsub_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_unsub__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unsub_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_unusualb_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_unusualb__descriptor;
 extern const ProtobufCMessageDescriptor mesg_sync__descriptor;
 extern const ProtobufCMessageDescriptor mesg_sync_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_alloc_seq__descriptor;
 extern const ProtobufCMessageDescriptor mesg_alloc_seq_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_kick_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_kick__descriptor;
 extern const ProtobufCMessageDescriptor mesg_chat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_chat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_friend_add__descriptor;
@@ -3030,7 +3030,7 @@ extern const ProtobufCMessageDescriptor mesg_group_mgr_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_mgr_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_mgr_del__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_mgr_del_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_usr_list_req__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_usr_list__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_usr_list_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_join_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_quit_ntc__descriptor;

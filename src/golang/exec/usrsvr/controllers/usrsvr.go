@@ -122,11 +122,11 @@ func UsrSvrInit(conf *UsrSvrConf) (ctx *UsrSvrCntx, err error) {
  ******************************************************************************/
 func (ctx *UsrSvrCntx) Register() {
 	/* > 通用消息 */
-	ctx.frwder.Register(comm.CMD_ONLINE_REQ, UsrSvrOnlineReqHandler, ctx)
-	ctx.frwder.Register(comm.CMD_OFFLINE_REQ, UsrSvrOfflineReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ONLINE, UsrSvrOnlineHandler, ctx)
+	ctx.frwder.Register(comm.CMD_OFFLINE, UsrSvrOfflineHandler, ctx)
 	ctx.frwder.Register(comm.CMD_PING, UsrSvrPingHandler, ctx)
-	ctx.frwder.Register(comm.CMD_SUB_REQ, UsrSvrSubReqHandler, ctx)
-	ctx.frwder.Register(comm.CMD_UNSUB_REQ, UsrSvrUnsubReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_SUB, UsrSvrSubHandler, ctx)
+	ctx.frwder.Register(comm.CMD_UNSUB, UsrSvrUnsubHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ALLOC_SEQ, UsrSvrAllocSeqHandler, ctx)
 
 	/* > 私聊消息 */
@@ -138,7 +138,7 @@ func (ctx *UsrSvrCntx) Register() {
 	/* > 群聊消息 */
 	ctx.frwder.Register(comm.CMD_GROUP_CREAT, UsrSvrGroupCreatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_DISMISS, UsrSvrGroupDismissHandler, ctx)
-	ctx.frwder.Register(comm.CMD_GROUP_APPLY, UsrSvrGroupApplyHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_JOIN, UsrSvrGroupJoinHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_QUIT, UsrSvrGroupQuitHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_INVITE, UsrSvrGroupInviteHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_KICK, UsrSvrGroupKickHandler, ctx)
@@ -153,8 +153,8 @@ func (ctx *UsrSvrCntx) Register() {
 	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_CREAT, UsrSvrRoomCreatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_DISMISS, UsrSvrRoomDismissHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_JOIN_REQ, UsrSvrRoomJoinReqHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_QUIT_REQ, UsrSvrRoomQuitReqHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN, UsrSvrRoomJoinHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_QUIT, UsrSvrRoomQuitHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_KICK, UsrSvrRoomKickHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, UsrSvrRoomUsrNumHandler, ctx)
 }

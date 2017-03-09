@@ -13,15 +13,15 @@ const (
 	CMD_UNKNOWN = 0 /* 未知消息 */
 
 	/* 通用消息 */
-	CMD_ONLINE_REQ     = 0x0101 /* 上线请求(服务端) */
+	CMD_ONLINE         = 0x0101 /* 上线请求(服务端) */
 	CMD_ONLINE_ACK     = 0x0102 /* 上线请求应答(客户端) */
-	CMD_OFFLINE_REQ    = 0x0103 /* 下线请求(服务端) */
+	CMD_OFFLINE        = 0x0103 /* 下线请求(服务端) */
 	CMD_OFFLINE_ACK    = 0x0104 /* 下线请求应答(客户端) */
 	CMD_PING           = 0x0105 /* 客户端心跳(服务端) */
 	CMD_PONG           = 0x0106 /* 客户端心跳应答(客户端) */
-	CMD_SUB_REQ        = 0x0107 /* 订阅请求(服务端) */
+	CMD_SUB            = 0x0107 /* 订阅请求(服务端) */
 	CMD_SUB_ACK        = 0x0108 /* 订阅应答(客户端) */
-	CMD_UNSUB_REQ      = 0x0109 /* 取消订阅(服务端) */
+	CMD_UNSUB          = 0x0109 /* 取消订阅(服务端) */
 	CMD_UNSUB_ACK      = 0x010A /* 取消订阅应答(客户端) */
 	CMD_EXCEPT_MSG     = 0x010B /* 通用异常消息 */
 	CMD_EXCEPT_MSG_ACK = 0x010C /* 通用异常消息应答 */
@@ -59,8 +59,8 @@ const (
 	CMD_GROUP_CREAT_ACK    = 0x0302 /* 创建群组应答 */
 	CMD_GROUP_DISMISS      = 0x0303 /* 解散群组 */
 	CMD_GROUP_DISMISS_ACK  = 0x0304 /* 解散群组应答 */
-	CMD_GROUP_APPLY        = 0x0305 /* 申请入群 */
-	CMD_GROUP_APPLY_ACK    = 0x0306 /* 申请入群应答 */
+	CMD_GROUP_JOIN         = 0x0305 /* 申请入群 */
+	CMD_GROUP_JOIN_ACK     = 0x0306 /* 申请入群应答 */
 	CMD_GROUP_QUIT         = 0x0307 /* 退群 */
 	CMD_GROUP_QUIT_ACK     = 0x0308 /* 退群应答 */
 	CMD_GROUP_INVITE       = 0x0309 /* 邀请入群 */
@@ -98,9 +98,9 @@ const (
 	CMD_ROOM_CREAT_ACK   = 0x0402 /* 创建聊天室应答 */
 	CMD_ROOM_DISMISS     = 0x0403 /* 解散聊天室 */
 	CMD_ROOM_DISMISS_ACK = 0x0404 /* 解散聊天室应答 */
-	CMD_ROOM_JOIN_REQ    = 0x0405 /* 加入聊天室 */
+	CMD_ROOM_JOIN        = 0x0405 /* 加入聊天室 */
 	CMD_ROOM_JOIN_ACK    = 0x0406 /* 加入聊天室应答 */
-	CMD_ROOM_QUIT_REQ    = 0x0407 /* 退出聊天室 */
+	CMD_ROOM_QUIT        = 0x0407 /* 退出聊天室 */
 	CMD_ROOM_QUIT_ACK    = 0x0408 /* 退出聊天室应答 */
 	CMD_ROOM_KICK        = 0x0409 /* 踢出聊天室 */
 	CMD_ROOM_KICK_ACK    = 0x040A /* 踢出聊天室应答 */

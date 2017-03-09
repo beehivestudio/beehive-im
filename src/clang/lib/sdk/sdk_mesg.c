@@ -95,7 +95,7 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     sdk_sck_t *sck = &ssvr->sck;
     sdk_conf_t *conf = &ctx->conf;
     sdk_conn_info_t *info = &ssvr->conn_info;
-    MesgOnlineReq online = MESG_ONLINE_REQ__INIT;
+    MesgOnline online = MESG_ONLINE__INIT;
 
     /* > 设置ONLINE字段 */
     online.uid = conf->uid;
@@ -105,7 +105,7 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     online.token = info->token;
 
     /* > 申请内存空间 */
-    size = sizeof(mesg_header_t) + mesg_online_req__get_packed_size(&online);
+    size = sizeof(mesg_header_t) + mesg_online__get_packed_size(&online);
 
     addr = (void *)calloc(1, size);
     if (NULL == addr) {
@@ -116,14 +116,14 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     /* 2. 设置心跳数据 */
     head = (mesg_header_t *)addr;
 
-    head->type = CMD_ONLINE_REQ;
+    head->type = CMD_ONLINE;
     head->length = size - sizeof(mesg_header_t);
     head->flag = 0;
     head->sid = info->sid;
     head->serial = sdk_gen_serial(ctx);
     head->chksum = MSG_CHKSUM_VAL;
 
-    mesg_online_req__pack(&online, addr+sizeof(mesg_header_t));
+    mesg_online__pack(&online, addr+sizeof(mesg_header_t));
 
     /* 3. 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {

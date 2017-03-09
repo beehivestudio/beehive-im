@@ -92,7 +92,7 @@ int room_join(sdk_cntx_t *ctx, uint64_t rid)
     mesg_room_join__pack(&join, addr);
 
     /* > 发起JOIN请求 */
-    sdk_async_send(ctx, CMD_ROOM_JOIN_REQ, addr, size, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
+    sdk_async_send(ctx, CMD_ROOM_JOIN, addr, size, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
 
     return 0;
 }

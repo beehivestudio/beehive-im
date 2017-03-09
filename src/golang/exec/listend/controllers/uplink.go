@@ -19,22 +19,22 @@ import (
  ******************************************************************************/
 func (ctx *LsndCntx) UplinkRegister() {
 	/* 未知消息 */
-	ctx.callback.Register(comm.CMD_UNKNOWN, LsndUplinkCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_UNKNOWN, LsndMesgCommHandler, ctx)
 
 	/* 通用消息 */
-	ctx.callback.Register(comm.CMD_ONLINE_REQ, LsndOnlineReqHandler, ctx)   /* 上线消息 */
-	ctx.callback.Register(comm.CMD_OFFLINE_REQ, LsndOfflineReqHandler, ctx) /* 下线消息 */
-	ctx.callback.Register(comm.CMD_PING, LsndPingHandler, ctx)              /* 心跳请求 */
-	ctx.callback.Register(comm.CMD_UNSUB_REQ, LsndUnsubReqHandler, ctx)     /* 取消订阅 */
+	ctx.callback.Register(comm.CMD_ONLINE, LsndMesgOnlineHandler, ctx)   /* 上线消息 */
+	ctx.callback.Register(comm.CMD_OFFLINE, LsndMesgOfflineHandler, ctx) /* 下线消息 */
+	ctx.callback.Register(comm.CMD_PING, LsndMesgPingHandler, ctx)       /* 心跳请求 */
+	ctx.callback.Register(comm.CMD_UNSUB, LsndMesgUnsubHandler, ctx)     /* 取消订阅 */
 
 	/* 聊天室消息 */
-	ctx.callback.Register(comm.CMD_ROOM_QUIT_REQ, LsndRoomQuitReqHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_QUIT, LsndMesgRoomQuitHandler, ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUplinkCommHandler
+ **函数名称: LsndMesgCommHandler
  **功    能: 消息通用处理 - 直接将消息转发给上游模块
  **输入参数:
  **     session: 连接会话
@@ -48,7 +48,7 @@ func (ctx *LsndCntx) UplinkRegister() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 22:49:17 #
  ******************************************************************************/
-func LsndUplinkCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -78,7 +78,7 @@ func LsndUplinkCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, l
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndOnlineReqHandler
+ **函数名称: LsndMesgOnlineHandler
  **功    能: ONLINE消息的处理
  **输入参数:
  **     session: 会话连接
@@ -92,7 +92,7 @@ func LsndUplinkCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, l
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 23:10:58 #
  ******************************************************************************/
-func LsndOnlineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgOnlineHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -135,7 +135,7 @@ func LsndOnlineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, le
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndOfflineReqHandler
+ **函数名称: LsndMesgOfflineHandler
  **功    能: OFFLINE消息的处理
  **输入参数:
  **     session: 会话连接
@@ -149,7 +149,7 @@ func LsndOnlineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, le
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 21:39:22 #
  ******************************************************************************/
-func LsndOfflineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgOfflineHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -184,7 +184,7 @@ func LsndOfflineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, l
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndPingHandler
+ **函数名称: LsndMesgPingHandler
  **功    能: PING处理
  **输入参数:
  **     session: 会话连接
@@ -198,7 +198,7 @@ func LsndOfflineReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, l
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 23:40:55 #
  ******************************************************************************/
-func LsndPingHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgPingHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -235,7 +235,7 @@ func LsndPingHandler(session *LsndSessionExtra, cmd uint32, data []byte, length 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUnsubReqHandler
+ **函数名称: LsndMesgUnsubHandler
  **功    能: 取消订阅处理
  **输入参数:
  **     session: 会话连接
@@ -249,7 +249,7 @@ func LsndPingHandler(session *LsndSessionExtra, cmd uint32, data []byte, length 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 22:58:12 #
  ******************************************************************************/
-func LsndUnsubReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgUnsubHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -263,7 +263,7 @@ func LsndUnsubReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, len
 	head.SetNid(ctx.conf.GetNid())
 
 	/* > 移除订阅消息 */
-	req := &mesg.MesgUnsubReq{}
+	req := &mesg.MesgUnsub{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -288,7 +288,7 @@ func LsndUnsubReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, len
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndRoomQuitReqHandler
+ **函数名称: LsndMesgRoomQuitHandler
  **功    能: 退出聊天室的处理
  **输入参数:
  **     session: 会话连接
@@ -302,7 +302,7 @@ func LsndUnsubReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, len
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 21:55:26 #
  ******************************************************************************/
-func LsndRoomQuitReqHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
+func LsndMesgRoomQuitHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
