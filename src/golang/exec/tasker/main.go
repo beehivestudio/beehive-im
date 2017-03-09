@@ -9,10 +9,11 @@ import (
 	"syscall"
 
 	"beehive-im/src/golang/exec/tasker/controllers"
+	"beehive-im/src/golang/exec/tasker/controllers/conf"
 )
 
 func main() {
-	var conf controllers.TaskerConf
+	var conf conf.TaskerConf
 
 	flag.Parse()
 

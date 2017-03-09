@@ -8,11 +8,13 @@ import (
 
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/rtmq"
+
+	"beehive-im/src/golang/exec/tasker/controllers/conf"
 )
 
 /* Tasker上下文 */
 type TaskerCntx struct {
-	conf   *TaskerConf         /* 配置信息 */
+	conf   *conf.TaskerConf    /* 配置信息 */
 	log    *logs.BeeLogger     /* 日志对象 */
 	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis  *redis.Pool         /* REDIS连接池 */
@@ -31,7 +33,7 @@ type TaskerCntx struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func TaskerInit(conf *TaskerConf) (ctx *TaskerCntx, err error) {
+func TaskerInit(conf *conf.TaskerConf) (ctx *TaskerCntx, err error) {
 	ctx = &TaskerCntx{}
 
 	ctx.conf = conf
@@ -69,7 +71,7 @@ func TaskerInit(conf *TaskerConf) (ctx *TaskerCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.frwder = rtmq.ProxyInit(&conf.frwder, ctx.log)
+	ctx.frwder = rtmq.ProxyInit(&conf.Frwder, ctx.log)
 	if nil == ctx.frwder {
 		return nil, err
 	}
