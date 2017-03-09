@@ -1,0 +1,4 @@
+yum -y install libcurl.x86_64
+cjson: https://github.com/DaveGamble/cJSON.git
+protobuf-c: https://github.com/protobuf-c/protobuf-c.git
+   编译命令: ./configure --disable-protoc; make; make install
