@@ -9,10 +9,11 @@ import (
 	"syscall"
 
 	"beehive-im/src/golang/exec/monitor/controllers"
+	"beehive-im/src/golang/exec/monitor/controllers/conf"
 )
 
 func main() {
-	var conf controllers.MonConf
+	var conf conf.MonConf
 
 	flag.Parse()
 
