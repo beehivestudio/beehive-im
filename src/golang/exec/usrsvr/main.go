@@ -8,11 +8,12 @@ import (
 	"github.com/astaxie/beego"
 
 	"beehive-im/src/golang/exec/usrsvr/controllers"
+	"beehive-im/src/golang/exec/usrsvr/controllers/conf"
 	"beehive-im/src/golang/exec/usrsvr/routers"
 )
 
 /* 设置BEEGO配置 */
-func set_bconf(conf *controllers.UsrSvrConf) {
+func set_bconf(conf *conf.UsrSvrConf) {
 	beego.BConfig.AppName = "beehive-im"
 	beego.BConfig.Listen.EnableHTTP = true
 	beego.BConfig.Listen.HTTPAddr = ""
@@ -22,7 +23,7 @@ func set_bconf(conf *controllers.UsrSvrConf) {
 
 /* 初始化 */
 func _init() *controllers.UsrSvrCntx {
-	var conf controllers.UsrSvrConf
+	var conf conf.UsrSvrConf
 
 	flag.Parse()
 
