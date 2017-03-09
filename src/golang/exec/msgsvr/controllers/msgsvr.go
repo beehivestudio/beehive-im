@@ -11,6 +11,8 @@ import (
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/mesg"
 	"beehive-im/src/golang/lib/rtmq"
+
+	"beehive-im/src/golang/exec/msgsvr/controllers/conf"
 )
 
 /* RID->NID映射表 */
@@ -48,7 +50,7 @@ type mesg_room_item struct {
 
 /* MSGSVR上下文 */
 type MsgSvrCntx struct {
-	conf           *MsgSvrConf         /* 配置信息 */
+	conf           *conf.MsgSvrConf    /* 配置信息 */
 	log            *logs.BeeLogger     /* 日志对象 */
 	frwder         *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis          *redis.Pool         /* REDIS连接池 */
@@ -73,7 +75,7 @@ type MsgSvrCntx struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
+func MsgSvrInit(conf *conf.MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	ctx = &MsgSvrCntx{}
 
 	ctx.conf = conf
@@ -111,7 +113,7 @@ func MsgSvrInit(conf *MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.frwder = rtmq.ProxyInit(&conf.frwder, ctx.log)
+	ctx.frwder = rtmq.ProxyInit(&conf.Frwder, ctx.log)
 	if nil == ctx.frwder {
 		return nil, err
 	}

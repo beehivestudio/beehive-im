@@ -1,29 +1,13 @@
-package controllers
+package conf
 
 import (
 	"encoding/xml"
 	"errors"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"beehive-im/src/golang/lib/log"
-	"beehive-im/src/golang/lib/rtmq"
 )
-
-/* 在线中心配置 */
-type MsgSvrConf struct {
-	NodeId   uint32             // 结点ID
-	WorkPath string             // 工作路径(自动获取)
-	AppPath  string             // 程序路径(自动获取)
-	ConfPath string             // 配置路径(自动获取)
-	Redis    MsgSvrRedisConf    // Redis配置
-	Mysql    MsgSvrMysqlConf    // Mysql配置
-	Mongo    MsgSvrMongoConf    // Mongo配置
-	Cipher   string             // 私密密钥
-	Log      log.LogConf        // 日志配置
-	frwder   rtmq.RtmqProxyConf // RTMQ配置
-}
 
 /* 日志配置 */
 type MsgSvrConfLogXmlData struct {
@@ -83,26 +67,6 @@ type MsgSvrConfXmlData struct {
 	Cipher string                     `xml:"CIPHER"`  // 私密密钥
 	Log    MsgSvrConfLogXmlData       `xml:"LOG"`     // 日志配置
 	Frwder MsgSvrConfRtmqProxyXmlData `xml:"FRWDER"`  // RTMQ PROXY配置
-}
-
-/******************************************************************************
- **函数名称: LoadConf
- **功    能: 加载配置信息
- **输入参数: NONE
- **输出参数: NONE
- **返    回:
- **     err: 错误描述
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
- ******************************************************************************/
-func (conf *MsgSvrConf) LoadConf() (err error) {
-	conf.WorkPath, _ = os.Getwd()
-	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
-	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "msgsvr.xml")
-
-	return conf.conf_parse()
 }
 
 /******************************************************************************
@@ -207,36 +171,36 @@ func (conf *MsgSvrConf) conf_parse() (err error) {
 	}
 
 	/* FRWDER配置 */
-	conf.frwder.NodeId = conf.NodeId
+	conf.Frwder.NodeId = conf.NodeId
 
 	/* 鉴权信息 */
-	conf.frwder.Usr = node.Frwder.Auth.Usr
-	conf.frwder.Passwd = node.Frwder.Auth.Passwd
-	if 0 == len(conf.frwder.Usr) || 0 == len(conf.frwder.Passwd) {
+	conf.Frwder.Usr = node.Frwder.Auth.Usr
+	conf.Frwder.Passwd = node.Frwder.Auth.Passwd
+	if 0 == len(conf.Frwder.Usr) || 0 == len(conf.Frwder.Passwd) {
 		return errors.New("Get auth conf failed!")
 	}
 
 	/* 转发层(IP+PROT) */
-	conf.frwder.RemoteAddr = node.Frwder.RemoteAddr
-	if 0 == len(conf.frwder.RemoteAddr) {
-		return errors.New("Get frwder addr failed!")
+	conf.Frwder.RemoteAddr = node.Frwder.RemoteAddr
+	if 0 == len(conf.Frwder.RemoteAddr) {
+		return errors.New("Get Frwder addr failed!")
 	}
 
 	/* 发送队列长度 */
-	conf.frwder.SendChanLen = node.Frwder.SendChanLen
-	if 0 == conf.frwder.SendChanLen {
+	conf.Frwder.SendChanLen = node.Frwder.SendChanLen
+	if 0 == conf.Frwder.SendChanLen {
 		return errors.New("Get send channel length failed!")
 	}
 
 	/* 接收队列长度 */
-	conf.frwder.RecvChanLen = node.Frwder.RecvChanLen
-	if 0 == conf.frwder.RecvChanLen {
+	conf.Frwder.RecvChanLen = node.Frwder.RecvChanLen
+	if 0 == conf.Frwder.RecvChanLen {
 		return errors.New("Get recv channel length failed!")
 	}
 
 	/* 协程数 */
-	conf.frwder.WorkerNum = node.Frwder.WorkerNum
-	if 0 == conf.frwder.WorkerNum {
+	conf.Frwder.WorkerNum = node.Frwder.WorkerNum
+	if 0 == conf.Frwder.WorkerNum {
 		return errors.New("Get worker number failed!")
 	}
 

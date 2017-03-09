@@ -9,10 +9,11 @@ import (
 	"syscall"
 
 	"beehive-im/src/golang/exec/msgsvr/controllers"
+	"beehive-im/src/golang/exec/msgsvr/controllers/conf"
 )
 
 func main() {
-	var conf controllers.MsgSvrConf
+	var conf conf.MsgSvrConf
 
 	flag.Parse()
 
