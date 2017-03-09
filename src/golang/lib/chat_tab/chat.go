@@ -276,7 +276,7 @@ func (ctx *ChatTab) SessionGetParam(sid uint64) (param interface{}) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.09 23:24:03 #
  ******************************************************************************/
-func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid int, ok bool) {
+func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid uint32, ok bool) {
 	ss := ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.RLock()
@@ -288,7 +288,7 @@ func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid int, ok bool) {
 		return 0, false // 已存在
 	}
 
-	gid, ok := ssn.room[rid]
+	gid, ok = ssn.room[rid]
 
 	return gid, ok
 }
