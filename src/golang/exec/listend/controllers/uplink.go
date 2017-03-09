@@ -19,7 +19,7 @@ import (
  ******************************************************************************/
 func (ctx *LsndCntx) UplinkRegister() {
 	/* 未知消息 */
-	ctx.callback.Register(comm.CMD_UNKNOWN, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_UNKNOWN, LsndMesgCommHandler, ctx) /* 默认处理 */
 
 	/* 通用消息 */
 	ctx.callback.Register(comm.CMD_ONLINE, LsndMesgOnlineHandler, ctx)   /* 上线消息 */
@@ -28,7 +28,7 @@ func (ctx *LsndCntx) UplinkRegister() {
 	ctx.callback.Register(comm.CMD_UNSUB, LsndMesgUnsubHandler, ctx)     /* 取消订阅 */
 
 	/* 聊天室消息 */
-	ctx.callback.Register(comm.CMD_ROOM_QUIT, LsndMesgRoomQuitHandler, ctx)
+	ctx.callback.Register(comm.CMD_ROOM_QUIT, LsndMesgRoomQuitHandler, ctx) /* 退出聊天室 */
 }
 
 ////////////////////////////////////////////////////////////////////////////////

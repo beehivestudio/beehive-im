@@ -265,6 +265,35 @@ func (ctx *ChatTab) SessionGetParam(sid uint64) (param interface{}) {
 }
 
 /******************************************************************************
+ **函数名称: SessionInRoom
+ **功    能: 判断会话是否在聊天室中
+ **输入参数:
+ **     sid: 会话SID
+ **     rid: 聊天室ID
+ **输出参数: NONE
+ **返    回: 1.分组ID 2.是否存在
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.09 23:24:03 #
+ ******************************************************************************/
+func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid int, ok bool) {
+	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+
+	ss.RLock()
+	defer ss.RUnlock()
+
+	/* > 判断会话是否存在 */
+	ssn, ok := ss.session[sid]
+	if ok {
+		return 0, false // 已存在
+	}
+
+	gid, ok := ssn.room[rid]
+
+	return gid, ok
+}
+
+/******************************************************************************
  **函数名称: SubAdd
  **功    能: 订阅添加
  **输入参数:
