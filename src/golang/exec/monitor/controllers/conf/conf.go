@@ -40,3 +40,8 @@ func (conf *MonConf) LoadConf() (err error) {
 
 	return conf.conf_parse()
 }
+
+/* 获取结点ID */
+func (conf *MonConf) GetNid() uint32 {
+	return conf.NodeId
+}

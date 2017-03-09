@@ -41,3 +41,8 @@ func (conf *MsgSvrConf) LoadConf() (err error) {
 
 	return conf.conf_parse()
 }
+
+/* 获取结点ID */
+func (conf *MsgSvrConf) GetNid() uint32 {
+	return conf.NodeId
+}

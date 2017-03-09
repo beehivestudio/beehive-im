@@ -42,3 +42,8 @@ func (conf *UsrSvrConf) LoadConf() (err error) {
 
 	return conf.conf_parse()
 }
+
+/* 获取结点ID */
+func (conf *UsrSvrConf) GetNid() uint32 {
+	return conf.NodeId
+}

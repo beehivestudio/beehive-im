@@ -41,3 +41,8 @@ func (conf *TaskerConf) LoadConf() (err error) {
 
 	return conf.conf_parse()
 }
+
+/* 获取结点ID */
+func (conf *TaskerConf) GetNid() uint32 {
+	return conf.NodeId
+}
