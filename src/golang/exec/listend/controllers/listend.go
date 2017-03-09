@@ -11,6 +11,8 @@ import (
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/lws"
 	"beehive-im/src/golang/lib/rtmq"
+
+	"beehive-im/src/golang/exec/listend/controllers/conf"
 )
 
 const (
@@ -53,7 +55,7 @@ type Sid2CidList struct {
 
 /* LISTEND上下文 */
 type LsndCntx struct {
-	conf     *LsndConf           /* 配置信息 */
+	conf     *conf.LsndConf      /* 配置信息 */
 	log      *logs.BeeLogger     /* 日志对象 */
 	frwder   *rtmq.RtmqProxyCntx /* 代理对象 */
 	callback MesgCallBackTab     /* 处理回调 */
@@ -84,7 +86,7 @@ type LsndSessionExtra struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.08 22:42:49 #
  ******************************************************************************/
-func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
+func LsndInit(conf *conf.LsndConf) (ctx *LsndCntx, err error) {
 	ctx = &LsndCntx{
 		conf: conf,
 	}
@@ -96,7 +98,7 @@ func LsndInit(conf *LsndConf) (ctx *LsndCntx, err error) {
 	}
 
 	/* > 初始化RTMQ-PROXY */
-	ctx.frwder = rtmq.ProxyInit(&conf.frwder, ctx.log)
+	ctx.frwder = rtmq.ProxyInit(&conf.Frwder, ctx.log)
 	if nil == ctx.frwder {
 		ctx.log.Error("Initialize rtmq proxy failed!")
 		return nil, errors.New("Initialize rtmq proxy failed!")
