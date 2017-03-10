@@ -84,12 +84,30 @@ all:
 clean:
 	@for ITEM in ${DIR}; \
 	do \
-		if [ -e $${ITEM}/Makefile ]; then \
-			cd $${ITEM}; \
-			make clean; \
-			cd ${PROJ}; \
+		clang=`echo $${ITEM} | grep 'clang' | wc -l`; \
+		golang=`echo $${ITEM} | grep 'golang' | wc -l`; \
+		if [ $${clang} -eq 1 ]; then \
+			if [ -e $${ITEM}/Makefile ]; then \
+				cd $${ITEM}; \
+				make clean; \
+				cd ${PROJ}; \
+			else \
+				echo "File [$${ITEM}/Makefile] isn't exist!"; exit; \
+			fi \
+		elif [ $${golang} -eq 1 ]; then \
+			if [ -e $${ITEM} ]; then \
+				echo "make[1]: Entering directory '${PROJ}/$${ITEM}'"; \
+				cd $${ITEM}; \
+				echo "go clean"; \
+				go clean; \
+				cd ${PROJ}; \
+			else \
+				echo "Path [$${ITEM}] isn't exist!"; exit; \
+			fi \
 		fi \
 	done
+
+
 
 # 3. 重新编译 
 rebuild: clean all
