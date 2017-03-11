@@ -24,7 +24,7 @@ import (
  **作    者: # Qifeng.zou # 2017.03.01 23:37:33 #
  ******************************************************************************/
 func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
 	defer ss.Unlock()
@@ -70,7 +70,7 @@ func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
  **作    者: # Qifeng.zou # 2017.03.08 22:36:01 #
  ******************************************************************************/
 func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bool) {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
 	defer ss.Unlock()
@@ -100,7 +100,7 @@ func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bo
  **作    者: # Qifeng.zou # 2017.03.02 10:13:34 #
  ******************************************************************************/
 func (ctx *ChatTab) session_del(sid uint64) *chat_session {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
 	defer ss.Unlock()
@@ -130,7 +130,7 @@ func (ctx *ChatTab) session_del(sid uint64) *chat_session {
  **作    者: # Qifeng.zou # 2017.03.01 22:55:43 #
  ******************************************************************************/
 func (ctx *ChatTab) room_add(rid uint64) int {
-	rs := ctx.rooms[rid%ROOM_MAX_LEN]
+	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 
 	rs.Lock()
 	defer rs.Unlock()
@@ -169,7 +169,7 @@ func (ctx *ChatTab) room_add(rid uint64) int {
  **作    者: # Qifeng.zou # 2017.03.01 22:59:15 #
  ******************************************************************************/
 func (ctx *ChatTab) room_query(rid uint64, lck int) *chat_room {
-	rs := ctx.rooms[rid%ROOM_MAX_LEN]
+	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 	switch lck {
 	case comm.RDLOCK: // 加读锁
 		rs.RLock()
@@ -204,7 +204,7 @@ func (ctx *ChatTab) room_query(rid uint64, lck int) *chat_room {
  **作    者: # Qifeng.zou # 2017.03.01 23:57:28 #
  ******************************************************************************/
 func (ctx *ChatTab) room_unlock(rid uint64, lck int) int {
-	rs := ctx.rooms[rid%ROOM_MAX_LEN]
+	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 
 	switch lck {
 	case comm.RDLOCK: // 加读锁
@@ -230,7 +230,7 @@ func (ctx *ChatTab) room_unlock(rid uint64, lck int) int {
  **作    者: # Qifeng.zou # 2017.03.02 10:20:10 #
  ******************************************************************************/
 func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
-	rs := ctx.rooms[rid%ROOM_MAX_LEN]
+	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 
 	/* > 查找ROOM对象 */
 	rs.RLock()
@@ -242,7 +242,7 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
 	}
 
 	/* > 查找GROUP对象 */
-	gs := room.groups[gid%GROUP_MAX_LEN]
+	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	gs.RLock()
 	defer gs.RUnlock()
@@ -284,7 +284,7 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
  **作    者: # Qifeng.zou # 2017.03.01 22:55:43 #
  ******************************************************************************/
 func (room *chat_room) group_add(gid uint32) int {
-	gs := room.groups[gid%GROUP_MAX_LEN]
+	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	gs.Lock()
 	defer gs.Unlock()
@@ -318,7 +318,7 @@ func (room *chat_room) group_add(gid uint32) int {
  **作    者: # Qifeng.zou # 2017.03.01 23:50:25 #
  ******************************************************************************/
 func (room *chat_room) group_query(gid uint32, lck int) *chat_group {
-	gs := room.groups[gid%GROUP_MAX_LEN]
+	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	switch lck {
 	case comm.RDLOCK: // 加读锁
@@ -354,7 +354,7 @@ func (room *chat_room) group_query(gid uint32, lck int) *chat_group {
  **作    者: # Qifeng.zou # 2017.03.06 17:44:36 #
  ******************************************************************************/
 func (room *chat_room) group_unlock(gid uint32, lck int) int {
-	gs := room.groups[gid%GROUP_MAX_LEN]
+	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	switch lck {
 	case comm.RDLOCK: // 加读锁

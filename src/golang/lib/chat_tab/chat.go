@@ -81,13 +81,13 @@ func Init() *ChatTab {
 
 	/* 初始化ROOM SET */
 	for idx := 0; idx < ROOM_MAX_LEN; idx += 1 {
-		rs := ctx.rooms[idx]
+		rs := &ctx.rooms[idx]
 		rs.room = make(map[uint64]*chat_room)
 	}
 
 	/* 初始化SESSION SET */
 	for idx := 0; idx < SESSION_MAX_LEN; idx += 1 {
-		ss := ctx.sessions[idx]
+		ss := &ctx.sessions[idx]
 		ss.session = make(map[uint64]*chat_session)
 	}
 
@@ -215,7 +215,7 @@ func (ctx *ChatTab) SessionDel(sid uint64) int {
  **作    者: # Qifeng.zou # 2017.02.22 20:32:20 #
  ******************************************************************************/
 func (ctx *ChatTab) SessionSetParam(sid uint64, param interface{}) int {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
 	defer ss.Unlock()
@@ -251,7 +251,7 @@ func (ctx *ChatTab) SessionSetParam(sid uint64, param interface{}) int {
  **作    者: # Qifeng.zou # 2017.03.07 17:02:35 #
  ******************************************************************************/
 func (ctx *ChatTab) SessionGetParam(sid uint64) (param interface{}) {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.RLock()
 	defer ss.RUnlock()
@@ -277,7 +277,7 @@ func (ctx *ChatTab) SessionGetParam(sid uint64) (param interface{}) {
  **作    者: # Qifeng.zou # 2017.03.09 23:24:03 #
  ******************************************************************************/
 func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid uint32, ok bool) {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.RLock()
 	defer ss.RUnlock()
@@ -306,7 +306,7 @@ func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid uint32, ok bool) 
  **作    者: # Qifeng.zou # 2017.03.02 10:31:44 #
  ******************************************************************************/
 func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.RLock()
 	defer ss.RUnlock()
@@ -337,7 +337,7 @@ func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
  **作    者: # Qifeng.zou # 2017.02.22 21:23:25 #
  ******************************************************************************/
 func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.RLock()
 	defer ss.RUnlock()
@@ -368,7 +368,7 @@ func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
  **作    者: # Qifeng.zou # 2017.02.22 21:31:37 #
  ******************************************************************************/
 func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
-	ss := ctx.sessions[sid%SESSION_MAX_LEN]
+	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.RLock()
 	defer ss.RUnlock()
@@ -401,7 +401,7 @@ func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
  **作    者: # Qifeng.zou # 2017.02.20 23:52:36 #
  ******************************************************************************/
 func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param interface{}) int {
-	rs := ctx.rooms[rid%ROOM_MAX_LEN]
+	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 
 	rs.RLock()
 	defer rs.RUnlock()
@@ -413,7 +413,7 @@ func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param inte
 		return room.group_all_trav(proc, param) // 遍历所有分组
 	}
 
-	gs := room.groups[gid%GROUP_MAX_LEN]
+	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	gs.RLock()
 	defer gs.RUnlock()
@@ -453,7 +453,7 @@ func (ctx *ChatTab) Clean() int {
 
 	/* > 清理会话数为0的聊天室 */
 	for rid, _ := range rlist {
-		rs := ctx.rooms[rid%ROOM_MAX_LEN]
+		rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 		rs.Lock()
 		room, ok := rs.room[rid]
 		if !ok || 0 != room.sid_num {
