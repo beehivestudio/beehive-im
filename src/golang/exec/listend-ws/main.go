@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"syscall"
 
-	"beehive-im/src/golang/exec/listend/controllers"
-	"beehive-im/src/golang/exec/listend/controllers/conf"
+	"beehive-im/src/golang/exec/listend-ws/controllers"
+	"beehive-im/src/golang/exec/listend-ws/controllers/conf"
 )
 
 func main() {

@@ -35,13 +35,16 @@ DIR += "$(CLANG_EXEC_DIR)/client"
 DIR += "$(CLANG_EXEC_DIR)/frwder"
 DIR += "$(CLANG_EXEC_DIR)/listend"
 
+CLANG_DEMO_DIR = "src/clang/demo"
+DIR += "$(CLANG_DEMO_DIR)/websocket"
+
 GOLANG_EXEC_DIR = "src/golang/exec"
 DIR += "$(GOLANG_EXEC_DIR)/cross"
 DIR += "$(GOLANG_EXEC_DIR)/usrsvr"
 DIR += "$(GOLANG_EXEC_DIR)/msgsvr"
 DIR += "$(GOLANG_EXEC_DIR)/tasker"
 DIR += "$(GOLANG_EXEC_DIR)/monitor"
-DIR += "$(GOLANG_EXEC_DIR)/listend"
+DIR += "$(GOLANG_EXEC_DIR)/listend-ws"
 
 # 获取系统配置
 CPU_CORES = $(call func_cpu_cores)
