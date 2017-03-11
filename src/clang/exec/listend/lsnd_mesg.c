@@ -108,7 +108,7 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_online_ack_logic_handler
+ **函数名称: lsnd_mesg_online_ack_logic
  **功    能: ONLINE应答逻辑处理
  **输入参数:
  **     lsnd: 全局对象
@@ -120,7 +120,7 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.01 21:06:07 #
  ******************************************************************************/
-static int lsnd_mesg_online_ack_logic_handler(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t cid)
+static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t cid)
 {
     lsnd_conn_extra_t *extra, key;
 
@@ -212,7 +212,7 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
         return -1;
     }
 
-    if (lsnd_mesg_online_ack_logic_handler(lsnd, ack, cid)) {
+    if (lsnd_mesg_online_ack_logic(lsnd, ack, cid)) {
         mesg_online_ack__free_unpacked(ack, NULL);
         return -1;
     }
