@@ -33,14 +33,14 @@ const (
 type MesgCallBack func(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int
 
 type MesgCallBackItem struct {
-	cmd      uint32       /* 消息ID */
-	callback MesgCallBack /* 处理回调 */
-	param    interface{}  /* 附加参数 */
+	cmd   uint32       /* 消息ID */
+	proc  MesgCallBack /* 处理回调 */
+	param interface{}  /* 附加参数 */
 }
 
 type MesgCallBackTab struct {
 	sync.RWMutex                              /* 读写锁 */
-	callback     map[uint32]*MesgCallBackItem /* 消息处理回调(上行) */
+	list         map[uint32]*MesgCallBackItem /* 消息处理回调(上行) */
 }
 
 /* SID->CID映射管理 */
@@ -103,6 +103,14 @@ func LsndInit(conf *conf.LsndConf) (ctx *LsndCntx, err error) {
 		ctx.log.Error("Initialize rtmq proxy failed!")
 		return nil, errors.New("Initialize rtmq proxy failed!")
 	}
+
+	/* > 初始化Callback映射 */
+	ctx.callback.list = make(map[uint32]*MesgCallBackItem) /* 处理回调 */
+
+	ctx.sid_to_cid_init()
+
+	/* > 聊天关系组织表 */
+	ctx.chat = chat_tab.Init()
 
 	/* > 初始化LWS模块 */
 	lws_conf := &lws.Conf{

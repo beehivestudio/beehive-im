@@ -18,13 +18,13 @@ package controllers
  ******************************************************************************/
 func (tab *MesgCallBackTab) Register(cmd uint32, cb MesgCallBack, param interface{}) int {
 	item := &MesgCallBackItem{
-		cmd:      cmd,
-		callback: cb,
-		param:    param,
+		cmd:   cmd,
+		proc:  cb,
+		param: param,
 	}
 
 	tab.Lock()
-	tab.callback[cmd] = item
+	tab.list[cmd] = item
 	tab.Unlock()
 
 	return 0
@@ -45,12 +45,12 @@ func (tab *MesgCallBackTab) Register(cmd uint32, cb MesgCallBack, param interfac
  ******************************************************************************/
 func (tab *MesgCallBackTab) Query(cmd uint32) (cb MesgCallBack, param interface{}) {
 	tab.RLock()
-	item, ok := tab.callback[cmd]
+	item, ok := tab.list[cmd]
 	if !ok {
 		tab.RUnlock()
 		return nil, nil
 	}
-	cb = item.callback
+	cb = item.proc
 	param = item.param
 	tab.RUnlock()
 
@@ -61,8 +61,17 @@ func (tab *MesgCallBackTab) Query(cmd uint32) (cb MesgCallBack, param interface{
 // 会话SID <-> 连接CID 映射操作
 
 /* 添加会话SID->连接CID映射 */
-func (ctx *LsndCntx) add_sid_to_cid(sid uint64, cid uint64) int {
-	tab := ctx.sid2cid.tab[sid%LSND_SID2CID_LEN]
+func (ctx *LsndCntx) sid_to_cid_init() int {
+	for idx := 0; idx < LSND_SID2CID_LEN; idx += 1 {
+		tab := &ctx.sid2cid.tab[idx%LSND_SID2CID_LEN]
+		tab.list = make(map[uint64]uint64)
+	}
+	return 0
+}
+
+/* 添加会话SID->连接CID映射 */
+func (ctx *LsndCntx) sid_to_cid_add(sid uint64, cid uint64) int {
+	tab := &ctx.sid2cid.tab[sid%LSND_SID2CID_LEN]
 	tab.Lock()
 	tab.list[sid] = cid
 	tab.Unlock()
@@ -71,7 +80,7 @@ func (ctx *LsndCntx) add_sid_to_cid(sid uint64, cid uint64) int {
 
 /* 通过会话SID查找连接CID */
 func (ctx *LsndCntx) find_cid_by_sid(sid uint64) uint64 {
-	tab := ctx.sid2cid.tab[sid%LSND_SID2CID_LEN]
+	tab := &ctx.sid2cid.tab[sid%LSND_SID2CID_LEN]
 	tab.RLock()
 	cid, _ := tab.list[sid]
 	tab.RUnlock()

@@ -127,7 +127,7 @@ func LsndMesgOnlineHandler(session *LsndSessionExtra, cmd uint32, data []byte, l
 
 	/* > 更新连接状态 */
 	session.SetStatus(CONN_STATUS_CHECK)
-	ctx.add_sid_to_cid(head.GetSid(), session.GetCid())
+	ctx.sid_to_cid_add(head.GetSid(), session.GetCid())
 
 	return 0
 }

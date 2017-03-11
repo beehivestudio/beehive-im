@@ -1,7 +1,7 @@
 <!-- 代理服务配置信息 -->
 <LISTEND ID="10001">
     <!-- 日志配置 -->
-    <LOG LEVEL="error" PATH="../log/websocket.log" />
+    <LOG LEVEL="debug" PATH="../log/" />
 
     <!-- 运营商配置 -->
     <OPERATOR NATION="CN" NAME="中国电信" />
@@ -12,7 +12,7 @@
     <!-- 帧听配置
             1) IP: 外网IP
             2) PORT: 帧听端口 -->
-    <WEBSOCKET IP="127.0.0.1" PORT="9002">
+    <WEBSOCKET IP="127.0.0.1" PORT="8002">
         <!-- 并发(连接)配置
             1) MAX: 最大并发数
             2) TIMEOUT: 连接超时时间

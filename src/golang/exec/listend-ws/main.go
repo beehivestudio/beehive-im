@@ -25,12 +25,14 @@ func main() {
 		return
 	}
 
-	/* > 初始化OLSVR环境 */
+	/* > 初始化LISTEND环境 */
 	ctx, err := controllers.LsndInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return
 	}
+
+	ctx.Register()
 
 	/* > 启动侦听服务 */
 	ctx.Launch()
