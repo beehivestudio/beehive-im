@@ -79,7 +79,7 @@ func (ctx *LwsCntx) ConnPoolDel(cid uint64) int {
 func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if nil != err {
-		ctx.log.Error("Upgrade websocket failed! errmsg:%d", err.Error())
+		ctx.log.Error("Upgrade websocket failed! errmsg:%s", err.Error())
 		return
 	}
 
