@@ -53,16 +53,23 @@ type Sid2CidList struct {
 	list         map[uint64]uint64 /* SID->CID映射 */
 }
 
+/* KICK信息 */
+type LsndKickItem struct {
+	cid uint64 /* 连接ID */
+	ttl int64  /* 生命时间 */
+}
+
 /* LISTEND上下文 */
 type LsndCntx struct {
-	conf     *conf.LsndConf      /* 配置信息 */
-	log      *logs.BeeLogger     /* 日志对象 */
-	frwder   *rtmq.RtmqProxyCntx /* 代理对象 */
-	callback MesgCallBackTab     /* 处理回调 */
-	chat     *chat_tab.ChatTab   /* 聊天关系组织表 */
-	sid2cid  Sid2CidTab          /* SID->CID映射 */
-	lws      *lws.LwsCntx        /* LWS环境 */
-	protocol *lws.Protocol       /* LWS.PROTOCOL */
+	conf      *conf.LsndConf      /* 配置信息 */
+	log       *logs.BeeLogger     /* 日志对象 */
+	frwder    *rtmq.RtmqProxyCntx /* 代理对象 */
+	callback  MesgCallBackTab     /* 处理回调 */
+	chat      *chat_tab.ChatTab   /* 聊天关系组织表 */
+	sid2cid   Sid2CidTab          /* SID->CID映射 */
+	lws       *lws.LwsCntx        /* LWS环境 */
+	protocol  *lws.Protocol       /* LWS.PROTOCOL */
+	kick_list chan *LsndKickItem  /* 被踢列表 */
 }
 
 /* 会话扩展数据 */
@@ -104,10 +111,10 @@ func LsndInit(conf *conf.LsndConf) (ctx *LsndCntx, err error) {
 		return nil, errors.New("Initialize rtmq proxy failed!")
 	}
 
-	/* > 初始化Callback映射 */
+	/* > 初始化其他结构 */
 	ctx.callback.list = make(map[uint32]*MesgCallBackItem) /* 处理回调 */
-
-	ctx.sid_to_cid_init()
+	ctx.kick_list = make(chan *LsndKickItem, 100000)       /* 被踢列表 */
+	ctx.sid_to_cid_init()                                  /* SID->CID映射 */
 
 	/* > 聊天关系组织表 */
 	ctx.chat = chat_tab.Init()

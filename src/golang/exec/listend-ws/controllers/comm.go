@@ -1,5 +1,9 @@
 package controllers
 
+import (
+	"time"
+)
+
 ////////////////////////////////////////////////////////////////////////////////
 // 处理回调的管理
 
@@ -147,4 +151,13 @@ func (session *LsndSessionExtra) IsStatus(status int) bool {
 		return true
 	}
 	return false
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/* 加入被踢列表 */
+func (ctx *LsndCntx) kick_add(cid uint64) {
+	item := &LsndKickItem{cid: cid, ttl: time.Now().Unix() + 5}
+
+	ctx.kick_list <- item
 }
