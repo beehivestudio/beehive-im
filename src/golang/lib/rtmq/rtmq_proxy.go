@@ -3,7 +3,6 @@ package rtmq
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"io"
 	"math/rand"
 	"net"
@@ -353,7 +352,7 @@ func (ctx *RtmqProxyCntx) AsyncSend(cmd uint32, data []byte, length uint32) int 
 
 	select {
 	case ctx.server[idx].send_chan <- p:
-		fmt.Printf("Send data success")
+		ctx.log.Debug("Send data success! cmd:0x%04x len:%d", cmd, length)
 		return 0
 	case <-time.After(3 * time.Second): /* 超时则丢弃 */
 		return -1
@@ -624,7 +623,7 @@ func (c *RtmqProxyConn) send_routine() {
 		case <-c.close_chan:
 			return
 
-		case p := <-c.mesg_chan: /* 系统消息发送队列 */
+		case p, _ := <-c.mesg_chan: /* 系统消息发送队列 */
 			if _, err := c.conn.Write([]byte(p.head)); nil != err {
 				return
 			}
@@ -632,7 +631,7 @@ func (c *RtmqProxyConn) send_routine() {
 				return
 			}
 
-		case p := <-c.send_chan: /* 普通消息发送队列 */
+		case p, _ := <-c.send_chan: /* 普通消息发送队列 */
 			if _, err := c.conn.Write([]byte(p.head)); nil != err {
 				return
 			}
@@ -647,7 +646,6 @@ func (c *RtmqProxyConn) send_routine() {
 			}
 			c.keepalive()
 			continue
-
 		}
 	}
 }

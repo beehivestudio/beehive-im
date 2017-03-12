@@ -150,7 +150,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	err = ctx.online_req_check(req)
 	if nil != err {
 		ctx.log.Error("Check online-request failed!")
-		return head, nil, comm.ERR_SVR_CHECK_FAIL, err
+		return head, req, comm.ERR_SVR_CHECK_FAIL, err
 	}
 
 	return head, req, 0, nil

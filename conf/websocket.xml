@@ -1,5 +1,5 @@
 <!-- 代理服务配置信息 -->
-<LISTEND ID="10001">
+<LISTEND ID="20001">
     <!-- 日志配置 -->
     <LOG LEVEL="debug" PATH="../log/" />
 
@@ -26,7 +26,7 @@
     </WEBSOCKET>
 
     <!-- 转发层配置 -->
-    <FRWDER ADDR="127.0.0.1:28889"> <!-- RTMQ代理 -->
+    <FRWDER ADDR="127.0.0.1:28888"> <!-- RTMQ代理 -->
       <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->
       <WORKER-NUM>10</WORKER-NUM>                 <!-- 工作协程数 -->
       <SEND-CHAN-LEN>20000</SEND-CHAN-LEN>        <!-- 发送队列长度 -->

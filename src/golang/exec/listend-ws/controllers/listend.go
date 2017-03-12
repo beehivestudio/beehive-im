@@ -155,7 +155,7 @@ func (ctx *LsndCntx) Register() {
 
 /******************************************************************************
  **函数名称: Launch
- **功    能: 启动OLSVR服务
+ **功    能: 启动LISTEND服务
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
@@ -165,6 +165,6 @@ func (ctx *LsndCntx) Register() {
  ******************************************************************************/
 func (ctx *LsndCntx) Launch() {
 	go ctx.Task()
-	ctx.lws.Launch(ctx.protocol)
 	ctx.frwder.Launch()
+	go ctx.lws.Launch(ctx.protocol)
 }
