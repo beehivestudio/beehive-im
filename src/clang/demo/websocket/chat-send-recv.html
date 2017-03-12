@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<!-- <script src="http:///10.180.153.133:8080/jquery.min.js"></script> -->
+<script type="text/javascript">
+
+function decodeUtf8(arrayBuffer) {
+  var result = "";
+  var i = 0;
+  var c = 0;
+  var c1 = 0;
+  var c2 = 0;
+
+  var data = new Uint8Array(arrayBuffer);
+
+  // If we have a BOM skip it
+  if (data.length >= 3 && data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf) {
+    i = 3;
+  }
+
+  while (i < data.length) {
+    c = data[i];
+
+    if (c < 128) {
+      result += String.fromCharCode(c);
+      i++;
+    } else if (c > 191 && c < 224) {
+      if( i+1 >= data.length ) {
+        throw "UTF-8 Decode failed. Two byte character was truncated.";
+      }
+      c2 = data[i+1];
+      result += String.fromCharCode( ((c&31)<<6) | (c2&63) );
+      i += 2;
+    } else {
+      if (i+2 >= data.length) {
+        throw "UTF-8 Decode failed. Multi byte character was truncated.";
+      }
+      c2 = data[i+1];
+      c3 = data[i+2];
+      result += String.fromCharCode( ((c&15)<<12) | ((c2&63)<<6) | (c3&63) );
+      i += 3;
+    }
+  }
+  return result;
+}
+
+$(function() {
+    window.WebSocket = window.WebSocket || window.MozWebSocket;
+    //var websocket = new WebSocket('ws://10.58.94.180:11111/chat');
+    //var websocket = new WebSocket('ws://10.58.89.236:11112/chat');
+    //var websocket = new WebSocket('ws://127.0.0.1:11111/chat');
+    var websocket = new WebSocket('ws://10.154.252.32:8088/chat');
+    //var websocket = new WebSocket('ws://10.180.153.133:8088/chat');
+    websocket.binaryType = 'arraybuffer';
+
+    // 连接建立成功，发送JOIN加入聊天室
+    websocket.onopen = function () {
+    $('h1').css('color', 'green');
+    var join = {}
+    join["roomId"] = 1000000015
+    join["token"] = "test"
+    var joinStr = JSON.stringify(join)
+
+    var buff = new ArrayBuffer(24 + joinStr.length);
+    // set Header
+    var header = new DataView(buff)
+    header.setUint16(0, 0x0105, false)   //cmd
+    header.setUint32(4, joinStr.length, false)
+
+    // set Body
+    var bufView = new Uint8Array(buff);
+    for (var i=0, strLen=joinStr.length; i<strLen; i++) {
+      bufView[24+i] = joinStr.charCodeAt(i);
+    }
+
+    websocket.send(buff);
+    };
+    function ping(){
+      var buff = new ArrayBuffer(24);
+      var header = new DataView(buff)
+        header.setUint16(0, 0x0001, false)   //cmd
+        header.setUint32(4, 0, false)
+        websocket.send(buff);
+      console.log("PING")
+    };
+    setInterval(ping, 120000); //私有心跳
+
+    websocket.onerror = function () {
+      $('h1').css('color', 'red');
+    };
+    websocket.onclose = function () {
+      $('h1').css('color', 'red');
+      // TODO:断线重连
+    };
+
+    websocket.onmessage = function (message) {
+      var dv = new DataView(message.data)
+        var cmd = dv.getUint16(0)
+        var len = dv.getUint32(4)
+        switch(cmd){
+          case 0x0401:
+            var body = decodeUtf8(message.data.slice(24));
+            $('div').prepend($('<p>', { text: body }));
+            break;
+          case 0x0002:
+            //心跳应答PONG
+            console.log("PONG")
+              break;
+          case 0x0106:
+            var body = decodeUtf8(message.data.slice(24));
+            $('div').append($('<p>', { text: "JOIN-ack: " + body }));
+            break;
+        }
+    };
+
+
+    $('button').click(function(e) {
+        e.preventDefault();
+        //var msgUrl = 'http://10.58.89.236:48080/engine/room/msg?roomid=1000000015'
+        var msgUrl = 'http://10.154.252.32:48080/engine/room/msg?roomid=1000000015'
+        //var msgUrl = 'http://10.180.153.133:48080/engine/room/msg?roomid=1000000015'
+        var body = $('input').val()
+
+        $.post(msgUrl, body)
+        $('input').val('');
+        });
+});
+</script>
+</head>
+<body>
+<h1>WebSockets test</h1>
+<form>
+  <input type="text" />
+  <button>Send</button>
+</form>
+<div></div>
+</body>
+</html>
