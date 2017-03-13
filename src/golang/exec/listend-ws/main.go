@@ -19,19 +19,20 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	/* > 加载OLS配置 */
+	/* > 加载LSND-WS配置 */
 	if err := conf.LoadConf(); nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}
 
-	/* > 初始化LISTEND环境 */
+	/* > 初始化LSND-WS环境 */
 	ctx, err := controllers.LsndInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return
 	}
 
+	/* > 注册回调函数 */
 	ctx.Register()
 
 	/* > 启动侦听服务 */
