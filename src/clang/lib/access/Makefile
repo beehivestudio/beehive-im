@@ -1,37 +1,31 @@
 ###############################################################################
-## Copyright(C) 2013-2014 Qiware technology Co., Ltd
+## Coypright(C) 2014-2024 Qiware technology Co., Ltd
 ##
 ## 文件名: Makefile
 ## 版本号: 1.0
-## 描  述: 客户端SDK模块的编译
-## 作  者: # Qifeng.zou # 2016.11.13 16:25:25 #
+## 描  述: 帧听模块
+## 作  者: # Qifeng.zou # 2014.11.15 #
 ###############################################################################
 include $(PROJ)/make/build.mak
 
 INCLUDE = -I. \
-		  -I$(PROJ)/src/clang/incl \
-		  -I$(PROJ)/src/clang/incl/sdk \
-		  -I$(PROJ)/src/clang/incl/mesg
+			-I$(PROJ)/src/clang/incl \
+			-I$(PROJ)/src/clang/incl/access
 INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib
-
-# 注: 静态库请放在动态库之前
-STATIC_LIB_LIST = libcore.a
-LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
-LIBS += -lpthread -lm -dl -lcjson
+LIBS = -lpthread -lcore -lutils
 LIBS += $(SHARED_LIB)
 
-SRC_LIST = sdk.c \
-		   sdk_comm.c \
-		   sdk_ssvr.c \
-		   sdk_mesg.c \
-		   sdk_worker.c
+SRC_LIST = access.c \
+			acc_comm.c \
+			acc_lsn.c \
+			acc_rsvr.c
 
 OBJS = $(subst .c,.o, $(SRC_LIST))
 HEADS = $(call func_get_dep_head_list, $(SRC_LIST))
 
-TARGET = libsdk.so
-TARGET_A = libsdk.a
+TARGET = libaccess.so
+TARGET_A = libaccess.a
 
 .PHONY: all clean
 
@@ -53,5 +47,5 @@ $(OBJS): %.o : %.c $(HEADS)
 	@echo "CC $(PWD)/$<"
 
 clean:
-	@rm -fr *.o
-	@echo "rm -fr *.o"
+	@rm -fr *.o $(PROJ_LIB)/$(TARGET) $(PROJ_LIB)/$(TARGET_A)
+	@echo "rm -fr *.o $(PROJ_LIB)/$(TARGET) $(PROJ_LIB)/$(TARGET_A)"

@@ -9,14 +9,13 @@
 include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
-			-I$(PROJ)/src/clang//incl \
-			-I$(PROJ)/src/clang//incl/chat \
-			-I$(PROJ)/src/clang//incl/mesg \
-			-I$(PROJ)/../cctrl/src/incl \
-			-I$(PROJ)/../cctrl/src/incl/rtmq \
-			-I$(PROJ)/../cctrl/src/incl/access
+			-I$(PROJ)/src/clang/incl \
+			-I$(PROJ)/src/clang/incl/chat \
+			-I$(PROJ)/src/clang/incl/mesg \
+			-I$(PROJ)/src/clang/incl/rtmq \
+			-I$(PROJ)/src/clang/incl/access
 INCLUDE += $(GLOBAL_INCLUDE)
-LIBS_PATH = -L$(PROJ)/lib -L$(PROJ)/../cctrl/lib
+LIBS_PATH = -L$(PROJ)/lib
 
 # 静态链接库
 STATIC_LIB_LIST = librtmq.a libaccess.a \

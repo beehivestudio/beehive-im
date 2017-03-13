@@ -27,8 +27,12 @@ export GCC_LOG = ${PROJ_LOG}/gcc.log
 # 编译目录(注：编译按顺序执行　注意库之间的依赖关系)
 CLANG_LIB_DIR = "src/clang/lib"
 DIR += "$(CLANG_LIB_DIR)/sdk"
+DIR += "$(CLANG_LIB_DIR)/core"
 DIR += "$(CLANG_LIB_DIR)/chat"
 DIR += "$(CLANG_LIB_DIR)/mesg"
+DIR += "$(CLANG_LIB_DIR)/rtmq"
+DIR += "$(CLANG_LIB_DIR)/utils"
+DIR += "$(CLANG_LIB_DIR)/access"
 
 CLANG_EXEC_DIR = "src/clang/exec"
 DIR += "$(CLANG_EXEC_DIR)/client"

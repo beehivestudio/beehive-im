@@ -10,12 +10,11 @@ include $(PROJ)/make/build.mak
 
 INCLUDE = -I./incl \
 			-I$(PROJ)/src/clang/incl \
-			-I$(PROJ)/../cctrl/src/incl \
-			-I$(PROJ)/../cctrl/src/incl/rtmq
+			-I$(PROJ)/src/clang/incl/rtmq
 INCLUDE += $(GLOBAL_INCLUDE)
 
 # 静态链接库
-STATIC_LIB_LIST = librtmq.a libagent.a libutils.a libaccess.a libcore.a
+STATIC_LIB_LIST = librtmq.a libutils.a libcore.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
 LIBS += -lpthread -lm -dl
 LIBS += $(SHARED_LIB)
