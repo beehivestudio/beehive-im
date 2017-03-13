@@ -15,7 +15,7 @@ INCLUDE = -I./incl \
 INCLUDE += $(GLOBAL_INCLUDE)
 
 # 静态链接库
-STATIC_LIB_LIST = libev.a librtmq.a libagent.a libutils.a libcjson.a libaccess.a libcore.a
+STATIC_LIB_LIST = librtmq.a libagent.a libutils.a libcjson.a libaccess.a libcore.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
 LIBS += -lpthread -lm -dl
 LIBS += $(SHARED_LIB)
