@@ -131,6 +131,45 @@ int lws_send_online_handler(struct lws_context *lws,
     return 0;
 }
 
+int lws_online_ack_handler(mesg_header_t *head, void *body)
+{
+    fprintf(stderr, "Call %s()\n", __func__);
+    return 0;
+}
+
+/* 接收数据的处理 */
+int lws_recv_handler(char *data)
+{
+    char *body;
+    time_t ctm;
+    struct tm lctm;
+    mesg_header_t *head;
+
+    head = (mesg_header_t *)data;
+    body = (char *)(head + 1);
+
+    MESG_HEAD_NTOH(head, head);
+
+
+    fprintf(stderr, "Recv data. cmd:0x%04X len:%d flag:%d chksum:0x%08X body:%p\n",
+            head->type, head->length, head->flag, head->chksum, body);
+
+    ctm = time(NULL);
+    localtime_r(&ctm, &lctm);
+    fprintf(stderr, "year:%u mon:%u day:%u hour:%u min:%u sec:%u\n",
+            lctm.tm_year+1900, lctm.tm_mon+1, lctm.tm_mday,
+            lctm.tm_hour, lctm.tm_min, lctm.tm_sec);
+
+    switch (head->type) {
+        case CMD_ONLINE_ACK:
+            return lws_online_ack_handler(head, body);
+        default:
+            return 0;
+    }
+
+    return 0;
+}
+
 /* dumb_im protocol */
 static int callback_im(
         struct lws_context *lws,
@@ -139,33 +178,17 @@ static int callback_im(
         void *user, void *in, size_t len)
 {
     int n;
-    time_t ctm;
-    struct tm lctm;
-    char *param;
-    mesg_header_t *head;
     lws_send_item_t *item;
     lws_cntx_t *ctx = &g_wsc_cntx;
     lws_session_data_t *session = (lws_session_data_t *)user;
 
     switch (reason) {
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
-            lws_send_online_handler(lws, wsi, ctx, session);
-            break;
+            return lws_send_online_handler(lws, wsi, ctx, session);
         case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED:
             break;
         case LWS_CALLBACK_CLIENT_RECEIVE:
-            head = (mesg_header_t *)in;
-            param = (char *)(head + 1);
-
-            fprintf(stderr, "Recv data. cmd:%d len:%d param:%p\n",
-                    ntohs(head->type), ntohl(head->length), param);
-
-            ctm = time(NULL);
-            localtime_r(&ctm, &lctm);
-            fprintf(stderr, "year:%u mon:%u day:%u hour:%u min:%u sec:%u\n",
-                    lctm.tm_year+1900, lctm.tm_mon+1, lctm.tm_mday,
-                    lctm.tm_hour, lctm.tm_min, lctm.tm_sec);
-            break;
+            return lws_recv_handler(in);
         case LWS_CALLBACK_CLIENT_WRITEABLE:
             fprintf(stderr, "callback_im: LWS_CALLBACK_CLIENT_WRITEABLE\n");
             while (1) {
