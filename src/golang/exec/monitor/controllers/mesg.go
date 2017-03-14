@@ -141,10 +141,11 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 	/* > 判断数据是否冲突 */
 	has, err := ctx.lsn_rpt_has_conflict(req)
 	if nil != err {
-		ctx.log.Error("Something was wrong! errmsg:%s", err.Error())
+		ctx.log.Error("Something was wrong! errmsg:%s!", err.Error())
 		return
 	} else if true == has {
-		ctx.log.Error("Data has conflict!")
+		ctx.log.Error("Data has conflict! network:%d nid:%d nation:%s opname:%s ip:%s port:%d",
+			req.GetNetwork(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIpaddr(), req.GetPort())
 		return
 	}
 
@@ -173,6 +174,9 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 	key = fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, req.GetNetwork(), req.GetNation(), req.GetName())
 	val := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
 	pl.Send("ZADD", key, ttl, val)
+
+	ctx.log.Debug("Listend report success! network:%d nid:%d nation:%s opname:%s ip:%s port:%d",
+		req.GetNetwork(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIpaddr(), req.GetPort())
 
 	return
 }

@@ -22,3 +22,10 @@ const (
 	RDLOCK = 1 // 加读锁
 	WRLOCK = 2 // 加写锁
 )
+
+/* 网络类型 */
+const (
+	LSND_NET_UNKNOWN = 0 // 未知网络
+	LSND_NET_TCP     = 1 // 网络类型: TCP
+	LSND_NET_WS      = 2 // 网络类型: WebSocket
+)

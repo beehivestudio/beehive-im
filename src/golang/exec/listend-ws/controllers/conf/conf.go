@@ -41,16 +41,27 @@ func (conf *LsndConf) LoadConf() (err error) {
 	return conf.conf_parse()
 }
 
-/******************************************************************************
- **函数名称: GetNid
- **功    能: 获取结点ID
- **输入参数:
- **输出参数: NONE
- **返    回: 结点ID
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2017.03.04 22:51:11 #
- ******************************************************************************/
+/* 获取结点ID */
 func (conf *LsndConf) GetNid() uint32 {
 	return conf.NodeId
+}
+
+/* 获取国家 */
+func (conf *LsndConf) GetNation() string {
+	return conf.Operator.Nation
+}
+
+/* 获取运营商名称 */
+func (conf *LsndConf) GetName() string {
+	return conf.Operator.OpName
+}
+
+/* 获取IP地址 */
+func (conf *LsndConf) GetIp() string {
+	return conf.WebSocket.Ip
+}
+
+/* 获取绑定端口 */
+func (conf *LsndConf) GetPort() uint32 {
+	return conf.WebSocket.Port
 }
