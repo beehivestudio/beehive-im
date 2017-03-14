@@ -77,6 +77,9 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		return nil, err
 	}
 
+	/* > 创建侦听层列表 */
+	ctx.listend.network = make(map[int]*UsrSvrLsndList)
+
 	/* > REDIS连接池 */
 	ctx.redis = &redis.Pool{
 		MaxIdle:   80,
