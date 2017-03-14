@@ -11,7 +11,7 @@ echo ${LIBS[*]}
 
 for item in ${LIBS[*]}
 do
-    if [ -f "$root/$item" ]; then
+    if [ ! -e "$root/$item" ]; then
         echo "go get $item"
         go get $item
     else
