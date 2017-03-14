@@ -34,7 +34,7 @@ func (this *UsrSvrQueryCtrl) Query() {
 
 /* 注册参数 */
 type UsrSvrIpListParam struct {
-	typ      int    // 网络类型(0:Unknown 1:TCP 2:WS)
+	network  int    // 网络类型(0:Unknown 1:TCP 2:WS)
 	uid      uint64 // 用户ID
 	sid      uint64 // 会话ID
 	clientip string // 客户端IP
@@ -75,7 +75,7 @@ func (this *UsrSvrQueryCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListP
 	var param UsrSvrIpListParam
 
 	/* > 提取注册参数 */
-	param.typ, _ = this.GetInt("type")
+	param.network, _ = this.GetInt("network")
 
 	id, _ := this.GetInt64("uid")
 	param.uid = uint64(id)
@@ -86,7 +86,7 @@ func (this *UsrSvrQueryCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListP
 	param.clientip = this.GetString("clientip")
 
 	/* > 校验参数合法性 */
-	if 0 == param.typ || 0 == param.uid ||
+	if 0 == param.network || 0 == param.uid ||
 		0 == param.sid || "" == param.clientip {
 		ctx.log.Error("Paramter is invalid. uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
@@ -124,7 +124,7 @@ type UsrSvrIpListRsp struct {
  **作    者: # Qifeng.zou # 2016.11.24 17:00:07 #
  ******************************************************************************/
 func (this *UsrSvrQueryCtrl) iplist_handler(ctx *UsrSvrCntx, param *UsrSvrIpListParam) {
-	iplist := this.iplist_get(ctx, param.typ, param.clientip)
+	iplist := this.iplist_get(ctx, param.network, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
 		this.Error(comm.ERR_SYS_SYSTEM, "Get ip list failed!")
@@ -198,7 +198,7 @@ func (this *UsrSvrQueryCtrl) iplist_token(param *UsrSvrIpListParam) string {
  **功    能: 获取IP列表
  **输入参数:
  **     ctx: 上下文
- **     typ: 网络类型(0:Unknown 1:TCP 2:WS)
+ **     network: 网络类型(0:Unknown 1:TCP 2:WS)
  **     clientip: 客户端IP
  **输出参数: NONE
  **返    回: IP列表
@@ -206,12 +206,12 @@ func (this *UsrSvrQueryCtrl) iplist_token(param *UsrSvrIpListParam) string {
  **注意事项: 加读锁
  **作    者: # Qifeng.zou # 2016.11.27 07:42:54 #
  ******************************************************************************/
-func (this *UsrSvrQueryCtrl) iplist_get(ctx *UsrSvrCntx, typ int, clientip string) []string {
+func (this *UsrSvrQueryCtrl) iplist_get(ctx *UsrSvrCntx, network int, clientip string) []string {
 	ctx.listend.RLock()
 	defer ctx.listend.RUnlock()
 
-	listend, ok := ctx.listend.network[typ]
-	if !ok || 0 == typ {
+	listend, ok := ctx.listend.network[network]
+	if !ok || 0 == network {
 		return nil
 	}
 
@@ -248,7 +248,7 @@ func (this *UsrSvrQueryCtrl) iplist_get(ctx *UsrSvrCntx, typ int, clientip strin
  **功    能: 获取默认IP列表
  **输入参数:
  **     ctx: 上下文
- **     typ: 网络类型(0:Unknown 1:TCP 2:WS)
+ **     network: 网络类型(0:Unknown 1:TCP 2:WS)
  **输出参数: NONE
  **返    回: IP列表
  **实现描述:
