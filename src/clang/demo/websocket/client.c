@@ -10,132 +10,12 @@
 #include "sck.h"
 #include "list.h"
 #include "mesg.h"
+#include "client.h"
 #include "cmd_list.h"
 
 #include "mesg.pb-c.h"
 
-#define AWS_SEND_BUF_LEN   (2048)  // 发送缓存的长度
-
-/* 输入选项 */
-typedef struct
-{
-    int num;                        /* 最大并发数 */
-    uint32_t rid;                   /* 聊天室ID */
-    int use_ssl;
-    int port;
-    int longlived;
-    int ietf_version;
-    int deny_deflate;
-    char *ipaddr;
-} wsc_opt_t;
-
-/* 发送项 */
-typedef struct
-{
-    size_t len;                     // 长度
-    char addr[AWS_SEND_BUF_LEN];    // 发送内容
-} lws_send_item_t;
-
-typedef struct
-{
-    list_t *send_list;
-} lws_session_data_t;
-
-/* 全局对象 */
-typedef struct
-{
-    wsc_opt_t opt;
-
-    struct lws_context *lws;
-
-    // 其他标志
-    bool is_closed;
-    bool is_force_exit;
-} lws_cntx_t;
-
 static lws_cntx_t g_wsc_cntx; /* 全局对象 */
-
-/* 协议类型 */
-typedef enum
-{
-    PROTOCOL_IM,
-
-    /* always last */
-    PROTOCOL_DEMO_COUNT
-} demo_protocols;
-
-/* 发送ONLINE请求 */
-int lws_send_online_handler(struct lws_context *lws,
-        struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session)
-{
-    size_t len;
-    uint64_t sid;
-    list_opt_t lo;
-    uint8_t *body;
-    mesg_header_t *head;
-    lws_send_item_t *item;
-    MesgOnline online = MESG_ONLINE__INIT;
-
-    /* 创建发送队列 */
-    memset(&lo, 0, sizeof(lo));
-
-    lo.pool = NULL;
-    lo.alloc = mem_alloc;
-    lo.dealloc = mem_dealloc;
-
-    session->send_list = list_creat(&lo);
-    if (NULL == session->send_list) {
-        fprintf(stderr, "Create list failed!\n");
-        return -1;
-    }
-
-    fprintf(stderr, "callback_im: LWS_CALLBACK_CLIENT_ESTABLISHED\n");
-
-    /* 创建发送单元 */
-    item = (lws_send_item_t *)calloc(1, sizeof(lws_send_item_t));
-    if (NULL == item) {
-        fprintf(stderr, "errmsg:[%d] %s!\n", errno, strerror(errno));
-        return -1;
-    }
-
-
-    /* 设置ONLINE消息 */
-    sid = 123456;
-    online.uid = 18600522324;
-    online.sid = sid;
-    online.token = "This is a token!";
-    online.app = "beehive-im";
-    online.version = "v.0.0.0.1";
-    online.has_terminal = true;
-    online.terminal = 1;
-
-    len = mesg_online__get_packed_size(&online);
-    item->len = sizeof(mesg_header_t) + (uint32_t)len;
-
-    head = (mesg_header_t *)(item->addr + LWS_SEND_BUFFER_PRE_PADDING);
-    body = (uint8_t *)(void *)(head + 1);
-
-    mesg_online__pack(&online, body);
-
-    /* 设置通用头部 */
-    head->type = htonl(CMD_ONLINE);
-    head->flag = htonl(1);
-    head->length = htonl(len);
-    head->sid = hton64(sid);
-    head->chksum = htonl(MSG_CHKSUM_VAL);
-
-    list_rpush(session->send_list, item);
-
-    lws_callback_on_writable(lws, wsi);
-
-    return 0;
-}
-
-int lws_online_ack_handler(mesg_header_t *head, void *body)
-{
-    fprintf(stderr, "Call %s()\n", __func__);
-    return 0;
-}
 
 /* 接收数据的处理 */
 int lws_recv_handler(char *data)
@@ -150,7 +30,6 @@ int lws_recv_handler(char *data)
 
     MESG_HEAD_NTOH(head, head);
 
-
     fprintf(stderr, "Recv data. cmd:0x%04X len:%d flag:%d chksum:0x%08X body:%p\n",
             head->type, head->length, head->flag, head->chksum, body);
 
@@ -162,7 +41,9 @@ int lws_recv_handler(char *data)
 
     switch (head->type) {
         case CMD_ONLINE_ACK:
-            return lws_online_ack_handler(head, body);
+            return lws_mesg_online_ack_handler(head, body);
+        case CMD_PONG:
+            return lws_mesg_pong_handler(head, body);
         default:
             return 0;
     }
@@ -184,7 +65,7 @@ static int callback_im(
 
     switch (reason) {
         case LWS_CALLBACK_CLIENT_ESTABLISHED:
-            return lws_send_online_handler(lws, wsi, ctx, session);
+            return lws_mesg_online_handler(lws, wsi, ctx, session);
         case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED:
             break;
         case LWS_CALLBACK_CLIENT_RECEIVE:

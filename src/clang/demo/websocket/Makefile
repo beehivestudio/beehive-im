@@ -21,7 +21,7 @@ STATIC_LIB_LIST = libev.a libcore.a libmesg.a
 LIBS = $(call func_find_static_link_lib,$(STATIC_LIB_PATH),$(STATIC_LIB_LIST))
 LIBS += -lpthread -lm -ldl -lwebsockets -lprotobuf-c
 
-SRC_LIST = websocket-client.c
+SRC_LIST = client.c mesg.c
 
 OBJS = $(subst .c,.o, $(SRC_LIST))
 HEADS = $(call func_get_dep_head_list, $(SRC_LIST))
