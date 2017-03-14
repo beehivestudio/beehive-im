@@ -52,7 +52,7 @@ int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t
     online.sid = AWS_SID;
     online.token = "UnYGaVUyDTxdOVJhUWZXNwA6AmEBaAw/BjMCYFEzUzsBJAZ0AG9dbFA0CzRQaVE4XGNWOVI5BTVVYwZgVTlUdVJqBmRVbA0zXTJSPFE+V2M=";
     online.app = "beehive-im";
-    online.version = "v.0.0.0.1";
+    online.version = "v.0.1";
     online.has_terminal = true;
     online.terminal = 1;
 
@@ -129,6 +129,8 @@ int lws_mesg_ping_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *
         fprintf(stderr, "errmsg:[%d] %s!\n", errno, strerror(errno));
         return -1;
     }
+
+    item->len = sizeof(mesg_header_t);
 
     head = (mesg_header_t *)(item->addr + LWS_SEND_BUFFER_PRE_PADDING);
 

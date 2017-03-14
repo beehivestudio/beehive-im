@@ -18,14 +18,15 @@
 static lws_cntx_t g_wsc_cntx; /* 全局对象 */
 
 /* 接收数据的处理 */
-int lws_recv_handler(char *data)
+int lws_recv_handler(struct lws_context *lws,
+        struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session, void *in)
 {
     char *body;
     time_t ctm;
     struct tm lctm;
     mesg_header_t *head;
 
-    head = (mesg_header_t *)data;
+    head = (mesg_header_t *)in;
     body = (char *)(head + 1);
 
     MESG_HEAD_NTOH(head, head);
@@ -51,6 +52,46 @@ int lws_recv_handler(char *data)
     return 0;
 }
 
+/* 发送数据的处理 */
+int lws_send_handler(struct lws_context *lws,
+        struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session, void *in)
+{
+    int n;
+    lws_send_item_t *item;
+    static time_t ping_tm;
+    time_t ctm = time(NULL);
+    static int ping_times = 0;
+
+    if (ctm - ping_tm > 5) {
+        ping_tm = ctm;
+        if (0 != ping_times) {
+            lws_mesg_ping_handler(lws, wsi, ctx, session);
+        }
+        ++ping_times;
+    }
+
+    fprintf(stderr, "Call %s()\n", __func__);
+
+    while (1) {
+        item = (lws_send_item_t *)list_lpop(session->send_list);
+        if (NULL == item) {
+            break;
+        }
+
+        n = lws_write(wsi, (unsigned char *)item->addr+LWS_SEND_BUFFER_PRE_PADDING,
+                item->len, LWS_WRITE_BINARY);
+        if (n < 0) {
+            return -1;
+        }
+        else if (n < (int)item->len) {
+            lwsl_err("Partial write LWS_CALLBACK_CLIENT_WRITEABLE\n");
+            return -1;
+        }
+        free(item);
+    }
+    return 0;
+}
+
 /* dumb_im protocol */
 static int callback_im(
         struct lws_context *lws,
@@ -58,8 +99,6 @@ static int callback_im(
         enum lws_callback_reasons reason,
         void *user, void *in, size_t len)
 {
-    int n;
-    lws_send_item_t *item;
     lws_cntx_t *ctx = &g_wsc_cntx;
     lws_session_data_t *session = (lws_session_data_t *)user;
 
@@ -69,27 +108,9 @@ static int callback_im(
         case LWS_CALLBACK_CLIENT_CONFIRM_EXTENSION_SUPPORTED:
             break;
         case LWS_CALLBACK_CLIENT_RECEIVE:
-            return lws_recv_handler(in);
+            return lws_recv_handler(lws, wsi, ctx, session, in);
         case LWS_CALLBACK_CLIENT_WRITEABLE:
-            fprintf(stderr, "callback_im: LWS_CALLBACK_CLIENT_WRITEABLE\n");
-            while (1) {
-                item = (lws_send_item_t *)list_lpop(session->send_list);
-                if (NULL == item) {
-                    break;
-                }
-
-                n = lws_write(wsi, (unsigned char *)item->addr+LWS_SEND_BUFFER_PRE_PADDING,
-                        item->len, LWS_WRITE_BINARY);
-                if (n < 0) {
-                    return -1;
-                }
-                else if (n < (int)item->len) {
-                    lwsl_err("Partial write LWS_CALLBACK_CLIENT_WRITEABLE\n");
-                    return -1;
-                }
-                free(item);
-            }
-            break;
+            return lws_send_handler(lws, wsi, ctx, session, in);
         case LWS_CALLBACK_WSI_DESTROY:
             fprintf(stderr, "callback_im: LWS_CALLBACK_WSI_DESTROY\n");
             ctx->is_closed = true;
