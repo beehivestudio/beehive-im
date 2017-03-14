@@ -1074,6 +1074,7 @@ struct  _MesgRoomKickNtc
 struct  _MesgLsnRpt
 {
   ProtobufCMessage base;
+  uint32_t network;
   uint32_t nid;
   char *nation;
   char *name;
@@ -1082,7 +1083,7 @@ struct  _MesgLsnRpt
 };
 #define MESG_LSN_RPT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_lsn_rpt__descriptor) \
-    , 0, NULL, NULL, NULL, 0 }
+    , 0, 0, NULL, NULL, NULL, 0 }
 
 
 struct  _MesgFrwdRpt

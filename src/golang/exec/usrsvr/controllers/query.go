@@ -34,6 +34,7 @@ func (this *UsrSvrQueryCtrl) Query() {
 
 /* 注册参数 */
 type UsrSvrIpListParam struct {
+	typ      int    // 网络类型(0:Unknown 1:TCP 2:WS)
 	uid      uint64 // 用户ID
 	sid      uint64 // 会话ID
 	clientip string // 客户端IP
@@ -74,6 +75,8 @@ func (this *UsrSvrQueryCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListP
 	var param UsrSvrIpListParam
 
 	/* > 提取注册参数 */
+	param.typ, _ = this.GetInt("type")
+
 	id, _ := this.GetInt64("uid")
 	param.uid = uint64(id)
 
@@ -83,7 +86,8 @@ func (this *UsrSvrQueryCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListP
 	param.clientip = this.GetString("clientip")
 
 	/* > 校验参数合法性 */
-	if 0 == param.uid || 0 == param.sid || "" == param.clientip {
+	if 0 == param.typ || 0 == param.uid ||
+		0 == param.sid || "" == param.clientip {
 		ctx.log.Error("Paramter is invalid. uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
 		return &param, errors.New("Paramter is invalid!")
@@ -120,7 +124,7 @@ type UsrSvrIpListRsp struct {
  **作    者: # Qifeng.zou # 2016.11.24 17:00:07 #
  ******************************************************************************/
 func (this *UsrSvrQueryCtrl) iplist_handler(ctx *UsrSvrCntx, param *UsrSvrIpListParam) {
-	iplist := this.iplist_get(ctx, param.clientip)
+	iplist := this.iplist_get(ctx, param.typ, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
 		this.Error(comm.ERR_SYS_SYSTEM, "Get ip list failed!")
@@ -194,58 +198,68 @@ func (this *UsrSvrQueryCtrl) iplist_token(param *UsrSvrIpListParam) string {
  **功    能: 获取IP列表
  **输入参数:
  **     ctx: 上下文
+ **     typ: 网络类型(0:Unknown 1:TCP 2:WS)
  **     clientip: 客户端IP
  **输出参数: NONE
  **返    回: IP列表
- **实现描述:
+ **实现描述: 首先根据网络类型, 再根据运营商类型筛选.
  **注意事项: 加读锁
  **作    者: # Qifeng.zou # 2016.11.27 07:42:54 #
  ******************************************************************************/
-func (this *UsrSvrQueryCtrl) iplist_get(ctx *UsrSvrCntx, clientip string) []string {
-	item := ctx.ipdict.Query(clientip)
-	if nil == item {
-		ctx.lsnlist.RLock()
-		defer ctx.lsnlist.RUnlock()
-		return this.iplist_get_def(ctx)
+func (this *UsrSvrQueryCtrl) iplist_get(ctx *UsrSvrCntx, typ int, clientip string) []string {
+	ctx.listend.RLock()
+	defer ctx.listend.RUnlock()
+
+	listend, ok := ctx.listend.network[typ]
+	if !ok || 0 == typ {
+		return nil
 	}
 
-	ctx.lsnlist.RLock()
-	defer ctx.lsnlist.RUnlock()
+	item := ctx.ipdict.Query(clientip)
+	if nil == item {
+		listend.RLock()
+		defer listend.RUnlock()
+		return listend.get_default(ctx)
+	}
+
+	listend.RLock()
+	defer listend.RUnlock()
 
 	/* > 获取国家/地区下辖的运营商列表 */
-	operators, ok := ctx.lsnlist.list[item.GetNation()]
+	operators, ok := listend.list[item.GetNation()]
 	if nil == operators || !ok {
-		return this.iplist_get_def(ctx)
+		return listend.get_default(ctx)
 	}
 
 	/* > 获取运营商下辖的侦听层列表 */
-	lsn_list, ok := operators[item.GetOperator()]
-	if nil == lsn_list || !ok {
-		return this.iplist_get_def(ctx)
+	list, ok := operators[item.GetOperator()]
+	if nil == list || !ok {
+		return listend.get_default(ctx)
 	}
 
 	items := make([]string, 0)
-	items = append(items, lsn_list[rand.Intn(len(lsn_list))])
+	items = append(items, list[rand.Intn(len(list))])
+
 	return items
 }
 
 /******************************************************************************
- **函数名称: iplist_get_def
+ **函数名称: get_default
  **功    能: 获取默认IP列表
  **输入参数:
  **     ctx: 上下文
- **     clientip: 客户端IP
+ **     typ: 网络类型(0:Unknown 1:TCP 2:WS)
  **输出参数: NONE
  **返    回: IP列表
  **实现描述:
  **注意事项: 外部已经加读锁
  **作    者: # Qifeng.zou # 2016.11.27 19:33:49 #
  ******************************************************************************/
-func (this *UsrSvrQueryCtrl) iplist_get_def(ctx *UsrSvrCntx) []string {
+func (listend *UsrSvrLsndList) get_default(ctx *UsrSvrCntx) []string {
 	var ok bool
 
 	/* > 获取"默认"国家/地区下辖的运营商列表 */
-	operators, ok := ctx.lsnlist.list["CN"]
+	operators, ok := listend.list["CN"]
 	if nil == operators || 0 == len(operators) || !ok {
 		ctx.log.Error("Get default iplist by nation failed!")
 		return nil
@@ -256,14 +270,15 @@ func (this *UsrSvrQueryCtrl) iplist_get_def(ctx *UsrSvrCntx) []string {
 	}
 
 	/* > 获取"默认"运营商下辖的侦听层列表 */
-	lsn_list, ok := operators["中国电信"]
-	if nil == lsn_list || 0 == len(lsn_list) || !ok {
+	list, ok := operators["中国电信"]
+	if nil == list || 0 == len(list) || !ok {
 		ctx.log.Error("Get default iplist by operator failed!")
 		return nil
 	}
 
 	items := make([]string, 0)
-	items = append(items, lsn_list[rand.Intn(len(lsn_list))])
+	items = append(items, list[rand.Intn(len(list))])
+
 	return items
 }
 

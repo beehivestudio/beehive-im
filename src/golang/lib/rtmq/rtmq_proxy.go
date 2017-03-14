@@ -554,9 +554,12 @@ func (c *RtmqProxyConn) Start(num uint32) {
  **作    者: # Qifeng.zou # 2016.10.30 22:10:36 #
  ******************************************************************************/
 func (c *RtmqProxyConn) recv_routine() {
+	log := c.svr.log
 	c.svr.waitGroup.Add(1)
 	defer func() {
-		recover()
+		if err := recover(); nil != err {
+			log.Error("Recv routine crashed! errmsg:%s", err)
+		}
 		c.Close()
 		c.svr.waitGroup.Done()
 	}()
@@ -608,9 +611,12 @@ func (c *RtmqProxyConn) recv_routine() {
  **作    者: # Qifeng.zou # 2016.10.30 22:10:36 #
  ******************************************************************************/
 func (c *RtmqProxyConn) send_routine() {
+	log := c.svr.log
 	c.svr.waitGroup.Add(1)
 	defer func() {
-		recover()
+		if err := recover(); nil != err {
+			log.Error("Recv routine crashed! errmsg:%s", err)
+		}
 		c.Close()
 		c.svr.waitGroup.Done()
 	}()

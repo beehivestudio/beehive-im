@@ -148,24 +148,29 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 		return
 	}
 
+	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
+
 	addr := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
 	pl.Send("HSETNX", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid(), addr)
 	pl.Send("HSETNX", comm.IM_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
 
+	/* 网络类型结合 */
+	pl.Send("ZADD", comm.IM_KEY_LSND_NETWORK_ZSET, ttl, req.GetNetwork())
+
 	/* 国家集合 */
-	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
-	pl.Send("ZADD", comm.IM_KEY_LSN_NATION_ZSET, ttl, req.GetNation())
+	key := fmt.Sprintf(comm.IM_KEY_LSND_NATION_ZSET, req.GetNetwork())
+	pl.Send("ZADD", key, ttl, req.GetNation())
 
 	/* 国家 -> 运营商列表 */
-	key := fmt.Sprintf(comm.IM_KEY_LSN_OP_ZSET, req.GetNation())
+	key = fmt.Sprintf(comm.IM_KEY_LSND_OP_ZSET, req.GetNetwork(), req.GetNation())
 	pl.Send("ZADD", key, ttl, req.GetName())
 
 	/* 国家+运营商 -> 结点列表 */
-	key = fmt.Sprintf(comm.IM_KEY_LSN_OP_TO_NID_ZSET, req.GetNation(), req.GetName())
+	key = fmt.Sprintf(comm.IM_KEY_LSND_OP_TO_NID_ZSET, req.GetNetwork(), req.GetNation(), req.GetName())
 	pl.Send("ZADD", key, ttl, req.GetNid())
 
 	/* 国家+运营商 -> 侦听层IP列表 */
-	key = fmt.Sprintf(comm.IM_KEY_LSN_IP_ZSET, req.GetNation(), req.GetName())
+	key = fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, req.GetNetwork(), req.GetNation(), req.GetName())
 	val := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
 	pl.Send("ZADD", key, ttl, val)
 

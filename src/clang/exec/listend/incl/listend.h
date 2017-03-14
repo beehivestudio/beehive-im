@@ -29,6 +29,14 @@ typedef enum
     , LSND_ERR = ~0x7FFFFFFF                /* 失败、错误 */
 } lsnd_err_code_e;
 
+/* 网络类型 */
+typedef enum
+{
+    LSND_NET_UNKNOWN                        /* 未知网络 */
+    , LSND_NET_TCP                          /* 网络类型: TCP */
+    , LSND_NET_WS                           /* 网络类型: WS */
+} lsnd_network_e;
+
 /* 输入参数 */
 typedef struct
 {

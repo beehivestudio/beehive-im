@@ -22,7 +22,7 @@ import (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) start_task() {
 	for {
-		ctx.update_lsn_list()                      // 更新侦听层列表
+		ctx.listend_update()                       // 更新侦听层列表
 		chat.RoomSendUsrNum(ctx.frwder, ctx.redis) // 下发聊天室人数
 
 		time.Sleep(time.Second)
@@ -33,50 +33,74 @@ func (ctx *UsrSvrCntx) start_task() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: update_lsn_list
+ **函数名称: listend_update
  **功    能: 更新侦听层列表
- **输入参数:
- **     ctx: 上下文
+ **输入参数: NONE
  **输出参数: NONE
  **返    回: NONE
  **实现描述:
+ **     1. 获取所有侦听层网络类型.
+ **     2. 根据侦听层网络类型获取侦听层的列表.
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:11:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) update_lsn_list() {
-	list := ctx.get_lsn_list()
-	if nil == list {
-		ctx.log.Error("Get listen list failed!")
+func (ctx *UsrSvrCntx) listend_update() {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	ctm := time.Now().Unix()
+
+	/* > 获取"网络类型"列表 */
+	network, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
+		comm.IM_KEY_LSND_NETWORK_ZSET, ctm, "+inf"))
+	if nil != err {
+		ctx.log.Error("Get network type list failed! errmsg:%s", err.Error())
 		return
 	}
 
-	ctx.lsnlist.Lock()
-	defer ctx.lsnlist.Unlock()
+	ctx.listend.Lock()
+	defer ctx.listend.Unlock()
 
-	ctx.lsnlist.list = list
+	num := len(network)
+	for idx := 0; idx < num; idx += 1 {
+		typ := network[idx]
+
+		list := ctx.listend_fetch(typ)
+		if nil == list {
+			ctx.log.Error("Get listen list failed! network:%d", typ)
+			delete(ctx.listend.network, typ)
+			continue
+		}
+
+		ctx.listend.network[typ] = list
+	}
 }
 
 /******************************************************************************
- **函数名称: get_lsn_list
- **功    能: 更新侦听层列表
+ **函数名称: listend_fetch
+ **功    能: 获取侦听层列表
  **输入参数:
- **     ctx: 上下文
+ **     typ: 网络类型(0:Unkonwn 1:TCP 2:WS)
  **输出参数: NONE
  **返    回: 侦听层IP列表
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) get_lsn_list() map[string](map[string][]string) {
+func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
-	list := make(map[string](map[string][]string))
+
+	lsnd := &UsrSvrLsndList{
+		list: make(map[string](map[string][]string)),
+	}
 
 	/* > 获取"国家/地区"列表 */
-	nations, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-		comm.IM_KEY_LSN_NATION_ZSET, ctm, "+inf"))
+	key := fmt.Sprintf(comm.IM_KEY_LSND_NATION_ZSET, typ)
+
+	nations, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 	if nil != err {
 		ctx.log.Error("Get nation list failed! errmsg:%s", err.Error())
 		return nil
@@ -86,7 +110,8 @@ func (ctx *UsrSvrCntx) get_lsn_list() map[string](map[string][]string) {
 	for m := 0; m < nation_num; m += 1 {
 		ctx.log.Debug("Nation:%s", nations[m])
 		/* > 获取"国家/地区"对应的"运营商"列表 */
-		key := fmt.Sprintf(comm.IM_KEY_LSN_OP_ZSET, nations[m])
+		key := fmt.Sprintf(comm.IM_KEY_LSND_OP_ZSET, typ, nations[m])
+
 		operators, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 		if nil != err {
 			ctx.log.Error("Get operator list by nation failed! errmsg:%s", err.Error())
@@ -99,7 +124,8 @@ func (ctx *UsrSvrCntx) get_lsn_list() map[string](map[string][]string) {
 		for n := 0; n < operator_num; n += 1 {
 			ctx.log.Debug("    Operator:%s", operators[n])
 			/* > 获取"运营商"对应的"IP+PORT"列表 */
-			key := fmt.Sprintf(comm.IM_KEY_LSN_IP_ZSET, nations[m], operators[n])
+			key := fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, typ, nations[m], operators[n])
+
 			iplist, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 			if nil != err {
 				ctx.log.Error("Get operator list by nation failed! errmsg:%s", err.Error())
@@ -113,10 +139,10 @@ func (ctx *UsrSvrCntx) get_lsn_list() map[string](map[string][]string) {
 			}
 		}
 
-		list[nations[m]] = operator_set
+		lsnd.list[nations[m]] = operator_set
 	}
 
-	return list
+	return lsnd
 }
 
 ////////////////////////////////////////////////////////////////////////////////

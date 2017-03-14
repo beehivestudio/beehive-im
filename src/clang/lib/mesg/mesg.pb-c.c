@@ -8480,11 +8480,23 @@ const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor =
   (ProtobufCMessageInit) mesg_room_kick_ntc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[5] =
+static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
 {
   {
-    "nid",
+    "network",
     1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgLsnRpt, network),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "nid",
+    2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -8496,7 +8508,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[5] =
   },
   {
     "nation",
-    2,
+    3,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -8508,7 +8520,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[5] =
   },
   {
     "name",
-    3,
+    4,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -8520,7 +8532,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[5] =
   },
   {
     "ipaddr",
-    4,
+    5,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -8532,7 +8544,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[5] =
   },
   {
     "port",
-    5,
+    6,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -8544,16 +8556,17 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[5] =
   },
 };
 static const unsigned mesg_lsn_rpt__field_indices_by_name[] = {
-  3,   /* field[3] = ipaddr */
-  2,   /* field[2] = name */
-  1,   /* field[1] = nation */
-  0,   /* field[0] = nid */
-  4,   /* field[4] = port */
+  4,   /* field[4] = ipaddr */
+  3,   /* field[3] = name */
+  2,   /* field[2] = nation */
+  0,   /* field[0] = network */
+  1,   /* field[1] = nid */
+  5,   /* field[5] = port */
 };
 static const ProtobufCIntRange mesg_lsn_rpt__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 5 }
+  { 0, 6 }
 };
 const ProtobufCMessageDescriptor mesg_lsn_rpt__descriptor =
 {
@@ -8563,7 +8576,7 @@ const ProtobufCMessageDescriptor mesg_lsn_rpt__descriptor =
   "MesgLsnRpt",
   "",
   sizeof(MesgLsnRpt),
-  5,
+  6,
   mesg_lsn_rpt__field_descriptors,
   mesg_lsn_rpt__field_indices_by_name,
   1,  mesg_lsn_rpt__number_ranges,

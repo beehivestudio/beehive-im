@@ -147,6 +147,7 @@ func (ctx *LwsCntx) AsyncSend(cid uint64, data []byte) int {
 
 	client, ok := pool.list[cid]
 	if !ok || client.iskick {
+		ctx.log.Error("Send data failed, because connecion was kicked! cid:%d", cid)
 		return -1
 	}
 
@@ -154,6 +155,7 @@ func (ctx *LwsCntx) AsyncSend(cid uint64, data []byte) int {
 	case client.sendq <- data: // 发送数据
 		return 0
 	case <-time.After(time.Second): // 1秒超时
+		ctx.log.Error("Send data timeout! cid:%d", cid)
 		return -1
 	}
 	return 0
@@ -178,6 +180,7 @@ func (ctx *LwsCntx) Kick(cid uint64) int {
 
 	client, ok := pool.list[cid]
 	if !ok || client.iskick {
+		ctx.log.Debug("Connection was kicked at before! cid:%d", cid)
 		return 0
 	}
 

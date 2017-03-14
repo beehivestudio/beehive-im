@@ -243,11 +243,12 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
  **返    回: VOID
  **实现描述: 使用PB协议组装接入层上报数据
  **     {
- **         required uint32 nid = 1;    // M|结点ID|数字|<br>
- **         required string nation = 2; // M|所属国家|字串|<br>
- **         required string name = 3;   // M|运营商名称|字串|<br>
- **         required string ipaddr = 4; // M|IP地址|字串|<br>
- **         required uint32 port = 5;   // M|端口号|数字|<br>
+ **         required uint32 network = 1;    // M|网络类型(0:UNKNOWN 1:TCP 2:WS)|数字|<br>
+ **         required uint32 nid = 2;        // M|结点ID|数字|<br>
+ **         required string nation = 3;     // M|所属国家|字串|<br>
+ **         required string name = 4;       // M|运营商名称|字串|<br>
+ **         required string ipaddr = 5;     // M|IP地址|字串|<br>
+ **         required uint32 port = 6;       // M|端口号|数字|<br>
  **     }
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 23:23:51 #
@@ -262,6 +263,7 @@ void lsnd_timer_report_handler(void *_ctx)
     MesgLsnRpt report = MESG_LSN_RPT__INIT;
 
     /* > 设置上报数据 */
+    report.network = LSND_NET_TCP;
     report.nid = conf->nid;
     report.nation = conf->operator.nation;
     report.name = conf->operator.name;

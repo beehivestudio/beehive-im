@@ -125,22 +125,24 @@
 ---
 **功能描述**: 获取IPLIST接口<br>
 **接口类型**: GET<br>
-**接口路径**: /im/query?opt=iplist&uid=${uid}&sid=${sid}&clientip=${clientip}<br>
+**接口路径**: /im/query?opt=iplist&network=${network}&uid=${uid}&sid=${sid}&clientip=${clientip}<br>
 **参数描述**:<br>
 > opt: 固定为iplist(M)<br>
+> network: 网络类型(0:Unknown 1:TCP 2:WS)(M)<br>
 > uid: 用户ID(M)<br>
 > sid: 会话SID(M)<br>
 > clientip: 客户端IP(M)<br>
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
+>   "network":${network},   // 整型 | 网络类型(0:UNKNOWN 1:TCP 2:WS)(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "iplist":[              // 数组 | IP列表<br>
 >       "${ipaddr}:${port}",<br>
 >       "${ipaddr}:${port}",<br>
 >       "${ipaddr}:${port}"],<br>
 >   "token":"${token}"      // 字串 | 鉴权token(M) # 格式:"uid:${uid}:ttl:${ttl}:sid:${sid}:end"<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 

@@ -15,9 +15,14 @@ import (
 )
 
 /* 侦听层列表 */
-type usrsvr_lsn_list struct {
+type UsrSvrLsndList struct {
 	sync.RWMutex                                  /* 读写锁 */
-	list         map[string](map[string][]string) /* 侦听层列表:map[国家/地区]map([运营商名称][]IP列表) */
+	list         map[string](map[string][]string) /* 侦听层列表:map[TCP/WS](map[国家/地区](map([运营商名称][]IP列表))) */
+}
+
+type UsrSvrLsndNetWork struct {
+	sync.RWMutex                         /* 读写锁 */
+	network      map[int]*UsrSvrLsndList /* 侦听层类型:map[网络类型]UsrSvrLsndList */
 }
 
 /* 用户中心上下文 */
@@ -27,7 +32,7 @@ type UsrSvrCntx struct {
 	ipdict  *comm.IpDict        /* IP字典 */
 	frwder  *rtmq.RtmqProxyCntx /* 代理对象 */
 	redis   *redis.Pool         /* REDIS连接池 */
-	lsnlist usrsvr_lsn_list     /* 侦听层列表 */
+	listend UsrSvrLsndNetWork   /* 侦听层类型 */
 }
 
 var g_usrsvr *UsrSvrCntx /* 全局对象 */
