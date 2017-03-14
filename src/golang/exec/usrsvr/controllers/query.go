@@ -101,14 +101,15 @@ func (this *UsrSvrQueryCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListP
 
 /* IP列表应答 */
 type UsrSvrIpListRsp struct {
-	Uid    uint64   `json:"uid"`    // 用户ID
-	Sid    uint64   `json:"sid"`    // 会话ID
-	Token  string   `json:"token"`  // 鉴权TOKEN
-	Expire int      `json:"expire"` // 过期时长
-	Len    int      `json:"len"`    // 列表长度
-	List   []string `json:"list"`   // IP列表
-	Code   int      `json:"code"`   // 错误码
-	ErrMsg string   `json:"errmsg"` // 错误描述
+	Uid     uint64   `json:"uid"`     // 用户ID
+	Sid     uint64   `json:"sid"`     // 会话ID
+	Network int      `json:"network"` // 网络类型(0:Unknown 1:TCP 2:WS)
+	Token   string   `json:"token"`   // 鉴权TOKEN
+	Expire  int      `json:"expire"`  // 过期时长
+	Len     int      `json:"len"`     // 列表长度
+	List    []string `json:"list"`    // IP列表
+	Code    int      `json:"code"`    // 错误码
+	ErrMsg  string   `json:"errmsg"`  // 错误描述
 }
 
 /******************************************************************************
@@ -153,6 +154,7 @@ func (this *UsrSvrQueryCtrl) success(param *UsrSvrIpListParam, iplist []string) 
 
 	resp.Uid = param.uid
 	resp.Sid = param.sid
+	resp.Network = param.network
 	resp.Token = this.iplist_token(param)
 	resp.Expire = comm.TIME_DAY
 	resp.Len = len(iplist)

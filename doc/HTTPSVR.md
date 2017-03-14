@@ -135,6 +135,8 @@
 
 **返回结果**:<br>
 >{<br>
+>   "uid":${uid},           // 整型 | 用户UID(M)<br>
+>   "sid":${sid},           // 整型 | 会话SID(M)<br>
 >   "network":${network},   // 整型 | 网络类型(0:UNKNOWN 1:TCP 2:WS)(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "iplist":[              // 数组 | IP列表<br>
@@ -142,6 +144,7 @@
 >       "${ipaddr}:${port}",<br>
 >       "${ipaddr}:${port}"],<br>
 >   "token":"${token}"      // 字串 | 鉴权token(M) # 格式:"uid:${uid}:ttl:${ttl}:sid:${sid}:end"<br>
+>   "expire":"${expire}"    // 整型 | 有效时常(M) # 单位:秒<br>
 >   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
