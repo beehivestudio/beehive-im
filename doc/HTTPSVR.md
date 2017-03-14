@@ -112,12 +112,12 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "uid":"${uid}",         // 整型 | 用户UID(M)<br>
 >   "sid":"${sid}",         // 整型 | 会话SID(M)<br>
 >   "nation":"${nation}",   // 整型 | 国家编号(M)<br>
 >   "city":"${city}",       // 整型 | 地市编号(M)<br>
 >   "town":"${town}",       // 整型 | 城镇编号(M)<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -189,11 +189,11 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},     // 整型 | 错误码(M)<br>
 >   "len":${len},       // 整型 | 列表长度(M)<br>
 >   "list":[            // 数组 | 精度列表(M)<br>
 >       {"idx":${idx}, "prec":"{prec}"}, // ${idx}:序号 ${prec}:精度值<br>
 >       {"idx":${idx}, "prec":"{prec}"}],<br>
+>   "code":${code},     // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"// 字串 | 错误描述(M)<br>
 >}
 
@@ -208,13 +208,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "prec":"${prec}",       // 整型 | 时间精度(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 走势列表(M)<br>
 >      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}}, // ${time}:时间戳 ${max}:峰值 ${min}:底值<br>
 >      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}},<br>
 >      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -228,13 +228,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 分组列表(M)<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -248,13 +248,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "uid":"${uid}",         // 整型 | 用户ID(M)<br>
 >   "status":${status},     // 整型 | 当前状态(0:下线 1:在线)(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 当前正登陆聊天室列表(M)<br>
 >      {"idx":${idx}, "rid":${rid}},     // ${rid}:聊天室ID<br>
 >      {"idx":${idx}, "rid":${rid}}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -350,9 +350,9 @@
 
 **返回结果**:<br>
 >{<br>
->  "code":${code},      // 整型 | 错误码(M)<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
 >  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
+>  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
@@ -367,9 +367,9 @@
 
 **返回结果**:<br>
 >{<br>
->  "code":${code},      // 整型 | 错误码(M)<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
 >  "capacity":${capacity},      // 整型 | 群组容量(M)<br>
+>  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
@@ -384,13 +384,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 排行列表(M)<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}}, // ${gid}:整型|群组ID ${total}: 整型|群组人数<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -405,13 +405,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 排行列表(M)<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}}, // ${gid}:整型|群组ID ${total}: 整型|消息数量<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -506,9 +506,9 @@
 
 **返回结果**:<br>
 >{<br>
->  "code":${code},      // 整型 | 错误码(M)<br>
 >  "rid":${rid},        // 整型 | 聊天室ID(O)<br>
 >  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
+>  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
@@ -523,9 +523,9 @@
 
 **返回结果**:<br>
 >{<br>
->  "code":${code},      // 整型 | 错误码(M)<br>
 >  "rid":${rid},        // 整型 | 聊天室ID(O)<br>
 >  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
+>  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
@@ -541,13 +541,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 排行列表(M)<br>
 >      {"idx":${idx}, "rid":${rid}, "total":${total}}, // ${rid}:整型|聊天室ID ${total}: 整型|聊天室人数<br>
 >      {"idx":${idx}, "rid":${rid}, "total":${total}},<br>
 >      {"idx":${idx}, "rid":${rid}, "total":${total}},<br>
 >      {"idx":${idx}, "rid":${rid}, "total":${total}}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -562,7 +562,6 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "rid":${rid},           // 整型 | 聊天室ID(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 分组列表(M)<br>
@@ -570,6 +569,7 @@
 >      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
 >      {"idx":${idx}, "gid":${gid}, "total":${total}}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -584,13 +584,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 分组列表(M)<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
@@ -638,13 +638,13 @@
 
 **返回结果**:<br>
 >{<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 分组列表(M)<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
 >      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 **补充说明**:<br>
