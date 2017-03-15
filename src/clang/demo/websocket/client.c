@@ -42,9 +42,15 @@ int lws_recv_handler(struct lws_context *lws,
 
     switch (head->type) {
         case CMD_ONLINE_ACK:
-            return lws_mesg_online_ack_handler(head, body);
+
+            if (lws_mesg_online_ack_handler(head, body)) {
+                return -1;
+            }
+            return lws_mesg_room_join_handler(lws, wsi, ctx, session);
         case CMD_PONG:
             return lws_mesg_pong_handler(head, body);
+        case CMD_ROOM_JOIN_ACK:
+            return lws_mesg_room_join_ack_handler(head, body);
         default:
             return 0;
     }
