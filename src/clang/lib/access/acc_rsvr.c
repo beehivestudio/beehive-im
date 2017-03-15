@@ -723,6 +723,7 @@ static int acc_recv_post_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **函数名称: acc_recv_data
  **功    能: 接收数据
  **输入参数:
+ **     ctx: 全局对象
  **     rsvr: 接收服务
  **     sck: SCK对象
  **输出参数: NONE
