@@ -23,7 +23,7 @@ const (
 const (
 	CONN_STATUS_READY  = 1 // 预备状态: 已建立好网络连接
 	CONN_STATUS_CHECK  = 2 // 登录校验: 正在进行上线校验
-	CONN_STATUS_LOGON  = 3 // 登录成功: 上线校验成功
+	CONN_STATUS_LOGIN  = 3 // 登录成功: 上线校验成功
 	CONN_STATUS_KICK   = 4 // 连接被踢: 已加入到被踢列表
 	CONN_STATUS_LOGOUT = 5 // 退出登录: 收到退出指令
 	CONN_STATUS_CLOSE  = 6 // 连接关闭: 连接已经关闭 等待数据释放
@@ -43,16 +43,6 @@ type MesgCallBackTab struct {
 	list         map[uint32]*MesgCallBackItem /* 消息处理回调(上行) */
 }
 
-/* SID->CID映射管理 */
-type Sid2CidTab struct {
-	tab [LSND_SID2CID_LEN]Sid2CidList
-}
-
-type Sid2CidList struct {
-	sync.RWMutex                   /* 读写锁 */
-	list         map[uint64]uint64 /* SID->CID映射 */
-}
-
 /* KICK信息 */
 type LsndKickItem struct {
 	cid uint64 /* 连接ID */
@@ -66,7 +56,6 @@ type LsndCntx struct {
 	frwder    *rtmq.RtmqProxyCntx /* 代理对象 */
 	callback  MesgCallBackTab     /* 处理回调 */
 	chat      *chat_tab.ChatTab   /* 聊天关系组织表 */
-	sid2cid   Sid2CidTab          /* SID->CID映射 */
 	lws       *lws.LwsCntx        /* LWS环境 */
 	protocol  *lws.Protocol       /* LWS.PROTOCOL */
 	kick_list chan *LsndKickItem  /* 被踢列表 */
@@ -114,7 +103,6 @@ func LsndInit(conf *conf.LsndConf) (ctx *LsndCntx, err error) {
 	/* > 初始化其他结构 */
 	ctx.callback.list = make(map[uint32]*MesgCallBackItem) /* 处理回调 */
 	ctx.kick_list = make(chan *LsndKickItem, 100000)       /* 被踢列表 */
-	ctx.sid_to_cid_init()                                  /* SID->CID映射 */
 
 	/* > 聊天关系组织表 */
 	ctx.chat = chat_tab.Init()

@@ -105,15 +105,13 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
  **功    能: 销毁CONN对象
  **输入参数:
  **     client: 客户端对象
- **     data: 收到的数据
- **     length: 收到数据的长度
  **输出参数:
  **返    回: 0:正常 !0:异常
  **实现描述:
  **注意事项: 返回!0值将导致连接断开
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
-func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length int) int {
+func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client) int {
 	session, ok := client.GetUserData().(*LsndSessionExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
@@ -121,6 +119,8 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client, data []byte, length i
 	}
 
 	ctx.log.Debug("Destroy session object! cid:%d sid:%d", session.GetCid(), session.GetSid())
+
+	ctx.chat.SessionDel(session.GetSid())
 
 	return 0
 }
@@ -158,7 +158,7 @@ func LsndLwsCallBack(ws *lws.LwsCntx, client *lws.Client,
 	case lws.LWS_CALLBACK_REASON_SEND:
 		return ctx.lsnd_conn_send(client, data, length)
 	case lws.LWS_CALLBACK_REASON_CLOSE:
-		return ctx.lsnd_conn_destroy(client, data, length)
+		return ctx.lsnd_conn_destroy(client)
 	default:
 		ctx.log.Error("Call LsndLwsCallBack()! Unknown reason:%d", reason)
 	}

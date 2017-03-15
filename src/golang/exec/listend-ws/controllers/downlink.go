@@ -71,14 +71,23 @@ func LsndDownlinkCommHandler(cmd uint32, nid uint32, data []byte, length uint32,
 		return -1
 	}
 
-	/* > 下发私聊消息 */
-	cid := ctx.find_cid_by_sid(head.GetSid())
-	if 0 == cid {
-		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+	/* > 获取会话数据 */
+	extra := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == extra {
+		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	ctx.lws.AsyncSend(cid, data)
+	session, ok := extra.(*LsndSessionExtra)
+	if !ok {
+		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	ctx.log.Debug("Session extra data. sid:%d cid:%d status:%d",
+		session.GetSid(), session.GetCid(), session.GetStatus())
+
+	ctx.lws.AsyncSend(session.GetCid(), data)
 
 	return 0
 }
@@ -172,7 +181,7 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, nid uint32, data []byte, length ui
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	}
 
-	session.SetStatus(CONN_STATUS_LOGON) /* 已登录 */
+	session.SetStatus(CONN_STATUS_LOGIN) /* 已登录 */
 
 	/* > 下发ONLINE-ACK消息 */
 	p := &comm.MesgPacket{Buff: data}
