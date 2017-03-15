@@ -181,6 +181,8 @@ func LsndDownlinkOnlineAckHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	ctx.lws.AsyncSend(cid, data)
 
+	ctx.log.Debug("Send online ack success! cid:%d/%d sid:%d", session.GetCid(), cid, ack.GetSid())
+
 	return 0
 }
 
@@ -429,6 +431,9 @@ func LsndDownlinkRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length 
 		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
 		return -1
 	}
+
+	ctx.log.Debug("Session extra data. sid:%d cid:%d status:%d",
+		session.GetSid(), session.GetCid(), session.GetStatus())
 
 	/* > 下发ROOM-JOIN-ACK消息 */
 	ctx.lws.AsyncSend(session.GetCid(), data)
