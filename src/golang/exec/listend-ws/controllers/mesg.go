@@ -8,16 +8,16 @@ import (
 )
 
 /******************************************************************************
- **函数名称: UplinkRegister
+ **函数名称: MesgRegister
  **功    能: 上行消息回调注册
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
- **实现描述: 为各消息注册处理函数
- **注意事项:
+ **实现描述: 为"上行"消息注册处理函数
+ **注意事项: "上行"消息指的是从客户端发送过来的消息
  **作    者: # Qifeng.zou # 2017.03.06 17:59:58 #
  ******************************************************************************/
-func (ctx *LsndCntx) UplinkRegister() {
+func (ctx *LsndCntx) MesgRegister() {
 	/* 未知消息 */
 	ctx.callback.Register(comm.CMD_UNKNOWN, LsndMesgCommHandler, ctx) /* 默认处理 */
 
