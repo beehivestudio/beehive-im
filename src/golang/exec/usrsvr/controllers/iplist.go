@@ -183,7 +183,7 @@ func (this *UsrSvrIplistCtrl) success(param *UsrSvrIpListParam, iplist []string)
  ******************************************************************************/
 func (this *UsrSvrIplistCtrl) iplist_token(param *UsrSvrIpListParam) string {
 	ctx := GetUsrSvrCtx()
-	ttl := time.Now().Unix() + comm.TIME_DAY
+	ttl := time.Now().Unix() + comm.TIME_YEAR
 
 	/* > 原始TOKEN */
 	token := fmt.Sprintf("uid:%d:ttl:%d:sid:%d:end", param.uid, ttl, param.sid)
