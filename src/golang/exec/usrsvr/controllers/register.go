@@ -3,8 +3,6 @@ package controllers
 import (
 	"errors"
 
-	_ "github.com/astaxie/beego"
-
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/im"
 )
