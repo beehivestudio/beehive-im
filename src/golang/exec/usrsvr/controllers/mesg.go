@@ -1395,7 +1395,7 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
  **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgBanAdd, code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgGagAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
@@ -1429,14 +1429,14 @@ func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
  **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_add_handler(
-	head *comm.MesgHeader, req *mesg.MesgBanAdd) (code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgGagAdd) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
 
 	/* > 移除用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_BAN_ZSET, req.GetOrig())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_GAG_ZSET, req.GetOrig())
 
 	_, err = rds.Do("ZADD", key, ctm, req.GetDest())
 	if nil != err {
@@ -1467,13 +1467,13 @@ func (ctx *UsrSvrCntx) ban_add_handler(
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
-	req *mesg.MesgBanAdd, code uint32, errmsg string) int {
+	req *mesg.MesgGagAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
 	}
 
 	/* > 设置协议体 */
-	ack := &mesg.MesgBanAddAck{
+	ack := &mesg.MesgGagAddAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -1491,14 +1491,14 @@ func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Cmd = comm.CMD_GAG_ADD_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_GAG_ADD_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -1523,9 +1523,9 @@ func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_ban_add_ack(
-	head *comm.MesgHeader, req *mesg.MesgBanAdd) int {
+	head *comm.MesgHeader, req *mesg.MesgGagAdd) int {
 	/* > 设置协议体 */
-	ack := &mesg.MesgBanDelAck{
+	ack := &mesg.MesgGagDelAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -1543,20 +1543,20 @@ func (ctx *UsrSvrCntx) send_ban_add_ack(
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Cmd = comm.CMD_GAG_ADD_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_GAG_ADD_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
 
 /******************************************************************************
- **函数名称: UsrSvrBanAddHandler
+ **函数名称: UsrSvrGagAddHandler
  **功    能: 设置禁言
  **输入参数:
  **     cmd: 消息类型
@@ -1570,7 +1570,7 @@ func (ctx *UsrSvrCntx) send_ban_add_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
  ******************************************************************************/
-func UsrSvrBanAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -1630,7 +1630,7 @@ func UsrSvrBanAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
  **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgBanDel, code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgGagDel, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
@@ -1664,12 +1664,12 @@ func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
  **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ban_del_handler(
-	head *comm.MesgHeader, req *mesg.MesgBanDel) (code uint32, err error) {
+	head *comm.MesgHeader, req *mesg.MesgGagDel) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
 	/* > 移除用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_BAN_ZSET, req.GetOrig())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_GAG_ZSET, req.GetOrig())
 
 	_, err = rds.Do("ZREM", key, req.GetDest())
 	if nil != err {
@@ -1700,13 +1700,13 @@ func (ctx *UsrSvrCntx) ban_del_handler(
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
-	req *mesg.MesgBanDel, code uint32, errmsg string) int {
+	req *mesg.MesgGagDel, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
 	}
 
 	/* > 设置协议体 */
-	ack := &mesg.MesgBanDelAck{
+	ack := &mesg.MesgGagDelAck{
 		Code:   proto.Uint32(code),
 		Errmsg: proto.String(errmsg),
 	}
@@ -1724,14 +1724,14 @@ func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Cmd = comm.CMD_GAG_ADD_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_GAG_ADD_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
@@ -1756,9 +1756,9 @@ func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) send_ban_del_ack(
-	head *comm.MesgHeader, req *mesg.MesgBanDel) int {
+	head *comm.MesgHeader, req *mesg.MesgGagDel) int {
 	/* > 设置协议体 */
-	ack := &mesg.MesgBanDelAck{
+	ack := &mesg.MesgGagDelAck{
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -1776,20 +1776,20 @@ func (ctx *UsrSvrCntx) send_ban_del_ack(
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_BAN_ADD_ACK
+	head.Cmd = comm.CMD_GAG_ADD_ACK
 	head.Length = uint32(length)
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_BAN_ADD_ACK, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_GAG_ADD_ACK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
 
 /******************************************************************************
- **函数名称: UsrSvrBanDelHandler
+ **函数名称: UsrSvrGagDelHandler
  **功    能: 解除禁言
  **输入参数:
  **     cmd: 消息类型
@@ -1803,7 +1803,7 @@ func (ctx *UsrSvrCntx) send_ban_del_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:54 #
  ******************************************************************************/
-func UsrSvrBanDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*UsrSvrCntx)
 	if !ok {
 		return -1
@@ -1880,12 +1880,12 @@ func UsrSvrGroupKickHandler(cmd uint32, nid uint32, data []byte, length uint32, 
 }
 
 /* 群组禁言 */
-func UsrSvrGroupBanAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
 /* 解除群组禁言 */
-func UsrSvrGroupBanDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func UsrSvrGroupGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 

@@ -281,9 +281,9 @@
 
 ---
 命令ID: 0x020B<br>
-命令描述: 屏蔽此人(BAN-ADD)<br>
+命令描述: 屏蔽此人(GAG-ADD)<br>
 协议格式:
->message mesg_ban_add<br>
+>message mesg_gag_add<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -291,9 +291,9 @@
 
 ---
 命令ID: 0x020C<br>
-命令描述: 屏蔽此人应答(BAN-ADD-ACK)<br>
+命令描述: 屏蔽此人应答(GAG-ADD-ACK)<br>
 协议格式: <br>
->message mesg_ban_add_ack<br>
+>message mesg_gag_add_ack<br>
 >{<br>
 >   required uint32 code = 1;       // M|错误码|数字|<br>
 >   required string errmsg = 2;     // M|错误描述|字串|<br>
@@ -301,9 +301,9 @@
 
 ---
 命令ID: 0x020D<br>
-命令描述: 取消屏蔽此人(BAN-DEL)<br>
+命令描述: 取消屏蔽此人(GAG-DEL)<br>
 协议格式:
->message mesg_ban_del<br>
+>message mesg_gag_del<br>
 >{<br>
 >   required uint64 orig = 1;       // M|源用户ID|数字|<br>
 >   required uint64 dest = 2;       // M|目标用户ID|数字|<br>
@@ -311,9 +311,9 @@
 
 ---
 命令ID: 0x020E<br>
-命令描述: 取消屏蔽此人应答(BAN-DEL-ACK)<br>
+命令描述: 取消屏蔽此人应答(GAG-DEL-ACK)<br>
 协议格式: <br>
->message mesg_ban_del_ack<br>
+>message mesg_gag_del_ack<br>
 >{<br>
 >   required uint32 code = 1;       // M|错误码|数字|<br>
 >   required string errmsg = 2;     // M|错误描述|字串|<br>
@@ -514,9 +514,9 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0310<br>
-命令描述: 群组禁言(GROUP-BAN-ADD)<br>
+命令描述: 群组禁言(GROUP-GAG-ADD)<br>
 协议格式: <br>
->message mesg_group_ban_add<br>
+>message mesg_group_gag_add<br>
 >{<br>
 >   required uint64 uid = 1;        // M|被禁言用户ID|数字|<br>
 >   required uint64 gid = 2;        // M|群组ID<br>
@@ -524,9 +524,9 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0311<br>
-命令描述: 群组禁言应答(GROUP-BAN-ADD-ACK)<br>
+命令描述: 群组禁言应答(GROUP-GAG-ADD-ACK)<br>
 协议格式: <br>
->message mesg_group_ban_add_ack<br>
+>message mesg_group_gag_add_ack<br>
 >{<br>
 >   required uint32 code = 1;       // M|错误码|数字|<br>
 >   required string errmsg = 2;     // M|错误描述|字串|<br>
@@ -534,9 +534,9 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0312<br>
-命令描述: 解除群组禁言(GROUP-BAN-DEL)<br>
+命令描述: 解除群组禁言(GROUP-GAG-DEL)<br>
 协议格式: <br>
->message mesg_group_ban_del<br>
+>message mesg_group_gag_del<br>
 >{<br>
 >   required uint64 uid = 1;        // M|被解除禁言用户ID|数字|<br>
 >   required uint64 gid = 2;        // M|群组ID<br>
@@ -544,9 +544,9 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0313<br>
-命令描述: 解除群组禁言应答(GROUP-BAN-DEL-ACK)<br>
+命令描述: 解除群组禁言应答(GROUP-GAG-DEL-ACK)<br>
 协议格式: <br>
->message mesg_group_ban_del_ack<br>
+>message mesg_group_gag_del_ack<br>
 >{<br>
 >   required uint32 code = 1;       // M|错误码|数字|<br>
 >   required string errmsg = 2;     // M|错误描述|字串|<br>
@@ -684,9 +684,9 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0353<br>
-命令描述: 禁言通知(GROUP-BAN-ADD-NTC)<br>
+命令描述: 禁言通知(GROUP-GAG-ADD-NTC)<br>
 协议格式: <br>
->message mesg_group_ban_add_ntc<br>
+>message mesg_group_gag_add_ntc<br>
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint64 gid = 2;        // M|群组ID|数字|<br>
@@ -694,9 +694,9 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0354<br>
-命令描述: 解除禁言通知(GROUP-BAN-DEL-NTC)<br>
+命令描述: 解除禁言通知(GROUP-GAG-DEL-NTC)<br>
 协议格式: <br>
->message mesg_group_ban_del_ntc<br>
+>message mesg_group_gag_del_ntc<br>
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint64 gid = 2;        // M|群组ID|数字|<br>

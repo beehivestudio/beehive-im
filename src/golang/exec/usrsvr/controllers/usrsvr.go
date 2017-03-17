@@ -138,8 +138,8 @@ func (ctx *UsrSvrCntx) Register() {
 	/* > 私聊消息 */
 	ctx.frwder.Register(comm.CMD_BLACKLIST_ADD, UsrSvrBlacklistAddHandler, ctx)
 	ctx.frwder.Register(comm.CMD_BLACKLIST_DEL, UsrSvrBlacklistDelHandler, ctx)
-	ctx.frwder.Register(comm.CMD_BAN_ADD, UsrSvrBanAddHandler, ctx)
-	ctx.frwder.Register(comm.CMD_BAN_DEL, UsrSvrBanDelHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GAG_ADD, UsrSvrGagAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GAG_DEL, UsrSvrGagDelHandler, ctx)
 
 	/* > 群聊消息 */
 	ctx.frwder.Register(comm.CMD_GROUP_CREAT, UsrSvrGroupCreatHandler, ctx)
@@ -148,8 +148,8 @@ func (ctx *UsrSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_GROUP_QUIT, UsrSvrGroupQuitHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_INVITE, UsrSvrGroupInviteHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_KICK, UsrSvrGroupKickHandler, ctx)
-	ctx.frwder.Register(comm.CMD_GROUP_BAN_ADD, UsrSvrGroupBanAddHandler, ctx)
-	ctx.frwder.Register(comm.CMD_GROUP_BAN_DEL, UsrSvrGroupBanDelHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_GAG_ADD, UsrSvrGroupGagAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GROUP_GAG_DEL, UsrSvrGroupGagDelHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_BL_ADD, UsrSvrGroupBlacklistAddHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_BL_DEL, UsrSvrGroupBlacklistDelHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_MGR_ADD, UsrSvrGroupMgrAddHandler, ctx)

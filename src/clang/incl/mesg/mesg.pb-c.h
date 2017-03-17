@@ -35,10 +35,10 @@ typedef struct _MesgBlacklistAdd MesgBlacklistAdd;
 typedef struct _MesgBlacklistAddAck MesgBlacklistAddAck;
 typedef struct _MesgBlacklistDel MesgBlacklistDel;
 typedef struct _MesgBlacklistDelAck MesgBlacklistDelAck;
-typedef struct _MesgBanAdd MesgBanAdd;
-typedef struct _MesgBanAddAck MesgBanAddAck;
-typedef struct _MesgBanDel MesgBanDel;
-typedef struct _MesgBanDelAck MesgBanDelAck;
+typedef struct _MesgGagAdd MesgGagAdd;
+typedef struct _MesgGagAddAck MesgGagAddAck;
+typedef struct _MesgGagDel MesgGagDel;
+typedef struct _MesgGagDelAck MesgGagDelAck;
 typedef struct _MesgMarkAdd MesgMarkAdd;
 typedef struct _MesgMarkAddAck MesgMarkAddAck;
 typedef struct _MesgMarkDel MesgMarkDel;
@@ -57,10 +57,10 @@ typedef struct _MesgGroupChat MesgGroupChat;
 typedef struct _MesgGroupChatAck MesgGroupChatAck;
 typedef struct _MesgGroupKick MesgGroupKick;
 typedef struct _MesgGroupKickAck MesgGroupKickAck;
-typedef struct _MesgGroupBanAdd MesgGroupBanAdd;
-typedef struct _MesgGroupBanAddAck MesgGroupBanAddAck;
-typedef struct _MesgGroupBanDel MesgGroupBanDel;
-typedef struct _MesgGroupBanDelAck MesgGroupBanDelAck;
+typedef struct _MesgGroupGagAdd MesgGroupGagAdd;
+typedef struct _MesgGroupGagAddAck MesgGroupGagAddAck;
+typedef struct _MesgGroupGagDel MesgGroupGagDel;
+typedef struct _MesgGroupGagDelAck MesgGroupGagDelAck;
 typedef struct _MesgGroupBlAdd MesgGroupBlAdd;
 typedef struct _MesgGroupBlAddAck MesgGroupBlAddAck;
 typedef struct _MesgGroupBlDel MesgGroupBlDel;
@@ -74,8 +74,8 @@ typedef struct _MesgGroupUsrListAck MesgGroupUsrListAck;
 typedef struct _MesgGroupJoinNtc MesgGroupJoinNtc;
 typedef struct _MesgGroupQuitNtc MesgGroupQuitNtc;
 typedef struct _MesgGroupKickNtc MesgGroupKickNtc;
-typedef struct _MesgGroupBanAddNtc MesgGroupBanAddNtc;
-typedef struct _MesgGroupBanDelNtc MesgGroupBanDelNtc;
+typedef struct _MesgGroupGagAddNtc MesgGroupGagAddNtc;
+typedef struct _MesgGroupGagDelNtc MesgGroupGagDelNtc;
 typedef struct _MesgGroupBlAddNtc MesgGroupBlAddNtc;
 typedef struct _MesgGroupBlDelNtc MesgGroupBlDelNtc;
 typedef struct _MesgGroupMgrAddNtc MesgGroupMgrAddNtc;
@@ -350,47 +350,47 @@ struct  _MesgBlacklistDelAck
     , 0, NULL }
 
 
-struct  _MesgBanAdd
+struct  _MesgGagAdd
 {
   ProtobufCMessage base;
   uint64_t orig;
   uint64_t dest;
 };
-#define MESG_BAN_ADD__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_add__descriptor) \
+#define MESG_GAG_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_gag_add__descriptor) \
     , 0, 0 }
 
 
-struct  _MesgBanAddAck
+struct  _MesgGagAddAck
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_BAN_ADD_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_add_ack__descriptor) \
+#define MESG_GAG_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_gag_add_ack__descriptor) \
     , 0, NULL }
 
 
-struct  _MesgBanDel
+struct  _MesgGagDel
 {
   ProtobufCMessage base;
   uint64_t orig;
   uint64_t dest;
 };
-#define MESG_BAN_DEL__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_del__descriptor) \
+#define MESG_GAG_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_gag_del__descriptor) \
     , 0, 0 }
 
 
-struct  _MesgBanDelAck
+struct  _MesgGagDelAck
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_BAN_DEL_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_ban_del_ack__descriptor) \
+#define MESG_GAG_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_gag_del_ack__descriptor) \
     , 0, NULL }
 
 
@@ -599,47 +599,47 @@ struct  _MesgGroupKickAck
     , 0, NULL }
 
 
-struct  _MesgGroupBanAdd
+struct  _MesgGroupGagAdd
 {
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t gid;
 };
-#define MESG_GROUP_BAN_ADD__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_add__descriptor) \
+#define MESG_GROUP_GAG_ADD__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_gag_add__descriptor) \
     , 0, 0 }
 
 
-struct  _MesgGroupBanAddAck
+struct  _MesgGroupGagAddAck
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_GROUP_BAN_ADD_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_add_ack__descriptor) \
+#define MESG_GROUP_GAG_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_gag_add_ack__descriptor) \
     , 0, NULL }
 
 
-struct  _MesgGroupBanDel
+struct  _MesgGroupGagDel
 {
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t gid;
 };
-#define MESG_GROUP_BAN_DEL__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_del__descriptor) \
+#define MESG_GROUP_GAG_DEL__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_gag_del__descriptor) \
     , 0, 0 }
 
 
-struct  _MesgGroupBanDelAck
+struct  _MesgGroupGagDelAck
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_GROUP_BAN_DEL_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_del_ack__descriptor) \
+#define MESG_GROUP_GAG_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_gag_del_ack__descriptor) \
     , 0, NULL }
 
 
@@ -786,25 +786,25 @@ struct  _MesgGroupKickNtc
     , 0, 0 }
 
 
-struct  _MesgGroupBanAddNtc
+struct  _MesgGroupGagAddNtc
 {
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t gid;
 };
-#define MESG_GROUP_BAN_ADD_NTC__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_add_ntc__descriptor) \
+#define MESG_GROUP_GAG_ADD_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_gag_add_ntc__descriptor) \
     , 0, 0 }
 
 
-struct  _MesgGroupBanDelNtc
+struct  _MesgGroupGagDelNtc
 {
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t gid;
 };
-#define MESG_GROUP_BAN_DEL_NTC__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_ban_del_ntc__descriptor) \
+#define MESG_GROUP_GAG_DEL_NTC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_gag_del_ntc__descriptor) \
     , 0, 0 }
 
 
@@ -1479,81 +1479,81 @@ MesgBlacklistDelAck *
 void   mesg_blacklist_del_ack__free_unpacked
                      (MesgBlacklistDelAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgBanAdd methods */
-void   mesg_ban_add__init
-                     (MesgBanAdd         *message);
-size_t mesg_ban_add__get_packed_size
-                     (const MesgBanAdd   *message);
-size_t mesg_ban_add__pack
-                     (const MesgBanAdd   *message,
+/* MesgGagAdd methods */
+void   mesg_gag_add__init
+                     (MesgGagAdd         *message);
+size_t mesg_gag_add__get_packed_size
+                     (const MesgGagAdd   *message);
+size_t mesg_gag_add__pack
+                     (const MesgGagAdd   *message,
                       uint8_t             *out);
-size_t mesg_ban_add__pack_to_buffer
-                     (const MesgBanAdd   *message,
+size_t mesg_gag_add__pack_to_buffer
+                     (const MesgGagAdd   *message,
                       ProtobufCBuffer     *buffer);
-MesgBanAdd *
-       mesg_ban_add__unpack
+MesgGagAdd *
+       mesg_gag_add__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_ban_add__free_unpacked
-                     (MesgBanAdd *message,
+void   mesg_gag_add__free_unpacked
+                     (MesgGagAdd *message,
                       ProtobufCAllocator *allocator);
-/* MesgBanAddAck methods */
-void   mesg_ban_add_ack__init
-                     (MesgBanAddAck         *message);
-size_t mesg_ban_add_ack__get_packed_size
-                     (const MesgBanAddAck   *message);
-size_t mesg_ban_add_ack__pack
-                     (const MesgBanAddAck   *message,
+/* MesgGagAddAck methods */
+void   mesg_gag_add_ack__init
+                     (MesgGagAddAck         *message);
+size_t mesg_gag_add_ack__get_packed_size
+                     (const MesgGagAddAck   *message);
+size_t mesg_gag_add_ack__pack
+                     (const MesgGagAddAck   *message,
                       uint8_t             *out);
-size_t mesg_ban_add_ack__pack_to_buffer
-                     (const MesgBanAddAck   *message,
+size_t mesg_gag_add_ack__pack_to_buffer
+                     (const MesgGagAddAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgBanAddAck *
-       mesg_ban_add_ack__unpack
+MesgGagAddAck *
+       mesg_gag_add_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_ban_add_ack__free_unpacked
-                     (MesgBanAddAck *message,
+void   mesg_gag_add_ack__free_unpacked
+                     (MesgGagAddAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgBanDel methods */
-void   mesg_ban_del__init
-                     (MesgBanDel         *message);
-size_t mesg_ban_del__get_packed_size
-                     (const MesgBanDel   *message);
-size_t mesg_ban_del__pack
-                     (const MesgBanDel   *message,
+/* MesgGagDel methods */
+void   mesg_gag_del__init
+                     (MesgGagDel         *message);
+size_t mesg_gag_del__get_packed_size
+                     (const MesgGagDel   *message);
+size_t mesg_gag_del__pack
+                     (const MesgGagDel   *message,
                       uint8_t             *out);
-size_t mesg_ban_del__pack_to_buffer
-                     (const MesgBanDel   *message,
+size_t mesg_gag_del__pack_to_buffer
+                     (const MesgGagDel   *message,
                       ProtobufCBuffer     *buffer);
-MesgBanDel *
-       mesg_ban_del__unpack
+MesgGagDel *
+       mesg_gag_del__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_ban_del__free_unpacked
-                     (MesgBanDel *message,
+void   mesg_gag_del__free_unpacked
+                     (MesgGagDel *message,
                       ProtobufCAllocator *allocator);
-/* MesgBanDelAck methods */
-void   mesg_ban_del_ack__init
-                     (MesgBanDelAck         *message);
-size_t mesg_ban_del_ack__get_packed_size
-                     (const MesgBanDelAck   *message);
-size_t mesg_ban_del_ack__pack
-                     (const MesgBanDelAck   *message,
+/* MesgGagDelAck methods */
+void   mesg_gag_del_ack__init
+                     (MesgGagDelAck         *message);
+size_t mesg_gag_del_ack__get_packed_size
+                     (const MesgGagDelAck   *message);
+size_t mesg_gag_del_ack__pack
+                     (const MesgGagDelAck   *message,
                       uint8_t             *out);
-size_t mesg_ban_del_ack__pack_to_buffer
-                     (const MesgBanDelAck   *message,
+size_t mesg_gag_del_ack__pack_to_buffer
+                     (const MesgGagDelAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgBanDelAck *
-       mesg_ban_del_ack__unpack
+MesgGagDelAck *
+       mesg_gag_del_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_ban_del_ack__free_unpacked
-                     (MesgBanDelAck *message,
+void   mesg_gag_del_ack__free_unpacked
+                     (MesgGagDelAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgMarkAdd methods */
 void   mesg_mark_add__init
@@ -1897,81 +1897,81 @@ MesgGroupKickAck *
 void   mesg_group_kick_ack__free_unpacked
                      (MesgGroupKickAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupBanAdd methods */
-void   mesg_group_ban_add__init
-                     (MesgGroupBanAdd         *message);
-size_t mesg_group_ban_add__get_packed_size
-                     (const MesgGroupBanAdd   *message);
-size_t mesg_group_ban_add__pack
-                     (const MesgGroupBanAdd   *message,
+/* MesgGroupGagAdd methods */
+void   mesg_group_gag_add__init
+                     (MesgGroupGagAdd         *message);
+size_t mesg_group_gag_add__get_packed_size
+                     (const MesgGroupGagAdd   *message);
+size_t mesg_group_gag_add__pack
+                     (const MesgGroupGagAdd   *message,
                       uint8_t             *out);
-size_t mesg_group_ban_add__pack_to_buffer
-                     (const MesgGroupBanAdd   *message,
+size_t mesg_group_gag_add__pack_to_buffer
+                     (const MesgGroupGagAdd   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupBanAdd *
-       mesg_group_ban_add__unpack
+MesgGroupGagAdd *
+       mesg_group_gag_add__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_ban_add__free_unpacked
-                     (MesgGroupBanAdd *message,
+void   mesg_group_gag_add__free_unpacked
+                     (MesgGroupGagAdd *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupBanAddAck methods */
-void   mesg_group_ban_add_ack__init
-                     (MesgGroupBanAddAck         *message);
-size_t mesg_group_ban_add_ack__get_packed_size
-                     (const MesgGroupBanAddAck   *message);
-size_t mesg_group_ban_add_ack__pack
-                     (const MesgGroupBanAddAck   *message,
+/* MesgGroupGagAddAck methods */
+void   mesg_group_gag_add_ack__init
+                     (MesgGroupGagAddAck         *message);
+size_t mesg_group_gag_add_ack__get_packed_size
+                     (const MesgGroupGagAddAck   *message);
+size_t mesg_group_gag_add_ack__pack
+                     (const MesgGroupGagAddAck   *message,
                       uint8_t             *out);
-size_t mesg_group_ban_add_ack__pack_to_buffer
-                     (const MesgGroupBanAddAck   *message,
+size_t mesg_group_gag_add_ack__pack_to_buffer
+                     (const MesgGroupGagAddAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupBanAddAck *
-       mesg_group_ban_add_ack__unpack
+MesgGroupGagAddAck *
+       mesg_group_gag_add_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_ban_add_ack__free_unpacked
-                     (MesgGroupBanAddAck *message,
+void   mesg_group_gag_add_ack__free_unpacked
+                     (MesgGroupGagAddAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupBanDel methods */
-void   mesg_group_ban_del__init
-                     (MesgGroupBanDel         *message);
-size_t mesg_group_ban_del__get_packed_size
-                     (const MesgGroupBanDel   *message);
-size_t mesg_group_ban_del__pack
-                     (const MesgGroupBanDel   *message,
+/* MesgGroupGagDel methods */
+void   mesg_group_gag_del__init
+                     (MesgGroupGagDel         *message);
+size_t mesg_group_gag_del__get_packed_size
+                     (const MesgGroupGagDel   *message);
+size_t mesg_group_gag_del__pack
+                     (const MesgGroupGagDel   *message,
                       uint8_t             *out);
-size_t mesg_group_ban_del__pack_to_buffer
-                     (const MesgGroupBanDel   *message,
+size_t mesg_group_gag_del__pack_to_buffer
+                     (const MesgGroupGagDel   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupBanDel *
-       mesg_group_ban_del__unpack
+MesgGroupGagDel *
+       mesg_group_gag_del__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_ban_del__free_unpacked
-                     (MesgGroupBanDel *message,
+void   mesg_group_gag_del__free_unpacked
+                     (MesgGroupGagDel *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupBanDelAck methods */
-void   mesg_group_ban_del_ack__init
-                     (MesgGroupBanDelAck         *message);
-size_t mesg_group_ban_del_ack__get_packed_size
-                     (const MesgGroupBanDelAck   *message);
-size_t mesg_group_ban_del_ack__pack
-                     (const MesgGroupBanDelAck   *message,
+/* MesgGroupGagDelAck methods */
+void   mesg_group_gag_del_ack__init
+                     (MesgGroupGagDelAck         *message);
+size_t mesg_group_gag_del_ack__get_packed_size
+                     (const MesgGroupGagDelAck   *message);
+size_t mesg_group_gag_del_ack__pack
+                     (const MesgGroupGagDelAck   *message,
                       uint8_t             *out);
-size_t mesg_group_ban_del_ack__pack_to_buffer
-                     (const MesgGroupBanDelAck   *message,
+size_t mesg_group_gag_del_ack__pack_to_buffer
+                     (const MesgGroupGagDelAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupBanDelAck *
-       mesg_group_ban_del_ack__unpack
+MesgGroupGagDelAck *
+       mesg_group_gag_del_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_ban_del_ack__free_unpacked
-                     (MesgGroupBanDelAck *message,
+void   mesg_group_gag_del_ack__free_unpacked
+                     (MesgGroupGagDelAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgGroupBlAdd methods */
 void   mesg_group_bl_add__init
@@ -2220,43 +2220,43 @@ MesgGroupKickNtc *
 void   mesg_group_kick_ntc__free_unpacked
                      (MesgGroupKickNtc *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupBanAddNtc methods */
-void   mesg_group_ban_add_ntc__init
-                     (MesgGroupBanAddNtc         *message);
-size_t mesg_group_ban_add_ntc__get_packed_size
-                     (const MesgGroupBanAddNtc   *message);
-size_t mesg_group_ban_add_ntc__pack
-                     (const MesgGroupBanAddNtc   *message,
+/* MesgGroupGagAddNtc methods */
+void   mesg_group_gag_add_ntc__init
+                     (MesgGroupGagAddNtc         *message);
+size_t mesg_group_gag_add_ntc__get_packed_size
+                     (const MesgGroupGagAddNtc   *message);
+size_t mesg_group_gag_add_ntc__pack
+                     (const MesgGroupGagAddNtc   *message,
                       uint8_t             *out);
-size_t mesg_group_ban_add_ntc__pack_to_buffer
-                     (const MesgGroupBanAddNtc   *message,
+size_t mesg_group_gag_add_ntc__pack_to_buffer
+                     (const MesgGroupGagAddNtc   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupBanAddNtc *
-       mesg_group_ban_add_ntc__unpack
+MesgGroupGagAddNtc *
+       mesg_group_gag_add_ntc__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_ban_add_ntc__free_unpacked
-                     (MesgGroupBanAddNtc *message,
+void   mesg_group_gag_add_ntc__free_unpacked
+                     (MesgGroupGagAddNtc *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupBanDelNtc methods */
-void   mesg_group_ban_del_ntc__init
-                     (MesgGroupBanDelNtc         *message);
-size_t mesg_group_ban_del_ntc__get_packed_size
-                     (const MesgGroupBanDelNtc   *message);
-size_t mesg_group_ban_del_ntc__pack
-                     (const MesgGroupBanDelNtc   *message,
+/* MesgGroupGagDelNtc methods */
+void   mesg_group_gag_del_ntc__init
+                     (MesgGroupGagDelNtc         *message);
+size_t mesg_group_gag_del_ntc__get_packed_size
+                     (const MesgGroupGagDelNtc   *message);
+size_t mesg_group_gag_del_ntc__pack
+                     (const MesgGroupGagDelNtc   *message,
                       uint8_t             *out);
-size_t mesg_group_ban_del_ntc__pack_to_buffer
-                     (const MesgGroupBanDelNtc   *message,
+size_t mesg_group_gag_del_ntc__pack_to_buffer
+                     (const MesgGroupGagDelNtc   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupBanDelNtc *
-       mesg_group_ban_del_ntc__unpack
+MesgGroupGagDelNtc *
+       mesg_group_gag_del_ntc__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_ban_del_ntc__free_unpacked
-                     (MesgGroupBanDelNtc *message,
+void   mesg_group_gag_del_ntc__free_unpacked
+                     (MesgGroupGagDelNtc *message,
                       ProtobufCAllocator *allocator);
 /* MesgGroupBlAddNtc methods */
 void   mesg_group_bl_add_ntc__init
@@ -2776,17 +2776,17 @@ typedef void (*MesgBlacklistDel_Closure)
 typedef void (*MesgBlacklistDelAck_Closure)
                  (const MesgBlacklistDelAck *message,
                   void *closure_data);
-typedef void (*MesgBanAdd_Closure)
-                 (const MesgBanAdd *message,
+typedef void (*MesgGagAdd_Closure)
+                 (const MesgGagAdd *message,
                   void *closure_data);
-typedef void (*MesgBanAddAck_Closure)
-                 (const MesgBanAddAck *message,
+typedef void (*MesgGagAddAck_Closure)
+                 (const MesgGagAddAck *message,
                   void *closure_data);
-typedef void (*MesgBanDel_Closure)
-                 (const MesgBanDel *message,
+typedef void (*MesgGagDel_Closure)
+                 (const MesgGagDel *message,
                   void *closure_data);
-typedef void (*MesgBanDelAck_Closure)
-                 (const MesgBanDelAck *message,
+typedef void (*MesgGagDelAck_Closure)
+                 (const MesgGagDelAck *message,
                   void *closure_data);
 typedef void (*MesgMarkAdd_Closure)
                  (const MesgMarkAdd *message,
@@ -2842,17 +2842,17 @@ typedef void (*MesgGroupKick_Closure)
 typedef void (*MesgGroupKickAck_Closure)
                  (const MesgGroupKickAck *message,
                   void *closure_data);
-typedef void (*MesgGroupBanAdd_Closure)
-                 (const MesgGroupBanAdd *message,
+typedef void (*MesgGroupGagAdd_Closure)
+                 (const MesgGroupGagAdd *message,
                   void *closure_data);
-typedef void (*MesgGroupBanAddAck_Closure)
-                 (const MesgGroupBanAddAck *message,
+typedef void (*MesgGroupGagAddAck_Closure)
+                 (const MesgGroupGagAddAck *message,
                   void *closure_data);
-typedef void (*MesgGroupBanDel_Closure)
-                 (const MesgGroupBanDel *message,
+typedef void (*MesgGroupGagDel_Closure)
+                 (const MesgGroupGagDel *message,
                   void *closure_data);
-typedef void (*MesgGroupBanDelAck_Closure)
-                 (const MesgGroupBanDelAck *message,
+typedef void (*MesgGroupGagDelAck_Closure)
+                 (const MesgGroupGagDelAck *message,
                   void *closure_data);
 typedef void (*MesgGroupBlAdd_Closure)
                  (const MesgGroupBlAdd *message,
@@ -2893,11 +2893,11 @@ typedef void (*MesgGroupQuitNtc_Closure)
 typedef void (*MesgGroupKickNtc_Closure)
                  (const MesgGroupKickNtc *message,
                   void *closure_data);
-typedef void (*MesgGroupBanAddNtc_Closure)
-                 (const MesgGroupBanAddNtc *message,
+typedef void (*MesgGroupGagAddNtc_Closure)
+                 (const MesgGroupGagAddNtc *message,
                   void *closure_data);
-typedef void (*MesgGroupBanDelNtc_Closure)
-                 (const MesgGroupBanDelNtc *message,
+typedef void (*MesgGroupGagDelNtc_Closure)
+                 (const MesgGroupGagDelNtc *message,
                   void *closure_data);
 typedef void (*MesgGroupBlAddNtc_Closure)
                  (const MesgGroupBlAddNtc *message,
@@ -2997,10 +2997,10 @@ extern const ProtobufCMessageDescriptor mesg_blacklist_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_blacklist_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_blacklist_del__descriptor;
 extern const ProtobufCMessageDescriptor mesg_blacklist_del_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_ban_add__descriptor;
-extern const ProtobufCMessageDescriptor mesg_ban_add_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_ban_del__descriptor;
-extern const ProtobufCMessageDescriptor mesg_ban_del_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_gag_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_gag_add_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_gag_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_gag_del_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_mark_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_mark_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_mark_del__descriptor;
@@ -3019,10 +3019,10 @@ extern const ProtobufCMessageDescriptor mesg_group_chat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_chat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_kick__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_kick_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_ban_add__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_ban_add_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_ban_del__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_ban_del_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_gag_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_gag_add_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_gag_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_gag_del_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_bl_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_bl_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_bl_del__descriptor;
@@ -3036,8 +3036,8 @@ extern const ProtobufCMessageDescriptor mesg_group_usr_list_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_join_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_quit_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_kick_ntc__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_ban_add_ntc__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_ban_del_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_gag_add_ntc__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_gag_del_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_bl_add_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_bl_del_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_mgr_add_ntc__descriptor;

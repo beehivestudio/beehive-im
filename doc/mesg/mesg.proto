@@ -267,7 +267,7 @@ message mesg_blacklist_del_ack
    命令ID: 0x020B
    命令描述: 屏蔽此人(BAN-ADD)
    协议格式: */
-message mesg_ban_add
+message mesg_gag_add
 {
     required uint64 orig = 1;       // M|源用户ID|数字|
     required uint64 dest = 2;       // M|目标用户ID|数字|
@@ -277,7 +277,7 @@ message mesg_ban_add
    命令ID: 0x020C
    命令描述: 屏蔽此人应答(BAN-ADD-ACK)
    协议格式: */
-message mesg_ban_add_ack
+message mesg_gag_add_ack
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|
@@ -287,7 +287,7 @@ message mesg_ban_add_ack
    命令ID: 0x020D
    命令描述: 取消屏蔽此人(BAN-DEL)
    协议格式: */
-message mesg_ban_del
+message mesg_gag_del
 {
     required uint64 orig = 1;       // M|源用户ID|数字|
     required uint64 dest = 2;       // M|目标用户ID|数字|
@@ -297,7 +297,7 @@ message mesg_ban_del
    命令ID: 0x020E
    命令描述: 取消屏蔽此人应答(BAN-DEL-ACK)
    协议格式: */
-message mesg_ban_del_ack
+message mesg_gag_del_ack
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|
@@ -497,7 +497,7 @@ message mesg_group_kick_ack
    命令ID: 0x0310
    命令描述: 群组禁言(GROUP-BAN-ADD)
    协议格式: */
-message mesg_group_ban_add
+message mesg_group_gag_add
 {
     required uint64 uid = 1;        // M|被禁言用户ID|数字|
     required uint64 gid = 2;        // M|群组ID
@@ -507,7 +507,7 @@ message mesg_group_ban_add
    命令ID: 0x0311
    命令描述: 群组禁言应答(GROUP-BAN-ADD-ACK)
    协议格式: */
-message mesg_group_ban_add_ack
+message mesg_group_gag_add_ack
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|
@@ -517,7 +517,7 @@ message mesg_group_ban_add_ack
    命令ID: 0x0312
    命令描述: 解除群组禁言(GROUP-BAN-DEL)
    协议格式: */
-message mesg_group_ban_del
+message mesg_group_gag_del
 {
     required uint64 uid = 1;        // M|被解除禁言用户ID|数字|
     required uint64 gid = 2;        // M|群组ID
@@ -527,7 +527,7 @@ message mesg_group_ban_del
    命令ID: 0x0313
    命令描述: 解除群组禁言应答(GROUP-BAN-DEL-ACK)
    协议格式: */
-message mesg_group_ban_del_ack
+message mesg_group_gag_del_ack
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|
@@ -667,7 +667,7 @@ message mesg_group_kick_ntc
    命令ID: 0x0353
    命令描述: 禁言通知(GROUP-BAN-ADD-NTC)
    协议格式: */
-message mesg_group_ban_add_ntc
+message mesg_group_gag_add_ntc
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -677,7 +677,7 @@ message mesg_group_ban_add_ntc
    命令ID: 0x0354
    命令描述: 解除禁言通知(GROUP-BAN-DEL-NTC)
    协议格式: */
-message mesg_group_ban_del_ntc
+message mesg_group_gag_del_ntc
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
