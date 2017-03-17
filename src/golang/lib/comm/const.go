@@ -10,10 +10,11 @@ const (
 
 /* 时间转换成秒 */
 const (
-	TIME_MIN  = 60        // 分
-	TIME_HOUR = 3600      // 时
-	TIME_DAY  = 86400     // 天
-	TIME_WEEK = 7 * 86400 // 周
+	TIME_MIN  = 60             // 分
+	TIME_HOUR = 3600           // 时
+	TIME_DAY  = 86400          // 天
+	TIME_WEEK = 7 * 86400      // 周
+	TIME_YEAR = 365 * TIME_DAY // 年
 )
 
 /* 加锁方式 */
