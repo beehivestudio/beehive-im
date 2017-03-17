@@ -157,7 +157,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_online_ack
+ **函数名称: online_failed
  **功    能: 发送上线应答
  **输入参数:
  **     head: 协议头
@@ -180,7 +180,7 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) online_failed(head *comm.MesgHeader,
 	req *mesg.MesgOnline, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -228,7 +228,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_online_ack
+ **函数名称: online_ack
  **功    能: 发送上线应答
  **输入参数:
  **输出参数: NONE
@@ -246,7 +246,7 @@ func (ctx *UsrSvrCntx) send_err_online_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_online_ack(head *comm.MesgHeader, req *mesg.MesgOnline) int {
+func (ctx *UsrSvrCntx) online_ack(head *comm.MesgHeader, req *mesg.MesgOnline) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgOnlineAck{
 		Uid:      proto.Uint64(req.GetUid()),
@@ -385,7 +385,7 @@ func UsrSvrOnlineHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	head, req, code, err := ctx.online_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse online request failed! errmsg:%s", err.Error())
-		ctx.send_err_online_ack(head, req, code, err.Error())
+		ctx.online_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -393,12 +393,12 @@ func UsrSvrOnlineHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	err = ctx.online_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Online handler failed!")
-		ctx.send_err_online_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
+		ctx.online_failed(head, req, comm.ERR_SYS_SYSTEM, err.Error())
 		return -1
 	}
 
 	/* > 发送上线应答 */
-	ctx.send_online_ack(head, req)
+	ctx.online_ack(head, req)
 
 	return 0
 }
@@ -718,7 +718,7 @@ func (ctx *UsrSvrCntx) alloc_seq_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_alloc_seq_ack
+ **函数名称: alloc_seq_failed
  **功    能: 发送ALLOC-SEQ错误应答
  **输入参数:
  **     head: 协议头
@@ -739,7 +739,7 @@ func (ctx *UsrSvrCntx) alloc_seq_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 11:34:17 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_alloc_seq_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) alloc_seq_failed(head *comm.MesgHeader,
 	req *mesg.MesgAllocSeq, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -785,7 +785,7 @@ func (ctx *UsrSvrCntx) send_err_alloc_seq_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_alloc_seq_ack
+ **函数名称: alloc_seq_ack
  **功    能: 发送ALLOC-SEQ应答
  **输入参数:
  **     head: 头部数据
@@ -805,7 +805,7 @@ func (ctx *UsrSvrCntx) send_err_alloc_seq_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_alloc_seq_ack(head *comm.MesgHeader, req *mesg.MesgAllocSeq, seq uint64) int {
+func (ctx *UsrSvrCntx) alloc_seq_ack(head *comm.MesgHeader, req *mesg.MesgAllocSeq, seq uint64) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgAllocSeqAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -869,11 +869,11 @@ func UsrSvrAllocSeqHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	head, req, code, err := ctx.alloc_seq_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse alloc-seq request failed! errmsg:%s", err.Error())
-		ctx.send_err_alloc_seq_ack(head, req, code, err.Error())
+		ctx.alloc_seq_failed(head, req, code, err.Error())
 		return -1
 	} else if 0 == req.GetNum() {
 		ctx.log.Error("Alloc seq num is zero! uid:%d nid:%d", req.GetUid(), head.GetNid())
-		ctx.send_err_alloc_seq_ack(head, req, comm.ERR_SVR_PARSE_PARAM, "Alloc seq num is zero!")
+		ctx.alloc_seq_failed(head, req, comm.ERR_SVR_PARSE_PARAM, "Alloc seq num is zero!")
 		return -1
 	}
 
@@ -881,12 +881,12 @@ func UsrSvrAllocSeqHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get sid attribute failed! errmsg:%s", err.Error())
-		ctx.send_err_alloc_seq_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
+		ctx.alloc_seq_failed(head, req, comm.ERR_SYS_SYSTEM, err.Error())
 		return -1
 	} else if req.GetUid() != attr.Uid || head.GetNid() != attr.Nid {
 		ctx.log.Error("Data is collision! uid:%d/%d nid:%d/%d",
 			attr.Uid, req.GetUid(), attr.Nid, head.GetNid())
-		ctx.send_err_alloc_seq_ack(head, req, comm.ERR_SYS_SYSTEM, "Data is collision!")
+		ctx.alloc_seq_failed(head, req, comm.ERR_SYS_SYSTEM, "Data is collision!")
 		return -1
 	}
 
@@ -894,12 +894,12 @@ func UsrSvrAllocSeqHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	seq, err := ctx.alloc_seq_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Alloc seq handler failed!")
-		ctx.send_err_alloc_seq_ack(head, req, comm.ERR_SYS_SYSTEM, err.Error())
+		ctx.alloc_seq_failed(head, req, comm.ERR_SYS_SYSTEM, err.Error())
 		return -1
 	}
 
 	/* > 发送申请序列号应答 */
-	ctx.send_alloc_seq_ack(head, req, seq)
+	ctx.alloc_seq_ack(head, req, seq)
 
 	return 0
 }
@@ -980,7 +980,7 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_blacklist_add_ack
+ **函数名称: blacklist_add_failed
  **功    能: 发送BLACKLIST-ADD应答
  **输入参数:
  **     head: 协议头
@@ -998,7 +998,7 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_blacklist_add_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) blacklist_add_failed(head *comm.MesgHeader,
 	req *mesg.MesgBlacklistAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1036,7 +1036,7 @@ func (ctx *UsrSvrCntx) send_err_blacklist_add_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_blacklist_add_ack
+ **函数名称: blacklist_add_ack
  **功    能: 发送BLACKLIST-ADD应答
  **输入参数:
  **     head: 协议头
@@ -1054,7 +1054,7 @@ func (ctx *UsrSvrCntx) send_err_blacklist_add_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 10:40:03 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_blacklist_add_ack(
+func (ctx *UsrSvrCntx) blacklist_add_ack(
 	head *comm.MesgHeader, req *mesg.MesgBlacklistAdd) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgBlacklistAddAck{
@@ -1112,7 +1112,7 @@ func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint3
 	head, req, code, err := ctx.blacklist_add_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse blacklist-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_blacklist_add_ack(head, req, code, err.Error())
+		ctx.blacklist_add_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -1120,12 +1120,12 @@ func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint3
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.send_err_blacklist_add_ack(head, req, code, err.Error())
+		ctx.blacklist_add_failed(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.send_err_blacklist_add_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.blacklist_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
@@ -1133,12 +1133,12 @@ func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint3
 	code, err = ctx.blacklist_add_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Handle blacklist-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_blacklist_add_ack(head, req, code, err.Error())
+		ctx.blacklist_add_failed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 发送BLACKLIST-ADD应答 */
-	ctx.send_blacklist_add_ack(head, req)
+	ctx.blacklist_add_ack(head, req)
 
 	return 0
 }
@@ -1213,7 +1213,7 @@ func (ctx *UsrSvrCntx) blacklist_del_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_blacklist_del_ack
+ **函数名称: blacklist_del_failed
  **功    能: 发送BLACKLIST-DEL应答
  **输入参数:
  **     head: 协议头
@@ -1231,7 +1231,7 @@ func (ctx *UsrSvrCntx) blacklist_del_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_blacklist_del_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) blacklist_del_failed(head *comm.MesgHeader,
 	req *mesg.MesgBlacklistDel, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1269,7 +1269,7 @@ func (ctx *UsrSvrCntx) send_err_blacklist_del_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_blacklist_del_ack
+ **函数名称: blacklist_del_ack
  **功    能: 发送BLACKLIST-DEL应答
  **输入参数:
  **     head: 协议头
@@ -1287,7 +1287,7 @@ func (ctx *UsrSvrCntx) send_err_blacklist_del_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_blacklist_del_ack(
+func (ctx *UsrSvrCntx) blacklist_del_ack(
 	head *comm.MesgHeader, req *mesg.MesgBlacklistDel) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgBlacklistDelAck{
@@ -1345,7 +1345,7 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
 	head, req, code, err := ctx.blacklist_del_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse blacklist-del failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_blacklist_del_ack(head, req, code, err.Error())
+		ctx.blacklist_del_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -1353,12 +1353,12 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.send_err_blacklist_del_ack(head, req, code, err.Error())
+		ctx.blacklist_del_failed(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.send_err_blacklist_del_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.blacklist_del_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
@@ -1366,12 +1366,12 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
 	code, err = ctx.blacklist_del_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Handle blacklist-del failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_blacklist_del_ack(head, req, code, err.Error())
+		ctx.blacklist_del_failed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 发送BLACKLIST-DEL应答 */
-	ctx.send_blacklist_del_ack(head, req)
+	ctx.blacklist_del_ack(head, req)
 
 	return 0
 }
@@ -1448,7 +1448,7 @@ func (ctx *UsrSvrCntx) gag_add_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_gag_add_ack
+ **函数名称: gag_add_failed
  **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
@@ -1466,7 +1466,7 @@ func (ctx *UsrSvrCntx) gag_add_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_gag_add_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) gag_add_failed(head *comm.MesgHeader,
 	req *mesg.MesgGagAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1504,7 +1504,7 @@ func (ctx *UsrSvrCntx) send_err_gag_add_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_gag_add_ack
+ **函数名称: gag_add_ack
  **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
@@ -1522,7 +1522,7 @@ func (ctx *UsrSvrCntx) send_err_gag_add_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_gag_add_ack(
+func (ctx *UsrSvrCntx) gag_add_ack(
 	head *comm.MesgHeader, req *mesg.MesgGagAdd) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgGagDelAck{
@@ -1580,7 +1580,7 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	head, req, code, err := ctx.gag_add_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse gag-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_gag_add_ack(head, req, code, err.Error())
+		ctx.gag_add_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -1588,12 +1588,12 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.send_err_gag_add_ack(head, req, code, err.Error())
+		ctx.gag_add_failed(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.send_err_gag_add_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.gag_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
@@ -1601,12 +1601,12 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	code, err = ctx.gag_add_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Handle gag-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_gag_add_ack(head, req, code, err.Error())
+		ctx.gag_add_failed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 发送GAG-ADD应答 */
-	ctx.send_gag_add_ack(head, req)
+	ctx.gag_add_ack(head, req)
 
 	return 0
 }
@@ -1681,7 +1681,7 @@ func (ctx *UsrSvrCntx) gag_del_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_gag_del_ack
+ **函数名称: gag_del_failed
  **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
@@ -1699,7 +1699,7 @@ func (ctx *UsrSvrCntx) gag_del_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_gag_del_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) gag_del_failed(head *comm.MesgHeader,
 	req *mesg.MesgGagDel, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1737,7 +1737,7 @@ func (ctx *UsrSvrCntx) send_err_gag_del_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_gag_del_ack
+ **函数名称: gag_del_ack
  **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
@@ -1755,7 +1755,7 @@ func (ctx *UsrSvrCntx) send_err_gag_del_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_gag_del_ack(
+func (ctx *UsrSvrCntx) gag_del_ack(
 	head *comm.MesgHeader, req *mesg.MesgGagDel) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgGagDelAck{
@@ -1813,7 +1813,7 @@ func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	head, req, code, err := ctx.gag_del_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse gag-del failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_gag_del_ack(head, req, code, err.Error())
+		ctx.gag_del_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -1821,12 +1821,12 @@ func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.send_err_gag_del_ack(head, req, code, err.Error())
+		ctx.gag_del_failed(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.send_err_gag_del_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.gag_del_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
@@ -1834,12 +1834,12 @@ func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	code, err = ctx.gag_del_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Handle gag-del failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_gag_del_ack(head, req, code, err.Error())
+		ctx.gag_del_failed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 发送GAG-ADD应答 */
-	ctx.send_gag_del_ack(head, req)
+	ctx.gag_del_ack(head, req)
 
 	return 0
 }
@@ -1958,7 +1958,7 @@ func (ctx *UsrSvrCntx) room_creat_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_room_creat_ack
+ **函数名称: room_creat_failed
  **功    能: 发送ROOM-CREAT应答(异常)
  **输入参数:
  **     head: 协议头
@@ -1978,7 +1978,7 @@ func (ctx *UsrSvrCntx) room_creat_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 22:33:42 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_room_creat_ack(
+func (ctx *UsrSvrCntx) room_creat_failed(
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat, code uint32, err error) int {
 	if nil == head {
 		return -1
@@ -2021,7 +2021,7 @@ func (ctx *UsrSvrCntx) send_err_room_creat_ack(
 }
 
 /******************************************************************************
- **函数名称: send_room_creat_ack
+ **函数名称: room_creat_ack
  **功    能: 发送ROOM-CREAT应答
  **输入参数:
  **输出参数: NONE
@@ -2037,7 +2037,7 @@ func (ctx *UsrSvrCntx) send_err_room_creat_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 22:28:40 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_room_creat_ack(
+func (ctx *UsrSvrCntx) room_creat_ack(
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat, rid uint64) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomCreatAck{
@@ -2185,7 +2185,7 @@ func UsrSvrRoomCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, 
 	head, req, code, err := ctx.room_creat_parse(data)
 	if nil == req {
 		ctx.log.Error("Parse room-creat request failed!")
-		ctx.send_err_room_creat_ack(head, req, code, err)
+		ctx.room_creat_failed(head, req, code, err)
 		return -1
 	}
 
@@ -2193,12 +2193,12 @@ func UsrSvrRoomCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, 
 	rid, err := ctx.room_creat_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Room creat handler failed!")
-		ctx.send_err_room_creat_ack(head, req, comm.ERR_SYS_SYSTEM, err)
+		ctx.room_creat_failed(head, req, comm.ERR_SYS_SYSTEM, err)
 		return -1
 	}
 
 	/* > 发送应答 */
-	ctx.send_room_creat_ack(head, req, rid)
+	ctx.room_creat_ack(head, req, rid)
 
 	return 0
 }
@@ -2248,7 +2248,7 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_room_join_ack
+ **函数名称: room_join_failed
  **功    能: 发送ROOM-JOIN应答(异常)
  **输入参数:
  **     head: 协议头
@@ -2269,7 +2269,7 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_room_join_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) room_join_failed(head *comm.MesgHeader,
 	req *mesg.MesgRoomJoin, code uint32, err error) int {
 	if nil == head {
 		return -1
@@ -2313,7 +2313,7 @@ func (ctx *UsrSvrCntx) send_err_room_join_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_room_join_ack
+ **函数名称: room_join_ack
  **功    能: 发送上线应答
  **输入参数:
  **输出参数: NONE
@@ -2330,7 +2330,7 @@ func (ctx *UsrSvrCntx) send_err_room_join_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJoin, gid uint32) int {
+func (ctx *UsrSvrCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJoin, gid uint32) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -2541,7 +2541,7 @@ func UsrSvrRoomJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	head, req, code, err := ctx.room_join_parse(data)
 	if nil == req {
 		ctx.log.Error("Parse room-join request failed!")
-		ctx.send_err_room_join_ack(head, req, code, err)
+		ctx.room_join_failed(head, req, code, err)
 		return -1
 	}
 
@@ -2549,12 +2549,12 @@ func UsrSvrRoomJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	gid, err := ctx.room_join_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Room join handler failed!")
-		ctx.send_err_room_join_ack(head, req, comm.ERR_SYS_SYSTEM, err)
+		ctx.room_join_failed(head, req, comm.ERR_SYS_SYSTEM, err)
 		return -1
 	}
 
 	/* 3. > 发送上线应答 */
-	ctx.send_room_join_ack(head, req, gid)
+	ctx.room_join_ack(head, req, gid)
 
 	return 0
 }
@@ -2581,7 +2581,7 @@ func (ctx *UsrSvrCntx) room_quit_isvalid(req *mesg.MesgRoomQuit) bool {
 }
 
 /******************************************************************************
- **函数名称: send_err_room_quit_ack
+ **函数名称: room_quit_failed
  **功    能: 发送ROOM-QUIT应答(异常)
  **输入参数:
  **     head: 协议头
@@ -2602,7 +2602,7 @@ func (ctx *UsrSvrCntx) room_quit_isvalid(req *mesg.MesgRoomQuit) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:20:34 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_room_quit_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) room_quit_failed(head *comm.MesgHeader,
 	req *mesg.MesgRoomQuit, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -2685,7 +2685,7 @@ func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_room_quit_ack
+ **函数名称: room_quit_ack
  **功    能: 发送ROOM-QUIT应答
  **输入参数:
  **输出参数: NONE
@@ -2702,7 +2702,7 @@ func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
+func (ctx *UsrSvrCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomQuitAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -2800,7 +2800,7 @@ func UsrSvrRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	head, req, code, err := ctx.room_quit_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse room quit request failed!")
-		ctx.send_err_room_quit_ack(head, req, code, err.Error())
+		ctx.room_quit_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -2808,12 +2808,12 @@ func UsrSvrRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	code, err = ctx.room_quit_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Hanle room quit request failed!")
-		ctx.send_err_room_quit_ack(head, req, code, err.Error())
+		ctx.room_quit_failed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* 3. > 发送ROOM-QUIT应答 */
-	ctx.send_room_quit_ack(head, req)
+	ctx.room_quit_ack(head, req)
 
 	return 0
 }
@@ -2856,7 +2856,7 @@ func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_room_kick_ack
+ **函数名称: room_kick_failed
  **功    能: 发送KICK应答(异常)
  **输入参数:
  **     head: 协议头
@@ -2876,7 +2876,7 @@ func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_room_kick_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) room_kick_failed(head *comm.MesgHeader,
 	req *mesg.MesgRoomKick, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -2919,7 +2919,7 @@ func (ctx *UsrSvrCntx) send_err_room_kick_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_room_kick_ack
+ **函数名称: room_kick_ack
  **功    能: 发送ROOM-KICK应答
  **输入参数:
  **     head: 协议头
@@ -2937,7 +2937,7 @@ func (ctx *UsrSvrCntx) send_err_room_kick_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 23:32:20 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
+func (ctx *UsrSvrCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomKickAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -2972,7 +2972,7 @@ func (ctx *UsrSvrCntx) send_room_kick_ack(head *comm.MesgHeader, req *mesg.MesgR
 }
 
 /******************************************************************************
- **函数名称: send_room_kick_notice
+ **函数名称: room_kick_notify
  **功    能: 发送ROOM-KICK-NTC通知
  **输入参数:
  **     head: 协议头
@@ -2987,7 +2987,7 @@ func (ctx *UsrSvrCntx) send_room_kick_ack(head *comm.MesgHeader, req *mesg.MesgR
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 07:46:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_room_kick_notice(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
+func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -3112,7 +3112,7 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	head, req, code, err := ctx.room_kick_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse room-kick request failed!")
-		ctx.send_err_room_kick_ack(head, req, code, err.Error())
+		ctx.room_kick_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -3120,15 +3120,15 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	code, err = ctx.room_kick_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Room kick handler failed!")
-		ctx.send_err_room_kick_ack(head, req, code, err.Error())
+		ctx.room_kick_failed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 发送ROOM-KICK应答 */
-	ctx.send_room_kick_ack(head, req)
+	ctx.room_kick_ack(head, req)
 
 	/* > 发送ROOM-KICK-NTC通知 */
-	ctx.send_room_kick_notice(head, req)
+	ctx.room_kick_notify(head, req)
 
 	return 0
 }
