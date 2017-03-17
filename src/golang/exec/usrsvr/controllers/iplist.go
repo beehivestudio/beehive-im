@@ -17,14 +17,7 @@ type UsrSvrIplistCtrl struct {
 func (this *UsrSvrIplistCtrl) Iplist() {
 	ctx := GetUsrSvrCtx()
 
-	option := this.GetString("option")
-	switch option {
-	case "iplist": // 获取IP列表
-		this.query_iplist(ctx)
-		return
-	}
-
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", option))
+	this.iplist_query(ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -38,7 +31,7 @@ type UsrSvrIpListParam struct {
 	clientip string // 客户端IP
 }
 
-func (this *UsrSvrIplistCtrl) query_iplist(ctx *UsrSvrCntx) {
+func (this *UsrSvrIplistCtrl) iplist_query(ctx *UsrSvrCntx) {
 	/* > 提取注册参数 */
 	param, err := this.iplist_parse_param(ctx)
 	if nil != err {
@@ -70,31 +63,39 @@ func (this *UsrSvrIplistCtrl) query_iplist(ctx *UsrSvrCntx) {
  **作    者: # Qifeng.zou # 2016.11.25 23:17:52 #
  ******************************************************************************/
 func (this *UsrSvrIplistCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListParam, error) {
-	var param UsrSvrIpListParam
+	param := &UsrSvrIpListParam{}
 
 	/* > 提取注册参数 */
 	param.network, _ = this.GetInt("network")
+	if 0 == param.network {
+		ctx.log.Error("Network is invalid.")
+		return param, errors.New("Network is invalid!")
+	}
 
 	id, _ := this.GetInt64("uid")
 	param.uid = uint64(id)
+	if 0 == param.uid {
+		ctx.log.Error("Uid is invalid.")
+		return param, errors.New("Uid is invalid!")
+	}
 
 	id, _ = this.GetInt64("sid")
 	param.sid = uint64(id)
-
-	param.clientip = this.GetString("clientip")
-
-	/* > 校验参数合法性 */
-	if 0 == param.network || 0 == param.uid ||
-		0 == param.sid || "" == param.clientip {
-		ctx.log.Error("Paramter is invalid. uid:%d sid:%d clientip:%s",
-			param.uid, param.sid, param.clientip)
-		return &param, errors.New("Paramter is invalid!")
+	if 0 == param.sid {
+		ctx.log.Error("Sid is invalid.")
+		return param, errors.New("Sid is invalid!")
 	}
 
-	ctx.log.Debug("Get ip list param. uid:%d sid:%d clientip:%s",
-		param.uid, param.sid, param.clientip)
+	param.clientip = this.GetString("clientip")
+	if "" == param.clientip {
+		ctx.log.Error("Client ip is invalid.")
+		return param, errors.New("Client ip is invalid!")
+	}
 
-	return &param, nil
+	ctx.log.Debug("Get ip list param. network:%d uid:%d sid:%d clientip:%s",
+		param.network, param.uid, param.sid, param.clientip)
+
+	return param, nil
 }
 
 /* IP列表应答 */
