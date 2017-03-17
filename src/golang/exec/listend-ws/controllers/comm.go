@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"time"
+
+	"beehive-im/src/golang/lib/comm"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +129,46 @@ func (session *LsndSessionExtra) IsStatus(status int) bool {
 
 /* 加入被踢列表 */
 func (ctx *LsndCntx) kick_add(cid uint64) {
-	item := &LsndKickItem{cid: cid, ttl: time.Now().Unix() + 5}
+	item := &LsndKickItem{
+		cid: cid,               // 连接ID
+		ttl: time.Now().Unix(), // 被踢时间
+	}
 
 	ctx.kick_list <- item
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: closed_notify
+ **功    能: 发送下线消息
+ **输入参数:
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 拼接OFFLINE请求, 并转发给上游模块.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.17 17:05:00 #
+ ******************************************************************************/
+func (ctx *LsndCntx) closed_notify(sid uint64) int {
+	/* > 通用协议头 */
+	head := &comm.MesgHeader{
+		Cmd:    comm.CMD_OFFLINE,
+		Flag:   comm.MSG_FLAG_USR,
+		Length: 0,
+		ChkSum: comm.MSG_CHKSUM_VAL,
+		Sid:    sid,
+		Nid:    ctx.conf.GetNid(),
+	}
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE)
+
+	comm.MesgHeadHton(head, p)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_OFFLINE, p.Buff, uint32(len(p.Buff)))
+
+	return 0
 }

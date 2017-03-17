@@ -107,8 +107,8 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
  **     client: 客户端对象
  **输出参数:
  **返    回: 0:正常 !0:异常
- **实现描述:
- **注意事项: 返回!0值将导致连接断开
+ **实现描述: 清理上下文资源, 并发送下线请求给上游模块.
+ **注意事项:
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client) int {
@@ -118,9 +118,10 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client) int {
 		return -1
 	}
 
-	ctx.log.Debug("Destroy session object! cid:%d sid:%d", session.GetCid(), session.GetSid())
+	ctx.log.Debug("Connection was closed! cid:%d sid:%d", session.GetCid(), session.GetSid())
 
-	ctx.chat.SessionDel(session.GetSid())
+	ctx.chat.SessionDel(session.GetSid()) /* 清理数据 */
+	ctx.closed_notify(session.GetSid())   /* 上报给上游模块 */
 
 	return 0
 }

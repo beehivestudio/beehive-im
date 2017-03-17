@@ -144,8 +144,8 @@ func LsndMesgOnlineHandler(session *LsndSessionExtra, cmd uint32, data []byte, l
  **     param: 附加参
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述: 将OFFLINE请求转发给上游模块, 再将指定连接踢下线.
- **注意事项:
+ **实现描述: 再将指定连接踢下线.
+ **注意事项: 执行关闭操作时"再将"OFFLINE请求转发给上游模块
  **作    者: # Qifeng.zou # 2017.03.06 21:39:22 #
  ******************************************************************************/
 func LsndMesgOfflineHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
@@ -155,21 +155,6 @@ func LsndMesgOfflineHandler(session *LsndSessionExtra, cmd uint32, data []byte, 
 	}
 
 	ctx.log.Debug("Recv offline request! sid:%d cid:%d", session.GetSid(), session.GetCid())
-
-	/* > "网络->主机"字节序 */
-	head := comm.MesgHeadNtoh(data)
-
-	session.SetSid(head.GetSid())
-
-	head.SetSid(session.GetCid())
-	head.SetNid(ctx.conf.GetNid())
-
-	/* > 转发给上游模块 */
-	p := &comm.MesgPacket{Buff: data}
-
-	comm.MesgHeadHton(head, p) /* "主机->网络"字节序 */
-
-	ctx.frwder.AsyncSend(cmd, data, length) /* 转发给上游模块 */
 
 	/* > 更新会话状态 */
 	session.SetStatus(CONN_STATUS_LOGOUT)

@@ -9,6 +9,10 @@ import (
 	"beehive-im/src/golang/lib/mesg"
 )
 
+const (
+	LSND_TASK_KICK_DELAY_SEC = 5 /* 踢延迟时间 */
+)
+
 /******************************************************************************
  **函数名称: Task
  **功    能: 启动定时任务
@@ -44,7 +48,7 @@ func (ctx *LsndCntx) task_timer_kick() {
 			return
 		}
 
-		ctm := time.Now().Unix()
+		ctm := time.Now().Unix() - LSND_TASK_KICK_DELAY_SEC
 		if item.ttl <= ctm {
 			ctx.lws.Kick(item.cid)
 			ctx.log.Error("Kick connection! cid:%d ctm:%d ttl:%d", item.cid, ctm, item.ttl)
