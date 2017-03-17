@@ -50,7 +50,7 @@
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
-##2. 推送接口
+##2. 消息推送
 ###2.1 广播接口
 ---
 **功能描述**: 全员广播消息<br>
@@ -148,14 +148,15 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-##3. 配置接口
+##3. 配置操作
 ###3.1 添加在线人数统计
 ---
 **功能描述**: 添加在线人数统计<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?option=user-statis-add&prec=${prec}<br>
+**接口路径**: /im/config?action=add&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为user-statis-add.(M)<br>
+> action: 操作行为, 此时为add.(M)<br>
+> option: 操作选项, 此时为user-statis.(M)<br>
 > prec: 时间精度(M).可以有:300s, 600s, 1800s, 3600s(1h), 86400(1d), etc<br>
 
 **返回结果**:<br>
@@ -168,9 +169,10 @@
 ---
 **功能描述**: 删除在线人数统计<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?option=user-statis-del&prec=${prec}<br>
+**接口路径**: /im/config?action=del&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为user-statis-del.(M)<br>
+> action: 操作行为, 此时为del.(M)<br>
+> option: 操作选项, 此时为user-statis.(M)<br>
 > prec: 时间精度(M).可以有:300s, 600s, 1800s, 3600s(1h), 86400(1d), etc<br>
 
 **返回结果**:<br>
@@ -183,9 +185,10 @@
 ---
 **功能描述**: 在线人数统计列表<br>
 **接口类型**: GET<br>
-**接口路径**: /im/query?option=user-statis-list<br>
+**接口路径**: /im/config?action=list&option=user-statis<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为user-statis-list.(M)<br>
+> action: 操作行为, 此时为list.(M)<br>
+> option: 操作选项, 此时为user-statis.(M)<br>
 
 **返回结果**:<br>
 >{<br>
@@ -201,8 +204,9 @@
 ---
 **功能描述**: 查询在线人数统计<br>
 **接口类型**: GET<br>
-**接口路径**: /im/query?option=user-statis&prec=${prec}<br>
+**接口路径**: /im/config?action=get&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
+> action: 操作行为, 此时为get.(M)<br>
 > option: 操作选项, 此时为user-statis.(M)<br>
 > prec: 时间精度(M). 如:300s, 600s, 1800s, 3600s(1h), 86400(1d), 1m, 1y<br>
 
@@ -218,7 +222,8 @@
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
-###3.5 查询人数分布
+##4. 状态查询
+###4.1 查询人数分布
 ---
 **功能描述**: 查询人数分布<br>
 **接口类型**: GET<br>
@@ -238,7 +243,7 @@
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
-###3.6 某用户在线状态
+###4.2 某用户在线状态
 ---
 **功能描述**: 查询某用户在线状态<br>
 **接口类型**: GET<br>
@@ -258,14 +263,15 @@
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
 
-##4. 群组接口
-###4.1 加入群组黑名单
+##5. 群组接口
+###5.1 加入群组黑名单
 ---
 **功能描述**: 将某人加入群组黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?option=blacklist-add&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?action=add&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为blacklist-add.(M)<br>
+> action: 操作行为, 此时为add.(M)<br>
+> option: 操作选项, 此时为blacklist.(M)<br>
 > gid: 群组ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -275,13 +281,14 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###4.2 移除群组黑名单
+###5.2 移除群组黑名单
 ---
 **功能描述**: 将某人移除群组黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?option=blacklist-del&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?action=del&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为blacklist-del.(M)<br>
+> action: 操作行为, 此时为del.(M)<br>
+> option: 操作选项, 此时为blacklist.(M)<br>
 > gid: 群组ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -291,13 +298,14 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###4.3 群组禁言
+###5.3 群组禁言
 ---
 **功能描述**: 禁止某人在群内发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?option=ban-add&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?action=add&option=ban&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为ban-add.(M)<br>
+> action: 操作行为, 此时为add.(M)<br>
+> option: 操作选项, 此时为ban.(M)<br>
 > gid: 群组ID(M)<br>
 > uid: 用户ID. # 当无uid或uid为0时, 全员禁言; 否则是禁止某人发言.<br>
 
@@ -311,9 +319,10 @@
 ---
 **功能描述**: 禁止某人在群组发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?option=ban-del&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?action=del&option=ban&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为ban-del.(M)<br>
+> action: 操作行为, 此时为del.(M)<br>
+> option: 操作选项, 此时为ban.(M)<br>
 > gid: 群组ID(M)<br>
 > uid: 用户ID. # 当无uid或uid为0时, 全员解除禁言; 否则是解除某人禁言.<br>
 
@@ -327,9 +336,10 @@
 ---
 **功能描述**: 关闭聊天室<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?option=close&gid=${gid}<br>
+**接口路径**: /im/group/config?action=close&option=group&gid=${gid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为close.(M)<br>
+> action: 操作行为, 此时为close.(M)<br>
+> option: 操作选项, 此时为group.(M)<br>
 > gid: 群组ID(M)<br>
 
 **返回结果**:<br>
@@ -342,16 +352,17 @@
 ---
 **功能描述**: 设置群组"最大容量"限制<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?option=capacity&gid=${gid}&capacity=${capacity}<br>
+**接口路径**: /im/group/config?action=set&option=cap&gid=${gid}&cap=${cap}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为capacity.(M)<br>
+> action: 操作行为, 此时为set.(M)<br>
+> option: 操作选项, 此时为cap.(M)<br>
 > gid: 群组ID(M)<br>
-> capacity: 群组容量(M)<br>
+> cap: 群组容量(M)<br>
 
 **返回结果**:<br>
 >{<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
->  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
+>  "cap":${cap}, // 整型 | 分组容量(M)<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
@@ -360,15 +371,16 @@
 ---
 **功能描述**: 查询群组"最大容量"限制<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/query?option=capacity&gid=${gid}<br>
+**接口路径**: /im/group/config?action=get&option=cap&gid=${gid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为group-capacity.(M)<br>
+> action: 操作行为, 此时为get.(M)<br>
+> option: 操作选项, 此时为group-cap.(M)<br>
 > gid: 群组ID(M)<br>
 
 **返回结果**:<br>
 >{<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
->  "capacity":${capacity},      // 整型 | 群组容量(M)<br>
+>  "cap":${cap},      // 整型 | 群组容量(M)<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
@@ -420,9 +432,10 @@
 ---
 **功能描述**: 将某人加入聊天室黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?option=blacklist-add&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?action=add&option=blacklist&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为blacklist-add.(M)<br>
+> action: 操作行为, 此时为add.(M)<br>
+> option: 操作选项, 此时为blacklist.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -436,9 +449,10 @@
 ---
 **功能描述**: 将某人移除聊天室黑名单<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?option=blacklist-del&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?action=del&option=blacklist&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为blacklist-del.(M)<br>
+> action: 操作行为, 此时为del.(M)<br>
+> option: 操作选项, 此时为blacklist.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -452,9 +466,10 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?option=ban-add&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?action=add&option=ban&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为ban-add.(M)<br>
+> action: 操作行为, 此时为add.(M)<br>
+> option: 操作选项, 此时为ban.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID. # 当无uid或uid为0时, 全员禁言; 否则是禁止某人发言.<br>
 
@@ -468,9 +483,10 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?option=ban-del&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?action=del&option=ban&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为ban-del.(M)<br>
+> action: 操作行为, 此时为del.(M)<br>
+> option: 操作选项, 此时为ban.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID(M)<br>
 
@@ -484,9 +500,10 @@
 ---
 **功能描述**: 关闭聊天室<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?option=close&rid=${rid}<br>
+**接口路径**: /im/room/config?action=close&option=room&rid=${rid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为close.(M)<br>
+> action: 操作行为, 此时为close.(M)<br>
+> option: 操作选项, 此时为room.(M)<br>
 > rid: 聊天室ID(M)<br>
 
 **返回结果**:<br>
@@ -499,15 +516,16 @@
 ---
 **功能描述**: 设置聊天室分组容量<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?option=group-capacity&rid=${rid}<br>
+**接口路径**: /im/room/config?action=set&option=group-cap&rid=${rid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为group-capacity.(M)<br>
+> action: 操作行为, 此时为set.(M)<br>
+> option: 操作选项, 此时为group-cap.(M)<br>
 > rid: 聊天室ID(O).当未制定${rid}时, 则是修改默认分组容量; 指明聊天室ID, 则是指明某聊天室的分组容量<br>
 
 **返回结果**:<br>
 >{<br>
 >  "rid":${rid},        // 整型 | 聊天室ID(O)<br>
->  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
+>  "cap":${cap},        // 整型 | 分组容量(M)<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
@@ -516,15 +534,16 @@
 ---
 **功能描述**: 查询聊天室分组容量<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/query?option=group-capacity&rid=${rid}<br>
+**接口路径**: /im/room/config?action=get&option=group-cap&rid=${rid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为group-capacity.(M)<br>
+> action: 操作行为, 此时为get.(M)<br>
+> option: 操作选项, 此时为group-cap.(M)<br>
 > rid: 聊天室ID(O).当未制定${rid}时, 则是查询默认分组容量; 指明聊天室ID, 则是查询某聊天室的分组容量<br>
 
 **返回结果**:<br>
 >{<br>
 >  "rid":${rid},        // 整型 | 聊天室ID(O)<br>
->  "capacity":${capacity},      // 整型 | 分组容量(M)<br>
+>  "cap":${cap},        // 整型 | 分组容量(M)<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
@@ -578,9 +597,10 @@
 ---
 **功能描述**: 查询侦听层状态<br>
 **接口类型**: GET<br>
-**接口路径**: /im/query?option=listen-list<br>
+**接口路径**: /im/config?action=list&option=listend<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为listen-list.(M)<br>
+> action: 操作行为, 此时为list.(M)<br>
+> option: 操作选项, 此时为listend.(M)<br>
 
 **返回结果**:<br>
 >{<br>
@@ -598,9 +618,10 @@
 ---
 **功能描述**: 移除侦听层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?option=listen-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?action=add&option=listend&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为listen-add.(M)<br>
+> action: 操作行为, 此时为add.(M)<br>
+> option: 操作选项, 此时为listend.(M)<br>
 > nid: 结点ID(M)<br>
 > ipaddr: 将被添加的侦听层结点IP地址.(M)<br>
 > port: 将被添加的侦听层结点端口.(M)<br>
@@ -615,9 +636,10 @@
 ---
 **功能描述**: 移除侦听层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?option=listen-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?action=del&option=listend&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为listen-del.(M)<br>
+> action: 操作行为, 此时为del.(M)<br>
+> option: 操作选项, 此时为listend.(M)<br>
 > nid: 结点ID(M)<br>
 > ipaddr: 将被移除的侦听层结点IP地址.(M)<br>
 > port: 将被移除的侦听层结点端口.(M)<br>
@@ -632,9 +654,10 @@
 ---
 **功能描述**: 查询转发层状态<br>
 **接口类型**: GET<br>
-**接口路径**: /im/query?option=frwder-list<br>
+**接口路径**: /im/config?action=list&option=frwder<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为frwder-list.(M)<br>
+> action: 操作行为, 此时为list.(M)<br>
+> option: 操作选项, 此时为frwder.(M)<br>
 
 **返回结果**:<br>
 >{<br>
@@ -658,9 +681,10 @@
 ---
 **功能描述**: 添加转发层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?option=frwder-add&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?action=add&option=frwder&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为frwder-add.(M)<br>
+> action: 操作行为, 此时为add.(M)<br>
+> option: 操作选项, 此时为frwder.(M)<br>
 > nid: 结点ID(M)<br>
 > ipaddr: 将被添加的转发层结点IP地址.(M)<br>
 > port: 将被添加的转发层结点端口.(M)<br>
@@ -675,9 +699,10 @@
 ---
 **功能描述**: 移除转发层结点<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?option=frwder-del&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
+**接口路径**: /im/config?action=del&option=frwder&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为frwder-del.(M)<br>
+> action: 操作行为, 此时为del.(M)<br>
+> option: 操作选项, 此时为frwder.(M)<br>
 > nid: 结点ID(M)<br>
 > ipaddr: 将被移除的转发层结点IP地址.(M)<br>
 > port: 将被移除的转发层结点端口.(M)<br>
