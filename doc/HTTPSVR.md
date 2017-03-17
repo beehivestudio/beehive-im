@@ -302,10 +302,10 @@
 ---
 **功能描述**: 禁止某人在群内发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?action=add&option=ban&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?action=add&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为add.(M)<br>
-> option: 操作选项, 此时为ban.(M)<br>
+> option: 操作选项, 此时为gag.(M)<br>
 > gid: 群组ID(M)<br>
 > uid: 用户ID. # 当无uid或uid为0时, 全员禁言; 否则是禁止某人发言.<br>
 
@@ -319,10 +319,10 @@
 ---
 **功能描述**: 禁止某人在群组发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?action=del&option=ban&gid=${gid}&uid=${uid}<br>
+**接口路径**: /im/group/config?action=del&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为del.(M)<br>
-> option: 操作选项, 此时为ban.(M)<br>
+> option: 操作选项, 此时为gag.(M)<br>
 > gid: 群组ID(M)<br>
 > uid: 用户ID. # 当无uid或uid为0时, 全员解除禁言; 否则是解除某人禁言.<br>
 
@@ -466,10 +466,10 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?action=add&option=ban&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?action=add&option=gag&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为add.(M)<br>
-> option: 操作选项, 此时为ban.(M)<br>
+> option: 操作选项, 此时为gag.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID. # 当无uid或uid为0时, 全员禁言; 否则是禁止某人发言.<br>
 
@@ -483,10 +483,10 @@
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?action=del&option=ban&rid=${rid}&uid=${uid}<br>
+**接口路径**: /im/room/config?action=del&option=gag&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为del.(M)<br>
-> option: 操作选项, 此时为ban.(M)<br>
+> option: 操作选项, 此时为gag.(M)<br>
 > rid: 聊天室ID(M)<br>
 > uid: 用户ID(M)<br>
 
