@@ -32,7 +32,7 @@ func (ctx *MsgSvrCntx) update() {
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
- **注意事项:
+ **注意事项: 为减小锁的粒度, 获取rid->nid的映射时, 无需加锁.
  **作    者: # Qifeng.zou # 2016.11.05 00:21:54 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) update_rid_to_nid_map() {
@@ -42,9 +42,9 @@ func (ctx *MsgSvrCntx) update_rid_to_nid_map() {
 		return
 	}
 
-	ctx.rid_to_nid_map.Lock()
-	ctx.rid_to_nid_map.m = m
-	ctx.rid_to_nid_map.Unlock()
+	ctx.room.node.Lock()
+	ctx.room.node.m = m
+	ctx.room.node.Unlock()
 }
 
 /******************************************************************************
@@ -54,7 +54,7 @@ func (ctx *MsgSvrCntx) update_rid_to_nid_map() {
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
- **注意事项:
+ **注意事项: 为减小锁的粒度, 获取gid->nid的映射时, 无需加锁.
  **作    者: # Qifeng.zou # 2016.11.08 23:15:29 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) update_gid_to_nid_map() {
@@ -64,9 +64,9 @@ func (ctx *MsgSvrCntx) update_gid_to_nid_map() {
 		return
 	}
 
-	ctx.gid_to_nid_map.Lock()
-	ctx.gid_to_nid_map.m = m
-	ctx.gid_to_nid_map.Unlock()
+	ctx.group.node.Lock()
+	ctx.group.node.m = m
+	ctx.group.node.Unlock()
 }
 
 ////////////////////////////////////////////////////////////////////////////////

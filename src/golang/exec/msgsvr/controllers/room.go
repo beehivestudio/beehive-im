@@ -143,20 +143,20 @@ func (ctx *MsgSvrCntx) send_room_chat_ack(head *comm.MesgHeader, req *mesg.MesgR
  ******************************************************************************/
 func (ctx *MsgSvrCntx) room_chat_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomChat, data []byte) (err error) {
-	var item mesg_room_item
+	item := &MesgRoomItem{}
 
 	/* 1. 放入存储队列 */
 	item.head = head
 	item.req = req
 	item.raw = data
 
-	ctx.room_mesg_chan <- &item
+	ctx.room_mesg_chan <- item
 
 	/* 2. 下发聊天室消息 */
-	ctx.rid_to_nid_map.RLock()
-	nid_list, ok := ctx.rid_to_nid_map.m[req.GetRid()]
+	ctx.room.node.RLock()
+	defer ctx.room.node.RUnlock()
+	nid_list, ok := ctx.room.node.m[req.GetRid()]
 	if !ok {
-		ctx.rid_to_nid_map.RUnlock()
 		return nil
 	}
 
@@ -167,7 +167,6 @@ func (ctx *MsgSvrCntx) room_chat_handler(
 		ctx.send_data(comm.CMD_ROOM_CHAT, req.GetRid(), uint32(nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
-	ctx.rid_to_nid_map.RUnlock()
 	return err
 }
 

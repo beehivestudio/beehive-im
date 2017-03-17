@@ -143,21 +143,22 @@ func (ctx *MsgSvrCntx) send_chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) 
 func (ctx *MsgSvrCntx) chat_handler(
 	head *comm.MesgHeader, req *mesg.MesgChat, data []byte) (err error) {
 	var key string
-	var item mesg_chat_item
 
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	/* 1. 将消息放入离线队列 */
-	item.head = head
-	item.req = req
-	item.raw = data
+	/* > 将消息放入离线队列 */
+	item := &MesgChatItem{
+		head: head,
+		req:  req,
+		raw:  data,
+	}
 
-	ctx.chat_chan <- &item
+	ctx.chat_chan <- item
 
-	/* 2. 发送给"发送方"的其他终端.
-	   > 如果在线, 则直接下发消息
-	   > 如果不在线, 则无需下发消息 */
+	/* > 发送给"发送方"的其他终端.
+	   1.如果在线, 则直接下发消息
+	   2.如果不在线, 则无需下发消息 */
 	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetOrig())
 
 	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
@@ -182,9 +183,9 @@ func (ctx *MsgSvrCntx) chat_handler(
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
-	/* 3. 发送给"接收方"所有终端.
-	   > 如果在线, 则直接下发消息
-	   > 如果不在线, 则无需下发消息 */
+	/* > 发送给"接收方"所有终端.
+		   1.如果在线, 则直接下发消息
+	       2.如果不在线, 则无需下发消息 */
 	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDest())
 
 	sid_list, err = redis.Strings(rds.Do("SMEMBERS", key))

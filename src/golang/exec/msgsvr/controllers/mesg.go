@@ -1,12 +1,10 @@
 package controllers
 
 import (
-	_ "encoding/binary"
 	"errors"
 	"fmt"
 	"strconv"
 	"strings"
-	_ "time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"

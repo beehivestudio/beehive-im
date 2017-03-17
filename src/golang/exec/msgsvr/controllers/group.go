@@ -13,11 +13,14 @@ import (
 )
 
 ////////////////////////////////////////////////////////////////////////////////
+// 群组消息的发送采用写扩散的机制
+
 ////////////////////////////////////////////////////////////////////////////////
+// 群组消息
 
 /******************************************************************************
- **函数名称: group_msg_parse
- **功    能: 解析GROUP-MSG
+ **函数名称: group_chat_parse
+ **功    能: 解析GROUP-CHAT
  **输入参数:
  **     data: 接收的数据
  **输出参数: NONE
@@ -28,25 +31,29 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:29:23 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) group_msg_parse(data []byte) (
+func (ctx *MsgSvrCntx) group_chat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgGroupChat) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Group chat message is invalid!")
+		return nil, nil
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgGroupChat{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal group-msg failed! errmsg:%s", err.Error())
-		return nil, nil
+		ctx.log.Error("Unmarshal group-chat failed! errmsg:%s", err.Error())
+		return head, nil
 	}
 
 	return head, req
 }
 
 /******************************************************************************
- **函数名称: send_err_group_msg_ack
- **功    能: 发送GROUP-MSG应答(异常)
+ **函数名称: send_err_group_chat_ack
+ **功    能: 发送GROUP-CHAT应答(异常)
  **输入参数:
  **     head: 协议头
  **     req: 上线请求
@@ -63,7 +70,7 @@ func (ctx *MsgSvrCntx) group_msg_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:44:00 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
+func (ctx *MsgSvrCntx) send_err_group_chat_ack(head *comm.MesgHeader,
 	req *mesg.MesgGroupChat, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -87,7 +94,7 @@ func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_group_msg_ack
+ **函数名称: sendgroup_chat_ack
  **功    能: 发送上线应答
  **输入参数:
  **     head: 协议头
@@ -103,7 +110,7 @@ func (ctx *MsgSvrCntx) send_err_group_msg_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:44:49 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgGroupChat) int {
+func (ctx *MsgSvrCntx) sendgroup_chat_ack(head *comm.MesgHeader, req *mesg.MesgGroupChat) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgGroupChatAck{
 		Code:   proto.Uint32(0),
@@ -122,7 +129,7 @@ func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgG
 }
 
 /******************************************************************************
- **函数名称: group_msg_handler
+ **函数名称: group_chat_handler
  **功    能: GROUP-MSG处理
  **输入参数:
  **     head: 协议头
@@ -132,26 +139,27 @@ func (ctx *MsgSvrCntx) send_group_msg_ack(head *comm.MesgHeader, req *mesg.MesgG
  **返    回: 错误信息
  **实现描述:
  **     1. 将消息存放在聊天室历史消息表中
- **     2. 遍历rid->nid列表, 并转发聊天室消息
+ **     2. 遍历rid->nid列表, 并转发群聊消息
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:48:00 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) group_msg_handler(
+func (ctx *MsgSvrCntx) group_chat_handler(
 	head *comm.MesgHeader, req *mesg.MesgGroupChat, data []byte) (err error) {
-	var item mesg_group_item
+	/* > 放入存储队列 */
+	item := &MesgGroupItem{
+		head: head,
+		req:  req,
+		raw:  data,
+	}
 
-	/* 1. 放入存储队列 */
-	item.head = head
-	item.req = req
-	item.raw = data
+	ctx.group_mesg_chan <- item
 
-	ctx.group_mesg_chan <- &item
+	/* > 下发群聊消息 */
+	ctx.group.node.RLock()
+	defer ctx.group.node.RUnlock()
 
-	/* 2. 下发群聊消息 */
-	ctx.gid_to_nid_map.RLock()
-	nid_list, ok := ctx.gid_to_nid_map.m[req.GetGid()]
+	nid_list, ok := ctx.group.node.m[req.GetGid()]
 	if !ok {
-		ctx.gid_to_nid_map.RUnlock()
 		return nil
 	}
 
@@ -162,7 +170,6 @@ func (ctx *MsgSvrCntx) group_msg_handler(
 		ctx.send_data(comm.CMD_GROUP_CHAT, req.GetGid(), uint32(nid),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
-	ctx.gid_to_nid_map.RUnlock()
 	return err
 }
 
@@ -180,7 +187,7 @@ func (ctx *MsgSvrCntx) group_msg_handler(
  **实现描述:
  **     1. 判断群消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
  **        进行进行第2步的处理.
- **     2. 将群消息放入群历史消息
+ **     2. 将群消息放入群历史消息, 再放入所有组员的消息队列中.
  **     3. 将群消息发送给在线的人员.
  **     4. 回复发送成功应答给发送方.
  **注意事项:
@@ -193,24 +200,24 @@ func MsgSvrGroupChatHandler(cmd uint32, nid uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Recv group message!")
+	ctx.log.Debug("Recv group chat message!")
 
 	/* > 解析ROOM-MSG协议 */
-	head, req := ctx.group_msg_parse(data)
+	head, req := ctx.group_chat_parse(data)
 	if nil == head || nil == req {
 		ctx.log.Error("Parse group-msg failed!")
 		return -1
 	}
 
 	/* > 进行业务处理 */
-	err := ctx.group_msg_handler(head, req, data)
+	err := ctx.group_chat_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Parse group-msg failed!")
-		ctx.send_err_group_msg_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		ctx.send_err_group_chat_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return -1
 	}
 
-	ctx.send_group_msg_ack(head, req)
+	ctx.sendgroup_chat_ack(head, req)
 
 	return 0
 }

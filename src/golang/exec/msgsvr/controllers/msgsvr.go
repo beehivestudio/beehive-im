@@ -16,33 +16,43 @@ import (
 )
 
 /* RID->NID映射表 */
-type MsgSvrRidToNidMap struct {
+type RidToNidMap struct {
 	sync.RWMutex                     /* 读写锁 */
 	m            map[uint64][]uint32 /* RID->NID映射表 */
 }
 
+/* 聊天室映射表 */
+type RoomMap struct {
+	node RidToNidMap /* RID->NID映射表 */
+}
+
 /* GID->NID映射表 */
-type MsgSvrGidToNidMap struct {
+type GidToNidMap struct {
 	sync.RWMutex                     /* 读写锁 */
 	m            map[uint64][]uint32 /* GID->NID映射表 */
 }
 
+/* 群组映射表 */
+type GroupMap struct {
+	node GidToNidMap /* GID->NID映射表 */
+}
+
 /* 私聊消息 */
-type mesg_chat_item struct {
+type MesgChatItem struct {
 	head *comm.MesgHeader /* 头部信息 */
 	req  *mesg.MesgChat   /* 请求内容 */
 	raw  []byte           /* 原始消息 */
 }
 
 /* 群组消息 */
-type mesg_group_item struct {
+type MesgGroupItem struct {
 	head *comm.MesgHeader    /* 头部信息 */
 	req  *mesg.MesgGroupChat /* 请求内容 */
 	raw  []byte              /* 原始消息 */
 }
 
 /* 聊天室消息 */
-type mesg_room_item struct {
+type MesgRoomItem struct {
 	head *comm.MesgHeader   /* 头部信息 */
 	req  *mesg.MesgRoomChat /* 请求内容 */
 	raw  []byte             /* 原始消息 */
@@ -50,16 +60,15 @@ type mesg_room_item struct {
 
 /* MSGSVR上下文 */
 type MsgSvrCntx struct {
-	conf           *conf.MsgSvrConf    /* 配置信息 */
-	log            *logs.BeeLogger     /* 日志对象 */
-	frwder         *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis          *redis.Pool         /* REDIS连接池 */
-	rid_to_nid_map MsgSvrRidToNidMap   /* RID->NID映射表 */
-	gid_to_nid_map MsgSvrGidToNidMap   /* GID->NID映射表 */
-
-	room_mesg_chan  chan *mesg_room_item  /* 聊天室消息存储队列 */
-	group_mesg_chan chan *mesg_group_item /* 组聊消息存储队列 */
-	chat_chan       chan *mesg_chat_item  /* 私聊消息存储队列 */
+	conf            *conf.MsgSvrConf    /* 配置信息 */
+	log             *logs.BeeLogger     /* 日志对象 */
+	frwder          *rtmq.RtmqProxyCntx /* 代理对象 */
+	redis           *redis.Pool         /* REDIS连接池 */
+	room            RoomMap             /* 聊天室映射 */
+	group           GroupMap            /* 群组映射 */
+	room_mesg_chan  chan *MesgRoomItem  /* 聊天室消息存储队列 */
+	group_mesg_chan chan *MesgGroupItem /* 组聊消息存储队列 */
+	chat_chan       chan *MesgChatItem  /* 私聊消息存储队列 */
 }
 
 /******************************************************************************
@@ -119,9 +128,9 @@ func MsgSvrInit(conf *conf.MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	}
 
 	/* > 初始化存储队列 */
-	ctx.room_mesg_chan = make(chan *mesg_room_item, 100000)
-	ctx.group_mesg_chan = make(chan *mesg_group_item, 100000)
-	ctx.chat_chan = make(chan *mesg_chat_item, 100000)
+	ctx.room_mesg_chan = make(chan *MesgRoomItem, 100000)
+	ctx.group_mesg_chan = make(chan *MesgGroupItem, 100000)
+	ctx.chat_chan = make(chan *MesgChatItem, 100000)
 
 	return ctx, nil
 }

@@ -65,7 +65,7 @@ func RoomGetRidToNidSet(pool *redis.Pool, rid uint64) (list []uint32, err error)
  **输入参数:
  **     pool: REDIS连接池
  **输出参数: NONE
- **返    回: 帧听层ID列表
+ **返    回: rid->nid映射表
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.07 23:03:03 #
