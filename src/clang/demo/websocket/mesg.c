@@ -50,7 +50,7 @@ int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t
     /* 设置ONLINE消息 */
     online.uid = 18600522324;
     online.sid = AWS_SID;
-    online.token = "UnYGaVUyDTxdOVJhUWZXNwA6AmEBaAw/BjMCYFEzUzsBJAZ0AG9dbFA0CzRQaVE4XGNWOVI5BTVVYwZgVTlUdVJqBmRVbA0zXTJSPFE+V2M=";
+    online.token = "W38HaFk+WmtSNgIxBTJVNVpgAmFXPlNgBTBWNFk7AWlRdAZ0AG8PPlM3BzkKOVIzATlVNgZlBTIGMVY0VjoCI1tjB2VZYFpkUj0CbAVqVWE=";
     online.app = "beehive-im";
     online.version = "v.0.1";
     online.has_terminal = true;
