@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	_ "github.com/astaxie/beego"
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
@@ -22,49 +21,93 @@ type UsrSvrPushCtrl struct {
 func (this *UsrSvrPushCtrl) Push() {
 	ctx := GetUsrSvrCtx()
 
-	opt := this.GetString("dim")
-	switch opt {
-	case "room": // 聊天室广播
-		this.room_broadcast(ctx)
+	dim := this.GetString("dim")
+	switch dim {
+	case "sid": // SID推送
+		this.PushBySid(ctx)
+		return
+	case "uid": // UID推送
+		this.PushByUid(ctx)
+		return
+	case "appid": // APP推送
+		this.PushByApp(ctx)
+		return
+	case "room": // ROOM推送
+		this.PushByRoom(ctx)
+		return
+	case "group": // GROUP推送
+		this.PushByGroup(ctx)
+		return
+	case "broadcast": // 全员推送
+		this.Broadcast(ctx)
 		return
 	}
 
-	errmsg := fmt.Sprintf("Unsupport this option:%s.", opt)
+	errmsg := fmt.Sprintf("Unsupport this dimension:%s.", dim)
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// SID推送
 
-/* 聊天室广播参数 */
-type UsrSvrRoomBcParam struct {
+func (this *UsrSvrPushCtrl) PushBySid(ctx *UsrSvrCntx) {
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// UID推送
+
+func (this *UsrSvrPushCtrl) PushByUid(ctx *UsrSvrCntx) {
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// APP推送
+
+func (this *UsrSvrPushCtrl) PushByApp(ctx *UsrSvrCntx) {
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ROOM推送
+
+/* ROOM推送参数 */
+type RoomPushParam struct {
 	rid    uint64 // 聊天室ID
 	expire uint32 // 超时时间
 }
 
-func (this *UsrSvrPushCtrl) room_broadcast(ctx *UsrSvrCntx) {
+/* ROOM推送应答 */
+type RoomPushRsp struct {
+	Rid    uint64 `json:"rid"`    // 聊天室ID
+	Code   int    `json:"code"`   // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
+}
+
+func (this *UsrSvrPushCtrl) PushByRoom(ctx *UsrSvrCntx) {
 	/* > 提取广播参数 */
-	param, err := this.room_broadcast_param_parse(ctx)
+	param, err := this.room_push_param(ctx)
 	if nil != err {
-		ctx.log.Error("Parse room broadcast param failed! rid:%d", param.rid)
+		ctx.log.Error("Parse room push param failed! rid:%d", param.rid)
 		this.Error(comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return
 	}
 
-	/* > 聊天室广播处理 */
-	code, err := this.room_broadcast_handler(ctx, param)
+	/* > ROOM推送处理 */
+	code, err := this.room_push_handler(ctx, param)
 	if nil != err {
 		this.Error(code, err.Error())
 		return
 	}
 
-	this.room_broadcast_success(param)
+	this.room_push_success(param)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: room_broadcast_param_parse
+ **函数名称: room_push_param
  **功    能: 解析参数
  **输入参数:
  **     ctx: 上下文
@@ -76,9 +119,9 @@ func (this *UsrSvrPushCtrl) room_broadcast(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 11:10:59 #
  ******************************************************************************/
-func (this *UsrSvrPushCtrl) room_broadcast_param_parse(
-	ctx *UsrSvrCntx) (param *UsrSvrRoomBcParam, err error) {
-	param = &UsrSvrRoomBcParam{}
+func (this *UsrSvrPushCtrl) room_push_param(
+	ctx *UsrSvrCntx) (param *RoomPushParam, err error) {
+	param = &RoomPushParam{}
 
 	/* > 提取注册参数 */
 	rid, _ := this.GetInt64("rid")
@@ -98,16 +141,9 @@ func (this *UsrSvrPushCtrl) room_broadcast_param_parse(
 	return param, nil
 }
 
-/* 聊天室广播应答 */
-type UsrSvrRoomBcRsp struct {
-	Rid    uint64 `json:"rid"`    // 聊天室ID
-	Code   int    `json:"code"`   // 错误码
-	ErrMsg string `json:"errmsg"` // 错误描述
-}
-
 /******************************************************************************
- **函数名称: room_broadcast_handler
- **功    能: 聊天室广播请求的处理
+ **函数名称: room_push_handler
+ **功    能: ROOM推送请求的处理
  **输入参数:
  **     ctx: 上下文
  **     param: URL参数
@@ -126,8 +162,8 @@ type UsrSvrRoomBcRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 12:27:53 #
  ******************************************************************************/
-func (this *UsrSvrPushCtrl) room_broadcast_handler(
-	ctx *UsrSvrCntx, param *UsrSvrRoomBcParam) (code int, err error) {
+func (this *UsrSvrPushCtrl) room_push_handler(
+	ctx *UsrSvrCntx, param *RoomPushParam) (code int, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -209,18 +245,18 @@ func (this *UsrSvrPushCtrl) room_broadcast_handler(
 }
 
 /******************************************************************************
- **函数名称: room_broadcast_success
- **功    能: 聊天室广播处理成功
+ **函数名称: room_push_success
+ **功    能: 聊天室推送成功
  **输入参数:
  **     param: 请求参数
- **输出参数:
- **返    回: NONE
- **实现描述:
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 按照协议返回http应答
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 16:00:42 #
  ******************************************************************************/
-func (this *UsrSvrPushCtrl) room_broadcast_success(param *UsrSvrRoomBcParam) {
-	var resp UsrSvrRoomBcRsp
+func (this *UsrSvrPushCtrl) room_push_success(param *RoomPushParam) {
+	var resp RoomPushRsp
 
 	resp.Rid = param.rid
 	resp.Code = 0
@@ -231,3 +267,28 @@ func (this *UsrSvrPushCtrl) room_broadcast_success(param *UsrSvrRoomBcParam) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// GROUP推送
+
+/* GROUP推送参数 */
+type GroupPushParam struct {
+	gid    uint64 // 群组ID
+	expire uint32 // 超时时间
+}
+
+/* GROUP推送应答 */
+type GroupPushRsp struct {
+	Gid    uint64 `json:"gid"`    // 群组ID
+	Code   int    `json:"code"`   // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
+}
+
+func (this *UsrSvrPushCtrl) PushByGroup(ctx *UsrSvrCntx) {
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 全员推送
+
+func (this *UsrSvrPushCtrl) Broadcast(ctx *UsrSvrCntx) {
+	return
+}
