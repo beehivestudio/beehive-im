@@ -12,15 +12,32 @@ import (
 	"beehive-im/src/golang/exec/monitor/controllers/conf"
 )
 
-func main() {
-	var conf conf.MonConf
+/* 输入参数 */
+type InputParam struct {
+	conf *string /* 配置路径 */
+}
+
+/* 提取参数 */
+func parse_param() *InputParam {
+	param := &InputParam{}
+
+	/* 配置文件 */
+	param.conf = flag.String("c", "../conf/monitor.xml", "Configuration path")
 
 	flag.Parse()
 
+	return param
+}
+
+func main() {
+	var conf conf.MonConf
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
+	param := parse_param()
+
 	/* > 加载监控配置 */
-	if err := conf.LoadConf(); nil != err {
+	if err := conf.LoadConf(*param.conf); nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}

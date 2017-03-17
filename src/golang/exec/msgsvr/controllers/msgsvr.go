@@ -148,7 +148,6 @@ func MsgSvrInit(conf *conf.MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 func (ctx *MsgSvrCntx) Register() {
 	/* > 通用消息 */
 	ctx.frwder.Register(comm.CMD_SYNC, MsgSvrSyncHandler, ctx)
-	//ctx.frwder.Register(comm.CMD_SYNC_ACK, MsgSvrSyncAckHandler, ctx)
 	//ctx.frwder.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
 
 	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)

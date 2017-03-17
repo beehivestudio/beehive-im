@@ -1380,8 +1380,8 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
 /* 设置禁言 */
 
 /******************************************************************************
- **函数名称: ban_add_parse
- **功    能: 解析BAN-ADD请求
+ **函数名称: gag_add_parse
+ **功    能: 解析GAG-ADD请求
  **输入参数:
  **     data: 原始数据
  **输出参数: NONE
@@ -1394,12 +1394,12 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
+func (ctx *UsrSvrCntx) gag_add_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgGagAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
-		errmsg := "Header of ban-add is invalid!"
+		errmsg := "Header of gag-add is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
@@ -1407,7 +1407,7 @@ func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
 	/* > 解析PB协议 */
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal body of ban-add failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal body of gag-add failed! errmsg:%s", err.Error())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, err
 	}
 
@@ -1415,8 +1415,8 @@ func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: ban_add_handler
- **功    能: 进行BAN-ADD处理
+ **函数名称: gag_add_handler
+ **功    能: 进行GAG-ADD处理
  **输入参数:
  **     head: 协议头
  **     req: 请求内容
@@ -1428,7 +1428,7 @@ func (ctx *UsrSvrCntx) ban_add_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) ban_add_handler(
+func (ctx *UsrSvrCntx) gag_add_handler(
 	head *comm.MesgHeader, req *mesg.MesgGagAdd) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
@@ -1440,7 +1440,7 @@ func (ctx *UsrSvrCntx) ban_add_handler(
 
 	_, err = rds.Do("ZADD", key, ctm, req.GetDest())
 	if nil != err {
-		ctx.log.Error("Add into ban-list failed! errmsg:%s", err.Error())
+		ctx.log.Error("Add into gag-list failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
 	}
 
@@ -1448,11 +1448,11 @@ func (ctx *UsrSvrCntx) ban_add_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_ban_add_ack
- **功    能: 发送BAN-ADD应答
+ **函数名称: send_err_gag_add_ack
+ **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
- **     req: BAN-ADD请求
+ **     req: GAG-ADD请求
  **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
@@ -1466,7 +1466,7 @@ func (ctx *UsrSvrCntx) ban_add_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) send_err_gag_add_ack(head *comm.MesgHeader,
 	req *mesg.MesgGagAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1504,11 +1504,11 @@ func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_ban_add_ack
- **功    能: 发送BAN-ADD应答
+ **函数名称: send_gag_add_ack
+ **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
- **     req: BAN-ADD请求
+ **     req: GAG-ADD请求
  **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
@@ -1522,7 +1522,7 @@ func (ctx *UsrSvrCntx) send_err_ban_add_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_ban_add_ack(
+func (ctx *UsrSvrCntx) send_gag_add_ack(
 	head *comm.MesgHeader, req *mesg.MesgGagAdd) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgGagDelAck{
@@ -1576,11 +1576,11 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 		return -1
 	}
 
-	/* > 解析BAN-ADD请求 */
-	head, req, code, err := ctx.ban_add_parse(data)
+	/* > 解析GAG-ADD请求 */
+	head, req, code, err := ctx.gag_add_parse(data)
 	if nil != err {
-		ctx.log.Error("Parse ban-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_ban_add_ack(head, req, code, err.Error())
+		ctx.log.Error("Parse gag-add failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_gag_add_ack(head, req, code, err.Error())
 		return -1
 	}
 
@@ -1588,25 +1588,25 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.send_err_ban_add_ack(head, req, code, err.Error())
+		ctx.send_err_gag_add_ack(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.send_err_ban_add_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.send_err_gag_add_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
-	/* > 进行BAN-ADD处理 */
-	code, err = ctx.ban_add_handler(head, req)
+	/* > 进行GAG-ADD处理 */
+	code, err = ctx.gag_add_handler(head, req)
 	if nil != err {
-		ctx.log.Error("Handle ban-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_ban_add_ack(head, req, code, err.Error())
+		ctx.log.Error("Handle gag-add failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_gag_add_ack(head, req, code, err.Error())
 		return -1
 	}
 
-	/* > 发送BAN-ADD应答 */
-	ctx.send_ban_add_ack(head, req)
+	/* > 发送GAG-ADD应答 */
+	ctx.send_gag_add_ack(head, req)
 
 	return 0
 }
@@ -1615,8 +1615,8 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 /* 解除禁言 */
 
 /******************************************************************************
- **函数名称: ban_del_parse
- **功    能: 解析BAN-ADD请求
+ **函数名称: gag_del_parse
+ **功    能: 解析GAG-ADD请求
  **输入参数:
  **     data: 原始数据
  **输出参数: NONE
@@ -1629,12 +1629,12 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
+func (ctx *UsrSvrCntx) gag_del_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgGagDel, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
-		errmsg := "Header of ban-del is invalid!"
+		errmsg := "Header of gag-del is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
@@ -1642,7 +1642,7 @@ func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
 	/* > 解析PB协议 */
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal body of ban-del failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal body of gag-del failed! errmsg:%s", err.Error())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, err
 	}
 
@@ -1650,8 +1650,8 @@ func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: ban_del_handler
- **功    能: 进行BAN-ADD处理
+ **函数名称: gag_del_handler
+ **功    能: 进行GAG-ADD处理
  **输入参数:
  **     head: 协议头
  **     req: 请求内容
@@ -1663,7 +1663,7 @@ func (ctx *UsrSvrCntx) ban_del_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) ban_del_handler(
+func (ctx *UsrSvrCntx) gag_del_handler(
 	head *comm.MesgHeader, req *mesg.MesgGagDel) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
@@ -1673,7 +1673,7 @@ func (ctx *UsrSvrCntx) ban_del_handler(
 
 	_, err = rds.Do("ZREM", key, req.GetDest())
 	if nil != err {
-		ctx.log.Error("Remove ban failed! errmsg:%s", err.Error())
+		ctx.log.Error("Remove gag failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
 	}
 
@@ -1681,11 +1681,11 @@ func (ctx *UsrSvrCntx) ban_del_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_ban_del_ack
- **功    能: 发送BAN-ADD应答
+ **函数名称: send_err_gag_del_ack
+ **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
- **     req: BAN-ADD请求
+ **     req: GAG-ADD请求
  **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
@@ -1699,7 +1699,7 @@ func (ctx *UsrSvrCntx) ban_del_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) send_err_gag_del_ack(head *comm.MesgHeader,
 	req *mesg.MesgGagDel, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1737,11 +1737,11 @@ func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_ban_del_ack
- **功    能: 发送BAN-ADD应答
+ **函数名称: send_gag_del_ack
+ **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
- **     req: BAN-ADD请求
+ **     req: GAG-ADD请求
  **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
@@ -1755,7 +1755,7 @@ func (ctx *UsrSvrCntx) send_err_ban_del_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_ban_del_ack(
+func (ctx *UsrSvrCntx) send_gag_del_ack(
 	head *comm.MesgHeader, req *mesg.MesgGagDel) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgGagDelAck{
@@ -1809,11 +1809,11 @@ func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 		return -1
 	}
 
-	/* > 解析BAN-ADD请求 */
-	head, req, code, err := ctx.ban_del_parse(data)
+	/* > 解析GAG-ADD请求 */
+	head, req, code, err := ctx.gag_del_parse(data)
 	if nil != err {
-		ctx.log.Error("Parse ban-del failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_ban_del_ack(head, req, code, err.Error())
+		ctx.log.Error("Parse gag-del failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_gag_del_ack(head, req, code, err.Error())
 		return -1
 	}
 
@@ -1821,25 +1821,25 @@ func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.send_err_ban_del_ack(head, req, code, err.Error())
+		ctx.send_err_gag_del_ack(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.send_err_ban_del_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.send_err_gag_del_ack(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
-	/* > 进行BAN-ADD处理 */
-	code, err = ctx.ban_del_handler(head, req)
+	/* > 进行GAG-ADD处理 */
+	code, err = ctx.gag_del_handler(head, req)
 	if nil != err {
-		ctx.log.Error("Handle ban-del failed! code:%d errmsg:%s", code, err.Error())
-		ctx.send_err_ban_del_ack(head, req, code, err.Error())
+		ctx.log.Error("Handle gag-del failed! code:%d errmsg:%s", code, err.Error())
+		ctx.send_err_gag_del_ack(head, req, code, err.Error())
 		return -1
 	}
 
-	/* > 发送BAN-ADD应答 */
-	ctx.send_ban_del_ack(head, req)
+	/* > 发送GAG-ADD应答 */
+	ctx.send_gag_del_ack(head, req)
 
 	return 0
 }

@@ -25,7 +25,8 @@ type TaskerConf struct {
 /******************************************************************************
  **函数名称: LoadConf
  **功    能: 加载配置信息
- **输入参数: NONE
+ **输入参数:
+ **     path: 配置路径
  **输出参数: NONE
  **返    回:
  **     err: 错误描述
@@ -33,11 +34,11 @@ type TaskerConf struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *TaskerConf) LoadConf() (err error) {
+func (conf *TaskerConf) LoadConf(path string) (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
-	conf.ConfPath = filepath.Join(conf.AppPath, "../conf", "tasker.xml")
+	conf.ConfPath = path
 
 	return conf.conf_parse()
 }

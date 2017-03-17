@@ -21,10 +21,9 @@ func (this *UsrSvrIplistCtrl) Iplist() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 /* 注册参数 */
-type UsrSvrIpListParam struct {
+type IpListParam struct {
 	network  int    // 网络类型(0:Unknown 1:TCP 2:WS)
 	uid      uint64 // 用户ID
 	sid      uint64 // 会话ID
@@ -33,7 +32,7 @@ type UsrSvrIpListParam struct {
 
 func (this *UsrSvrIplistCtrl) iplist_query(ctx *UsrSvrCntx) {
 	/* > 提取注册参数 */
-	param, err := this.iplist_parse_param(ctx)
+	param, err := this.iplist_param_parse(ctx)
 	if nil != err {
 		ctx.log.Error("Parse param failed! uid:%d sid:%d clientip:%s",
 			param.uid, param.sid, param.clientip)
@@ -50,7 +49,7 @@ func (this *UsrSvrIplistCtrl) iplist_query(ctx *UsrSvrCntx) {
 }
 
 /******************************************************************************
- **函数名称: iplist_parse_param
+ **函数名称: iplist_param_parse
  **功    能: 解析参数
  **输入参数:
  **     ctx: 上下文
@@ -62,8 +61,8 @@ func (this *UsrSvrIplistCtrl) iplist_query(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:17:52 #
  ******************************************************************************/
-func (this *UsrSvrIplistCtrl) iplist_parse_param(ctx *UsrSvrCntx) (*UsrSvrIpListParam, error) {
-	param := &UsrSvrIpListParam{}
+func (this *UsrSvrIplistCtrl) iplist_param_parse(ctx *UsrSvrCntx) (*IpListParam, error) {
+	param := &IpListParam{}
 
 	/* > 提取注册参数 */
 	param.network, _ = this.GetInt("network")
@@ -123,7 +122,7 @@ type UsrSvrIpListRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:00:07 #
  ******************************************************************************/
-func (this *UsrSvrIplistCtrl) iplist_handler(ctx *UsrSvrCntx, param *UsrSvrIpListParam) {
+func (this *UsrSvrIplistCtrl) iplist_handler(ctx *UsrSvrCntx, param *IpListParam) {
 	iplist := this.iplist_get(ctx, param.network, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
@@ -148,7 +147,7 @@ func (this *UsrSvrIplistCtrl) iplist_handler(ctx *UsrSvrCntx, param *UsrSvrIpLis
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 23:13:02 #
  ******************************************************************************/
-func (this *UsrSvrIplistCtrl) success(param *UsrSvrIpListParam, iplist []string) {
+func (this *UsrSvrIplistCtrl) success(param *IpListParam, iplist []string) {
 	var resp UsrSvrIpListRsp
 
 	resp.Uid = param.uid
@@ -181,7 +180,7 @@ func (this *UsrSvrIplistCtrl) success(param *UsrSvrIpListParam, iplist []string)
  **     sid: 会话UID
  **作    者: # Qifeng.zou # 2016.11.25 23:54:27 #
  ******************************************************************************/
-func (this *UsrSvrIplistCtrl) iplist_token(param *UsrSvrIpListParam) string {
+func (this *UsrSvrIplistCtrl) iplist_token(param *IpListParam) string {
 	ctx := GetUsrSvrCtx()
 	ttl := time.Now().Unix() + comm.TIME_YEAR
 
@@ -283,5 +282,4 @@ func (listend *UsrSvrLsndList) get_default(ctx *UsrSvrCntx) []string {
 	return items
 }
 
-////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
