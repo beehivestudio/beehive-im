@@ -390,9 +390,9 @@ message mesg_group_dismiss_ack
 
 /*
    命令ID: 0x0305
-   命令描述: 申请入群(GROUP-APPLY)
+   命令描述: 申请入群(GROUP-JOIN)
    协议格式: */
-message mesg_group_apply
+message mesg_group_join
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -400,9 +400,9 @@ message mesg_group_apply
 
 /*
    命令ID: 0x0306
-   命令描述: 申请入群应答(GROUP-APPLY-ACK)
+   命令描述: 申请入群应答(GROUP-JOIN-ACK)
    协议格式: */
-message mesg_group_apply_ack
+message mesg_group_join_ack
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|

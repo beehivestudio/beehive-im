@@ -1383,90 +1383,90 @@ void   mesg_group_dismiss_ack__free_unpacked
   assert(message->base.descriptor == &mesg_group_dismiss_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_apply__init
-                     (MesgGroupApply         *message)
+void   mesg_group_join__init
+                     (MesgGroupJoin         *message)
 {
-  static MesgGroupApply init_value = MESG_GROUP_APPLY__INIT;
+  static MesgGroupJoin init_value = MESG_GROUP_JOIN__INIT;
   *message = init_value;
 }
-size_t mesg_group_apply__get_packed_size
-                     (const MesgGroupApply *message)
+size_t mesg_group_join__get_packed_size
+                     (const MesgGroupJoin *message)
 {
-  assert(message->base.descriptor == &mesg_group_apply__descriptor);
+  assert(message->base.descriptor == &mesg_group_join__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_apply__pack
-                     (const MesgGroupApply *message,
+size_t mesg_group_join__pack
+                     (const MesgGroupJoin *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_apply__descriptor);
+  assert(message->base.descriptor == &mesg_group_join__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_apply__pack_to_buffer
-                     (const MesgGroupApply *message,
+size_t mesg_group_join__pack_to_buffer
+                     (const MesgGroupJoin *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_apply__descriptor);
+  assert(message->base.descriptor == &mesg_group_join__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupApply *
-       mesg_group_apply__unpack
+MesgGroupJoin *
+       mesg_group_join__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupApply *)
-     protobuf_c_message_unpack (&mesg_group_apply__descriptor,
+  return (MesgGroupJoin *)
+     protobuf_c_message_unpack (&mesg_group_join__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_apply__free_unpacked
-                     (MesgGroupApply *message,
+void   mesg_group_join__free_unpacked
+                     (MesgGroupJoin *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_apply__descriptor);
+  assert(message->base.descriptor == &mesg_group_join__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_apply_ack__init
-                     (MesgGroupApplyAck         *message)
+void   mesg_group_join_ack__init
+                     (MesgGroupJoinAck         *message)
 {
-  static MesgGroupApplyAck init_value = MESG_GROUP_APPLY_ACK__INIT;
+  static MesgGroupJoinAck init_value = MESG_GROUP_JOIN_ACK__INIT;
   *message = init_value;
 }
-size_t mesg_group_apply_ack__get_packed_size
-                     (const MesgGroupApplyAck *message)
+size_t mesg_group_join_ack__get_packed_size
+                     (const MesgGroupJoinAck *message)
 {
-  assert(message->base.descriptor == &mesg_group_apply_ack__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ack__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_apply_ack__pack
-                     (const MesgGroupApplyAck *message,
+size_t mesg_group_join_ack__pack
+                     (const MesgGroupJoinAck *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_apply_ack__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ack__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_apply_ack__pack_to_buffer
-                     (const MesgGroupApplyAck *message,
+size_t mesg_group_join_ack__pack_to_buffer
+                     (const MesgGroupJoinAck *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_apply_ack__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ack__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupApplyAck *
-       mesg_group_apply_ack__unpack
+MesgGroupJoinAck *
+       mesg_group_join_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupApplyAck *)
-     protobuf_c_message_unpack (&mesg_group_apply_ack__descriptor,
+  return (MesgGroupJoinAck *)
+     protobuf_c_message_unpack (&mesg_group_join_ack__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_apply_ack__free_unpacked
-                     (MesgGroupApplyAck *message,
+void   mesg_group_join_ack__free_unpacked
+                     (MesgGroupJoinAck *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_apply_ack__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   mesg_group_quit__init
@@ -5554,7 +5554,7 @@ const ProtobufCMessageDescriptor mesg_group_dismiss_ack__descriptor =
   (ProtobufCMessageInit) mesg_group_dismiss_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_apply__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_join__field_descriptors[2] =
 {
   {
     "uid",
@@ -5562,7 +5562,7 @@ static const ProtobufCFieldDescriptor mesg_group_apply__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupApply, uid),
+    offsetof(MesgGroupJoin, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -5574,38 +5574,38 @@ static const ProtobufCFieldDescriptor mesg_group_apply__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupApply, gid),
+    offsetof(MesgGroupJoin, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_apply__field_indices_by_name[] = {
+static const unsigned mesg_group_join__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_apply__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_join__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_apply__descriptor =
+const ProtobufCMessageDescriptor mesg_group_join__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_apply",
-  "MesgGroupApply",
-  "MesgGroupApply",
+  "mesg_group_join",
+  "MesgGroupJoin",
+  "MesgGroupJoin",
   "",
-  sizeof(MesgGroupApply),
+  sizeof(MesgGroupJoin),
   2,
-  mesg_group_apply__field_descriptors,
-  mesg_group_apply__field_indices_by_name,
-  1,  mesg_group_apply__number_ranges,
-  (ProtobufCMessageInit) mesg_group_apply__init,
+  mesg_group_join__field_descriptors,
+  mesg_group_join__field_indices_by_name,
+  1,  mesg_group_join__number_ranges,
+  (ProtobufCMessageInit) mesg_group_join__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_apply_ack__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_join_ack__field_descriptors[2] =
 {
   {
     "code",
@@ -5613,7 +5613,7 @@ static const ProtobufCFieldDescriptor mesg_group_apply_ack__field_descriptors[2]
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupApplyAck, code),
+    offsetof(MesgGroupJoinAck, code),
     NULL,
     NULL,
     0,             /* flags */
@@ -5625,35 +5625,35 @@ static const ProtobufCFieldDescriptor mesg_group_apply_ack__field_descriptors[2]
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupApplyAck, errmsg),
+    offsetof(MesgGroupJoinAck, errmsg),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_apply_ack__field_indices_by_name[] = {
+static const unsigned mesg_group_join_ack__field_indices_by_name[] = {
   0,   /* field[0] = code */
   1,   /* field[1] = errmsg */
 };
-static const ProtobufCIntRange mesg_group_apply_ack__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_join_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_apply_ack__descriptor =
+const ProtobufCMessageDescriptor mesg_group_join_ack__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_apply_ack",
-  "MesgGroupApplyAck",
-  "MesgGroupApplyAck",
+  "mesg_group_join_ack",
+  "MesgGroupJoinAck",
+  "MesgGroupJoinAck",
   "",
-  sizeof(MesgGroupApplyAck),
+  sizeof(MesgGroupJoinAck),
   2,
-  mesg_group_apply_ack__field_descriptors,
-  mesg_group_apply_ack__field_indices_by_name,
-  1,  mesg_group_apply_ack__number_ranges,
-  (ProtobufCMessageInit) mesg_group_apply_ack__init,
+  mesg_group_join_ack__field_descriptors,
+  mesg_group_join_ack__field_indices_by_name,
+  1,  mesg_group_join_ack__number_ranges,
+  (ProtobufCMessageInit) mesg_group_join_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_group_quit__field_descriptors[2] =

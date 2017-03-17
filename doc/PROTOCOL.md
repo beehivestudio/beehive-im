@@ -375,7 +375,7 @@
 
 ---
 命令ID: 0x0302<br>
-命令描述: 创建群组应答(GROUP-APPLY-ACK)<br>
+命令描述: 创建群组应答(GROUP-JOIN-ACK)<br>
 协议格式: <br>
 >message mesg_group_creat_ack<br>
 >{<br>
@@ -407,9 +407,9 @@
 
 ---
 命令ID: 0x0305<br>
-命令描述: 申请入群(GROUP-APPLY)<br>
+命令描述: 申请入群(GROUP-JOIN)<br>
 协议格式: <br>
->message mesg_group_apply<br>
+>message mesg_group_join<br>
 >{<br>
 >   required uint64 uid = 1;        // M|用户ID|数字|<br>
 >   required uint64 gid = 2;        // M|群组ID|数字|<br>
@@ -417,9 +417,9 @@
 
 ---
 命令ID: 0x0306<br>
-命令描述: 申请入群应答(GROUP-APPLY-ACK)<br>
+命令描述: 申请入群应答(GROUP-JOIN-ACK)<br>
 协议格式: <br>
->message mesg_group_apply_ack<br>
+>message mesg_group_join_ack<br>
 >{<br>
 >   required uint32 code = 1;       // M|错误码|数字|<br>
 >   required string errmsg = 2;     // M|错误描述|字串|<br>

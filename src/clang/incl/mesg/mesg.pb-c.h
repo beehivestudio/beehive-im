@@ -47,8 +47,8 @@ typedef struct _MesgGroupCreat MesgGroupCreat;
 typedef struct _MesgGroupCreatAck MesgGroupCreatAck;
 typedef struct _MesgGroupDismiss MesgGroupDismiss;
 typedef struct _MesgGroupDismissAck MesgGroupDismissAck;
-typedef struct _MesgGroupApply MesgGroupApply;
-typedef struct _MesgGroupApplyAck MesgGroupApplyAck;
+typedef struct _MesgGroupJoin MesgGroupJoin;
+typedef struct _MesgGroupJoinAck MesgGroupJoinAck;
 typedef struct _MesgGroupQuit MesgGroupQuit;
 typedef struct _MesgGroupQuitAck MesgGroupQuitAck;
 typedef struct _MesgGroupInvite MesgGroupInvite;
@@ -483,25 +483,25 @@ struct  _MesgGroupDismissAck
     , 0, NULL }
 
 
-struct  _MesgGroupApply
+struct  _MesgGroupJoin
 {
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t gid;
 };
-#define MESG_GROUP_APPLY__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_apply__descriptor) \
+#define MESG_GROUP_JOIN__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_join__descriptor) \
     , 0, 0 }
 
 
-struct  _MesgGroupApplyAck
+struct  _MesgGroupJoinAck
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_GROUP_APPLY_ACK__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_group_apply_ack__descriptor) \
+#define MESG_GROUP_JOIN_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_group_join_ack__descriptor) \
     , 0, NULL }
 
 
@@ -1707,43 +1707,43 @@ MesgGroupDismissAck *
 void   mesg_group_dismiss_ack__free_unpacked
                      (MesgGroupDismissAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupApply methods */
-void   mesg_group_apply__init
-                     (MesgGroupApply         *message);
-size_t mesg_group_apply__get_packed_size
-                     (const MesgGroupApply   *message);
-size_t mesg_group_apply__pack
-                     (const MesgGroupApply   *message,
+/* MesgGroupJoin methods */
+void   mesg_group_join__init
+                     (MesgGroupJoin         *message);
+size_t mesg_group_join__get_packed_size
+                     (const MesgGroupJoin   *message);
+size_t mesg_group_join__pack
+                     (const MesgGroupJoin   *message,
                       uint8_t             *out);
-size_t mesg_group_apply__pack_to_buffer
-                     (const MesgGroupApply   *message,
+size_t mesg_group_join__pack_to_buffer
+                     (const MesgGroupJoin   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupApply *
-       mesg_group_apply__unpack
+MesgGroupJoin *
+       mesg_group_join__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_apply__free_unpacked
-                     (MesgGroupApply *message,
+void   mesg_group_join__free_unpacked
+                     (MesgGroupJoin *message,
                       ProtobufCAllocator *allocator);
-/* MesgGroupApplyAck methods */
-void   mesg_group_apply_ack__init
-                     (MesgGroupApplyAck         *message);
-size_t mesg_group_apply_ack__get_packed_size
-                     (const MesgGroupApplyAck   *message);
-size_t mesg_group_apply_ack__pack
-                     (const MesgGroupApplyAck   *message,
+/* MesgGroupJoinAck methods */
+void   mesg_group_join_ack__init
+                     (MesgGroupJoinAck         *message);
+size_t mesg_group_join_ack__get_packed_size
+                     (const MesgGroupJoinAck   *message);
+size_t mesg_group_join_ack__pack
+                     (const MesgGroupJoinAck   *message,
                       uint8_t             *out);
-size_t mesg_group_apply_ack__pack_to_buffer
-                     (const MesgGroupApplyAck   *message,
+size_t mesg_group_join_ack__pack_to_buffer
+                     (const MesgGroupJoinAck   *message,
                       ProtobufCBuffer     *buffer);
-MesgGroupApplyAck *
-       mesg_group_apply_ack__unpack
+MesgGroupJoinAck *
+       mesg_group_join_ack__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_group_apply_ack__free_unpacked
-                     (MesgGroupApplyAck *message,
+void   mesg_group_join_ack__free_unpacked
+                     (MesgGroupJoinAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgGroupQuit methods */
 void   mesg_group_quit__init
@@ -2812,11 +2812,11 @@ typedef void (*MesgGroupDismiss_Closure)
 typedef void (*MesgGroupDismissAck_Closure)
                  (const MesgGroupDismissAck *message,
                   void *closure_data);
-typedef void (*MesgGroupApply_Closure)
-                 (const MesgGroupApply *message,
+typedef void (*MesgGroupJoin_Closure)
+                 (const MesgGroupJoin *message,
                   void *closure_data);
-typedef void (*MesgGroupApplyAck_Closure)
-                 (const MesgGroupApplyAck *message,
+typedef void (*MesgGroupJoinAck_Closure)
+                 (const MesgGroupJoinAck *message,
                   void *closure_data);
 typedef void (*MesgGroupQuit_Closure)
                  (const MesgGroupQuit *message,
@@ -3009,8 +3009,8 @@ extern const ProtobufCMessageDescriptor mesg_group_creat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_creat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_dismiss__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_dismiss_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_apply__descriptor;
-extern const ProtobufCMessageDescriptor mesg_group_apply_ack__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_join__descriptor;
+extern const ProtobufCMessageDescriptor mesg_group_join_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_quit__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_quit_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_group_invite__descriptor;
