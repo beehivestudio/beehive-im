@@ -53,6 +53,10 @@ func (ctx *MonSvrCntx) lsn_rpt_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Mesg header of lsn-rpt is invalid!")
+		return nil, nil
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgLsnRpt{}
@@ -265,6 +269,10 @@ func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgFrwdRpt) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Mesg header of frwd-rpt is invalid!")
+		return nil, nil
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgFrwdRpt{}

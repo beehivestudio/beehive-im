@@ -52,7 +52,7 @@ func (ctx *MsgSvrCntx) group_chat_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_group_chat_ack
+ **函数名称: group_chat_failed
  **功    能: 发送GROUP-CHAT应答(异常)
  **输入参数:
  **     head: 协议头
@@ -70,7 +70,7 @@ func (ctx *MsgSvrCntx) group_chat_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:44:00 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_err_group_chat_ack(head *comm.MesgHeader,
+func (ctx *MsgSvrCntx) group_chat_failed(head *comm.MesgHeader,
 	req *mesg.MesgGroupChat, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -94,7 +94,7 @@ func (ctx *MsgSvrCntx) send_err_group_chat_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: sendgroup_chat_ack
+ **函数名称: group_chat_ack
  **功    能: 发送上线应答
  **输入参数:
  **     head: 协议头
@@ -110,7 +110,7 @@ func (ctx *MsgSvrCntx) send_err_group_chat_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.17 13:44:49 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) sendgroup_chat_ack(head *comm.MesgHeader, req *mesg.MesgGroupChat) int {
+func (ctx *MsgSvrCntx) group_chat_ack(head *comm.MesgHeader, req *mesg.MesgGroupChat) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgGroupChatAck{
 		Code:   proto.Uint32(0),
@@ -213,11 +213,11 @@ func MsgSvrGroupChatHandler(cmd uint32, nid uint32,
 	err := ctx.group_chat_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Parse group-msg failed!")
-		ctx.send_err_group_chat_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		ctx.group_chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return -1
 	}
 
-	ctx.sendgroup_chat_ack(head, req)
+	ctx.group_chat_ack(head, req)
 
 	return 0
 }

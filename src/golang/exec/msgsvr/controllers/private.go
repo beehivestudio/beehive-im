@@ -30,6 +30,10 @@ func (ctx *MsgSvrCntx) chat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgChat) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
+	if !head.IsValid() {
+		ctx.log.Error("Mesg header of chat is invalid!")
+		return nil, nil
+	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgChat{}
@@ -46,7 +50,7 @@ func (ctx *MsgSvrCntx) chat_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_chat_ack
+ **函数名称: chat_failed
  **功    能: 发送PRVT-MSG应答(异常)
  **输入参数:
  **     head: 协议头
@@ -64,7 +68,7 @@ func (ctx *MsgSvrCntx) chat_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_err_chat_ack(head *comm.MesgHeader,
+func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
 	req *mesg.MesgChat, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -88,7 +92,7 @@ func (ctx *MsgSvrCntx) send_err_chat_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_chat_ack
+ **函数名称: chat_ack
  **功    能: 发送私聊应答
  **输入参数:
  **输出参数: NONE
@@ -102,7 +106,7 @@ func (ctx *MsgSvrCntx) send_err_chat_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
+func (ctx *MsgSvrCntx) chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgChatAck{
 		Code:   proto.Uint32(0),
@@ -253,11 +257,11 @@ func MsgSvrChatHandler(cmd uint32, orig uint32,
 	err := ctx.chat_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Parse private message failed!")
-		ctx.send_err_chat_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		ctx.chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return -1
 	}
 
-	ctx.send_chat_ack(head, req)
+	ctx.chat_ack(head, req)
 
 	return 0
 }

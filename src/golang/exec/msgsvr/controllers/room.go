@@ -50,7 +50,7 @@ func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: send_err_room_chat_ack
+ **函数名称: room_chat_failed
  **功    能: 发送ROOM-CHAT应答(异常)
  **输入参数:
  **     head: 协议头
@@ -68,7 +68,7 @@ func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_err_room_chat_ack(head *comm.MesgHeader,
+func (ctx *MsgSvrCntx) room_chat_failed(head *comm.MesgHeader,
 	req *mesg.MesgRoomChat, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -92,7 +92,7 @@ func (ctx *MsgSvrCntx) send_err_room_chat_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_room_chat_ack
+ **函数名称: room_chat_ack
  **功    能: 发送聊天消息应答
  **输入参数:
  **     head: 协议头
@@ -108,7 +108,7 @@ func (ctx *MsgSvrCntx) send_err_room_chat_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_room_chat_ack(head *comm.MesgHeader, req *mesg.MesgRoomChat) int {
+func (ctx *MsgSvrCntx) room_chat_ack(head *comm.MesgHeader, req *mesg.MesgRoomChat) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomChatAck{
 		Code:   proto.Uint32(0),
@@ -210,11 +210,11 @@ func MsgSvrRoomChatHandler(cmd uint32, nid uint32,
 	err = ctx.room_chat_handler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Handle room message failed!")
-		ctx.send_err_room_chat_ack(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		ctx.room_chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
 		return -1
 	}
 
-	return ctx.send_room_chat_ack(head, req)
+	return ctx.room_chat_ack(head, req)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -260,7 +260,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 }
 
 /******************************************************************************
- **函数名称: send_err_sync_ack
+ **函数名称: sync_failed
  **功    能: 发送SYNC应答(异常)
  **输入参数:
  **     head: 协议头
@@ -279,7 +279,7 @@ func (ctx *MsgSvrCntx) sync_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 23:12:29 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_err_sync_ack(head *comm.MesgHeader,
+func (ctx *MsgSvrCntx) sync_failed(head *comm.MesgHeader,
 	req *mesg.MesgSync, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -321,7 +321,7 @@ func (ctx *MsgSvrCntx) send_err_sync_ack(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: send_sync_ack
+ **函数名称: sync_ack
  **功    能: 发送SYNC消息应答
  **输入参数:
  **     head: 协议头
@@ -338,7 +338,7 @@ func (ctx *MsgSvrCntx) send_err_sync_ack(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 23:08:08 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) int {
+func (ctx *MsgSvrCntx) sync_ack(head *comm.MesgHeader, req *mesg.MesgSync) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgSyncAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -399,7 +399,7 @@ func MsgSvrSyncHandler(cmd uint32, nid uint32,
 	head, req, code, err := ctx.sync_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse sync message failed! errmsg:%s", err.Error())
-		ctx.send_err_sync_ack(head, req, code, err.Error())
+		ctx.sync_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -407,12 +407,12 @@ func MsgSvrSyncHandler(cmd uint32, nid uint32,
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get session attr failed! errmsg:%s", err.Error())
-		ctx.send_err_sync_ack(head, req, code, err.Error())
+		ctx.sync_failed(head, req, code, err.Error())
 		return -1
 	} else if req.GetUid() != attr.Uid {
 		ctx.log.Error("Sync data failed! uid:%d/%d nid:%d/%d",
 			req.GetUid(), attr.Uid, head.GetNid(), attr.Nid)
-		ctx.send_err_sync_ack(head, req, comm.ERR_SVR_DATA_COLLISION, "Uid is collision!")
+		ctx.sync_failed(head, req, comm.ERR_SVR_DATA_COLLISION, "Uid is collision!")
 		return -1
 	}
 
@@ -420,11 +420,11 @@ func MsgSvrSyncHandler(cmd uint32, nid uint32,
 	code, err = ctx.sync_handler(head, req)
 	if nil != err {
 		ctx.log.Error("Handle sync message failed! errmsg:%s", err.Error())
-		ctx.send_err_sync_ack(head, req, code, err.Error())
+		ctx.sync_failed(head, req, code, err.Error())
 		return -1
 	}
 
-	ctx.send_sync_ack(head, req)
+	ctx.sync_ack(head, req)
 
 	return 0
 }
