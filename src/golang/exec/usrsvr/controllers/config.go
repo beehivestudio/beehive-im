@@ -105,13 +105,13 @@ func (this *UsrSvrRoomConfigCtrl) blacklist(ctx *UsrSvrCntx) {
 }
 
 /* 参数列表 */
-type BlackListAddParam struct {
+type RoomBlacklistAddParam struct {
 	rid uint64 // 聊天室ID
 	uid uint64 // 用户UID
 }
 
 /* 加入黑名单请求 */
-type BlackListAddReq struct {
+type RoomBlacklistAddReq struct {
 	ctrl *UsrSvrRoomConfigCtrl
 }
 
@@ -125,9 +125,9 @@ type BlackListAddReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *BlackListAddReq) parse_param() *BlackListAddParam {
+func (req *RoomBlacklistAddReq) parse_param() *RoomBlacklistAddParam {
 	this := req.ctrl
-	param := &BlackListAddParam{}
+	param := &RoomBlacklistAddParam{}
 
 	rid_str := this.GetString("rid")
 	uid_str := this.GetString("uid")
@@ -162,7 +162,7 @@ func (req *BlackListAddReq) parse_param() *BlackListAddParam {
  **作    者: # Qifeng.zou # 2017.03.18 09:49:16 #
  ******************************************************************************/
 func (this *UsrSvrRoomConfigCtrl) blacklist_add(ctx *UsrSvrCntx) {
-	req := &BlackListAddReq{ctrl: this}
+	req := &RoomBlacklistAddReq{ctrl: this}
 
 	param := req.parse_param()
 	if nil == param {
@@ -188,13 +188,13 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_add(ctx *UsrSvrCntx) {
 }
 
 /* 请求参数 */
-type BlackListDelParam struct {
+type RoomBlackListDelParam struct {
 	rid uint64 // 聊天室ID
 	uid uint64 // 用户UID
 }
 
 /* 请求对象 */
-type BlackListDelReq struct {
+type RoomBlackListDelReq struct {
 	ctrl *UsrSvrRoomConfigCtrl // 空间对象
 }
 
@@ -208,9 +208,9 @@ type BlackListDelReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *BlackListDelReq) parse_param() *BlackListDelParam {
+func (req *RoomBlackListDelReq) parse_param() *RoomBlackListDelParam {
 	this := req.ctrl
-	param := &BlackListDelParam{}
+	param := &RoomBlackListDelParam{}
 
 	rid_str := this.GetString("rid")
 	uid_str := this.GetString("uid")
@@ -245,7 +245,7 @@ func (req *BlackListDelReq) parse_param() *BlackListDelParam {
  **作    者: # Qifeng.zou # 2017.03.18 10:11:20 #
  ******************************************************************************/
 func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
-	req := &BlackListDelReq{ctrl: this}
+	req := &RoomBlackListDelReq{ctrl: this}
 
 	param := req.parse_param()
 	if nil == param {
@@ -273,8 +273,197 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
 ////////////////////////////////////////////////////////////////////////////////
 // 聊天室禁言操作接口
 
+/******************************************************************************
+ **函数名称: gag
+ **功    能: 禁言操作
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: NONE
+ **实现描述: 根据action调用对应的处理函数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 11:23:31 #
+ ******************************************************************************/
 func (this *UsrSvrRoomConfigCtrl) gag(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "add": // 添加禁言
+		this.gag_add(ctx)
+	case "del": // 移除禁言
+		this.gag_del(ctx)
+	}
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	return
 }
+
+/* 参数列表 */
+type RoomGagAddParam struct {
+	rid uint64 // 聊天室ID
+	uid uint64 // 用户UID
+}
+
+/* 加入禁言请求 */
+type RoomGagAddReq struct {
+	ctrl *UsrSvrRoomConfigCtrl
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
+ ******************************************************************************/
+func (req *RoomGagAddReq) parse_param() *RoomGagAddParam {
+	this := req.ctrl
+	param := &RoomGagAddParam{}
+
+	rid_str := this.GetString("rid")
+	uid_str := this.GetString("uid")
+
+	rid, _ := strconv.ParseInt(rid_str, 10, 64)
+	if 0 == rid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
+		return nil
+	}
+
+	uid, _ := strconv.ParseInt(uid_str, 10, 64)
+	if 0 == uid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter uid is invalid!")
+		return nil
+	}
+
+	param.rid = uint64(rid)
+	param.uid = uint64(uid)
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: gag_add
+ **功    能: 添加禁言
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.加入聊天室禁言名单
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 11:27:21 #
+ ******************************************************************************/
+func (this *UsrSvrRoomConfigCtrl) gag_add(ctx *UsrSvrCntx) {
+	req := &RoomGagAddReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		ctx.log.Error("Parse gag add action paramater failed!")
+		return
+	}
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 用户加入禁言 */
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_GAG_SET, param.rid)
+
+	pl.Send("ZADD", key, time.Now().Unix(), param.uid)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+/* 请求参数 */
+type RoomGagDelParam struct {
+	rid uint64 // 聊天室ID
+	uid uint64 // 用户UID
+}
+
+/* 请求对象 */
+type RoomGagDelReq struct {
+	ctrl *UsrSvrRoomConfigCtrl // 空间对象
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
+ ******************************************************************************/
+func (req *RoomGagDelReq) parse_param() *RoomGagDelParam {
+	this := req.ctrl
+	param := &RoomGagDelParam{}
+
+	rid_str := this.GetString("rid")
+	uid_str := this.GetString("uid")
+
+	rid, _ := strconv.ParseInt(rid_str, 10, 64)
+	if 0 == rid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
+		return nil
+	}
+
+	uid, _ := strconv.ParseInt(uid_str, 10, 64)
+	if 0 == uid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter uid is invalid!")
+		return nil
+	}
+
+	param.rid = uint64(rid)
+	param.uid = uint64(uid)
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: gag_del
+ **功    能: 移除禁言
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.移除禁言名单
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 11:29:04 #
+ ******************************************************************************/
+func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
+	req := &RoomGagDelReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		ctx.log.Error("Parse gag del action paramater failed!")
+		return
+	}
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 用户移除黑名单 */
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_GAG_SET, param.rid)
+
+	pl.Send("ZREM", key, param.uid)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 func (this *UsrSvrRoomConfigCtrl) close(ctx *UsrSvrCntx) {
 }
