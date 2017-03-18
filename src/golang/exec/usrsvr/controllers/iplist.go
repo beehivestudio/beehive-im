@@ -30,6 +30,19 @@ type IpListParam struct {
 	clientip string // 客户端IP
 }
 
+/* IP列表应答 */
+type IpListRsp struct {
+	Uid     uint64   `json:"uid"`     // 用户ID
+	Sid     uint64   `json:"sid"`     // 会话ID
+	Network int      `json:"network"` // 网络类型(0:Unknown 1:TCP 2:WS)
+	Token   string   `json:"token"`   // 鉴权TOKEN
+	Expire  int      `json:"expire"`  // 过期时长
+	Len     int      `json:"len"`     // 列表长度
+	List    []string `json:"list"`    // IP列表
+	Code    int      `json:"code"`    // 错误码
+	ErrMsg  string   `json:"errmsg"`  // 错误描述
+}
+
 func (this *UsrSvrIplistCtrl) iplist_query(ctx *UsrSvrCntx) {
 	/* > 提取注册参数 */
 	param, err := this.iplist_param_parse(ctx)
@@ -97,19 +110,6 @@ func (this *UsrSvrIplistCtrl) iplist_param_parse(ctx *UsrSvrCntx) (*IpListParam,
 	return param, nil
 }
 
-/* IP列表应答 */
-type UsrSvrIpListRsp struct {
-	Uid     uint64   `json:"uid"`     // 用户ID
-	Sid     uint64   `json:"sid"`     // 会话ID
-	Network int      `json:"network"` // 网络类型(0:Unknown 1:TCP 2:WS)
-	Token   string   `json:"token"`   // 鉴权TOKEN
-	Expire  int      `json:"expire"`  // 过期时长
-	Len     int      `json:"len"`     // 列表长度
-	List    []string `json:"list"`    // IP列表
-	Code    int      `json:"code"`    // 错误码
-	ErrMsg  string   `json:"errmsg"`  // 错误描述
-}
-
 /******************************************************************************
  **函数名称: iplist_handler
  **功    能: 获取IP列表
@@ -148,7 +148,7 @@ func (this *UsrSvrIplistCtrl) iplist_handler(ctx *UsrSvrCntx, param *IpListParam
  **作    者: # Qifeng.zou # 2016.11.25 23:13:02 #
  ******************************************************************************/
 func (this *UsrSvrIplistCtrl) success(param *IpListParam, iplist []string) {
-	var resp UsrSvrIpListRsp
+	var resp IpListRsp
 
 	resp.Uid = param.uid
 	resp.Sid = param.sid

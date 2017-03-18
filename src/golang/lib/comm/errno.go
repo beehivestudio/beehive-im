@@ -1,5 +1,9 @@
 package comm
 
+const (
+	ERR_SUCC = 0 // 正常
+)
+
 /*
  *错误码说明
  *20503

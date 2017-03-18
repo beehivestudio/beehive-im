@@ -30,12 +30,13 @@ func parse_param() *InputParam {
 }
 
 /* 设置BEEGO配置 */
-func set_bconf(conf *conf.UsrSvrConf) {
+func beego_config(conf *conf.UsrSvrConf) {
 	beego.BConfig.AppName = "beehive-im"
 	beego.BConfig.Listen.EnableHTTP = true
 	beego.BConfig.Listen.HTTPAddr = ""
 	beego.BConfig.Listen.HTTPPort = int(conf.Port)
 	beego.BConfig.RouterCaseSensitive = true
+	beego.BConfig.Log.FileLineNum = true
 }
 
 /* 初始化 */
@@ -52,7 +53,7 @@ func _init() *controllers.UsrSvrCntx {
 		return nil
 	}
 
-	set_bconf(&conf)
+	beego_config(&conf)
 
 	/* > 初始化HTTPSVR环境 */
 	ctx, err := controllers.UsrSvrInit(&conf)
