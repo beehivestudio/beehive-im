@@ -518,10 +518,10 @@
 ---
 **功能描述**: 设置聊天室分组容量<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?action=set&option=group-cap&rid=${rid}<br>
+**接口路径**: /im/room/config?action=set&option=cap&rid=${rid}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为set.(M)<br>
-> option: 操作选项, 此时为group-cap.(M)<br>
+> option: 操作选项, 此时为cap.(M)<br>
 > rid: 聊天室ID(O).当未制定${rid}时, 则是修改默认分组容量; 指明聊天室ID, 则是指明某聊天室的分组容量<br>
 
 **返回结果**:<br>
@@ -536,10 +536,10 @@
 ---
 **功能描述**: 查询聊天室分组容量<br>
 **接口类型**: GET<br>
-**接口路径**: /im/room/config?action=get&option=group-cap&rid=${rid}<br>
+**接口路径**: /im/room/config?action=get&option=cap&rid=${rid}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为get.(M)<br>
-> option: 操作选项, 此时为group-cap.(M)<br>
+> option: 操作选项, 此时为cap.(M)<br>
 > rid: 聊天室ID(O).当未制定${rid}时, 则是查询默认分组容量; 指明聊天室ID, 则是查询某聊天室的分组容量<br>
 
 **返回结果**:<br>

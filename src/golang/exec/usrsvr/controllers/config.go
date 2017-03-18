@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/garyburd/redigo/redis"
+
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -18,11 +20,7 @@ func (this *UsrSvrConfigCtrl) Config() {
 
 	option := this.GetString("option")
 	switch option {
-	case "user-statis-add": // 添加在线人数统计
-		return
-	case "user-statis-del": // 删除在线人数统计
-		return
-	case "user-statis-list": // 在线人数统计列表
+	case "user-statis": // 添加在线人数统计
 		return
 	}
 
@@ -465,8 +463,223 @@ func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/******************************************************************************
+ **函数名称: close
+ **功    能: 关闭聊天室
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 直接解散聊天室
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
+ ******************************************************************************/
 func (this *UsrSvrRoomConfigCtrl) close(ctx *UsrSvrCntx) {
 }
 
+/******************************************************************************
+ **函数名称: capacity
+ **功    能: 设置聊天室分组容量
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
+ ******************************************************************************/
 func (this *UsrSvrRoomConfigCtrl) capacity(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "set": // 设置聊天室分组容量
+		this.capacity_set(ctx)
+		return
+	case "get": // 获取聊天室分组容量
+		this.capacity_get(ctx)
+		return
+	}
+}
+
+/* 请求参数 */
+type RoomCapSetParam struct {
+	rid      uint64 // 聊天室ID
+	capacity int    // 分组容量
+}
+
+/* 请求对象 */
+type RoomCapSetReq struct {
+	ctrl *UsrSvrRoomConfigCtrl // 空间对象
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
+ ******************************************************************************/
+func (req *RoomCapSetReq) parse_param() *RoomCapSetParam {
+	this := req.ctrl
+	param := &RoomCapSetParam{}
+
+	rid_str := this.GetString("rid")
+	cap_str := this.GetString("cap")
+
+	rid, _ := strconv.ParseInt(rid_str, 10, 64)
+	if 0 == rid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
+		return nil
+	}
+
+	capacity, _ := strconv.ParseInt(cap_str, 10, 32)
+	if 0 == capacity {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter cap is invalid!")
+		return nil
+	}
+
+	param.rid = uint64(rid)
+	param.capacity = int(capacity)
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: capacity_set
+ **功    能: 设置聊天室分组人数
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.移除禁言名单
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
+ ******************************************************************************/
+func (this *UsrSvrRoomConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
+	req := &RoomCapSetReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		ctx.log.Error("Parse cap set action paramater failed!")
+		return
+	}
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 存储聊天室分组容量 */
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GRP_CAP_ZSET)
+
+	pl.Send("ZADD", key, param.capacity, param.rid)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+/* 请求参数 */
+type RoomCapGetParam struct {
+	rid      uint64 // 聊天室ID
+	capacity int    // 分组容量
+}
+
+/* 请求对象 */
+type RoomCapGetReq struct {
+	ctrl *UsrSvrRoomConfigCtrl // 空间对象
+}
+
+/* 请求应答 */
+type RoomCapGetRsp struct {
+	Rid    uint64 `json:"rid"`    // ROOM ID
+	Cap    int    `json:"cap"`    // 分组容量
+	Code   int    `json:"code"`   // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
+ ******************************************************************************/
+func (req *RoomCapGetReq) parse_param() *RoomCapGetParam {
+	this := req.ctrl
+	param := &RoomCapGetParam{}
+
+	rid_str := this.GetString("rid")
+	cap_str := this.GetString("cap")
+
+	rid, _ := strconv.ParseInt(rid_str, 10, 64)
+	if 0 == rid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
+		return nil
+	}
+
+	capacity, _ := strconv.ParseInt(cap_str, 10, 32)
+	if 0 == capacity {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter cap is invalid!")
+		return nil
+	}
+
+	param.rid = uint64(rid)
+	param.capacity = int(capacity)
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: capacity_get
+ **功    能: 获取聊天室分组人数
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.移除禁言名单
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
+ ******************************************************************************/
+func (this *UsrSvrRoomConfigCtrl) capacity_get(ctx *UsrSvrCntx) {
+	req := &RoomCapGetReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		ctx.log.Error("Parse cap get action paramater failed!")
+		return
+	}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 存储聊天室分组容量 */
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GRP_CAP_ZSET)
+
+	capacity, err := redis.Int(rds.Do("ZSCORE", key, param.rid))
+	if nil != err {
+		ctx.log.Error("Get room capacity failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
+		return
+	}
+
+	/* > 回复处理应答 */
+	rsp := &RoomCapGetRsp{
+		Rid:    param.rid,
+		Cap:    capacity,
+		Code:   comm.ERR_SUCC,
+		ErrMsg: "Ok",
+	}
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
+
+	return
 }

@@ -22,6 +22,7 @@ const (
 	//聊天室
 	CHAT_KEY_RID_INCR               = "chat:rid:incr"                 //*| STRING | 聊天室RID记录器|
 	CHAT_KEY_RID_ZSET               = "chat:rid:zset"                 //*| ZSET | 聊天室RID集合 | 成员:RID 分值:TTL |
+	CHAT_KEY_ROOM_GRP_CAP_ZSET      = "chat:room:group:cap:zset"      //*| ZSET | 聊天室分组容量 | 成员:RID 分值:分组容量 |
 	CHAT_KEY_UID_TO_RID             = "chat:uid:%d:to:rid:htab"       //| HASH | 用户UID对应的RID集合 | 成员:RID 分值:GID |
 	CHAT_KEY_SID_TO_RID_ZSET        = "chat:sid:%d:to:rid:zset"       //*| ZSET | 会话SID对应的RID集合 | 成员:RID 分值:GID |
 	CHAT_KEY_ROOM_GROUP_USR_NUM     = "chat:room:group:usr:num"       //| ZSET | 聊天室分组人数配置 | 成员:RID 分值:USERNUM |
