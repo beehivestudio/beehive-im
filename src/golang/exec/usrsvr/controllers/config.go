@@ -7,6 +7,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
+	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -66,8 +67,8 @@ func (this *UsrSvrRoomConfigCtrl) Config() {
 		this.blacklist(ctx)
 	case "gag": // 聊天室禁言操作
 		this.gag(ctx)
-	case "close": // 关闭聊天室
-		this.close(ctx)
+	case "room": // 聊天室操作
+		this.room(ctx)
 	case "capacity": // 聊天室分组容量
 		this.capacity(ctx)
 	}
@@ -464,8 +465,8 @@ func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: close
- **功    能: 关闭聊天室
+ **函数名称: room
+ **功    能: 聊天室其他操作
  **输入参数:
  **     ctx: 全局对象
  **输出参数: NONE
@@ -474,8 +475,174 @@ func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) close(ctx *UsrSvrCntx) {
+func (this *UsrSvrRoomConfigCtrl) room(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "open": // 打开聊天室
+		this.room_open(ctx)
+		return
+	case "close": // 关闭聊天室
+		this.room_close(ctx)
+		return
+	}
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	return
 }
+
+/* 参数列表 */
+type RoomOpenParam struct {
+	rid uint64 // 聊天室ID
+}
+
+/* 打开请求 */
+type RoomOpenReq struct {
+	ctrl *UsrSvrRoomConfigCtrl
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 08:06:28 #
+ ******************************************************************************/
+func (req *RoomOpenReq) parse_param() *RoomOpenParam {
+	this := req.ctrl
+	param := &RoomOpenParam{}
+
+	rid_str := this.GetString("rid")
+
+	rid, _ := strconv.ParseInt(rid_str, 10, 64)
+	if 0 == rid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
+		return nil
+	}
+
+	param.rid = uint64(rid)
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: room_open
+ **功    能: 开启聊天室
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.修改聊天室属性
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 08:07:31 #
+ ******************************************************************************/
+func (this *UsrSvrRoomConfigCtrl) room_open(ctx *UsrSvrCntx) {
+	req := &RoomOpenReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		ctx.log.Error("Parse open action paramater failed!")
+		return
+	}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 用户加入禁言 */
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_ATTR, param.rid)
+
+	_, err := rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_OPEN)
+	if nil != err {
+		/* > 回复处理应答 */
+		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
+		return
+	}
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+/* 参数列表 */
+type RoomCloseParam struct {
+	rid uint64 // 聊天室ID
+}
+
+/* 打开请求 */
+type RoomCloseReq struct {
+	ctrl *UsrSvrRoomConfigCtrl
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 08:06:28 #
+ ******************************************************************************/
+func (req *RoomCloseReq) parse_param() *RoomCloseParam {
+	this := req.ctrl
+	param := &RoomCloseParam{}
+
+	rid_str := this.GetString("rid")
+
+	rid, _ := strconv.ParseInt(rid_str, 10, 64)
+	if 0 == rid {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
+		return nil
+	}
+
+	param.rid = uint64(rid)
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: room_close
+ **功    能: 关闭聊天室
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.修改聊天室属性
+ **注意事项: TODO: 关闭聊天室后, 需要给所有侦听层广播解散聊天室的指令.
+ **作    者: # Qifeng.zou # 2017.03.19 08:07:31 #
+ ******************************************************************************/
+func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
+	req := &RoomCloseReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		ctx.log.Error("Parse close action paramater failed!")
+		return
+	}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 修改聊天室属性 */
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_ATTR, param.rid)
+
+	_, err := rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_CLOSE)
+	if nil != err {
+		/* > 回复处理应答 */
+		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
+		return
+	}
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
  **函数名称: capacity
@@ -573,7 +740,7 @@ func (this *UsrSvrRoomConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
 	}()
 
 	/* > 存储聊天室分组容量 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GRP_CAP_ZSET)
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GROUP_CAP_ZSET)
 
 	pl.Send("ZADD", key, param.capacity, param.rid)
 
@@ -661,7 +828,7 @@ func (this *UsrSvrRoomConfigCtrl) capacity_get(ctx *UsrSvrCntx) {
 	defer rds.Close()
 
 	/* > 存储聊天室分组容量 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GRP_CAP_ZSET)
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GROUP_CAP_ZSET)
 
 	capacity, err := redis.Int(rds.Do("ZSCORE", key, param.rid))
 	if nil != err {
