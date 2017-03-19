@@ -42,9 +42,13 @@ func (this *UsrSvrGroupConfigCtrl) Config() {
 	option := this.GetString("option")
 	switch option {
 	case "blacklist": // 群组黑名单操作
+		return
 	case "ban": // 群组禁言操作
+		return
 	case "close": // 关闭群组
+		return
 	case "capacity": // 设置群组容量
+		return
 	}
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", option))
@@ -65,15 +69,20 @@ func (this *UsrSvrRoomConfigCtrl) Config() {
 	switch option {
 	case "blacklist": // 聊天室黑名单操作
 		this.blacklist(ctx)
+		return
 	case "gag": // 聊天室禁言操作
 		this.gag(ctx)
+		return
 	case "room": // 聊天室操作
 		this.room(ctx)
+		return
 	case "capacity": // 聊天室分组容量
 		this.capacity(ctx)
+		return
 	}
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", option))
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -95,8 +104,10 @@ func (this *UsrSvrRoomConfigCtrl) blacklist(ctx *UsrSvrCntx) {
 	switch action {
 	case "add": // 添加聊天室黑名单
 		this.blacklist_add(ctx)
+		return
 	case "del": // 移除聊天室黑名单
 		this.blacklist_del(ctx)
+		return
 	}
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
@@ -288,8 +299,10 @@ func (this *UsrSvrRoomConfigCtrl) gag(ctx *UsrSvrCntx) {
 	switch action {
 	case "add": // 添加禁言
 		this.gag_add(ctx)
+		return
 	case "del": // 移除禁言
 		this.gag_del(ctx)
+		return
 	}
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
