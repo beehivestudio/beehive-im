@@ -2461,7 +2461,7 @@ GET_GID:
 		}
 
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
-		member := fmt.Sprintf(comm.UID_SID_STR, req.GetUid(), head.GetSid())
+		member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
 		ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 		pl.Send("ZADD", key, ttl, member) // 加入RID -> UID集合"${uid}:${sid}"
 
@@ -2496,7 +2496,7 @@ GET_GID:
 	pl.Send("ZINCRBY", key, 1, gid)
 
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
-	member := fmt.Sprintf(comm.UID_SID_STR, req.GetUid(), head.GetSid())
+	member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZADD", key, ttl, member) // 加入RID -> UID集合"${uid}:${sid}"
 
@@ -2762,7 +2762,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
 	pl.Send("ZREM", key, head.GetSid()) // 清理RID -> SID集合
 
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
-	member := fmt.Sprintf(comm.UID_SID_STR, req.GetUid(), head.GetSid())
+	member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
 	pl.Send("ZREM", key, member) // 清理RID -> UID集合"${uid}:${sid}"
 
 	return 0, nil

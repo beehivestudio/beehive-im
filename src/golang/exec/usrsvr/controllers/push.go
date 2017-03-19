@@ -58,8 +58,118 @@ func (this *UsrSvrPushCtrl) SidPush(ctx *UsrSvrCntx) {
 ////////////////////////////////////////////////////////////////////////////////
 // UID推送
 
+/* UID推送请求 */
+type UidPushReq struct {
+	ctrl *UsrSvrPushCtrl
+}
+
+/* UID推送参数 */
+type UidPushParam struct {
+	uid    uint64 // 用户UID
+	expire uint32 // 超时时间
+}
+
+/* UID推送应答 */
+type UidPushRsp struct {
+	Uid    uint64 `json:"uid"`    // 用户UID
+	Code   int    `json:"code"`   // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
+}
+
 func (this *UsrSvrPushCtrl) UidPush(ctx *UsrSvrCntx) {
+	req := &UidPushReq{ctrl: this}
+
+	/* > 提取广播参数 */
+	param, err := req.parse_param(ctx)
+	if nil != err {
+		ctx.log.Error("Parse uid push param failed! uid:%d", param.uid)
+		this.Error(comm.ERR_SVR_PARSE_PARAM, err.Error())
+		return
+	}
+
+	/* > UID推送处理 */
+	code, err := req.push_handler(ctx, param)
+	if nil != err {
+		this.Error(code, err.Error())
+		return
+	}
+
+	req.push_success(param)
+
 	return
+
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 解析参数
+ **输入参数:
+ **     ctx: 上下文
+ **输出参数: NONE
+ **返    回:
+ **     param: 注册参数
+ **     err: 错误描述
+ **实现描述: 从url参数中抽取
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 22:05:58 #
+ ******************************************************************************/
+func (req *UidPushReq) parse_param(
+	ctx *UsrSvrCntx) (param *UidPushParam, err error) {
+	this := req.ctrl
+	param = &UidPushParam{}
+
+	/* > 提取注册参数 */
+	uid, _ := this.GetInt64("uid")
+	param.uid = uint64(uid)
+
+	expire, _ := this.GetInt32("expire")
+	param.expire = uint32(expire)
+
+	/* > 校验参数合法性 */
+	if 0 == param.uid {
+		ctx.log.Error("Paramter is invalid. uid:%d", param.uid)
+		return param, errors.New("Paramter is invalid!")
+	}
+
+	return param, nil
+}
+
+/******************************************************************************
+ **函数名称: push_handler
+ **功    能: UID推送处理
+ **输入参数:
+ **     param: 请求参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 按照协议返回http应答
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 22:19:04 #
+ ******************************************************************************/
+func (req *UidPushReq) push_handler(ctx *UsrSvrCntx, param *UidPushParam) (code int, err error) {
+	return 0, nil
+}
+
+/******************************************************************************
+ **函数名称: push_success
+ **功    能: UID推送成功
+ **输入参数:
+ **     param: 请求参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 按照协议返回http应答
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 22:19:04 #
+ ******************************************************************************/
+func (req *UidPushReq) push_success(param *UidPushParam) {
+	this := req.ctrl
+	rsp := &UidPushRsp{
+		Uid:    param.uid,
+		Code:   0,
+		ErrMsg: "OK",
+	}
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -71,6 +181,11 @@ func (this *UsrSvrPushCtrl) AppPush(ctx *UsrSvrCntx) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ROOM推送
+
+/* ROOM推送请求 */
+type RoomPushReq struct {
+	ctrl *UsrSvrPushCtrl
+}
 
 /* ROOM推送参数 */
 type RoomPushParam struct {
@@ -86,8 +201,10 @@ type RoomPushRsp struct {
 }
 
 func (this *UsrSvrPushCtrl) RoomPush(ctx *UsrSvrCntx) {
-	/* > 提取广播参数 */
-	param, err := this.room_push_param(ctx)
+	req := &RoomPushReq{ctrl: this}
+
+	/* > 提取参数 */
+	param, err := req.prase_param(ctx)
 	if nil != err {
 		ctx.log.Error("Parse room push param failed! rid:%d", param.rid)
 		this.Error(comm.ERR_SVR_PARSE_PARAM, err.Error())
@@ -95,19 +212,19 @@ func (this *UsrSvrPushCtrl) RoomPush(ctx *UsrSvrCntx) {
 	}
 
 	/* > ROOM推送处理 */
-	code, err := this.room_push_handler(ctx, param)
+	code, err := req.push_handler(ctx, param)
 	if nil != err {
 		this.Error(code, err.Error())
 		return
 	}
 
-	this.room_push_success(param)
+	req.push_success(param)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: room_push_param
+ **函数名称: prase_param
  **功    能: 解析参数
  **输入参数:
  **     ctx: 上下文
@@ -119,8 +236,9 @@ func (this *UsrSvrPushCtrl) RoomPush(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 11:10:59 #
  ******************************************************************************/
-func (this *UsrSvrPushCtrl) room_push_param(
+func (req *RoomPushReq) prase_param(
 	ctx *UsrSvrCntx) (param *RoomPushParam, err error) {
+	this := req.ctrl
 	param = &RoomPushParam{}
 
 	/* > 提取注册参数 */
@@ -136,13 +254,11 @@ func (this *UsrSvrPushCtrl) room_push_param(
 		return param, errors.New("Paramter is invalid!")
 	}
 
-	ctx.log.Debug("Get room broadcast param. rid:%d", param.rid)
-
 	return param, nil
 }
 
 /******************************************************************************
- **函数名称: room_push_handler
+ **函数名称: push_handler
  **功    能: ROOM推送请求的处理
  **输入参数:
  **     ctx: 上下文
@@ -162,8 +278,10 @@ func (this *UsrSvrPushCtrl) room_push_param(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 12:27:53 #
  ******************************************************************************/
-func (this *UsrSvrPushCtrl) room_push_handler(
+func (req *RoomPushReq) push_handler(
 	ctx *UsrSvrCntx, param *RoomPushParam) (code int, err error) {
+	this := req.ctrl
+
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -245,7 +363,7 @@ func (this *UsrSvrPushCtrl) room_push_handler(
 }
 
 /******************************************************************************
- **函数名称: room_push_success
+ **函数名称: push_success
  **功    能: 聊天室推送成功
  **输入参数:
  **     param: 请求参数
@@ -255,14 +373,15 @@ func (this *UsrSvrPushCtrl) room_push_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 16:00:42 #
  ******************************************************************************/
-func (this *UsrSvrPushCtrl) room_push_success(param *RoomPushParam) {
-	var resp RoomPushRsp
+func (req *RoomPushReq) push_success(param *RoomPushParam) {
+	this := req.ctrl
+	rsp := &RoomPushRsp{
+		Rid:    param.rid,
+		Code:   0,
+		ErrMsg: "OK",
+	}
 
-	resp.Rid = param.rid
-	resp.Code = 0
-	resp.ErrMsg = "OK"
-
-	this.Data["json"] = &resp
+	this.Data["json"] = rsp
 	this.ServeJSON()
 }
 

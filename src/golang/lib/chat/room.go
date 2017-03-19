@@ -147,7 +147,7 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error 
 		pl.Send("ZREM", key, sid)
 
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, rid)
-		member := fmt.Sprintf(comm.UID_SID_STR, uid, sid)
+		member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, uid, sid)
 		pl.Send("ZREM", key, member)
 
 		/* 更新统计计数 */
@@ -209,7 +209,7 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error
 		pl.Send("ZADD", key, ttl, sid)
 
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, rid)
-		member := fmt.Sprintf(comm.UID_SID_STR, uid, sid)
+		member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, uid, sid)
 		pl.Send("ZADD", key, ttl, member)
 	}
 
