@@ -4,6 +4,7 @@
 ###1.1 设备注册接口<br>
 ---
 **功能描述**: 设备注册接口<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/register?uid=${uid}&nation=${nation}&city=${city}&town=${town}<br>
 **参数描述**:<br>
@@ -26,6 +27,7 @@
 ###1.2 获取IPLIST接口<br>
 ---
 **功能描述**: 获取IPLIST接口<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/iplist?network=${network}&uid=${uid}&sid=${sid}&clientip=${clientip}<br>
 **参数描述**:<br>
@@ -54,6 +56,7 @@
 ###2.1 广播接口<br>
 ---
 **功能描述**: 全员广播消息<br>
+**当前状态**: 未实现<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=broadcast<br>
 **参数描述**:<br>
@@ -66,9 +69,10 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###2.2 群组广播接口<br>
+###2.2 群组推送<br>
 ---
 **功能描述**: 群组广播消息<br>
+**当前状态**: 未实现<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=group&gid=${gid}<br>
 **参数描述**:<br>
@@ -83,9 +87,10 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###2.3 聊天室广播接口<br>
+###2.3 聊天室推送<br>
 ---
 **功能描述**: 聊天室广播消息<br>
+**当前状态**: 待测试<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=room&rid=${rid}&expire=${expire}<br>
 **参数描述**:<br>
@@ -101,9 +106,10 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###2.4 设备推送接口<br>
+###2.4 会话推送<br>
 ---
-**功能描述**: 指定给某设备下发消息<br>
+**功能描述**: 指定会话SID下发消息<br>
+**当前状态**: 未实现<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=sid&sid=${sid}<br>
 **参数描述**:<br>
@@ -120,6 +126,7 @@
 ###2.5 用户推送接口<br>
 ---
 **功能描述**: 指定给某人下发消息<br>
+**当前状态**: 未实现<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=uid&uid=${uid}<br>
 **参数描述**:<br>
@@ -136,6 +143,7 @@
 ###2.6 应用推送接口<br>
 ---
 **功能描述**: 指定给应用ID下发消息<br>
+**当前状态**: 未实现<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=appid&appid=${appid}&version=${version}<br>
 **参数描述**:<br>
@@ -154,6 +162,7 @@
 ###3.1 添加在线人数统计<br>
 ---
 **功能描述**: 添加在线人数统计<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=add&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
@@ -170,6 +179,7 @@
 ###3.2 删除在线人数统计<br>
 ---
 **功能描述**: 删除在线人数统计<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=del&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
@@ -186,6 +196,7 @@
 ###3.3 在线人数统计列表<br>
 ---
 **功能描述**: 在线人数统计列表<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=list&option=user-statis<br>
 **参数描述**:<br>
@@ -205,6 +216,7 @@
 ###3.4 查询在线人数统计<br>
 ---
 **功能描述**: 查询在线人数统计<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=get&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
@@ -228,6 +240,7 @@
 ###4.1 查询人数分布<br>
 ---
 **功能描述**: 查询人数分布<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/query?option=user-dist<br>
 **参数描述**:<br>
@@ -248,6 +261,7 @@
 ###4.2 某用户在线状态<br>
 ---
 **功能描述**: 查询某用户在线状态<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/query?option=user-online<br>
 **参数描述**:<br>
@@ -269,6 +283,7 @@
 ###5.1 加入群组黑名单<br>
 ---
 **功能描述**: 将某人加入群组黑名单<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=add&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -286,6 +301,7 @@
 ###5.2 移除群组黑名单<br>
 ---
 **功能描述**: 将某人移除群组黑名单<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=del&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -303,6 +319,7 @@
 ###5.3 群组禁言<br>
 ---
 **功能描述**: 禁止某人在群内发言<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=add&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -320,6 +337,7 @@
 ###5.4 群组解除禁言<br>
 ---
 **功能描述**: 禁止某人在群组发言<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=del&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -337,6 +355,7 @@
 ###5.5 解散群组<br>
 ---
 **功能描述**: 关闭聊天室<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=close&option=group&gid=${gid}<br>
 **参数描述**:<br>
@@ -353,6 +372,7 @@
 ###5.6 设置群组"最大容量"限制<br>
 ---
 **功能描述**: 设置群组"最大容量"限制<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=set&option=cap&gid=${gid}&cap=${cap}<br>
 **参数描述**:<br>
@@ -372,6 +392,7 @@
 ###5.7 查询群组"最大容量"限制<br>
 ---
 **功能描述**: 查询群组"最大容量"限制<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=get&option=cap&gid=${gid}<br>
 **参数描述**:<br>
@@ -390,6 +411,7 @@
 ###5.8 群组"人数"TOP排行
 ---
 **功能描述**: 查询各群组TOP排行<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/query?option=top-list&num=${num}<br>
 **参数描述**:<br>
@@ -411,6 +433,7 @@
 ###5.9 群组"消息量"TOP排行<br>
 ---
 **功能描述**: 查询各群组消息量TOP排行<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/query?option=mesg-top-list&num=${num}<br>
 **参数描述**:<br>
@@ -433,6 +456,7 @@
 ###6.1 加入聊天室黑名单<br>
 ---
 **功能描述**: 将某人加入聊天室黑名单<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=add&option=blacklist&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -450,6 +474,7 @@
 ###6.2 移除聊天室黑名单<br>
 ---
 **功能描述**: 将某人移除聊天室黑名单<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=del&option=blacklist&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -467,6 +492,7 @@
 ###6.3 聊天室禁言<br>
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=add&option=gag&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -484,6 +510,7 @@
 ###6.4 聊天室解除禁言<br>
 ---
 **功能描述**: 禁止某人在聊天室发言<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=del&option=gag&rid=${rid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -501,6 +528,7 @@
 ###6.5 关闭聊天室<br>
 ---
 **功能描述**: 关闭聊天室<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=close&option=room&rid=${rid}<br>
 **参数描述**:<br>
@@ -517,6 +545,7 @@
 ###6.6 打开聊天室<br>
 ---
 **功能描述**: 打开聊天室<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=open&option=room&rid=${rid}<br>
 **参数描述**:<br>
@@ -533,6 +562,7 @@
 ###6.7 设置聊天室分组容量<br>
 ---
 **功能描述**: 设置聊天室分组容量<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=set&option=cap&rid=${rid}<br>
 **参数描述**:<br>
@@ -551,6 +581,7 @@
 ###6.8 查询聊天室分组容量<br>
 ---
 **功能描述**: 查询聊天室分组容量<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/config?action=get&option=cap&rid=${rid}<br>
 **参数描述**:<br>
@@ -570,6 +601,7 @@
 ###6.9 聊天室TOP排行<br>
 ---
 **功能描述**: 查询各聊天室TOP排行<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/query?option=top-list&num=${num}<br>
 **参数描述**:<br>
@@ -591,6 +623,7 @@
 ###6.10 查询某聊天室分组列表<br>
 ---
 **功能描述**: 查询某聊天室分组列表<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/query?option=group-list&rid=${rid}<br>
 **参数描述**:<br>
@@ -614,6 +647,7 @@
 ###7.1 查询侦听层状态<br>
 ---
 **功能描述**: 查询侦听层状态<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=list&option=listend<br>
 **参数描述**:<br>
@@ -635,6 +669,7 @@
 ###7.2 添加侦听层结点<br>
 ---
 **功能描述**: 移除侦听层结点<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=add&option=listend&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
@@ -653,6 +688,7 @@
 ###7.3 移除侦听层结点<br>
 ---
 **功能描述**: 移除侦听层结点<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=del&option=listend&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
@@ -671,6 +707,7 @@
 ###7.4 查询转发层状态<br>
 ---
 **功能描述**: 查询转发层状态<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=list&option=frwder<br>
 **参数描述**:<br>
@@ -698,6 +735,7 @@
 ###7.5 添加转发层结点<br>
 ---
 **功能描述**: 添加转发层结点<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=add&option=frwder&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
@@ -716,6 +754,7 @@
 ###7.6 移除转发层结点<br>
 ---
 **功能描述**: 移除转发层结点<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=del&option=frwder&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>

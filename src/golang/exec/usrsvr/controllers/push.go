@@ -24,19 +24,19 @@ func (this *UsrSvrPushCtrl) Push() {
 	dim := this.GetString("dim")
 	switch dim {
 	case "sid": // SID推送
-		this.PushBySid(ctx)
+		this.SidPush(ctx)
 		return
 	case "uid": // UID推送
-		this.PushByUid(ctx)
+		this.UidPush(ctx)
 		return
 	case "appid": // APP推送
-		this.PushByApp(ctx)
+		this.AppPush(ctx)
 		return
 	case "room": // ROOM推送
-		this.PushByRoom(ctx)
+		this.RoomPush(ctx)
 		return
 	case "group": // GROUP推送
-		this.PushByGroup(ctx)
+		this.GroupPush(ctx)
 		return
 	case "broadcast": // 全员推送
 		this.Broadcast(ctx)
@@ -51,21 +51,21 @@ func (this *UsrSvrPushCtrl) Push() {
 ////////////////////////////////////////////////////////////////////////////////
 // SID推送
 
-func (this *UsrSvrPushCtrl) PushBySid(ctx *UsrSvrCntx) {
+func (this *UsrSvrPushCtrl) SidPush(ctx *UsrSvrCntx) {
 	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // UID推送
 
-func (this *UsrSvrPushCtrl) PushByUid(ctx *UsrSvrCntx) {
+func (this *UsrSvrPushCtrl) UidPush(ctx *UsrSvrCntx) {
 	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // APP推送
 
-func (this *UsrSvrPushCtrl) PushByApp(ctx *UsrSvrCntx) {
+func (this *UsrSvrPushCtrl) AppPush(ctx *UsrSvrCntx) {
 	return
 }
 
@@ -85,7 +85,7 @@ type RoomPushRsp struct {
 	ErrMsg string `json:"errmsg"` // 错误描述
 }
 
-func (this *UsrSvrPushCtrl) PushByRoom(ctx *UsrSvrCntx) {
+func (this *UsrSvrPushCtrl) RoomPush(ctx *UsrSvrCntx) {
 	/* > 提取广播参数 */
 	param, err := this.room_push_param(ctx)
 	if nil != err {
@@ -282,7 +282,7 @@ type GroupPushRsp struct {
 	ErrMsg string `json:"errmsg"` // 错误描述
 }
 
-func (this *UsrSvrPushCtrl) PushByGroup(ctx *UsrSvrCntx) {
+func (this *UsrSvrPushCtrl) GroupPush(ctx *UsrSvrCntx) {
 	return
 }
 

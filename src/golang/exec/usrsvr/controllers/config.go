@@ -68,16 +68,16 @@ func (this *UsrSvrRoomConfigCtrl) Config() {
 	option := this.GetString("option")
 	switch option {
 	case "blacklist": // 聊天室黑名单操作
-		this.blacklist(ctx)
+		this.Blacklist(ctx)
 		return
 	case "gag": // 聊天室禁言操作
-		this.gag(ctx)
+		this.Gag(ctx)
 		return
 	case "room": // 聊天室操作
-		this.room(ctx)
+		this.Room(ctx)
 		return
 	case "capacity": // 聊天室分组容量
-		this.capacity(ctx)
+		this.Capacity(ctx)
 		return
 	}
 
@@ -89,7 +89,7 @@ func (this *UsrSvrRoomConfigCtrl) Config() {
 // 聊天室黑名单操作接口
 
 /******************************************************************************
- **函数名称: blacklist
+ **函数名称: Blacklist
  **功    能: 黑名单操作
  **输入参数:
  **     ctx: 全局对象
@@ -99,7 +99,7 @@ func (this *UsrSvrRoomConfigCtrl) Config() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:33:48 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) blacklist(ctx *UsrSvrCntx) {
+func (this *UsrSvrRoomConfigCtrl) Blacklist(ctx *UsrSvrCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "add": // 添加聊天室黑名单
@@ -284,7 +284,7 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
 // 聊天室禁言操作接口
 
 /******************************************************************************
- **函数名称: gag
+ **函数名称: Gag
  **功    能: 禁言操作
  **输入参数:
  **     ctx: 全局对象
@@ -294,7 +294,7 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 11:23:31 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) gag(ctx *UsrSvrCntx) {
+func (this *UsrSvrRoomConfigCtrl) Gag(ctx *UsrSvrCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "add": // 添加禁言
@@ -478,7 +478,7 @@ func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: room
+ **函数名称: Room
  **功    能: 聊天室其他操作
  **输入参数:
  **     ctx: 全局对象
@@ -488,7 +488,7 @@ func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) room(ctx *UsrSvrCntx) {
+func (this *UsrSvrRoomConfigCtrl) Room(ctx *UsrSvrCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "open": // 打开聊天室
@@ -658,7 +658,7 @@ func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: capacity
+ **函数名称: Capacity
  **功    能: 设置聊天室分组容量
  **输入参数:
  **     ctx: 全局对象
@@ -668,7 +668,7 @@ func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) capacity(ctx *UsrSvrCntx) {
+func (this *UsrSvrRoomConfigCtrl) Capacity(ctx *UsrSvrCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "set": // 设置聊天室分组容量
