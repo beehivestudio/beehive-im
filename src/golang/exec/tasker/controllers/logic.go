@@ -376,7 +376,7 @@ func (ctx *TaskerCntx) update_prec_statis() {
 
 	/* > 遍历统计精度列表 */
 	prec_rnum_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-		comm.IM_KEY_PREC_RNUM_ZSET, 0, "+inf", "WITHSCORES"))
+		comm.IM_KEY_PREC_NUM_ZSET, 0, "+inf", "WITHSCORES"))
 	if nil != err {
 		ctx.log.Error("Get prec list failed! errmsg:%s", err.Error())
 		return
@@ -456,7 +456,7 @@ func (ctx *TaskerCntx) clean_prec_statis() {
 
 	/* > 遍历统计精度列表 */
 	prec_rnum_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-		comm.IM_KEY_PREC_RNUM_ZSET, 0, "+inf", "WITHSCORES"))
+		comm.IM_KEY_PREC_NUM_ZSET, 0, "+inf", "WITHSCORES"))
 	if nil != err {
 		ctx.log.Error("Get prec list failed! errmsg:%s", err.Error())
 		return

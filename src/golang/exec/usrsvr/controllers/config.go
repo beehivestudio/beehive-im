@@ -11,17 +11,22 @@ import (
 	"beehive-im/src/golang/lib/comm"
 )
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// 系统配置
+
 /* 系统配置 */
 type UsrSvrConfigCtrl struct {
 	BaseController
 }
 
 func (this *UsrSvrConfigCtrl) Config() {
-	//ctx := GetUsrSvrCtx()
+	ctx := GetUsrSvrCtx()
 
 	option := this.GetString("option")
 	switch option {
 	case "user-statis": // 添加在线人数统计
+		this.UserStatis(ctx)
 		return
 	}
 
@@ -29,7 +34,184 @@ func (this *UsrSvrConfigCtrl) Config() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// 用户统计配置
+
+/******************************************************************************
+ **函数名称: UserStatis
+ **功    能: 用户统计配置
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: NONE
+ **实现描述: 根据action调用对应的处理函数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 22:58:33 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) UserStatis(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "add":
+		this.user_statis_add(ctx)
+		return
+	case "del":
+		this.user_statis_del(ctx)
+		return
+	case "list":
+		this.user_statis_list(ctx)
+		return
+	}
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	return
+}
+
+/* 参数列表 */
+type UserStatisAddParam struct {
+	prec int // 统计精度
+	num  int // 记录总数
+}
+
+/* 添加请求 */
+type UserStatisAddReq struct {
+	ctrl *UsrSvrConfigCtrl
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
+ ******************************************************************************/
+func (req *UserStatisAddReq) parse_param() *UserStatisAddParam {
+	this := req.ctrl
+	param := &UserStatisAddParam{}
+
+	param.prec, _ = this.GetInt("prec")
+	param.num, _ = this.GetInt("num")
+	if 0 == param.prec || 0 == param.num {
+		return nil
+	}
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: user_statis_add
+ **功    能: 添加用户统计的统计精度
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.添加统计精度
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 23:03:04 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) user_statis_add(ctx *UsrSvrCntx) {
+	req := &UserStatisAddReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		ctx.log.Error("Parse user statistic add action paramater failed!")
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Parse paramater failed!")
+		return
+	}
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 添加统计精度 */
+	key := fmt.Sprintf(comm.IM_KEY_PREC_NUM_ZSET)
+
+	pl.Send("ZADD", key, param.num, param.prec)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+/* 参数列表 */
+type UserStatisDelParam struct {
+	prec int // 统计精度
+}
+
+/* 添加请求 */
+type UserStatisDelReq struct {
+	ctrl *UsrSvrConfigCtrl
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
+ ******************************************************************************/
+func (req *UserStatisDelReq) parse_param() *UserStatisDelParam {
+	this := req.ctrl
+	param := &UserStatisDelParam{}
+
+	param.prec, _ = this.GetInt("prec")
+	if 0 == param.prec {
+		return nil
+	}
+
+	return param
+}
+
+/******************************************************************************
+ **函数名称: user_statis_del
+ **功    能: 删除用户统计的统计精度
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.删除统计精度
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.19 23:03:04 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) user_statis_del(ctx *UsrSvrCntx) {
+	req := &UserStatisDelReq{ctrl: this}
+
+	param := req.parse_param()
+	if nil == param {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, "Parse paramater failed!")
+		return
+	}
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 添加统计精度 */
+	key := fmt.Sprintf(comm.IM_KEY_PREC_NUM_ZSET)
+
+	pl.Send("ZREM", key, param.prec)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+func (this *UsrSvrConfigCtrl) user_statis_list(ctx *UsrSvrCntx) {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// 群组配置
 
 /* 群组配置 */
 type UsrSvrGroupConfigCtrl struct {

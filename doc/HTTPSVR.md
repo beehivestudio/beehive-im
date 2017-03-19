@@ -162,13 +162,14 @@
 ###3.1 添加在线人数统计<br>
 ---
 **功能描述**: 添加在线人数统计<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?action=add&option=user-statis&prec=${prec}<br>
+**接口路径**: /im/config?action=add&option=user-statis&prec=${prec}&num=${num}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为add.(M)<br>
 > option: 操作选项, 此时为user-statis.(M)<br>
 > prec: 时间精度(M).可以有:300s, 600s, 1800s, 3600s(1h), 86400(1d), etc<br>
+> num: 该精度的记录最大数(M).<br>
 
 **返回结果**:<br>
 >{<br>
@@ -179,7 +180,7 @@
 ###3.2 删除在线人数统计<br>
 ---
 **功能描述**: 删除在线人数统计<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=del&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
