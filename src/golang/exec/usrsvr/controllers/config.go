@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -56,6 +58,9 @@ func (this *UsrSvrConfigCtrl) UserStatis(ctx *UsrSvrCntx) {
 	case "del":
 		this.user_statis_del(ctx)
 		return
+	case "get":
+		this.user_statis_get(ctx)
+		return
 	case "list":
 		this.user_statis_list(ctx)
 		return
@@ -86,17 +91,21 @@ type UserStatisAddReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *UserStatisAddReq) parse_param() *UserStatisAddParam {
+func (req *UserStatisAddReq) parse_param() (*UserStatisAddParam, error) {
 	this := req.ctrl
 	param := &UserStatisAddParam{}
 
 	param.prec, _ = this.GetInt("prec")
-	param.num, _ = this.GetInt("num")
-	if 0 == param.prec || 0 == param.num {
-		return nil
+	if 0 == param.prec {
+		return nil, errors.New("Paramter [prec] is invalid!")
 	}
 
-	return param
+	param.num, _ = this.GetInt("num")
+	if 0 == param.num {
+		return nil, errors.New("Paramter [prec] is invalid!")
+	}
+
+	return param, nil
 }
 
 /******************************************************************************
@@ -113,10 +122,10 @@ func (req *UserStatisAddReq) parse_param() *UserStatisAddParam {
 func (this *UsrSvrConfigCtrl) user_statis_add(ctx *UsrSvrCntx) {
 	req := &UserStatisAddReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse user statistic add action paramater failed!")
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Parse paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Add user statis failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -157,16 +166,16 @@ type UserStatisDelReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *UserStatisDelReq) parse_param() *UserStatisDelParam {
+func (req *UserStatisDelReq) parse_param() (*UserStatisDelParam, error) {
 	this := req.ctrl
 	param := &UserStatisDelParam{}
 
 	param.prec, _ = this.GetInt("prec")
 	if 0 == param.prec {
-		return nil
+		return nil, errors.New("Paramter [prec] is invalid!")
 	}
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -183,9 +192,10 @@ func (req *UserStatisDelReq) parse_param() *UserStatisDelParam {
 func (this *UsrSvrConfigCtrl) user_statis_del(ctx *UsrSvrCntx) {
 	req := &UserStatisDelReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Parse paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Del user statistic failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -202,6 +212,161 @@ func (this *UsrSvrConfigCtrl) user_statis_del(ctx *UsrSvrCntx) {
 
 	/* > 回复处理应答 */
 	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+/* 参数列表 */
+type UserStatisGetParam struct {
+	prec int // 统计精度
+	num  int // 记录条数
+}
+
+/* 添加请求 */
+type UserStatisGetReq struct {
+	ctrl *UsrSvrConfigCtrl
+}
+
+/* 应答结果 */
+type UserStatisGetRsp struct {
+	Prec   int            `json:"prec"`   // 统计精度
+	Num    int            `json:"num"`    // 统计条数
+	List   UserStatisList `json:"list"`   // 统计结果
+	Code   int            `json:"code"`   // 返回码
+	ErrMsg string         `json:"errmsg"` // 错误描述
+}
+
+type UserStatisList []UserStatisItem
+
+/* 统计结果 */
+type UserStatisItem struct {
+	Idx     int    `json:"idx"`      // 序列号
+	Time    int64  `json:"time"`     // 统计时间
+	TimeStr string `json:"time-str"` // 统计时间
+	Num     int    `json:"num"`      // 在线人数
+}
+
+func (list UserStatisList) Len() int           { return len(list) }
+func (list UserStatisList) Less(i, j int) bool { return list[i].Time < list[j].Time }
+func (list UserStatisList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.20 17:07:21 #
+ ******************************************************************************/
+func (req *UserStatisGetReq) parse_param() (*UserStatisGetParam, error) {
+	this := req.ctrl
+	param := &UserStatisGetParam{}
+
+	param.prec, _ = this.GetInt("prec")
+	if 0 == param.prec {
+		return nil, errors.New("Paramter [prec] is invalid!")
+	}
+
+	param.num, _ = this.GetInt("num")
+	if 0 == param.num {
+		return nil, errors.New("Paramter [num] is invalid!")
+	}
+
+	return param, nil
+}
+
+/******************************************************************************
+ **函数名称: query
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.20 17:07:21 #
+ ******************************************************************************/
+func (req *UserStatisGetReq) query(ctx *UsrSvrCntx, prec int, num int) (UserStatisList, error) {
+	var list UserStatisList
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 获取统计结果 */
+	key := fmt.Sprintf(comm.IM_KEY_PREC_USR_NUM, prec)
+
+	data, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
+	if nil != err {
+		return list, err
+	}
+
+	data_len := len(data)
+	for idx := 0; idx < data_len; idx += 2 {
+		old_tm, _ := strconv.ParseInt(data[idx], 10, 64)
+		user_num, _ := strconv.ParseInt(data[idx+1], 10, 32)
+		tm := time.Unix(old_tm, 0)
+
+		item := UserStatisItem{
+			Time:    old_tm,
+			TimeStr: tm.Format("2006-01-02"),
+			Num:     int(user_num),
+		}
+
+		list = append(list, item)
+	}
+
+	sort.Sort(list) /* 排序处理 */
+
+	/* > 整理统计结果 */
+	list = list[0:num]
+
+	num = len(list)
+	for idx := 0; idx < num; idx += 1 {
+		list[idx].Idx = idx
+	}
+
+	return list, nil
+}
+
+/******************************************************************************
+ **函数名称: user_statis_get
+ **功    能: 获取某精度用户统计数据
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.获取统计信息 3.返回统计信息
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.20 17:08:17 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) user_statis_get(ctx *UsrSvrCntx) {
+	req := &UserStatisGetReq{ctrl: this}
+
+	param, err := req.parse_param()
+	if nil != err {
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
+		return
+	}
+
+	/* > 获取统计结果 */
+	list, err := req.query(ctx, param.prec, param.num)
+	if nil != err {
+		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
+		return
+	}
+
+	/* > 回复处理应答 */
+	rsp := &UserStatisGetRsp{}
+
+	rsp.Prec = param.prec
+	rsp.Num = len(list)
+	rsp.List = list
+	rsp.Code = 0
+	rsp.ErrMsg = "Ok"
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
 
 	return
 }
@@ -317,7 +482,7 @@ type RoomBlacklistAddReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomBlacklistAddReq) parse_param() *RoomBlacklistAddParam {
+func (req *RoomBlacklistAddReq) parse_param() (*RoomBlacklistAddParam, error) {
 	this := req.ctrl
 	param := &RoomBlacklistAddParam{}
 
@@ -326,20 +491,18 @@ func (req *RoomBlacklistAddReq) parse_param() *RoomBlacklistAddParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	uid, _ := strconv.ParseInt(uid_str, 10, 64)
 	if 0 == uid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter uid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [uid] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 	param.uid = uint64(uid)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -356,9 +519,10 @@ func (req *RoomBlacklistAddReq) parse_param() *RoomBlacklistAddParam {
 func (this *UsrSvrRoomConfigCtrl) blacklist_add(ctx *UsrSvrCntx) {
 	req := &RoomBlacklistAddReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse blacklist add action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Add blacklist failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -400,7 +564,7 @@ type RoomBlackListDelReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomBlackListDelReq) parse_param() *RoomBlackListDelParam {
+func (req *RoomBlackListDelReq) parse_param() (*RoomBlackListDelParam, error) {
 	this := req.ctrl
 	param := &RoomBlackListDelParam{}
 
@@ -409,20 +573,18 @@ func (req *RoomBlackListDelReq) parse_param() *RoomBlackListDelParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	uid, _ := strconv.ParseInt(uid_str, 10, 64)
 	if 0 == uid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter uid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 	param.uid = uint64(uid)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -439,9 +601,10 @@ func (req *RoomBlackListDelReq) parse_param() *RoomBlackListDelParam {
 func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
 	req := &RoomBlackListDelReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse blacklist del action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Del blacklist failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -512,7 +675,7 @@ type RoomGagAddReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomGagAddReq) parse_param() *RoomGagAddParam {
+func (req *RoomGagAddReq) parse_param() (*RoomGagAddParam, error) {
 	this := req.ctrl
 	param := &RoomGagAddParam{}
 
@@ -521,20 +684,18 @@ func (req *RoomGagAddReq) parse_param() *RoomGagAddParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	uid, _ := strconv.ParseInt(uid_str, 10, 64)
 	if 0 == uid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter uid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [uid] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 	param.uid = uint64(uid)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -551,9 +712,10 @@ func (req *RoomGagAddReq) parse_param() *RoomGagAddParam {
 func (this *UsrSvrRoomConfigCtrl) gag_add(ctx *UsrSvrCntx) {
 	req := &RoomGagAddReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse gag add action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Add gag failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -595,7 +757,7 @@ type RoomGagDelReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomGagDelReq) parse_param() *RoomGagDelParam {
+func (req *RoomGagDelReq) parse_param() (*RoomGagDelParam, error) {
 	this := req.ctrl
 	param := &RoomGagDelParam{}
 
@@ -604,20 +766,18 @@ func (req *RoomGagDelReq) parse_param() *RoomGagDelParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	uid, _ := strconv.ParseInt(uid_str, 10, 64)
 	if 0 == uid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter uid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [uid] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 	param.uid = uint64(uid)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -634,9 +794,10 @@ func (req *RoomGagDelReq) parse_param() *RoomGagDelParam {
 func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 	req := &RoomGagDelReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse gag del action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Del gag failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -705,7 +866,7 @@ type RoomOpenReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.19 08:06:28 #
  ******************************************************************************/
-func (req *RoomOpenReq) parse_param() *RoomOpenParam {
+func (req *RoomOpenReq) parse_param() (*RoomOpenParam, error) {
 	this := req.ctrl
 	param := &RoomOpenParam{}
 
@@ -713,13 +874,12 @@ func (req *RoomOpenReq) parse_param() *RoomOpenParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -736,9 +896,10 @@ func (req *RoomOpenReq) parse_param() *RoomOpenParam {
 func (this *UsrSvrRoomConfigCtrl) room_open(ctx *UsrSvrCntx) {
 	req := &RoomOpenReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse open action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Open room failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -748,7 +909,7 @@ func (this *UsrSvrRoomConfigCtrl) room_open(ctx *UsrSvrCntx) {
 	/* > 用户加入禁言 */
 	key := fmt.Sprintf(comm.CHAT_KEY_RID_ATTR, param.rid)
 
-	_, err := rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_OPEN)
+	_, err = rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_OPEN)
 	if nil != err {
 		/* > 回复处理应答 */
 		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
@@ -781,7 +942,7 @@ type RoomCloseReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.19 08:06:28 #
  ******************************************************************************/
-func (req *RoomCloseReq) parse_param() *RoomCloseParam {
+func (req *RoomCloseReq) parse_param() (*RoomCloseParam, error) {
 	this := req.ctrl
 	param := &RoomCloseParam{}
 
@@ -789,13 +950,12 @@ func (req *RoomCloseReq) parse_param() *RoomCloseParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -812,9 +972,10 @@ func (req *RoomCloseReq) parse_param() *RoomCloseParam {
 func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
 	req := &RoomCloseReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse close action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Close room failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -824,7 +985,7 @@ func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
 	/* > 修改聊天室属性 */
 	key := fmt.Sprintf(comm.CHAT_KEY_RID_ATTR, param.rid)
 
-	_, err := rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_CLOSE)
+	_, err = rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_CLOSE)
 	if nil != err {
 		/* > 回复处理应答 */
 		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
@@ -883,7 +1044,7 @@ type RoomCapSetReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
  ******************************************************************************/
-func (req *RoomCapSetReq) parse_param() *RoomCapSetParam {
+func (req *RoomCapSetReq) parse_param() (*RoomCapSetParam, error) {
 	this := req.ctrl
 	param := &RoomCapSetParam{}
 
@@ -892,20 +1053,18 @@ func (req *RoomCapSetReq) parse_param() *RoomCapSetParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	capacity, _ := strconv.ParseInt(cap_str, 10, 32)
 	if 0 == capacity {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter cap is invalid!")
-		return nil
+		return nil, errors.New("Paramter [cap] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 	param.capacity = int(capacity)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -922,9 +1081,10 @@ func (req *RoomCapSetReq) parse_param() *RoomCapSetParam {
 func (this *UsrSvrRoomConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
 	req := &RoomCapSetReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse cap set action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Set room capacity failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
@@ -974,7 +1134,7 @@ type RoomCapGetRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
  ******************************************************************************/
-func (req *RoomCapGetReq) parse_param() *RoomCapGetParam {
+func (req *RoomCapGetReq) parse_param() (*RoomCapGetParam, error) {
 	this := req.ctrl
 	param := &RoomCapGetParam{}
 
@@ -983,20 +1143,18 @@ func (req *RoomCapGetReq) parse_param() *RoomCapGetParam {
 
 	rid, _ := strconv.ParseInt(rid_str, 10, 64)
 	if 0 == rid {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter rid is invalid!")
-		return nil
+		return nil, errors.New("Paramter [rid] is invalid!")
 	}
 
 	capacity, _ := strconv.ParseInt(cap_str, 10, 32)
 	if 0 == capacity {
-		this.Error(comm.ERR_SVR_INVALID_PARAM, "Paramter cap is invalid!")
-		return nil
+		return nil, errors.New("Paramter [cap] is invalid!")
 	}
 
 	param.rid = uint64(rid)
 	param.capacity = int(capacity)
 
-	return param
+	return param, nil
 }
 
 /******************************************************************************
@@ -1013,9 +1171,10 @@ func (req *RoomCapGetReq) parse_param() *RoomCapGetParam {
 func (this *UsrSvrRoomConfigCtrl) capacity_get(ctx *UsrSvrCntx) {
 	req := &RoomCapGetReq{ctrl: this}
 
-	param := req.parse_param()
-	if nil == param {
-		ctx.log.Error("Parse cap get action paramater failed!")
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Get room capacity failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
 		return
 	}
 
