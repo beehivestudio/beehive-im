@@ -247,7 +247,7 @@ type UserStatisItem struct {
 }
 
 func (list UserStatisList) Len() int           { return len(list) }
-func (list UserStatisList) Less(i, j int) bool { return list[i].Time < list[j].Time }
+func (list UserStatisList) Less(i, j int) bool { return list[i].Time > list[j].Time }
 func (list UserStatisList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
 
 /******************************************************************************
@@ -305,11 +305,12 @@ func (req *UserStatisGetReq) query(ctx *UsrSvrCntx, prec int, num int) (UserStat
 	for idx := 0; idx < data_len; idx += 2 {
 		old_tm, _ := strconv.ParseInt(data[idx], 10, 64)
 		user_num, _ := strconv.ParseInt(data[idx+1], 10, 32)
+
 		tm := time.Unix(old_tm, 0)
 
 		item := UserStatisItem{
 			Time:    old_tm,
-			TimeStr: tm.Format("2006-01-02"),
+			TimeStr: tm.Format("2006-01-02 15:04:05"),
 			Num:     int(user_num),
 		}
 

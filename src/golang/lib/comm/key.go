@@ -65,6 +65,7 @@ const (
 	IM_KEY_FRWD_NID_TO_ADDR    = "im:frwd:nid:to:addr"                            //| HASH | 转发层NID->地址 | 键:NID/值:内网IP+端口 |
 	IM_KEY_FRWD_ADDR_TO_NID    = "im:frwd:addr:to:nid"                            //| HASH | 转发层地址->NID | 键:内网IP+端口/值:NID |
 	IM_KEY_PREC_NUM_ZSET       = "im::prec:num:zset"                              //| ZSET | 人数统计精度 | 成员:prec 分值:记录条数 |
+	IM_KEY_PREC_USR_NUM        = "im:usr:statis:prec:%d:num"                      //| HASH | 某统计精度在线人数 | 键:时间/值:在线人数 |
 	IM_KEY_PREC_USR_MAX_NUM    = "im:usr:statis:prec:%d:max:num"                  //| HASH | 某统计精度最大人数 | 键:时间/值:最大人数 |
 	IM_KEY_PREC_USR_MIN_NUM    = "im:usr:statis:prec:%d:min:num"                  //| HASH | 某统计精度最少人数 | 键:时间/值:最少人数 |
 )
