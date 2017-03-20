@@ -372,7 +372,113 @@ func (this *UsrSvrConfigCtrl) user_statis_get(ctx *UsrSvrCntx) {
 	return
 }
 
+/* 添加请求 */
+type UserStatisListReq struct {
+	ctrl *UsrSvrConfigCtrl
+}
+
+/* 应答结果 */
+type UserStatisListRsp struct {
+	Len    int                `json:"len"`    // 统计条数
+	List   UserStatisPrecList `json:"list"`   // 统计结果
+	Code   int                `json:"code"`   // 返回码
+	ErrMsg string             `json:"errmsg"` // 错误描述
+}
+
+type UserStatisPrecList []UserStatisPrecItem
+
+/* 统计结果 */
+type UserStatisPrecItem struct {
+	Idx  int `json:"idx"`  // 序列号
+	Prec int `json:"prec"` // 统计精度
+	Num  int `json:"num"`  // 最大记录数
+}
+
+func (list UserStatisPrecList) Len() int           { return len(list) }
+func (list UserStatisPrecList) Less(i, j int) bool { return list[i].Prec < list[j].Prec }
+func (list UserStatisPrecList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
+
+/******************************************************************************
+ **函数名称: query
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.20 17:07:21 #
+ ******************************************************************************/
+func (req *UserStatisListReq) query(ctx *UsrSvrCntx) (UserStatisPrecList, error) {
+	var list UserStatisPrecList
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 获取统计精度 */
+	key := fmt.Sprintf(comm.IM_KEY_PREC_NUM_ZSET)
+
+	data, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
+	if nil != err {
+		return list, err
+	}
+
+	data_len := len(data)
+	for idx := 0; idx < data_len; idx += 2 {
+		prec, _ := strconv.Atoi(data[idx])
+		num, _ := strconv.Atoi(data[idx+1])
+
+		item := UserStatisPrecItem{
+			Prec: int(prec),
+			Num:  int(num),
+		}
+
+		list = append(list, item)
+	}
+
+	sort.Sort(list) /* 排序处理 */
+
+	/* > 整理统计精度 */
+	num := len(list)
+	for idx := 0; idx < num; idx += 1 {
+		list[idx].Idx = idx
+	}
+
+	return list, nil
+}
+
+/******************************************************************************
+ **函数名称: user_statis_get
+ **功    能: 获取某精度用户统计数据
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.获取统计精度 3.返回统计精度
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.20 18:51:38 #
+ ******************************************************************************/
 func (this *UsrSvrConfigCtrl) user_statis_list(ctx *UsrSvrCntx) {
+	req := &UserStatisListReq{ctrl: this}
+
+	/* > 获取统计结果 */
+	list, err := req.query(ctx)
+	if nil != err {
+		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
+		return
+	}
+
+	/* > 回复处理应答 */
+	rsp := &UserStatisListRsp{}
+
+	rsp.Len = len(list)
+	rsp.List = list
+	rsp.Code = 0
+	rsp.ErrMsg = "Ok"
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
+
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -197,7 +197,7 @@
 ###3.3 在线人数统计列表<br>
 ---
 **功能描述**: 在线人数统计列表<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=list&option=user-statis<br>
 **参数描述**:<br>
@@ -208,8 +208,8 @@
 >{<br>
 >   "len":${len},       // 整型 | 列表长度(M)<br>
 >   "list":[            // 数组 | 精度列表(M)<br>
->       {"idx":${idx}, "prec":"{prec}"}, // ${idx}:序号 ${prec}:精度值<br>
->       {"idx":${idx}, "prec":"{prec}"}],<br>
+>       {"idx":${idx}, "prec":{prec}, "num":${num}}, // ${idx}:序号 ${prec}:精度值 ${num}:最大记录数<br>
+>       {"idx":${idx}, "prec":{prec}, "num":${num}}],<br>
 >   "code":${code},     // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"// 字串 | 错误描述(M)<br>
 >}
