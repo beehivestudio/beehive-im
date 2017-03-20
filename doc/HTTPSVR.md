@@ -217,22 +217,23 @@
 ###3.4 查询在线人数统计<br>
 ---
 **功能描述**: 查询在线人数统计<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
-**接口路径**: /im/config?action=get&option=user-statis&prec=${prec}<br>
+**接口路径**: /im/config?action=get&option=user-statis&prec=${prec}&num=${num}<br>
 **参数描述**:<br>
 > action: 操作行为, 此时为get.(M)<br>
 > option: 操作选项, 此时为user-statis.(M)<br>
 > prec: 时间精度(M). 如:300s, 600s, 1800s, 3600s(1h), 86400(1d), 1m, 1y<br>
+> num: 记录条数, 从请求时间往前取${num}条记录.(M)<br>
 
 **返回结果**:<br>
 >{<br>
 >   "prec":"${prec}",       // 整型 | 时间精度(M)<br>
->   "len":${len},           // 整型 | 列表长度(M)<br>
+>   "num":${num},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 走势列表(M)<br>
->      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}}, // ${time}:时间戳 ${max}:峰值 ${min}:底值<br>
->      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}},<br>
->      {"idx":${idx}, "time":"${time}", "max":${max}, "min":${min}}],<br>
+>      {"idx":${idx}, "time":${time}, "time-str":"${time-str}", "num":${num}}, // ${time-str}:时间戳 ${num}:在线人数<br>
+>      {"idx":${idx}, "time":${time}, "time-str":"${time-str}", "num":${num}},<br>
+>      {"idx":${idx}, "time":${time}, "time-str":"${time-str}", "num":${num}}],<br>
 >   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
