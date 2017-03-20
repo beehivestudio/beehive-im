@@ -962,9 +962,9 @@ message mesg_room_kick_ntc
 
 /*
    命令ID: 0x0601
-   命令描述: 帧听层上报(LSN-RPT)
+   命令描述: 帧听层信息上报(LSND-INFO)
    协议格式: */
-message mesg_lsn_rpt
+message mesg_lsnd_info
 {
     required uint32 type = 1;       // M|类型(0:UNKNOWN 1:TCP 2:WS)|数字|
     required uint32 nid = 2;        // M|结点ID|数字|
@@ -976,14 +976,14 @@ message mesg_lsn_rpt
 
 /*
    命令ID: 0x0602
-   命令描述: 帧听层上报应答(LSN-RPT-ACK)
+   命令描述: 帧听层上报应答(LSND-INFO-ACK)
    协议格式: NONE */
 
 /*
    命令ID: 0x0603
-   命令描述: 转发层上报 (FRWD-RPT)
+   命令描述: 转发层信息上报 (FRWD-INFO)
    协议格式: */
-message mesg_frwd_rpt
+message mesg_frwd_info
 {
     required uint32 nid = 1;        // M|结点ID|数字|
     required string ipaddr = 2;     // M|IP地址|字串|
@@ -993,5 +993,5 @@ message mesg_frwd_rpt
 
 /*
    命令ID: 0x0604
-   命令描述: 转发层上报应答(FRWD-RPT-ACK)
+   命令描述: 转发层信息应答(FRWD-INFO-ACK)
    协议格式: NONE */

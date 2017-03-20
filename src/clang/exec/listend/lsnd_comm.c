@@ -235,7 +235,7 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_timer_report_handler
+ **函数名称: lsnd_timer_info_handler
  **功    能: 侦听层定时上报
  **输入参数:
  **     _ctx: 全局信息
@@ -253,28 +253,28 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 23:23:51 #
  ******************************************************************************/
-void lsnd_timer_report_handler(void *_ctx)
+void lsnd_timer_info_handler(void *_ctx)
 {
     void *addr;
     unsigned int len;
     mesg_header_t *head;
     lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
     lsnd_conf_t *conf = &ctx->conf;
-    MesgLsnRpt report = MESG_LSN_RPT__INIT;
+    MesgLsndInfo info = MESG_LSND_INFO__INIT;
 
     /* > 设置上报数据 */
-    report.type = LSND_TYPE_TCP;
-    report.nid = conf->nid;
-    report.nation = conf->operator.nation;
-    report.name = conf->operator.name;
-    report.ipaddr = conf->access.ipaddr;
-    report.port = conf->access.port;
+    info.type = LSND_TYPE_TCP;
+    info.nid = conf->nid;
+    info.nation = conf->operator.nation;
+    info.name = conf->operator.name;
+    info.ipaddr = conf->access.ipaddr;
+    info.port = conf->access.port;
 
-    log_debug(ctx->log, "Listen report! nid:%d nation:%s name:%s ipaddr:%s port:%d",
-            report.nid, report.nation, report.name, report.ipaddr, report.port);
+    log_debug(ctx->log, "Listen info! nid:%d nation:%s name:%s ipaddr:%s port:%d",
+            info.nid, info.nation, info.name, info.ipaddr, info.port);
 
     /* > 组装PB协议 */
-    len = mesg_lsn_rpt__get_packed_size(&report);
+    len = mesg_lsnd_info__get_packed_size(&info);
 
     addr = (void *)calloc(1, sizeof(mesg_header_t) + len);
     if (NULL == addr) {
@@ -284,7 +284,7 @@ void lsnd_timer_report_handler(void *_ctx)
 
     head = (mesg_header_t *)addr;
 
-    head->type = CMD_LSN_RPT;
+    head->type = CMD_LSND_INFO;
     head->flag = MSG_FLAG_USR;
     head->length = len;
     head->chksum = MSG_CHKSUM_VAL;
@@ -292,10 +292,10 @@ void lsnd_timer_report_handler(void *_ctx)
 
     MESG_HEAD_HTON(head, head);
 
-    mesg_lsn_rpt__pack(&report, addr + sizeof(mesg_header_t)); /* 组装PB协议 */
+    mesg_lsnd_info__pack(&info, addr + sizeof(mesg_header_t)); /* 组装PB协议 */
 
     /* > 发送数据 */
-    rtmq_proxy_async_send(ctx->frwder, CMD_LSN_RPT, addr, sizeof(mesg_header_t) + len);
+    rtmq_proxy_async_send(ctx->frwder, CMD_LSND_INFO, addr, sizeof(mesg_header_t) + len);
 
     free(addr);
     return;

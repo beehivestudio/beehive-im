@@ -316,10 +316,10 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
 static void lsnd_set_timer(lsnd_cntx_t *ctx)
 {
     timer_task_init(&ctx->timer_kick, lsnd_timer_kick_handler, 5, 5, (void *)ctx);
-    timer_task_init(&ctx->timer_report, lsnd_timer_report_handler, 5, 5, (void *)ctx);
+    timer_task_init(&ctx->timer_info, lsnd_timer_info_handler, 5, 5, (void *)ctx);
 
     timer_task_add(ctx->timer, &ctx->timer_kick);
-    timer_task_add(ctx->timer, &ctx->timer_report);
+    timer_task_add(ctx->timer, &ctx->timer_info);
 }
 
 /******************************************************************************

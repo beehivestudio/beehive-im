@@ -155,11 +155,11 @@ typedef enum
     , CMD_P2P_ACK               = 0x0504    /* 点到点消息应答(客户端&服务端) */
 
     /* 系统内部消息 */
-    , CMD_LSN_RPT               = 0x0601    /* 帧听层上报 */
-    , CMD_LSN_RPT_ACK           = 0x0602    /* 帧听层上报应答 */
+    , CMD_LSND_INFO             = 0x0601    /* 帧听层信息上报 */
+    , CMD_LSND_INFO_ACK         = 0x0602    /* 帧听层信息上报应答 */
 
-    , CMD_FRWD_RPT              = 0x0603    /* 转发层上报 */
-    , CMD_FRWD_RPT_ACK          = 0x0604    /* 转发层上报应答 */
+    , CMD_FRWD_INFO             = 0x0603    /* 转发层信息上报 */
+    , CMD_FRWD_INFO_ACK         = 0x0604    /* 转发层信息上报应答 */
 } mesg_type_e;
 
 #endif /*__CMD_LIST_H__*/

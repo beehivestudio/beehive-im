@@ -52,7 +52,7 @@ func (ctx *UsrSvrCntx) listend_update() {
 
 	/* > 获取"网络类型"列表 */
 	types, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
-		comm.IM_KEY_LSND_NETWORK_ZSET, ctm, "+inf"))
+		comm.IM_KEY_LSND_TYPE_ZSET, ctm, "+inf"))
 	if nil != err {
 		ctx.log.Error("Get listend type list failed! errmsg:%s", err.Error())
 		return

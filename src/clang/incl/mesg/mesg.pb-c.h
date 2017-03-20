@@ -98,8 +98,8 @@ typedef struct _MesgRoomUsrNum MesgRoomUsrNum;
 typedef struct _MesgRoomJoinNtc MesgRoomJoinNtc;
 typedef struct _MesgRoomQuitNtc MesgRoomQuitNtc;
 typedef struct _MesgRoomKickNtc MesgRoomKickNtc;
-typedef struct _MesgLsnRpt MesgLsnRpt;
-typedef struct _MesgFrwdRpt MesgFrwdRpt;
+typedef struct _MesgLsndInfo MesgLsndInfo;
+typedef struct _MesgFrwdInfo MesgFrwdInfo;
 
 
 /* --- enums --- */
@@ -1071,7 +1071,7 @@ struct  _MesgRoomKickNtc
     , 0 }
 
 
-struct  _MesgLsnRpt
+struct  _MesgLsndInfo
 {
   ProtobufCMessage base;
   uint32_t type;
@@ -1081,12 +1081,12 @@ struct  _MesgLsnRpt
   char *ipaddr;
   uint32_t port;
 };
-#define MESG_LSN_RPT__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_lsn_rpt__descriptor) \
+#define MESG_LSND_INFO__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_lsnd_info__descriptor) \
     , 0, 0, NULL, NULL, NULL, 0 }
 
 
-struct  _MesgFrwdRpt
+struct  _MesgFrwdInfo
 {
   ProtobufCMessage base;
   uint32_t nid;
@@ -1094,8 +1094,8 @@ struct  _MesgFrwdRpt
   uint32_t forward_port;
   uint32_t backend_port;
 };
-#define MESG_FRWD_RPT__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_frwd_rpt__descriptor) \
+#define MESG_FRWD_INFO__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_frwd_info__descriptor) \
     , 0, NULL, 0, 0 }
 
 
@@ -2676,43 +2676,43 @@ MesgRoomKickNtc *
 void   mesg_room_kick_ntc__free_unpacked
                      (MesgRoomKickNtc *message,
                       ProtobufCAllocator *allocator);
-/* MesgLsnRpt methods */
-void   mesg_lsn_rpt__init
-                     (MesgLsnRpt         *message);
-size_t mesg_lsn_rpt__get_packed_size
-                     (const MesgLsnRpt   *message);
-size_t mesg_lsn_rpt__pack
-                     (const MesgLsnRpt   *message,
+/* MesgLsndInfo methods */
+void   mesg_lsnd_info__init
+                     (MesgLsndInfo         *message);
+size_t mesg_lsnd_info__get_packed_size
+                     (const MesgLsndInfo   *message);
+size_t mesg_lsnd_info__pack
+                     (const MesgLsndInfo   *message,
                       uint8_t             *out);
-size_t mesg_lsn_rpt__pack_to_buffer
-                     (const MesgLsnRpt   *message,
+size_t mesg_lsnd_info__pack_to_buffer
+                     (const MesgLsndInfo   *message,
                       ProtobufCBuffer     *buffer);
-MesgLsnRpt *
-       mesg_lsn_rpt__unpack
+MesgLsndInfo *
+       mesg_lsnd_info__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_lsn_rpt__free_unpacked
-                     (MesgLsnRpt *message,
+void   mesg_lsnd_info__free_unpacked
+                     (MesgLsndInfo *message,
                       ProtobufCAllocator *allocator);
-/* MesgFrwdRpt methods */
-void   mesg_frwd_rpt__init
-                     (MesgFrwdRpt         *message);
-size_t mesg_frwd_rpt__get_packed_size
-                     (const MesgFrwdRpt   *message);
-size_t mesg_frwd_rpt__pack
-                     (const MesgFrwdRpt   *message,
+/* MesgFrwdInfo methods */
+void   mesg_frwd_info__init
+                     (MesgFrwdInfo         *message);
+size_t mesg_frwd_info__get_packed_size
+                     (const MesgFrwdInfo   *message);
+size_t mesg_frwd_info__pack
+                     (const MesgFrwdInfo   *message,
                       uint8_t             *out);
-size_t mesg_frwd_rpt__pack_to_buffer
-                     (const MesgFrwdRpt   *message,
+size_t mesg_frwd_info__pack_to_buffer
+                     (const MesgFrwdInfo   *message,
                       ProtobufCBuffer     *buffer);
-MesgFrwdRpt *
-       mesg_frwd_rpt__unpack
+MesgFrwdInfo *
+       mesg_frwd_info__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_frwd_rpt__free_unpacked
-                     (MesgFrwdRpt *message,
+void   mesg_frwd_info__free_unpacked
+                     (MesgFrwdInfo *message,
                       ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
@@ -2965,11 +2965,11 @@ typedef void (*MesgRoomQuitNtc_Closure)
 typedef void (*MesgRoomKickNtc_Closure)
                  (const MesgRoomKickNtc *message,
                   void *closure_data);
-typedef void (*MesgLsnRpt_Closure)
-                 (const MesgLsnRpt *message,
+typedef void (*MesgLsndInfo_Closure)
+                 (const MesgLsndInfo *message,
                   void *closure_data);
-typedef void (*MesgFrwdRpt_Closure)
-                 (const MesgFrwdRpt *message,
+typedef void (*MesgFrwdInfo_Closure)
+                 (const MesgFrwdInfo *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -3060,8 +3060,8 @@ extern const ProtobufCMessageDescriptor mesg_room_usr_num__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_join_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_quit_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor;
-extern const ProtobufCMessageDescriptor mesg_lsn_rpt__descriptor;
-extern const ProtobufCMessageDescriptor mesg_frwd_rpt__descriptor;
+extern const ProtobufCMessageDescriptor mesg_lsnd_info__descriptor;
+extern const ProtobufCMessageDescriptor mesg_frwd_info__descriptor;
 
 PROTOBUF_C__END_DECLS
 

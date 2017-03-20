@@ -15,7 +15,7 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsn_rpt_isvalid
+ **函数名称: lsnd_info_isvalid
  **功    能: 判断LSN-RPT是否合法
  **输入参数:
  **     req: HB请求
@@ -25,7 +25,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 08:38:48 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
+func (ctx *MonSvrCntx) lsnd_info_isvalid(req *mesg.MesgLsndInfo) bool {
 	if 0 == req.GetNid() ||
 		0 == req.GetPort() ||
 		0 == len(req.GetNation()) ||
@@ -37,7 +37,7 @@ func (ctx *MonSvrCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
 }
 
 /******************************************************************************
- **函数名称: lsn_rpt_parse
+ **函数名称: lsnd_info_parse
  **功    能: 解析LSN-PRT请求
  **输入参数:
  **     data: 接收的数据
@@ -49,8 +49,8 @@ func (ctx *MonSvrCntx) lsn_rpt_isvalid(req *mesg.MesgLsnRpt) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 08:14:10 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) lsn_rpt_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
+func (ctx *MonSvrCntx) lsnd_info_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgLsndInfo) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
@@ -59,7 +59,7 @@ func (ctx *MonSvrCntx) lsn_rpt_parse(data []byte) (
 	}
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgLsnRpt{}
+	req = &mesg.MesgLsndInfo{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal lsn-rpt failed! errmsg:%s", err.Error())
@@ -67,7 +67,7 @@ func (ctx *MonSvrCntx) lsn_rpt_parse(data []byte) (
 	}
 
 	/* > 校验协议合法性 */
-	if !ctx.lsn_rpt_isvalid(req) {
+	if !ctx.lsnd_info_isvalid(req) {
 		return nil, nil
 	}
 
@@ -75,7 +75,7 @@ func (ctx *MonSvrCntx) lsn_rpt_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: lsn_rpt_has_conflict
+ **函数名称: lsnd_info_has_conflict
  **功    能: 判断数据是否冲突
  **输入参数:
  **     req: 帧听层上报消息
@@ -85,7 +85,7 @@ func (ctx *MonSvrCntx) lsn_rpt_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 10:34:00 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err error) {
+func (ctx *MonSvrCntx) lsnd_info_has_conflict(req *mesg.MesgLsndInfo) (has bool, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -124,8 +124,8 @@ func (ctx *MonSvrCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err
 }
 
 /******************************************************************************
- **函数名称: lsn_rpt_handler
- **功    能: LSN-RPT处理
+ **函数名称: lsnd_info_handler
+ **功    能: LSND-INFO处理
  **输入参数:
  **     head: 协议头
  **     req: 上线请求
@@ -135,7 +135,7 @@ func (ctx *MonSvrCntx) lsn_rpt_has_conflict(req *mesg.MesgLsnRpt) (has bool, err
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 08:41:18 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnRpt) {
+func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLsndInfo) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -143,7 +143,7 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 	}()
 
 	/* > 判断数据是否冲突 */
-	has, err := ctx.lsn_rpt_has_conflict(req)
+	has, err := ctx.lsnd_info_has_conflict(req)
 	if nil != err {
 		ctx.log.Error("Something was wrong! errmsg:%s!", err.Error())
 		return
@@ -160,7 +160,7 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 	pl.Send("HSETNX", comm.IM_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
 
 	/* 网络类型结合 */
-	pl.Send("ZADD", comm.IM_KEY_LSND_NETWORK_ZSET, ttl, req.GetType())
+	pl.Send("ZADD", comm.IM_KEY_LSND_TYPE_ZSET, ttl, req.GetType())
 
 	/* 国家集合 */
 	key := fmt.Sprintf(comm.IM_KEY_LSND_NATION_ZSET, req.GetType())
@@ -186,7 +186,7 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
 }
 
 /******************************************************************************
- **函数名称: MonLsnRptHandler
+ **函数名称: MonLsndInfoHandler
  **功    能: 帧听层上报
  **输入参数:
  **     cmd: 消息类型
@@ -208,7 +208,7 @@ func (ctx *MonSvrCntx) lsn_rpt_handler(head *comm.MesgHeader, req *mesg.MesgLsnR
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 06:32:03 #
  ******************************************************************************/
-func MonLsnRptHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func MonLsndInfoHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MonSvrCntx)
 	if !ok {
 		return -1
@@ -217,14 +217,14 @@ func MonLsnRptHandler(cmd uint32, nid uint32, data []byte, length uint32, param 
 	ctx.log.Debug("Recv lsn-rpt request!")
 
 	/* 1. > 解析LSN-RPT请求 */
-	head, req := ctx.lsn_rpt_parse(data)
+	head, req := ctx.lsnd_info_parse(data)
 	if nil == head || nil == req {
 		ctx.log.Error("Parse lsn-rpt failed!")
 		return -1
 	}
 
-	/* 2. > LSN-RPT请求处理 */
-	ctx.lsn_rpt_handler(head, req)
+	/* 2. > LSND-INFO请求处理 */
+	ctx.lsnd_info_handler(head, req)
 
 	return 0
 }
@@ -243,7 +243,7 @@ func MonLsnRptHandler(cmd uint32, nid uint32, data []byte, length uint32, param 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:05:03 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdRpt) bool {
+func (ctx *MonSvrCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdInfo) bool {
 	if 0 == req.GetForwardPort() ||
 		0 == req.GetBackendPort() ||
 		0 == len(req.GetIpaddr()) {
@@ -266,7 +266,7 @@ func (ctx *MonSvrCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdRpt) bool {
  **作    者: # Qifeng.zou # 2016.11.04 11:04:57 #
  ******************************************************************************/
 func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgFrwdRpt) {
+	head *comm.MesgHeader, req *mesg.MesgFrwdInfo) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
@@ -275,7 +275,7 @@ func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
 	}
 
 	/* > 解析PB协议 */
-	req = &mesg.MesgFrwdRpt{}
+	req = &mesg.MesgFrwdInfo{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal lsn-rpt failed! errmsg:%s", err.Error())
@@ -301,7 +301,7 @@ func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:49 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, err error) {
+func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdInfo) (has bool, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -351,7 +351,7 @@ func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdRpt) (has bool, e
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:42 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrwdRpt) {
+func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrwdInfo) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -379,7 +379,7 @@ func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrw
 }
 
 /******************************************************************************
- **函数名称: MonFrwdRptHandler
+ **函数名称: MonFrwdInfoHandler
  **功    能: 转发层上报
  **输入参数:
  **     cmd: 消息类型
@@ -400,7 +400,7 @@ func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrw
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:36 #
  ******************************************************************************/
-func MonFrwdRptHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func MonFrwdInfoHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MonSvrCntx)
 	if !ok {
 		return -1

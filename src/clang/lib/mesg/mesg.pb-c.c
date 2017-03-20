@@ -3576,90 +3576,90 @@ void   mesg_room_kick_ntc__free_unpacked
   assert(message->base.descriptor == &mesg_room_kick_ntc__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_lsn_rpt__init
-                     (MesgLsnRpt         *message)
+void   mesg_lsnd_info__init
+                     (MesgLsndInfo         *message)
 {
-  static MesgLsnRpt init_value = MESG_LSN_RPT__INIT;
+  static MesgLsndInfo init_value = MESG_LSND_INFO__INIT;
   *message = init_value;
 }
-size_t mesg_lsn_rpt__get_packed_size
-                     (const MesgLsnRpt *message)
+size_t mesg_lsnd_info__get_packed_size
+                     (const MesgLsndInfo *message)
 {
-  assert(message->base.descriptor == &mesg_lsn_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_lsnd_info__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_lsn_rpt__pack
-                     (const MesgLsnRpt *message,
+size_t mesg_lsnd_info__pack
+                     (const MesgLsndInfo *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_lsn_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_lsnd_info__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_lsn_rpt__pack_to_buffer
-                     (const MesgLsnRpt *message,
+size_t mesg_lsnd_info__pack_to_buffer
+                     (const MesgLsndInfo *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_lsn_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_lsnd_info__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgLsnRpt *
-       mesg_lsn_rpt__unpack
+MesgLsndInfo *
+       mesg_lsnd_info__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgLsnRpt *)
-     protobuf_c_message_unpack (&mesg_lsn_rpt__descriptor,
+  return (MesgLsndInfo *)
+     protobuf_c_message_unpack (&mesg_lsnd_info__descriptor,
                                 allocator, len, data);
 }
-void   mesg_lsn_rpt__free_unpacked
-                     (MesgLsnRpt *message,
+void   mesg_lsnd_info__free_unpacked
+                     (MesgLsndInfo *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_lsn_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_lsnd_info__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_frwd_rpt__init
-                     (MesgFrwdRpt         *message)
+void   mesg_frwd_info__init
+                     (MesgFrwdInfo         *message)
 {
-  static MesgFrwdRpt init_value = MESG_FRWD_RPT__INIT;
+  static MesgFrwdInfo init_value = MESG_FRWD_INFO__INIT;
   *message = init_value;
 }
-size_t mesg_frwd_rpt__get_packed_size
-                     (const MesgFrwdRpt *message)
+size_t mesg_frwd_info__get_packed_size
+                     (const MesgFrwdInfo *message)
 {
-  assert(message->base.descriptor == &mesg_frwd_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_frwd_info__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_frwd_rpt__pack
-                     (const MesgFrwdRpt *message,
+size_t mesg_frwd_info__pack
+                     (const MesgFrwdInfo *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_frwd_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_frwd_info__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_frwd_rpt__pack_to_buffer
-                     (const MesgFrwdRpt *message,
+size_t mesg_frwd_info__pack_to_buffer
+                     (const MesgFrwdInfo *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_frwd_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_frwd_info__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgFrwdRpt *
-       mesg_frwd_rpt__unpack
+MesgFrwdInfo *
+       mesg_frwd_info__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgFrwdRpt *)
-     protobuf_c_message_unpack (&mesg_frwd_rpt__descriptor,
+  return (MesgFrwdInfo *)
+     protobuf_c_message_unpack (&mesg_frwd_info__descriptor,
                                 allocator, len, data);
 }
-void   mesg_frwd_rpt__free_unpacked
-                     (MesgFrwdRpt *message,
+void   mesg_frwd_info__free_unpacked
+                     (MesgFrwdInfo *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_frwd_rpt__descriptor);
+  assert(message->base.descriptor == &mesg_frwd_info__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 static const ProtobufCFieldDescriptor mesg_online__field_descriptors[6] =
@@ -8480,7 +8480,7 @@ const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor =
   (ProtobufCMessageInit) mesg_room_kick_ntc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
+static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[6] =
 {
   {
     "type",
@@ -8488,7 +8488,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgLsnRpt, type),
+    offsetof(MesgLsndInfo, type),
     NULL,
     NULL,
     0,             /* flags */
@@ -8500,7 +8500,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgLsnRpt, nid),
+    offsetof(MesgLsndInfo, nid),
     NULL,
     NULL,
     0,             /* flags */
@@ -8512,7 +8512,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgLsnRpt, nation),
+    offsetof(MesgLsndInfo, nation),
     NULL,
     NULL,
     0,             /* flags */
@@ -8524,7 +8524,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgLsnRpt, name),
+    offsetof(MesgLsndInfo, name),
     NULL,
     NULL,
     0,             /* flags */
@@ -8536,7 +8536,7 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgLsnRpt, ipaddr),
+    offsetof(MesgLsndInfo, ipaddr),
     NULL,
     NULL,
     0,             /* flags */
@@ -8548,14 +8548,14 @@ static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgLsnRpt, port),
+    offsetof(MesgLsndInfo, port),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_lsn_rpt__field_indices_by_name[] = {
+static const unsigned mesg_lsnd_info__field_indices_by_name[] = {
   4,   /* field[4] = ipaddr */
   3,   /* field[3] = name */
   2,   /* field[2] = nation */
@@ -8563,27 +8563,27 @@ static const unsigned mesg_lsn_rpt__field_indices_by_name[] = {
   5,   /* field[5] = port */
   0,   /* field[0] = type */
 };
-static const ProtobufCIntRange mesg_lsn_rpt__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_lsnd_info__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 6 }
 };
-const ProtobufCMessageDescriptor mesg_lsn_rpt__descriptor =
+const ProtobufCMessageDescriptor mesg_lsnd_info__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_lsn_rpt",
-  "MesgLsnRpt",
-  "MesgLsnRpt",
+  "mesg_lsnd_info",
+  "MesgLsndInfo",
+  "MesgLsndInfo",
   "",
-  sizeof(MesgLsnRpt),
+  sizeof(MesgLsndInfo),
   6,
-  mesg_lsn_rpt__field_descriptors,
-  mesg_lsn_rpt__field_indices_by_name,
-  1,  mesg_lsn_rpt__number_ranges,
-  (ProtobufCMessageInit) mesg_lsn_rpt__init,
+  mesg_lsnd_info__field_descriptors,
+  mesg_lsnd_info__field_indices_by_name,
+  1,  mesg_lsnd_info__number_ranges,
+  (ProtobufCMessageInit) mesg_lsnd_info__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_frwd_rpt__field_descriptors[4] =
+static const ProtobufCFieldDescriptor mesg_frwd_info__field_descriptors[4] =
 {
   {
     "nid",
@@ -8591,7 +8591,7 @@ static const ProtobufCFieldDescriptor mesg_frwd_rpt__field_descriptors[4] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgFrwdRpt, nid),
+    offsetof(MesgFrwdInfo, nid),
     NULL,
     NULL,
     0,             /* flags */
@@ -8603,7 +8603,7 @@ static const ProtobufCFieldDescriptor mesg_frwd_rpt__field_descriptors[4] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgFrwdRpt, ipaddr),
+    offsetof(MesgFrwdInfo, ipaddr),
     NULL,
     NULL,
     0,             /* flags */
@@ -8615,7 +8615,7 @@ static const ProtobufCFieldDescriptor mesg_frwd_rpt__field_descriptors[4] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgFrwdRpt, forward_port),
+    offsetof(MesgFrwdInfo, forward_port),
     NULL,
     NULL,
     0,             /* flags */
@@ -8627,36 +8627,36 @@ static const ProtobufCFieldDescriptor mesg_frwd_rpt__field_descriptors[4] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgFrwdRpt, backend_port),
+    offsetof(MesgFrwdInfo, backend_port),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_frwd_rpt__field_indices_by_name[] = {
+static const unsigned mesg_frwd_info__field_indices_by_name[] = {
   3,   /* field[3] = backend_port */
   2,   /* field[2] = forward_port */
   1,   /* field[1] = ipaddr */
   0,   /* field[0] = nid */
 };
-static const ProtobufCIntRange mesg_frwd_rpt__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_frwd_info__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 4 }
 };
-const ProtobufCMessageDescriptor mesg_frwd_rpt__descriptor =
+const ProtobufCMessageDescriptor mesg_frwd_info__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_frwd_rpt",
-  "MesgFrwdRpt",
-  "MesgFrwdRpt",
+  "mesg_frwd_info",
+  "MesgFrwdInfo",
+  "MesgFrwdInfo",
   "",
-  sizeof(MesgFrwdRpt),
+  sizeof(MesgFrwdInfo),
   4,
-  mesg_frwd_rpt__field_descriptors,
-  mesg_frwd_rpt__field_indices_by_name,
-  1,  mesg_frwd_rpt__number_ranges,
-  (ProtobufCMessageInit) mesg_frwd_rpt__init,
+  mesg_frwd_info__field_descriptors,
+  mesg_frwd_info__field_indices_by_name,
+  1,  mesg_frwd_info__number_ranges,
+  (ProtobufCMessageInit) mesg_frwd_info__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

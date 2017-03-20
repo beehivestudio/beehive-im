@@ -977,9 +977,9 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0601<br>
-命令描述: 帧听层上报(LSN-RPT)<br>
+命令描述: 帧听层信息上报(LSN-INFO)<br>
 协议格式: <br>
->message mesg_lsn_rpt<br>
+>message mesg_lsn_info<br>
 >{<br>
 >   required uint32 type = 1;       // M|类型(0:Unknown 1:TCP 2:WS)|数字|<br>
 >   required uint32 nid = 2;        // M|结点ID|数字|<br>
@@ -991,14 +991,14 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0602<br>
-命令描述: 帧听层上报应答(LSN-RPT-ACK)<br>
+命令描述: 帧听层上报应答(LSN-INFO-ACK)<br>
 协议格式: NONE<br>
 
 ---
 命令ID: 0x0603<br>
-命令描述: 转发层上报 (FRWD-RPT)<br>
+命令描述: 转发层上报 (FRWD-INFO)<br>
 协议格式: <br>
->message mesg_frwd_rpt<br>
+>message mesg_frwd_info<br>
 >{<br>
 >   required uint32 nid = 1;        // M|结点ID|数字|<br>
 >   required string ipaddr = 2;     // M|IP地址|字串|<br>
@@ -1008,5 +1008,21 @@ TODO: 协议头中的to为群ID(GID)
 
 ---
 命令ID: 0x0604<br>
-命令描述: 转发层上报应答(FRWD-RPT-ACK)<br>
+命令描述: 转发层上报应答(FRWD-INFO-ACK)<br>
+协议格式: NONE<br>
+
+---
+命令ID: 0x0605<br>
+命令描述: 侦听层在线人数上报 (LSN-USR-NUM)<br>
+协议格式: <br>
+>message mesg_lsn_usr_num<br>
+>{<br>
+>   required uint32 nid = 1;        // M|结点ID|数字|<br>
+>   required string ipaddr = 2;     // M|IP地址+端口|字串|<br>
+>   required uint32 num = 3;        // M|在线人数|数字|<br>
+>}
+
+---
+命令ID: 0x0606<br>
+命令描述: 侦听层在线人数上报应答(LSN-USR-NUM-ACK)<br>
 协议格式: NONE<br>

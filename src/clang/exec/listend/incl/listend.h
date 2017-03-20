@@ -140,7 +140,7 @@ typedef struct _lsnd_cntx_t
 
     /* 定时任务 */
     timer_task_t timer_kick;        /* 定时清理被踢列表 */
-    timer_task_t timer_report;      /* 定时上报帧听层状态 */
+    timer_task_t timer_info;        /* 定时上报帧听层信息 */
     /* 注意: 以下三个表互斥, 共同个管理类为lsnd_conn_extra_t的数据  */
     hash_tab_t *conn_sid_tab;       /* 连接管理表(以SID为主键, 数据:lsnd_conn_extra_t) */
     hash_tab_t *conn_cid_tab;       /* 连接管理表(以CID为主键, 数据:lsnd_conn_extra_t) */
@@ -157,6 +157,6 @@ uint64_t lsnd_gen_cid(lsnd_cntx_t *ctx);
 int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
 
 void lsnd_timer_kick_handler(void *_ctx);
-void lsnd_timer_report_handler(void *_ctx);
+void lsnd_timer_info_handler(void *_ctx);
 
 #endif /*__LISTEND_H__*/

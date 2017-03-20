@@ -78,12 +78,12 @@ func (ctx *LsndCntx) task_timer_kick() {
  ******************************************************************************/
 func (ctx *LsndCntx) task_timer_report() {
 	head := &comm.MesgHeader{
-		Cmd:    comm.CMD_LSN_RPT,    // 消息类型
+		Cmd:    comm.CMD_LSND_INFO,  // 消息类型
 		ChkSum: comm.MSG_CHKSUM_VAL, // 校验值
 		Nid:    ctx.conf.GetNid(),   // 结点ID
 	}
 
-	req := &mesg.MesgLsnRpt{
+	req := &mesg.MesgLsndInfo{
 		Type:   proto.Uint32(comm.LSND_TYPE_WS),    // 网络类型(0:UNKNOWN 1:TCP 2:WS)
 		Nid:    proto.Uint32(ctx.conf.GetNid()),    // 结点ID
 		Nation: proto.String(ctx.conf.GetNation()), // 所属国家
@@ -112,7 +112,7 @@ func (ctx *LsndCntx) task_timer_report() {
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 		/* > 发送协议包 */
-		ctx.frwder.AsyncSend(comm.CMD_LSN_RPT, p.Buff, uint32(len(p.Buff)))
+		ctx.frwder.AsyncSend(comm.CMD_LSND_INFO, p.Buff, uint32(len(p.Buff)))
 
 		ctx.log.Debug("Send listen report succ!")
 
