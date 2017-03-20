@@ -32,10 +32,10 @@ typedef enum
 /* 网络类型 */
 typedef enum
 {
-    LSND_NET_UNKNOWN                        /* 未知网络 */
-    , LSND_NET_TCP                          /* 网络类型: TCP */
-    , LSND_NET_WS                           /* 网络类型: WS */
-} lsnd_network_e;
+    LSND_TYPE_UNKNOWN                        /* 未知网络 */
+    , LSND_TYPE_TCP                          /* 网络类型: TCP */
+    , LSND_TYPE_WS                           /* 网络类型: WS */
+} lsnd_type_e;
 
 /* 输入参数 */
 typedef struct

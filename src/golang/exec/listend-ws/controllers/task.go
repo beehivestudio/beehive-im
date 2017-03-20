@@ -84,12 +84,12 @@ func (ctx *LsndCntx) task_timer_report() {
 	}
 
 	req := &mesg.MesgLsnRpt{
-		Network: proto.Uint32(comm.LSND_NET_WS),     // 网络类型(0:UNKNOWN 1:TCP 2:WS)
-		Nid:     proto.Uint32(ctx.conf.GetNid()),    // 结点ID
-		Nation:  proto.String(ctx.conf.GetNation()), // 所属国家
-		Name:    proto.String(ctx.conf.GetName()),   // 运营商名称
-		Ipaddr:  proto.String(ctx.conf.GetIp()),     // IP地址
-		Port:    proto.Uint32(ctx.conf.GetPort()),   // 端口号
+		Type:   proto.Uint32(comm.LSND_TYPE_WS),    // 网络类型(0:UNKNOWN 1:TCP 2:WS)
+		Nid:    proto.Uint32(ctx.conf.GetNid()),    // 结点ID
+		Nation: proto.String(ctx.conf.GetNation()), // 所属国家
+		Name:   proto.String(ctx.conf.GetName()),   // 运营商名称
+		Ipaddr: proto.String(ctx.conf.GetIp()),     // IP地址
+		Port:   proto.Uint32(ctx.conf.GetPort()),   // 端口号
 	}
 
 	for {

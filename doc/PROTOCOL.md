@@ -981,7 +981,7 @@ TODO: 协议头中的to为群ID(GID)
 协议格式: <br>
 >message mesg_lsn_rpt<br>
 >{<br>
->   required uint32 network = 1;    // M|网络类型(0:Unknown 1:TCP 2:WS)|数字|<br>
+>   required uint32 type = 1;       // M|类型(0:Unknown 1:TCP 2:WS)|数字|<br>
 >   required uint32 nid = 2;        // M|结点ID|数字|<br>
 >   required string nation = 3;     // M|所属国家|字串|<br>
 >   required string name = 4;       // M|运营商名称|字串|<br>

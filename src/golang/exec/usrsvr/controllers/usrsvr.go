@@ -22,7 +22,7 @@ type UsrSvrLsndList struct {
 
 type UsrSvrLsndNetWork struct {
 	sync.RWMutex                         /* 读写锁 */
-	network      map[int]*UsrSvrLsndList /* 侦听层类型:map[网络类型]UsrSvrLsndList */
+	types        map[int]*UsrSvrLsndList /* 侦听层类型:map[网络类型]UsrSvrLsndList */
 }
 
 /* 用户中心上下文 */
@@ -78,7 +78,7 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	}
 
 	/* > 创建侦听层列表 */
-	ctx.listend.network = make(map[int]*UsrSvrLsndList)
+	ctx.listend.types = make(map[int]*UsrSvrLsndList)
 
 	/* > REDIS连接池 */
 	ctx.redis = &redis.Pool{

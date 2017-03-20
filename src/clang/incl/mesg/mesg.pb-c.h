@@ -1074,7 +1074,7 @@ struct  _MesgRoomKickNtc
 struct  _MesgLsnRpt
 {
   ProtobufCMessage base;
-  uint32_t network;
+  uint32_t type;
   uint32_t nid;
   char *nation;
   char *name;

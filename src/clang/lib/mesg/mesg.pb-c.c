@@ -8483,12 +8483,12 @@ const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor =
 static const ProtobufCFieldDescriptor mesg_lsn_rpt__field_descriptors[6] =
 {
   {
-    "network",
+    "type",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgLsnRpt, network),
+    offsetof(MesgLsnRpt, type),
     NULL,
     NULL,
     0,             /* flags */
@@ -8559,9 +8559,9 @@ static const unsigned mesg_lsn_rpt__field_indices_by_name[] = {
   4,   /* field[4] = ipaddr */
   3,   /* field[3] = name */
   2,   /* field[2] = nation */
-  0,   /* field[0] = network */
   1,   /* field[1] = nid */
   5,   /* field[5] = port */
+  0,   /* field[0] = type */
 };
 static const ProtobufCIntRange mesg_lsn_rpt__number_ranges[1 + 1] =
 {

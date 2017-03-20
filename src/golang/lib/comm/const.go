@@ -26,7 +26,7 @@ const (
 
 /* 网络类型 */
 const (
-	LSND_NET_UNKNOWN = 0 // 未知网络
-	LSND_NET_TCP     = 1 // 网络类型: TCP
-	LSND_NET_WS      = 2 // 网络类型: WebSocket
+	LSND_TYPE_UNKNOWN = 0 // 未知网络
+	LSND_TYPE_TCP     = 1 // 网络类型: TCP
+	LSND_TYPE_WS      = 2 // 网络类型: WebSocket
 )

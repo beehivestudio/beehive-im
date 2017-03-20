@@ -51,28 +51,28 @@ func (ctx *UsrSvrCntx) listend_update() {
 	ctm := time.Now().Unix()
 
 	/* > 获取"网络类型"列表 */
-	network, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
+	types, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
 		comm.IM_KEY_LSND_NETWORK_ZSET, ctm, "+inf"))
 	if nil != err {
-		ctx.log.Error("Get network type list failed! errmsg:%s", err.Error())
+		ctx.log.Error("Get listend type list failed! errmsg:%s", err.Error())
 		return
 	}
 
 	ctx.listend.Lock()
 	defer ctx.listend.Unlock()
 
-	num := len(network)
+	num := len(types)
 	for idx := 0; idx < num; idx += 1 {
-		typ := network[idx]
+		typ := types[idx]
 
 		list := ctx.listend_fetch(typ)
 		if nil == list {
-			ctx.log.Error("Get listen list failed! network:%d", typ)
-			delete(ctx.listend.network, typ)
+			ctx.log.Error("Get listen list failed! type:%d", typ)
+			delete(ctx.listend.types, typ)
 			continue
 		}
 
-		ctx.listend.network[typ] = list
+		ctx.listend.types[typ] = list
 	}
 }
 

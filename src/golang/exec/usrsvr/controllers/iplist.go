@@ -24,7 +24,7 @@ func (this *UsrSvrIplistCtrl) Iplist() {
 
 /* 注册参数 */
 type IpListParam struct {
-	network  int    // 网络类型(0:Unknown 1:TCP 2:WS)
+	typ      int    // 网络类型(0:Unknown 1:TCP 2:WS)
 	uid      uint64 // 用户ID
 	sid      uint64 // 会话ID
 	clientip string // 客户端IP
@@ -32,15 +32,15 @@ type IpListParam struct {
 
 /* IP列表应答 */
 type IpListRsp struct {
-	Uid     uint64   `json:"uid"`     // 用户ID
-	Sid     uint64   `json:"sid"`     // 会话ID
-	Network int      `json:"network"` // 网络类型(0:Unknown 1:TCP 2:WS)
-	Token   string   `json:"token"`   // 鉴权TOKEN
-	Expire  int      `json:"expire"`  // 过期时长
-	Len     int      `json:"len"`     // 列表长度
-	List    []string `json:"list"`    // IP列表
-	Code    int      `json:"code"`    // 错误码
-	ErrMsg  string   `json:"errmsg"`  // 错误描述
+	Uid    uint64   `json:"uid"`    // 用户ID
+	Sid    uint64   `json:"sid"`    // 会话ID
+	Type   int      `json:"type"`   // 网络类型(0:Unknown 1:TCP 2:WS)
+	Token  string   `json:"token"`  // 鉴权TOKEN
+	Expire int      `json:"expire"` // 过期时长
+	Len    int      `json:"len"`    // 列表长度
+	List   []string `json:"list"`   // IP列表
+	Code   int      `json:"code"`   // 错误码
+	ErrMsg string   `json:"errmsg"` // 错误描述
 }
 
 func (this *UsrSvrIplistCtrl) iplist_query(ctx *UsrSvrCntx) {
@@ -78,10 +78,10 @@ func (this *UsrSvrIplistCtrl) iplist_param_parse(ctx *UsrSvrCntx) (*IpListParam,
 	param := &IpListParam{}
 
 	/* > 提取注册参数 */
-	param.network, _ = this.GetInt("network")
-	if 0 == param.network {
-		ctx.log.Error("Network is invalid.")
-		return param, errors.New("Network is invalid!")
+	param.typ, _ = this.GetInt("type")
+	if 0 == param.typ {
+		ctx.log.Error("Type is invalid.")
+		return param, errors.New("Type is invalid!")
 	}
 
 	id, _ := this.GetInt64("uid")
@@ -104,8 +104,8 @@ func (this *UsrSvrIplistCtrl) iplist_param_parse(ctx *UsrSvrCntx) (*IpListParam,
 		return param, errors.New("Client ip is invalid!")
 	}
 
-	ctx.log.Debug("Get ip list param. network:%d uid:%d sid:%d clientip:%s",
-		param.network, param.uid, param.sid, param.clientip)
+	ctx.log.Debug("Get ip list param. type:%d uid:%d sid:%d clientip:%s",
+		param.typ, param.uid, param.sid, param.clientip)
 
 	return param, nil
 }
@@ -123,7 +123,7 @@ func (this *UsrSvrIplistCtrl) iplist_param_parse(ctx *UsrSvrCntx) (*IpListParam,
  **作    者: # Qifeng.zou # 2016.11.24 17:00:07 #
  ******************************************************************************/
 func (this *UsrSvrIplistCtrl) iplist_handler(ctx *UsrSvrCntx, param *IpListParam) {
-	iplist := this.iplist_get(ctx, param.network, param.clientip)
+	iplist := this.iplist_get(ctx, param.typ, param.clientip)
 	if nil == iplist {
 		ctx.log.Error("Get ip list failed!")
 		this.Error(comm.ERR_SYS_SYSTEM, "Get ip list failed!")
@@ -152,7 +152,7 @@ func (this *UsrSvrIplistCtrl) success(param *IpListParam, iplist []string) {
 
 	resp.Uid = param.uid
 	resp.Sid = param.sid
-	resp.Network = param.network
+	resp.Type = param.typ
 	resp.Token = this.iplist_token(param)
 	resp.Expire = comm.TIME_DAY
 	resp.Len = len(iplist)
@@ -198,7 +198,7 @@ func (this *UsrSvrIplistCtrl) iplist_token(param *IpListParam) string {
  **功    能: 获取IP列表
  **输入参数:
  **     ctx: 上下文
- **     network: 网络类型(0:Unknown 1:TCP 2:WS)
+ **     typ: 网络类型(0:Unknown 1:TCP 2:WS)
  **     clientip: 客户端IP
  **输出参数: NONE
  **返    回: IP列表
@@ -206,12 +206,12 @@ func (this *UsrSvrIplistCtrl) iplist_token(param *IpListParam) string {
  **注意事项: 加读锁
  **作    者: # Qifeng.zou # 2016.11.27 07:42:54 #
  ******************************************************************************/
-func (this *UsrSvrIplistCtrl) iplist_get(ctx *UsrSvrCntx, network int, clientip string) []string {
+func (this *UsrSvrIplistCtrl) iplist_get(ctx *UsrSvrCntx, typ int, clientip string) []string {
 	ctx.listend.RLock()
 	defer ctx.listend.RUnlock()
 
-	listend, ok := ctx.listend.network[network]
-	if !ok || 0 == network {
+	listend, ok := ctx.listend.types[typ]
+	if !ok || 0 == typ {
 		return nil
 	}
 
@@ -248,7 +248,7 @@ func (this *UsrSvrIplistCtrl) iplist_get(ctx *UsrSvrCntx, network int, clientip 
  **功    能: 获取默认IP列表
  **输入参数:
  **     ctx: 上下文
- **     network: 网络类型(0:Unknown 1:TCP 2:WS)
+ **     typ: 网络类型(0:Unknown 1:TCP 2:WS)
  **输出参数: NONE
  **返    回: IP列表
  **实现描述:

@@ -263,7 +263,7 @@ void lsnd_timer_report_handler(void *_ctx)
     MesgLsnRpt report = MESG_LSN_RPT__INIT;
 
     /* > 设置上报数据 */
-    report.network = LSND_NET_TCP;
+    report.type = LSND_TYPE_TCP;
     report.nid = conf->nid;
     report.nation = conf->operator.nation;
     report.name = conf->operator.name;
