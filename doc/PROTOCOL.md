@@ -1015,7 +1015,7 @@ TODO: 协议头中的to为群ID(GID)
 命令ID: 0x0605<br>
 命令描述: 侦听层在线人数上报 (LSN-USR-NUM)<br>
 协议格式: <br>
->message mesg_lsn_usr_num<br>
+>message mesg_lsnd_usr_num<br>
 >{<br>
 >   required uint32 nid = 1;        // M|结点ID|数字|<br>
 >   required string ipaddr = 2;     // M|IP地址+端口|字串|<br>

@@ -5,6 +5,8 @@
 
 #include "mesg.pb-c.h"
 
+static void lsnd_timer_send_user_num(lsnd_cntx_t *ctx);
+
 /******************************************************************************
  **函数名称: lsnd_getopt 
  **功    能: 解析输入参数
@@ -236,7 +238,7 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 
 /******************************************************************************
  **函数名称: lsnd_timer_info_handler
- **功    能: 侦听层定时上报
+ **功    能: 侦听层信息定时上报
  **输入参数:
  **     _ctx: 全局信息
  **输出参数:
@@ -296,6 +298,79 @@ void lsnd_timer_info_handler(void *_ctx)
 
     /* > 发送数据 */
     rtmq_proxy_async_send(ctx->frwder, CMD_LSND_INFO, addr, sizeof(mesg_header_t) + len);
+
+    free(addr);
+    return;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_timer_stat_handler
+ **功    能: 侦听层状态定时上报
+ **输入参数:
+ **     _ctx: 全局信息
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 使用PB协议组装接入层上报数据
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2016.12.06 23:23:51 #
+ ******************************************************************************/
+void lsnd_timer_stat_handler(void *_ctx)
+{
+    lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
+
+    lsnd_timer_send_user_num(ctx);      /* 定时统计用户人数 */
+
+    return;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_timer_send_user_num
+ **功    能: 统计侦听层用户人数
+ **输入参数:
+ **     ctx: 全局信息
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 使用PB协议组装接入层上报数据
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2017.03.20 23:39:22 #
+ ******************************************************************************/
+static void lsnd_timer_send_user_num(lsnd_cntx_t *ctx)
+{
+    void *addr;
+    unsigned int len;
+    mesg_header_t *head;
+    lsnd_conf_t *conf = &ctx->conf;
+    MesgLsndUsrNum info = MESG_LSND_USR_NUM__INIT;
+
+    /* > 设置上报数据 */
+    info.nid = conf->nid;
+    info.usr_num = hash_tab_total(ctx->conn_sid_tab);
+
+    log_debug(ctx->log, "Report user number! nid:%d user-num:%d", info.nid, info.usr_num);
+
+    /* > 组装PB协议 */
+    len = mesg_lsnd_usr_num__get_packed_size(&info);
+
+    addr = (void *)calloc(1, sizeof(mesg_header_t) + len);
+    if (NULL == addr) {
+        log_error(ctx->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+        return;
+    }
+
+    head = (mesg_header_t *)addr;
+
+    head->type = CMD_LSND_USR_NUM;
+    head->flag = MSG_FLAG_USR;
+    head->length = len;
+    head->chksum = MSG_CHKSUM_VAL;
+    head->nid = conf->nid;
+
+    MESG_HEAD_HTON(head, head);
+
+    mesg_lsnd_usr_num__pack(&info, addr + sizeof(mesg_header_t)); /* 组装PB协议 */
+
+    /* > 发送数据 */
+    rtmq_proxy_async_send(ctx->frwder, CMD_LSND_USR_NUM, addr, sizeof(mesg_header_t) + len);
 
     free(addr);
     return;

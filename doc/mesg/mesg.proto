@@ -995,3 +995,18 @@ message mesg_frwd_info
    命令ID: 0x0604
    命令描述: 转发层信息应答(FRWD-INFO-ACK)
    协议格式: NONE */
+
+/*
+   命令ID: 0x0605
+   命令描述: 帧听层在线人数上报(LSND-USR-NUM)
+   协议格式: */
+message mesg_lsnd_usr_num
+{
+    required uint32 nid = 1;        // M|结点ID|数字|
+    required uint32 usr_num = 2;    // M|在线人数|数字|
+}
+
+/*
+   命令ID: 0x0605
+   命令描述: 帧听层在线人数上报应答(LSND-USR-NUM-ACK)
+   协议格式: NONE */

@@ -100,6 +100,7 @@ typedef struct _MesgRoomQuitNtc MesgRoomQuitNtc;
 typedef struct _MesgRoomKickNtc MesgRoomKickNtc;
 typedef struct _MesgLsndInfo MesgLsndInfo;
 typedef struct _MesgFrwdInfo MesgFrwdInfo;
+typedef struct _MesgLsndUsrNum MesgLsndUsrNum;
 
 
 /* --- enums --- */
@@ -1097,6 +1098,17 @@ struct  _MesgFrwdInfo
 #define MESG_FRWD_INFO__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_frwd_info__descriptor) \
     , 0, NULL, 0, 0 }
+
+
+struct  _MesgLsndUsrNum
+{
+  ProtobufCMessage base;
+  uint32_t nid;
+  uint32_t usr_num;
+};
+#define MESG_LSND_USR_NUM__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_lsnd_usr_num__descriptor) \
+    , 0, 0 }
 
 
 /* MesgOnline methods */
@@ -2714,6 +2726,25 @@ MesgFrwdInfo *
 void   mesg_frwd_info__free_unpacked
                      (MesgFrwdInfo *message,
                       ProtobufCAllocator *allocator);
+/* MesgLsndUsrNum methods */
+void   mesg_lsnd_usr_num__init
+                     (MesgLsndUsrNum         *message);
+size_t mesg_lsnd_usr_num__get_packed_size
+                     (const MesgLsndUsrNum   *message);
+size_t mesg_lsnd_usr_num__pack
+                     (const MesgLsndUsrNum   *message,
+                      uint8_t             *out);
+size_t mesg_lsnd_usr_num__pack_to_buffer
+                     (const MesgLsndUsrNum   *message,
+                      ProtobufCBuffer     *buffer);
+MesgLsndUsrNum *
+       mesg_lsnd_usr_num__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_lsnd_usr_num__free_unpacked
+                     (MesgLsndUsrNum *message,
+                      ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*MesgOnline_Closure)
@@ -2971,6 +3002,9 @@ typedef void (*MesgLsndInfo_Closure)
 typedef void (*MesgFrwdInfo_Closure)
                  (const MesgFrwdInfo *message,
                   void *closure_data);
+typedef void (*MesgLsndUsrNum_Closure)
+                 (const MesgLsndUsrNum *message,
+                  void *closure_data);
 
 /* --- services --- */
 
@@ -3062,6 +3096,7 @@ extern const ProtobufCMessageDescriptor mesg_room_quit_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_lsnd_info__descriptor;
 extern const ProtobufCMessageDescriptor mesg_frwd_info__descriptor;
+extern const ProtobufCMessageDescriptor mesg_lsnd_usr_num__descriptor;
 
 PROTOBUF_C__END_DECLS
 

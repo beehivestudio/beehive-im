@@ -160,6 +160,9 @@ typedef enum
 
     , CMD_FRWD_INFO             = 0x0603    /* 转发层信息上报 */
     , CMD_FRWD_INFO_ACK         = 0x0604    /* 转发层信息上报应答 */
+
+    , CMD_LSND_USR_NUM          = 0x0605    /* 侦听层在线人数上报 */
+    , CMD_LSND_USR_NUM_ACK      = 0x0606    /* 侦听层在线人数上报应答 */
 } mesg_type_e;
 
 #endif /*__CMD_LIST_H__*/
