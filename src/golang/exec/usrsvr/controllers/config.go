@@ -294,7 +294,7 @@ func (req *UserStatisGetReq) query(ctx *UsrSvrCntx, prec int, num int) (UserStat
 	defer rds.Close()
 
 	/* > 获取统计结果 */
-	key := fmt.Sprintf(comm.IM_KEY_PREC_USR_NUM, prec)
+	key := fmt.Sprintf(comm.IM_KEY_PREC_USR_MAX_NUM, prec)
 
 	data, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
 	if nil != err {
