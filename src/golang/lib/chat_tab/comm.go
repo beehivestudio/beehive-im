@@ -43,7 +43,7 @@ func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
 	}
 
 	/* > 添加会话信息 */
-	ssn = &chat_session{
+	ssn = &ChatSessionItem{
 		sid:  sid,                     // 会话ID
 		room: make(map[uint64]uint32), // 聊天室信息
 		sub:  make(map[uint32]bool),   // 订阅列表
@@ -99,7 +99,7 @@ func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bo
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.02 10:13:34 #
  ******************************************************************************/
-func (ctx *ChatTab) session_del(sid uint64) *chat_session {
+func (ctx *ChatTab) session_del(sid uint64) *ChatSessionItem {
 	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
@@ -137,7 +137,7 @@ func (ctx *ChatTab) room_add(rid uint64) int {
 
 	room, ok := rs.room[rid]
 	if !ok {
-		room = &chat_room{
+		room = &ChatRoomItem{
 			rid:       rid,               // 聊天室ID
 			sid_num:   0,                 // 会话数目
 			grp_num:   0,                 // 分组数目
@@ -145,7 +145,7 @@ func (ctx *ChatTab) room_add(rid uint64) int {
 		}
 
 		for idx := uint32(0); idx < GROUP_MAX_LEN; idx += 1 {
-			room.groups[idx].group = make(map[uint32]*chat_group)
+			room.groups[idx].group = make(map[uint32]*ChatGroupItem)
 		}
 
 		atomic.AddInt64(&room.sid_num, 1)
@@ -168,7 +168,7 @@ func (ctx *ChatTab) room_add(rid uint64) int {
  **注意事项: 如果获取对象失败, 则直接解锁.
  **作    者: # Qifeng.zou # 2017.03.01 22:59:15 #
  ******************************************************************************/
-func (ctx *ChatTab) room_query(rid uint64, lck int) *chat_room {
+func (ctx *ChatTab) room_query(rid uint64, lck int) *ChatRoomItem {
 	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 	switch lck {
 	case comm.RDLOCK: // 加读锁
@@ -283,7 +283,7 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 22:55:43 #
  ******************************************************************************/
-func (room *chat_room) group_add(gid uint32) int {
+func (room *ChatRoomItem) group_add(gid uint32) int {
 	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	gs.Lock()
@@ -291,7 +291,7 @@ func (room *chat_room) group_add(gid uint32) int {
 
 	group, ok := gs.group[gid]
 	if !ok {
-		group = &chat_group{
+		group = &ChatGroupItem{
 			gid:       gid,                   // 分组ID
 			sid_num:   0,                     // 会话数目
 			create_tm: time.Now().Unix(),     // 创建时间
@@ -317,7 +317,7 @@ func (room *chat_room) group_add(gid uint32) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 23:50:25 #
  ******************************************************************************/
-func (room *chat_room) group_query(gid uint32, lck int) *chat_group {
+func (room *ChatRoomItem) group_query(gid uint32, lck int) *ChatGroupItem {
 	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	switch lck {
@@ -353,7 +353,7 @@ func (room *chat_room) group_query(gid uint32, lck int) *chat_group {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 17:44:36 #
  ******************************************************************************/
-func (room *chat_room) group_unlock(gid uint32, lck int) int {
+func (room *ChatRoomItem) group_unlock(gid uint32, lck int) int {
 	gs := &room.groups[gid%GROUP_MAX_LEN]
 
 	switch lck {
@@ -379,7 +379,7 @@ func (room *chat_room) group_unlock(gid uint32, lck int) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.23 20:26:40 #
  ******************************************************************************/
-func (room *chat_room) group_trav(group *chat_group, proc ChatTravProcCb, param interface{}) int {
+func (room *ChatRoomItem) group_trav(group *ChatGroupItem, proc ChatTravProcCb, param interface{}) int {
 	group.RLock()
 	defer group.RUnlock()
 
@@ -401,7 +401,7 @@ func (room *chat_room) group_trav(group *chat_group, proc ChatTravProcCb, param 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.02 13:45:05 #
  ******************************************************************************/
-func (room *chat_room) group_all_trav(proc ChatTravProcCb, param interface{}) int {
+func (room *ChatRoomItem) group_all_trav(proc ChatTravProcCb, param interface{}) int {
 	for _, gs := range room.groups {
 		gs.RLock()
 		for _, group := range gs.group {

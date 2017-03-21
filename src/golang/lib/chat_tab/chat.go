@@ -16,7 +16,7 @@ const (
 type ChatTravProcCb func(sid uint64, param interface{}) int
 
 /* 会话信息 */
-type chat_session struct {
+type ChatSessionItem struct {
 	sid          uint64            // 会话ID
 	sync.RWMutex                   // 读写锁
 	room         map[uint64]uint32 // 聊天室信息map[rid]gid
@@ -25,13 +25,13 @@ type chat_session struct {
 }
 
 /* SESSION TAB信息 */
-type chat_session_tab struct {
-	sync.RWMutex                          // 读写锁
-	session      map[uint64]*chat_session // 会话集合[sid]*chat_session
+type ChatSessionList struct {
+	sync.RWMutex                             // 读写锁
+	session      map[uint64]*ChatSessionItem // 会话集合[sid]*ChatSessionItem
 }
 
 /* 分组信息 */
-type chat_group struct {
+type ChatGroupItem struct {
 	gid          uint32          // 分组ID
 	sid_num      int64           // 会话数目
 	create_tm    int64           // 创建时间
@@ -40,30 +40,30 @@ type chat_group struct {
 }
 
 /* GROUP TAB信息 */
-type chat_group_tab struct {
-	sync.RWMutex                        // 读写锁
-	group        map[uint32]*chat_group // 分组信息[gid]*chat_group
+type ChatGroupList struct {
+	sync.RWMutex                           // 读写锁
+	group        map[uint32]*ChatGroupItem // 分组信息[gid]*ChatGroupItem
 }
 
 /* ROOM信息 */
-type chat_room struct {
-	rid       uint64                        // 聊天室ID
-	sid_num   int64                         // 会话数目
-	grp_num   int32                         // 分组数目
-	create_tm int64                         // 创建时间
-	groups    [GROUP_MAX_LEN]chat_group_tab // 分组信息
+type ChatRoomItem struct {
+	rid       uint64                       // 聊天室ID
+	sid_num   int64                        // 会话数目
+	grp_num   int32                        // 分组数目
+	create_tm int64                        // 创建时间
+	groups    [GROUP_MAX_LEN]ChatGroupList // 分组信息
 }
 
 /* ROOM TAB信息 */
-type chat_room_tab struct {
-	sync.RWMutex                       // 读写锁
-	room         map[uint64]*chat_room // ROOM集合[rid]*chat_room
+type ChatRoomList struct {
+	sync.RWMutex                          // 读写锁
+	room         map[uint64]*ChatRoomItem // ROOM集合[rid]*ChatRoomItem
 }
 
 /* 全局对象 */
 type ChatTab struct {
-	rooms    [ROOM_MAX_LEN]chat_room_tab       // ROOM信息
-	sessions [SESSION_MAX_LEN]chat_session_tab // SESSION信息
+	rooms    [ROOM_MAX_LEN]ChatRoomList       // ROOM信息
+	sessions [SESSION_MAX_LEN]ChatSessionList // SESSION信息
 }
 
 /******************************************************************************
@@ -82,13 +82,13 @@ func Init() *ChatTab {
 	/* 初始化ROOM SET */
 	for idx := 0; idx < ROOM_MAX_LEN; idx += 1 {
 		rs := &ctx.rooms[idx]
-		rs.room = make(map[uint64]*chat_room)
+		rs.room = make(map[uint64]*ChatRoomItem)
 	}
 
 	/* 初始化SESSION SET */
 	for idx := 0; idx < SESSION_MAX_LEN; idx += 1 {
 		ss := &ctx.sessions[idx]
-		ss.session = make(map[uint64]*chat_session)
+		ss.session = make(map[uint64]*ChatSessionItem)
 	}
 
 	return ctx
@@ -227,7 +227,7 @@ func (ctx *ChatTab) SessionSetParam(sid uint64, param interface{}) int {
 	}
 
 	/* > 添加会话信息 */
-	ssn = &chat_session{
+	ssn = &ChatSessionItem{
 		sid:   sid,                     // 会话ID
 		room:  make(map[uint64]uint32), // 聊天室信息
 		sub:   make(map[uint32]bool),   // 订阅列表
@@ -262,6 +262,29 @@ func (ctx *ChatTab) SessionGetParam(sid uint64) (param interface{}) {
 	}
 
 	return ssn.param // 已存在
+}
+
+/******************************************************************************
+ **函数名称: SessionCount
+ **功    能: 获取会话总数
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 会话总数
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.21 18:37:55 #
+ ******************************************************************************/
+func (ctx *ChatTab) SessionCount() uint32 {
+	var total uint32
+
+	for idx := 0; idx < SESSION_MAX_LEN; idx += 1 {
+		item := &ctx.sessions[idx%SESSION_MAX_LEN]
+
+		item.RLock()
+		total += uint32(len(item.session))
+		item.RUnlock()
+	}
+	return total
 }
 
 /******************************************************************************
