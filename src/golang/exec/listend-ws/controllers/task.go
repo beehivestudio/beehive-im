@@ -105,7 +105,7 @@ func (ctx *LsndCntx) gather_base_info() {
 		Nid:     proto.Uint32(ctx.conf.GetNid()),       // 结点ID
 		Nation:  proto.String(ctx.conf.GetNation()),    // 所属国家
 		Name:    proto.String(ctx.conf.GetName()),      // 运营商名称
-		Ipaddr:  proto.String(ctx.conf.GetIp()),        // IP地址
+		Ip:      proto.String(ctx.conf.GetIp()),        // IP地址
 		Port:    proto.Uint32(ctx.conf.GetPort()),      // 端口号
 		UserNum: proto.Uint32(ctx.chat.SessionCount()), // 会话总数
 	}

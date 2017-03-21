@@ -8531,12 +8531,12 @@ static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[7] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "ipaddr",
+    "ip",
     5,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgLsndInfo, ipaddr),
+    offsetof(MesgLsndInfo, ip),
     NULL,
     NULL,
     0,             /* flags */
@@ -8568,7 +8568,7 @@ static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[7] =
   },
 };
 static const unsigned mesg_lsnd_info__field_indices_by_name[] = {
-  4,   /* field[4] = ipaddr */
+  4,   /* field[4] = ip */
   3,   /* field[3] = name */
   2,   /* field[2] = nation */
   1,   /* field[1] = nid */
@@ -8611,12 +8611,12 @@ static const ProtobufCFieldDescriptor mesg_frwd_info__field_descriptors[4] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "ipaddr",
+    "ip",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgFrwdInfo, ipaddr),
+    offsetof(MesgFrwdInfo, ip),
     NULL,
     NULL,
     0,             /* flags */
@@ -8650,7 +8650,7 @@ static const ProtobufCFieldDescriptor mesg_frwd_info__field_descriptors[4] =
 static const unsigned mesg_frwd_info__field_indices_by_name[] = {
   3,   /* field[3] = backend_port */
   2,   /* field[2] = forward_port */
-  1,   /* field[1] = ipaddr */
+  1,   /* field[1] = ip */
   0,   /* field[0] = nid */
 };
 static const ProtobufCIntRange mesg_frwd_info__number_ranges[1 + 1] =

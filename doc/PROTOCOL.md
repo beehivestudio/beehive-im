@@ -985,7 +985,7 @@ TODO: 协议头中的to为群ID(GID)
 >   required uint32 nid = 2;        // M|结点ID|数字|<br>
 >   required string nation = 3;     // M|所属国家|字串|<br>
 >   required string name = 4;       // M|运营商名称|字串|<br>
->   required string ipaddr = 5;     // M|IP地址|字串|<br>
+>   required string ip = 5;         // M|IP地址|字串|<br>
 >   required uint32 port = 6;       // M|端口|数字|<br>
 >   required uint32 user_num = 7;   // M|在线人数|数字|<br>
 >}
@@ -1002,7 +1002,7 @@ TODO: 协议头中的to为群ID(GID)
 >message mesg_frwd_info<br>
 >{<br>
 >   required uint32 nid = 1;        // M|结点ID|数字|<br>
->   required string ipaddr = 2;     // M|IP地址|字串|<br>
+>   required string ip = 2;         // M|IP地址|字串|<br>
 >   required uint32 forward_port = 3;    // M|前端口号|数字|<br>
 >   required uint32 backend_port = 4;    // M|后端口号|数字|<br>
 >}

@@ -249,7 +249,7 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
  **         required uint32 nid = 2;        // M|结点ID|数字|<br>
  **         required string nation = 3;     // M|所属国家|字串|<br>
  **         required string name = 4;       // M|运营商名称|字串|<br>
- **         required string ipaddr = 5;     // M|IP地址|字串|<br>
+ **         required string ip = 5;     // M|IP地址|字串|<br>
  **         required uint32 port = 6;       // M|端口号|数字|<br>
  **     }
  **注意事项: 
@@ -269,12 +269,12 @@ void lsnd_timer_info_handler(void *_ctx)
     info.nid = conf->nid;
     info.nation = conf->operator.nation;
     info.name = conf->operator.name;
-    info.ipaddr = conf->access.ipaddr;
+    info.ip = conf->access.ipaddr;
     info.port = conf->access.port;
     info.user_num = hash_tab_total(ctx->conn_sid_tab);
 
-    log_debug(ctx->log, "Listen info! nid:%d nation:%s name:%s ipaddr:%s port:%d",
-            info.nid, info.nation, info.name, info.ipaddr, info.port);
+    log_debug(ctx->log, "Listen info! nid:%d nation:%s name:%s ip:%s port:%d",
+            info.nid, info.nation, info.name, info.ip, info.port);
 
     /* > 组装PB协议 */
     len = mesg_lsnd_info__get_packed_size(&info);

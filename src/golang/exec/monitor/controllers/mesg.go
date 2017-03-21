@@ -30,7 +30,7 @@ func (ctx *MonSvrCntx) lsnd_info_isvalid(req *mesg.MesgLsndInfo) bool {
 		0 == req.GetPort() ||
 		0 == len(req.GetNation()) ||
 		0 == len(req.GetName()) ||
-		0 == len(req.GetIpaddr()) {
+		0 == len(req.GetIp()) {
 		return false
 	}
 	return true
@@ -89,7 +89,7 @@ func (ctx *MonSvrCntx) lsnd_info_has_conflict(req *mesg.MesgLsndInfo) (has bool,
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	addr := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
+	addr := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
 	ok, err := redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSN_ADDR_TO_NID, addr))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
@@ -149,13 +149,13 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 		return
 	} else if true == has {
 		ctx.log.Error("Data has conflict! type:%d nid:%d nation:%s opname:%s ip:%s port:%d",
-			req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIpaddr(), req.GetPort())
+			req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIp(), req.GetPort())
 		return
 	}
 
 	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
 
-	addr := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
+	addr := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
 	pl.Send("HSETNX", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid(), addr)
 	pl.Send("HSETNX", comm.IM_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
 
@@ -176,11 +176,11 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 
 	/* 国家+运营商 -> 侦听层IP列表 */
 	key = fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, req.GetType(), req.GetNation(), req.GetName())
-	val := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
+	val := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
 	pl.Send("ZADD", key, ttl, val)
 
 	ctx.log.Debug("Handle listend information! type:%d nid:%d nation:%s opname:%s ip:%s port:%d user-num:%d",
-		req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIpaddr(), req.GetPort(), req.GetUserNum())
+		req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIp(), req.GetPort(), req.GetUserNum())
 
 	return
 }
@@ -233,7 +233,7 @@ func MonLsndInfoHandler(cmd uint32, nid uint32, data []byte, length uint32, para
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: frwd_rpt_isvalid
+ **函数名称: frwd_info_isvalid
  **功    能: 判断LSN-RPT是否合法
  **输入参数:
  **     req: HB请求
@@ -243,17 +243,17 @@ func MonLsndInfoHandler(cmd uint32, nid uint32, data []byte, length uint32, para
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:05:03 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdInfo) bool {
+func (ctx *MonSvrCntx) frwd_info_isvalid(req *mesg.MesgFrwdInfo) bool {
 	if 0 == req.GetForwardPort() ||
 		0 == req.GetBackendPort() ||
-		0 == len(req.GetIpaddr()) {
+		0 == len(req.GetIp()) {
 		return false
 	}
 	return true
 }
 
 /******************************************************************************
- **函数名称: frwd_rpt_parse
+ **函数名称: frwd_info_parse
  **功    能: 解析LSN-PRT请求
  **输入参数:
  **     data: 接收的数据
@@ -265,12 +265,12 @@ func (ctx *MonSvrCntx) frwd_rpt_isvalid(req *mesg.MesgFrwdInfo) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:57 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
+func (ctx *MonSvrCntx) frwd_info_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgFrwdInfo) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(0) {
-		ctx.log.Error("Mesg header of frwd-rpt is invalid!")
+		ctx.log.Error("Mesg header of frwd-info is invalid!")
 		return nil, nil
 	}
 
@@ -283,7 +283,7 @@ func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
 	}
 
 	/* > 校验协议合法性 */
-	if !ctx.frwd_rpt_isvalid(req) {
+	if !ctx.frwd_info_isvalid(req) {
 		return nil, nil
 	}
 
@@ -291,7 +291,7 @@ func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: frwd_rpt_has_conflict
+ **函数名称: frwd_info_has_conflict
  **功    能: 判断数据是否冲突
  **输入参数:
  **     req: 帧听层上报消息
@@ -301,11 +301,11 @@ func (ctx *MonSvrCntx) frwd_rpt_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:49 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdInfo) (has bool, err error) {
+func (ctx *MonSvrCntx) frwd_info_has_conflict(req *mesg.MesgFrwdInfo) (has bool, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	addr := fmt.Sprintf("%s:%d:%d", req.GetIpaddr(), req.GetForwardPort(), req.GetBackendPort())
+	addr := fmt.Sprintf("%s:%d:%d", req.GetIp(), req.GetForwardPort(), req.GetBackendPort())
 	ok, err := redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_FRWD_ADDR_TO_NID, addr))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
@@ -340,7 +340,7 @@ func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdInfo) (has bool, 
 }
 
 /******************************************************************************
- **函数名称: frwd_rpt_handler
+ **函数名称: frwd_info_handler
  **功    能: FRWD-RPT处理
  **输入参数:
  **     head: 协议头
@@ -351,7 +351,7 @@ func (ctx *MonSvrCntx) frwd_rpt_has_conflict(req *mesg.MesgFrwdInfo) (has bool, 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 11:04:42 #
  ******************************************************************************/
-func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrwdInfo) {
+func (ctx *MonSvrCntx) frwd_info_handler(head *comm.MesgHeader, req *mesg.MesgFrwdInfo) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -359,7 +359,7 @@ func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrw
 	}()
 
 	/* > 判断数据是否冲突 */
-	has, err := ctx.frwd_rpt_has_conflict(req)
+	has, err := ctx.frwd_info_has_conflict(req)
 	if nil != err {
 		ctx.log.Error("Something was wrong! errmsg:%s", err.Error())
 		return
@@ -368,7 +368,7 @@ func (ctx *MonSvrCntx) frwd_rpt_handler(head *comm.MesgHeader, req *mesg.MesgFrw
 		return
 	}
 
-	addr := fmt.Sprintf("%s:%d:%d", req.GetIpaddr(), req.GetForwardPort(), req.GetBackendPort())
+	addr := fmt.Sprintf("%s:%d:%d", req.GetIp(), req.GetForwardPort(), req.GetBackendPort())
 	pl.Send("HSETNX", comm.IM_KEY_FRWD_NID_TO_ADDR, req.GetNid(), addr)
 	pl.Send("HSETNX", comm.IM_KEY_FRWD_ADDR_TO_NID, addr, req.GetNid())
 
@@ -406,17 +406,17 @@ func MonFrwdInfoHandler(cmd uint32, nid uint32, data []byte, length uint32, para
 		return -1
 	}
 
-	ctx.log.Debug("Recv frwd-rpt request!")
+	ctx.log.Debug("Recv frwd-info request!")
 
 	/* 1. > 解析FRWD-RPT请求 */
-	head, req := ctx.frwd_rpt_parse(data)
+	head, req := ctx.frwd_info_parse(data)
 	if nil == head || nil == req {
-		ctx.log.Error("Parse frwd-rpt failed!")
+		ctx.log.Error("Parse frwd-info failed!")
 		return -1
 	}
 
 	/* 2. > LSN-RPT请求处理 */
-	ctx.frwd_rpt_handler(head, req)
+	ctx.frwd_info_handler(head, req)
 
 	return 0
 }

@@ -1078,7 +1078,7 @@ struct  _MesgLsndInfo
   uint32_t nid;
   char *nation;
   char *name;
-  char *ipaddr;
+  char *ip;
   uint32_t port;
   uint32_t user_num;
 };
@@ -1091,7 +1091,7 @@ struct  _MesgFrwdInfo
 {
   ProtobufCMessage base;
   uint32_t nid;
-  char *ipaddr;
+  char *ip;
   uint32_t forward_port;
   uint32_t backend_port;
 };

@@ -1,5 +1,11 @@
 package comm
 
+const (
+	IM_FMT_IP_PORT_STR     = "%s:%d"           //| IP+PORT
+	CHAT_FMT_UID_SID_STR   = "%d:%d"           // 格式:${UID}:${SID} 说明:主键CHAT_KEY_RID_TO_UID_SID_ZSET的成员
+	CHAT_FMT_UID_MSGID_STR = "uid:%d:msgid:%d" //| STRING | UID+MSGID
+)
+
 //#IM系统REDIS键值定义列表
 const (
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
@@ -14,7 +20,6 @@ const (
 	CHAT_KEY_USR_SEND_MESG_HTAB        = "chat:uid:%d:send:mesg:htab"     //| HTAB | 用户发送的私聊消息 | 字段:消息ID 内容:消息内容 |
 	CHAT_KEY_PRIVATE_MESG_TIMEOUT_ZSET = "chat:private:mesg:timeout:zset" //| ZSET | 私聊消息超时管理 | 成员:消息ID 分值:发起时间 |
 	CHAT_KEY_USR_OFFLINE_ZSET          = "chat:uid:%d:offline:zset"       //| ZSET | 用户离线数据队列 | 成员:消息ID 分值:发起时间 |
-	CHAT_FMT_UID_MSGID_STR             = "uid:%d:msgid:%d"                //| STRING | UID+MSGID
 	CHAT_KEY_USR_MSGID_INCR            = "chat:uid:%d:msgid:incr"         //| STRING | 私人消息序列递增记录 |
 	CHAT_KEY_USR_BLACKLIST_ZSET        = "chat:uid:%d:blacklist:zset"     //| ZSET | 用户黑名单记录 | 成员:用户UID 分值:加入黑名单的时间 |
 	CHAT_KEY_USR_GAG_ZSET              = "chat:uid:%d:gag:zset"           //| ZSET | 用户禁言记录 | 成员:用户UID 分值:设置禁言的时间 |
@@ -32,7 +37,6 @@ const (
 	CHAT_KEY_RID_NID_TO_NUM_ZSET    = "chat:rid:%d:nid:to:num:zset"   //*| ZSET | 某聊天室各帧听层人数 | 成员:NID 分值:USERNUM | 由帧听层上报数据获取
 	CHAT_KEY_RID_SUB_USR_NUM_ZSET   = "chat:rid:sub:usr:num:zset"     //| ZSET | 聊天室人数订阅集合 | 暂无 |
 	CHAT_KEY_RID_TO_UID_SID_ZSET    = "chat:rid:%d:to:uid:sid:zset"   //| ZSET | 聊天室用户列表 | 成员:"${UID}:${SID}" 分值:TTL |
-	CHAT_FMT_UID_SID_STR            = "%d:%d"                         // 格式:${UID}:${SID} 说明:主键CHAT_KEY_RID_TO_UID_SID_ZSET的成员
 	CHAT_KEY_RID_TO_SID_ZSET        = "chat:rid:%d:to:sid:zset"       //| ZSET | 聊天室SID列表 | 成员:SID 分值:TTL |
 	CHAT_KEY_ROOM_MESG_QUEUE        = "chat:rid:%d:mesg:queue"        //| LIST | 聊天室消息队列 |
 	CHAT_KEY_ROOM_MSGID_INCR        = "chat:rid:%d:msgid:incr"        //| STRING | 聊天室消息序列递增记录 |
