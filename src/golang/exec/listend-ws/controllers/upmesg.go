@@ -66,7 +66,7 @@ func LsndUpMesgCommHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 
 	/* > 验证合法性 */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Mesg head is invalid!")
 		return -1
 	}
@@ -146,7 +146,7 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of online-ack is invalid!")
 		return -1
 	}
@@ -222,7 +222,7 @@ func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of sub-ack is invalid!")
 		return -1
 	}
@@ -290,7 +290,7 @@ func LsndUpMesgUnsubAckHandler(cmd uint32, nid uint32, data []byte, length uint3
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of unsub-ack is invalid!")
 		return -1
 	}
@@ -404,7 +404,7 @@ func LsndUpMesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of room-join-ack is invalid!")
 		return -1
 	}
@@ -475,7 +475,7 @@ func LsndUpMesgRoomChatHandler(cmd uint32, nid uint32, data []byte, length uint3
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of room-chat is invalid!")
 		return -1
 	}
@@ -524,7 +524,7 @@ func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of room-chat is invalid!")
 		return -1
 	}
@@ -573,7 +573,7 @@ func LsndUpMesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uin
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of room-usr-num is invalid!")
 		return -1
 	}
@@ -622,7 +622,7 @@ func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of room-join-ntc is invalid!")
 		return -1
 	}
@@ -671,7 +671,7 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of room-quit-ntc is invalid!")
 		return -1
 	}
@@ -720,7 +720,7 @@ func LsndUpMesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of room-kick-ntc is invalid!")
 		return -1
 	}

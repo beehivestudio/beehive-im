@@ -35,7 +35,7 @@ func (ctx *MsgSvrCntx) group_chat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgGroupChat) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Group chat message is invalid!")
 		return nil, nil
 	}

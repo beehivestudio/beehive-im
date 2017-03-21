@@ -157,7 +157,7 @@ func (ctx *MsgSvrCntx) sync_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgSync, code uint32, err error) {
 	/* 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Message header of sync is invalid!")
 		return nil, nil, comm.ERR_SVR_PARSE_PARAM, errors.New("Header of sync-req invalid!")
 	}
@@ -231,7 +231,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 
 		/* > 判断消息合法性 */
 		hhead := comm.MesgHeadNtoh([]byte(data))
-		if !hhead.IsValid() {
+		if !hhead.IsValid(1) {
 			ctx.log.Error("Message header is invalid!")
 			pl.Send("ZREM", key, mesg_list[idx])
 			pl.Send("HDEL", mesg_key, msgid)

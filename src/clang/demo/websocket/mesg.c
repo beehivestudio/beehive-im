@@ -66,7 +66,6 @@ int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t
 
     /* 设置通用头部 */
     head->type = htonl(CMD_ONLINE);
-    head->flag = htonl(0);
     head->length = htonl(len);
     head->sid = hton64(AWS_SID);
     head->chksum = htonl(MSG_CHKSUM_VAL);
@@ -136,7 +135,6 @@ int lws_mesg_ping_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *
 
     /* 设置通用头部 */
     head->type = htonl(CMD_PING);
-    head->flag = htonl(0);
     head->length = htonl(0);
     head->sid = hton64(AWS_SID);
     head->chksum = htonl(MSG_CHKSUM_VAL);
@@ -203,7 +201,6 @@ int lws_mesg_room_join_handler(struct lws_context *lws, struct lws *wsi, lws_cnt
 
     /* 设置通用头部 */
     head->type = htonl(CMD_ROOM_JOIN);
-    head->flag = htonl(0);
     head->length = htonl(len);
     head->sid = hton64(AWS_SID);
     head->chksum = htonl(MSG_CHKSUM_VAL);

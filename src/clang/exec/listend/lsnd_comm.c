@@ -288,7 +288,6 @@ void lsnd_timer_info_handler(void *_ctx)
     head = (mesg_header_t *)addr;
 
     head->type = CMD_LSND_INFO;
-    head->flag = MSG_FLAG_USR;
     head->length = len;
     head->chksum = MSG_CHKSUM_VAL;
     head->nid = conf->nid;

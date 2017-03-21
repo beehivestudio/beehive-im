@@ -127,14 +127,14 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgOnline, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of online is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
-	ctx.log.Debug("Online request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
-		head.GetCmd(), head.GetFlag(), head.GetLength(),
+	ctx.log.Debug("Online request header! cmd:0x%04X length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
+		head.GetCmd(), head.GetLength(),
 		head.GetChkSum(), head.GetSid(), head.GetNid(),
 		head.GetSerial(), comm.MESG_HEAD_SIZE)
 
@@ -422,7 +422,7 @@ func UsrSvrOnlineHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 func (ctx *UsrSvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of offline-req is invalid!")
 		return nil
 	}
@@ -502,7 +502,7 @@ func UsrSvrOfflineHandler(cmd uint32, nid uint32, data []byte, length uint32, pa
 func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Header of ping is invalid!")
 		return nil
 	}
@@ -655,14 +655,14 @@ func (ctx *UsrSvrCntx) alloc_seq_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgAllocSeq, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of alloc-seq failed!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
-	ctx.log.Debug("Alloc-seq request header! cmd:0x%04X flag:%d length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
-		head.GetCmd(), head.GetFlag(), head.GetLength(),
+	ctx.log.Debug("Alloc-seq request header! cmd:0x%04X length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
+		head.GetCmd(), head.GetLength(),
 		head.GetChkSum(), head.GetSid(), head.GetNid(),
 		head.GetSerial(), comm.MESG_HEAD_SIZE)
 
@@ -930,7 +930,7 @@ func (ctx *UsrSvrCntx) blacklist_add_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgBlacklistAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of blacklist-add is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
@@ -1165,7 +1165,7 @@ func (ctx *UsrSvrCntx) blacklist_del_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgBlacklistDel, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of blacklist-del is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
@@ -1398,7 +1398,7 @@ func (ctx *UsrSvrCntx) gag_add_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgGagAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of gag-add is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
@@ -1633,7 +1633,7 @@ func (ctx *UsrSvrCntx) gag_del_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgGagDel, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of gag-del is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
@@ -1940,7 +1940,7 @@ func (ctx *UsrSvrCntx) room_creat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of room-creat failed!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
@@ -2230,7 +2230,7 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomJoin, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of room-join failed!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
@@ -2661,7 +2661,7 @@ func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomQuit, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of room-quit failed!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
@@ -2838,7 +2838,7 @@ func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomKick, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		errmsg := "Header of room-kick is invalid!"
 		ctx.log.Error(errmsg)
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)

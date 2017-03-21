@@ -15,9 +15,6 @@
 typedef struct
 {
     uint32_t type;                      /* 消息类型 */
-#define MSG_FLAG_SYS   (0)              /* 0: 系统数据类型 */
-#define MSG_FLAG_USR   (1)              /* 1: 自定义数据类型 */
-    uint32_t flag;                      /* 标识量(0:系统数据类型 1:自定义数据类型) */
     uint32_t length;                    /* 报体长度 */
 #define MSG_CHKSUM_VAL   (0x1ED23CB4)
     uint32_t chksum;                    /* 校验值 */
@@ -32,7 +29,6 @@ typedef struct
 /* 字节序转换 */
 #define MESG_HEAD_HTON(h, n) do { /* 主机->网络 */\
     (n)->type = htonl((h)->type); \
-    (n)->flag = htonl((h)->flag); \
     (n)->length = htonl((h)->length); \
     (n)->chksum = htonl((h)->chksum); \
     (n)->sid = hton64((h)->sid); \
@@ -42,7 +38,6 @@ typedef struct
 
 #define MESG_HEAD_NTOH(n, h) do { /* 网络->主机*/\
     (h)->type = ntohl((n)->type); \
-    (h)->flag = ntohl((n)->flag); \
     (h)->length = ntohl((n)->length); \
     (h)->chksum = ntohl((n)->chksum); \
     (h)->sid = ntoh64((n)->sid); \
@@ -52,7 +47,6 @@ typedef struct
 
 #define MESG_HEAD_SET(head, _type, _sid, _nid, _serial, _len) do { /* 设置协议头 */\
     (head)->type = (_type); \
-    (head)->flag = MSG_FLAG_USR; \
     (head)->length = (_len); \
     (head)->chksum = MSG_CHKSUM_VAL; \
     (head)->sid = (_sid); \

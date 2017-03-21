@@ -258,7 +258,6 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
     head = (mesg_header_t *)addr;
 
     head->type = cmd;
-    head->flag = 0;
     head->length = size;
     head->sid = ctx->sid;
     head->serial = serial;
@@ -266,8 +265,8 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
 
     memcpy(head+1, data, size);
 
-    log_debug(ctx->log, "Head type:0x%02X sid:%d length:%d flag:%d serial:%lu chksum:0x%08X!",
-            head->type, head->sid, head->length, head->flag, head->serial, head->chksum);
+    log_debug(ctx->log, "Head type:0x%02X sid:%d length:%d serial:%lu chksum:0x%08X!",
+            head->type, head->sid, head->length, head->serial, head->chksum);
 
     /* > 设置发送单元 */
     item = (sdk_send_item_t *)calloc(1, sizeof(sdk_send_item_t));

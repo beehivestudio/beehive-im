@@ -52,7 +52,6 @@ int sdk_mesg_send_ping_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head = (mesg_header_t *)addr;
 
     head->type = CMD_PING;
-    head->flag = 0;
     head->length = 0;
     head->sid = ctx->sid;
     head->serial = sdk_gen_serial(ctx);
@@ -118,7 +117,6 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
 
     head->type = CMD_ONLINE;
     head->length = size - sizeof(mesg_header_t);
-    head->flag = 0;
     head->sid = info->sid;
     head->serial = sdk_gen_serial(ctx);
     head->chksum = MSG_CHKSUM_VAL;
@@ -177,7 +175,6 @@ int sdk_mesg_send_sync_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
 
     head->type = CMD_SYNC;
     head->length = 0;
-    head->flag = 0;
     head->sid = info->sid;
 
     /* 3. 加入发送列表 */

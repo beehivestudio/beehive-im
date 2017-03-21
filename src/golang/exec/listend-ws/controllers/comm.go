@@ -154,7 +154,6 @@ func (ctx *LsndCntx) closed_notify(sid uint64) int {
 	/* > 通用协议头 */
 	head := &comm.MesgHeader{
 		Cmd:    comm.CMD_OFFLINE,
-		Flag:   comm.MSG_FLAG_USR,
 		Length: 0,
 		ChkSum: comm.MSG_CHKSUM_VAL,
 		Sid:    sid,

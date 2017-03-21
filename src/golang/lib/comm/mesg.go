@@ -128,8 +128,6 @@ const (
 )
 
 const (
-	MSG_FLAG_SYS   = 0          /* 0: 系统数据类型 */
-	MSG_FLAG_USR   = 1          /* 1: 自定义数据类型 */
 	MSG_CHKSUM_VAL = 0x1ED23CB4 /* 校验码 */
 )
 
@@ -140,7 +138,6 @@ var (
 /* 通用协议头 */
 type MesgHeader struct {
 	Cmd    uint32 /* 消息类型 */
-	Flag   uint32 /* 标识量(0:系统数据类型 1:自定义数据类型) */
 	Length uint32 /* 报体长度 */
 	ChkSum uint32 /* 校验值 */
 	Sid    uint64 /* 会话ID */
@@ -154,10 +151,6 @@ func (head *MesgHeader) SetCmd(cmd uint32) {
 
 func (head *MesgHeader) GetCmd() uint32 {
 	return head.Cmd
-}
-
-func (head *MesgHeader) GetFlag() uint32 {
-	return head.Flag
 }
 
 func (head *MesgHeader) GetLength() uint32 {
@@ -199,7 +192,6 @@ type MesgPacket struct {
 /* "主机->网络"字节序 */
 func MesgHeadHton(head *MesgHeader, p *MesgPacket) {
 	binary.BigEndian.PutUint32(p.Buff[0:4], head.Cmd)      /* CMD */
-	binary.BigEndian.PutUint32(p.Buff[4:8], head.Flag)     /* FLAG */
 	binary.BigEndian.PutUint32(p.Buff[8:12], head.Length)  /* LENGTH */
 	binary.BigEndian.PutUint32(p.Buff[12:16], head.ChkSum) /* CHKSUM */
 	binary.BigEndian.PutUint64(p.Buff[16:24], head.Sid)    /* SID */
@@ -212,7 +204,6 @@ func MesgHeadNtoh(data []byte) *MesgHeader {
 	head := &MesgHeader{}
 
 	head.Cmd = binary.BigEndian.Uint32(data[0:4])
-	head.Flag = binary.BigEndian.Uint32(data[4:8])
 	head.Length = binary.BigEndian.Uint32(data[8:12])
 	head.ChkSum = binary.BigEndian.Uint32(data[12:16])
 	head.Sid = binary.BigEndian.Uint64(data[16:24])
@@ -223,9 +214,10 @@ func MesgHeadNtoh(data []byte) *MesgHeader {
 }
 
 /* 校验头部数据的合法性 */
-func (head *MesgHeader) IsValid() bool {
-	if MSG_CHKSUM_VAL != head.ChkSum ||
-		0 == head.Sid || 0 == head.Nid {
+func (head *MesgHeader) IsValid(flag uint32) bool {
+	if 0 == head.Nid || MSG_CHKSUM_VAL != head.ChkSum {
+		return false
+	} else if 0 != flag && 0 == head.Sid {
 		return false
 	}
 	return true

@@ -51,7 +51,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 	/* > 字节序转化 */
 	head := comm.MesgHeadNtoh(data)
 	head.SetNid(ctx.conf.GetNid())
-	if !head.IsValid() {
+	if !head.IsValid(1) {
 		ctx.log.Error("Mesg head is invalid! cmd:0x%04X sid:%d nid:%d chksum:0x%X",
 			head.GetCmd(), head.GetSid(), head.GetNid(), head.GetChkSum())
 		return -1
@@ -94,8 +94,8 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
 
 	head := comm.MesgHeadNtoh(data)
 
-	ctx.log.Debug("Send data to cid [%d]! cmd:0x%04X sid:%d flag:%d chksum:0x%08X",
-		session.cid, head.GetCmd(), head.GetSid(), head.GetFlag(), head.GetChkSum())
+	ctx.log.Debug("Send data to cid [%d]! cmd:0x%04X sid:%d chksum:0x%08X",
+		session.cid, head.GetCmd(), head.GetSid(), head.GetChkSum())
 
 	return 0
 }
