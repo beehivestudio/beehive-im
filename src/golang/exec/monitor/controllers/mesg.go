@@ -38,7 +38,7 @@ func (ctx *MonSvrCntx) lsnd_info_isvalid(req *mesg.MesgLsndInfo) bool {
 
 /******************************************************************************
  **函数名称: lsnd_info_parse
- **功    能: 解析LSN-PRT请求
+ **功    能: 解析LSND-INFO请求
  **输入参数:
  **     data: 接收的数据
  **输出参数: NONE
@@ -54,7 +54,7 @@ func (ctx *MonSvrCntx) lsnd_info_parse(data []byte) (
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid() {
-		ctx.log.Error("Mesg header of lsn-rpt is invalid!")
+		ctx.log.Error("Mesg header of listend information is invalid!")
 		return nil, nil
 	}
 
@@ -62,7 +62,7 @@ func (ctx *MonSvrCntx) lsnd_info_parse(data []byte) (
 	req = &mesg.MesgLsndInfo{}
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal lsn-rpt failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal listend information failed! errmsg:%s", err.Error())
 		return nil, nil
 	}
 
@@ -179,8 +179,8 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 	val := fmt.Sprintf("%s:%d", req.GetIpaddr(), req.GetPort())
 	pl.Send("ZADD", key, ttl, val)
 
-	ctx.log.Debug("Listend report success! type:%d nid:%d nation:%s opname:%s ip:%s port:%d",
-		req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIpaddr(), req.GetPort())
+	ctx.log.Debug("Handle listend information! type:%d nid:%d nation:%s opname:%s ip:%s port:%d user-num:%d",
+		req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIpaddr(), req.GetPort(), req.GetUserNum())
 
 	return
 }
@@ -214,12 +214,12 @@ func MonLsndInfoHandler(cmd uint32, nid uint32, data []byte, length uint32, para
 		return -1
 	}
 
-	ctx.log.Debug("Recv lsn-rpt request!")
+	ctx.log.Debug("Recv listend information!")
 
 	/* 1. > 解析LSN-RPT请求 */
 	head, req := ctx.lsnd_info_parse(data)
 	if nil == head || nil == req {
-		ctx.log.Error("Parse lsn-rpt failed!")
+		ctx.log.Error("Parse listend information failed!")
 		return -1
 	}
 
