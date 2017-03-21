@@ -320,7 +320,6 @@ static void lsnd_set_timer(lsnd_cntx_t *ctx)
 
     timer_task_add(ctx->timer, &ctx->timer_kick);
     timer_task_add(ctx->timer, &ctx->timer_info);
-    timer_task_add(ctx->timer, &ctx->timer_stat);
 }
 
 /******************************************************************************
