@@ -987,6 +987,7 @@ TODO: 协议头中的to为群ID(GID)
 >   required string name = 4;       // M|运营商名称|字串|<br>
 >   required string ipaddr = 5;     // M|IP地址|字串|<br>
 >   required uint32 port = 6;       // M|端口|数字|<br>
+>   required uint32 user_num = 7;   // M|在线人数|数字|<br>
 >}
 
 ---
@@ -1009,20 +1010,4 @@ TODO: 协议头中的to为群ID(GID)
 ---
 命令ID: 0x0604<br>
 命令描述: 转发层上报应答(FRWD-INFO-ACK)<br>
-协议格式: NONE<br>
-
----
-命令ID: 0x0605<br>
-命令描述: 侦听层在线人数上报 (LSN-USR-NUM)<br>
-协议格式: <br>
->message mesg_lsnd_usr_num<br>
->{<br>
->   required uint32 nid = 1;        // M|结点ID|数字|<br>
->   required string ipaddr = 2;     // M|IP地址+端口|字串|<br>
->   required uint32 num = 3;        // M|在线人数|数字|<br>
->}
-
----
-命令ID: 0x0606<br>
-命令描述: 侦听层在线人数上报应答(LSN-USR-NUM-ACK)<br>
 协议格式: NONE<br>

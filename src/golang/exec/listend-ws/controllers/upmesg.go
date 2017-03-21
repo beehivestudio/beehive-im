@@ -8,7 +8,7 @@ import (
 )
 
 /******************************************************************************
- **函数名称: UpmesgRegister
+ **函数名称: UpMesgRegister
  **功    能: 下行消息回调注册
  **输入参数: NONE
  **输出参数: NONE
@@ -17,29 +17,32 @@ import (
  **注意事项: "下行"消息指的是从转发层发送过来的消息
  **作    者: # Qifeng.zou # 2017.03.06 17:54:26 #
  ******************************************************************************/
-func (ctx *LsndCntx) UpmesgRegister() {
+func (ctx *LsndCntx) UpMesgRegister() {
 	/* > 未知消息 */
-	ctx.frwder.Register(comm.CMD_UNKNOWN, LsndUpmesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_UNKNOWN, LsndUpMesgCommHandler, ctx)
 
 	/* > 通用消息 */
-	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndUpmesgOnlineAckHandler, ctx)
-	ctx.frwder.Register(comm.CMD_SUB_ACK, LsndUpmesgSubAckHandler, ctx)
-	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpmesgUnsubAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndUpMesgOnlineAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_SUB_ACK, LsndUpMesgSubAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpMesgUnsubAckHandler, ctx)
 
 	/* > 聊天室消息 */
-	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndUpmesgRoomJoinAckHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndUpmesgRoomChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndUpmesgRoomBcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, LsndUpmesgRoomUsrNumHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_JOIN_NTC, LsndUpmesgRoomJoinNtcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_QUIT_NTC, LsndUpmesgRoomQuitNtcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_KICK_NTC, LsndUpmesgRoomKickNtcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndUpMesgRoomJoinAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndUpMesgRoomChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndUpMesgRoomBcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, LsndUpMesgRoomUsrNumHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN_NTC, LsndUpMesgRoomJoinNtcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_QUIT_NTC, LsndUpMesgRoomQuitNtcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_KICK_NTC, LsndUpMesgRoomKickNtcHandler, ctx)
+
+	/* > 内部运维消息 */
+	ctx.frwder.Register(comm.CMD_LSND_INFO_ACK, LsndUpMesgLsndInfoAckHandler, ctx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgCommHandler
+ **函数名称: LsndUpMesgCommHandler
  **功    能: 通用消息处理
  **输入参数:
  **     cmd: 消息类型
@@ -53,7 +56,7 @@ func (ctx *LsndCntx) UpmesgRegister() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.06 17:54:26 #
  ******************************************************************************/
-func LsndUpmesgCommHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgCommHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -119,7 +122,7 @@ func (ctx *LsndCntx) lsnd_error_online_ack_handler(cid uint64, head *comm.MesgHe
 }
 
 /******************************************************************************
- **函数名称: LsndUpmesgOnlineAckHandler
+ **函数名称: LsndUpMesgOnlineAckHandler
  **功    能: ONLINE-ACK消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -133,7 +136,7 @@ func (ctx *LsndCntx) lsnd_error_online_ack_handler(cid uint64, head *comm.MesgHe
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.07 23:49:03 #
  ******************************************************************************/
-func LsndUpmesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -195,7 +198,7 @@ func LsndUpmesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgSubAckHandler
+ **函数名称: LsndUpMesgSubAckHandler
  **功    能: SUB-ACK消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -209,7 +212,7 @@ func LsndUpmesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:25:58 #
  ******************************************************************************/
-func LsndUpmesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -261,7 +264,7 @@ func LsndUpmesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgUnsubAckHandler
+ **函数名称: LsndUpMesgUnsubAckHandler
  **功    能: UNSUB-ACK消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -277,7 +280,7 @@ func LsndUpmesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:33:30 #
  ******************************************************************************/
-func LsndUpmesgUnsubAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgUnsubAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -377,7 +380,7 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
 }
 
 /******************************************************************************
- **函数名称: LsndUpmesgRoomJoinAckHandler
+ **函数名称: LsndUpMesgRoomJoinAckHandler
  **功    能: ROOM-JOIN-ACK消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -391,7 +394,7 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 22:43:55 #
  ******************************************************************************/
-func LsndUpmesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -448,7 +451,7 @@ func LsndUpmesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length ui
 }
 
 /******************************************************************************
- **函数名称: LsndUpmesgRoomChatHandler
+ **函数名称: LsndUpMesgRoomChatHandler
  **功    能: ROOM-CHAT消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -462,7 +465,7 @@ func LsndUpmesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length ui
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
  ******************************************************************************/
-func LsndUpmesgRoomChatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomChatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -497,7 +500,7 @@ func LsndUpmesgRoomChatHandler(cmd uint32, nid uint32, data []byte, length uint3
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgRoomBcHandler
+ **函数名称: LsndUpMesgRoomBcHandler
  **功    能: ROOM-BC消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -511,7 +514,7 @@ func LsndUpmesgRoomChatHandler(cmd uint32, nid uint32, data []byte, length uint3
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
  ******************************************************************************/
-func LsndUpmesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -546,7 +549,7 @@ func LsndUpmesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgRoomUsrNumHandler
+ **函数名称: LsndUpMesgRoomUsrNumHandler
  **功    能: ROOM-USR-NUM消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -560,7 +563,7 @@ func LsndUpmesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:25:28 #
  ******************************************************************************/
-func LsndUpmesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -595,7 +598,7 @@ func LsndUpmesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uin
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgRoomJoinNtcHandler
+ **函数名称: LsndUpMesgRoomJoinNtcHandler
  **功    能: ROOM-JOIN-NTC消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -609,7 +612,7 @@ func LsndUpmesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uin
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:26:07 #
  ******************************************************************************/
-func LsndUpmesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -644,7 +647,7 @@ func LsndUpmesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgRoomQuitNtcHandler
+ **函数名称: LsndUpMesgRoomQuitNtcHandler
  **功    能: ROOM-QUIT-NTC消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -658,7 +661,7 @@ func LsndUpmesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
  ******************************************************************************/
-func LsndUpmesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -693,7 +696,7 @@ func LsndUpmesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpmesgRoomKickNtcHandler
+ **函数名称: LsndUpMesgRoomKickNtcHandler
  **功    能: ROOM-KICK-NTC消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -707,7 +710,7 @@ func LsndUpmesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
  ******************************************************************************/
-func LsndUpmesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -735,6 +738,35 @@ func LsndUpmesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
 	ctx.chat.Trav(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 运维消息
+
+/******************************************************************************
+ **函数名称: LsndUpMesgLsndInfoAckHandler
+ **功    能: LSND-INFO-ACK消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.21 18:05:18 #
+ ******************************************************************************/
+func LsndUpMesgLsndInfoAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv lsnd info ack!")
 
 	return 0
 }

@@ -144,7 +144,7 @@ func LsndInit(conf *conf.LsndConf) (ctx *LsndCntx, err error) {
 ******************************************************************************/
 func (ctx *LsndCntx) Register() {
 	ctx.MesgRegister()      // 上行消息注册回调
-	ctx.UpmesgRegister()    // 下行消息注册回调
+	ctx.UpMesgRegister()    // 下行消息注册回调
 	ctx.lws.Register("/im") // LWS路径注册回调
 }
 

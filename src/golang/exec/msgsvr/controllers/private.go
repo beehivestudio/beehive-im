@@ -332,7 +332,7 @@ func (ctx *MsgSvrCntx) chat_ack_handler(
 
 	/* 清理离线消息 */
 	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
-	field := fmt.Sprintf(comm.UID_MSGID_STR, req.GetOrig(), head.GetSerial())
+	field := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, req.GetOrig(), head.GetSerial())
 	rds.Send("ZREM", key, field)
 
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
@@ -427,7 +427,7 @@ func (ctx *MsgSvrCntx) mesg_store_proc(
 
 	/* > 加入接收者离线列表 */
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
-	member := fmt.Sprintf(comm.UID_MSGID_STR, req.GetOrig(), head.GetSerial())
+	member := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, req.GetOrig(), head.GetSerial())
 	pl.Send("ZADD", key, member, ctm)
 
 	/* > 存储发送者离线消息 */

@@ -3662,49 +3662,6 @@ void   mesg_frwd_info__free_unpacked
   assert(message->base.descriptor == &mesg_frwd_info__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_lsnd_usr_num__init
-                     (MesgLsndUsrNum         *message)
-{
-  static MesgLsndUsrNum init_value = MESG_LSND_USR_NUM__INIT;
-  *message = init_value;
-}
-size_t mesg_lsnd_usr_num__get_packed_size
-                     (const MesgLsndUsrNum *message)
-{
-  assert(message->base.descriptor == &mesg_lsnd_usr_num__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t mesg_lsnd_usr_num__pack
-                     (const MesgLsndUsrNum *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &mesg_lsnd_usr_num__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t mesg_lsnd_usr_num__pack_to_buffer
-                     (const MesgLsndUsrNum *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &mesg_lsnd_usr_num__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-MesgLsndUsrNum *
-       mesg_lsnd_usr_num__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (MesgLsndUsrNum *)
-     protobuf_c_message_unpack (&mesg_lsnd_usr_num__descriptor,
-                                allocator, len, data);
-}
-void   mesg_lsnd_usr_num__free_unpacked
-                     (MesgLsndUsrNum *message,
-                      ProtobufCAllocator *allocator)
-{
-  assert(message->base.descriptor == &mesg_lsnd_usr_num__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
 static const ProtobufCFieldDescriptor mesg_online__field_descriptors[6] =
 {
   {
@@ -8523,7 +8480,7 @@ const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor =
   (ProtobufCMessageInit) mesg_room_kick_ntc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[6] =
+static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[7] =
 {
   {
     "type",
@@ -8597,6 +8554,18 @@ static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[6] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "user_num",
+    7,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(MesgLsndInfo, user_num),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mesg_lsnd_info__field_indices_by_name[] = {
   4,   /* field[4] = ipaddr */
@@ -8605,11 +8574,12 @@ static const unsigned mesg_lsnd_info__field_indices_by_name[] = {
   1,   /* field[1] = nid */
   5,   /* field[5] = port */
   0,   /* field[0] = type */
+  6,   /* field[6] = user_num */
 };
 static const ProtobufCIntRange mesg_lsnd_info__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 6 }
+  { 0, 7 }
 };
 const ProtobufCMessageDescriptor mesg_lsnd_info__descriptor =
 {
@@ -8619,7 +8589,7 @@ const ProtobufCMessageDescriptor mesg_lsnd_info__descriptor =
   "MesgLsndInfo",
   "",
   sizeof(MesgLsndInfo),
-  6,
+  7,
   mesg_lsnd_info__field_descriptors,
   mesg_lsnd_info__field_indices_by_name,
   1,  mesg_lsnd_info__number_ranges,
@@ -8701,56 +8671,5 @@ const ProtobufCMessageDescriptor mesg_frwd_info__descriptor =
   mesg_frwd_info__field_indices_by_name,
   1,  mesg_frwd_info__number_ranges,
   (ProtobufCMessageInit) mesg_frwd_info__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor mesg_lsnd_usr_num__field_descriptors[2] =
-{
-  {
-    "nid",
-    1,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(MesgLsndUsrNum, nid),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "usr_num",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(MesgLsndUsrNum, usr_num),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned mesg_lsnd_usr_num__field_indices_by_name[] = {
-  0,   /* field[0] = nid */
-  1,   /* field[1] = usr_num */
-};
-static const ProtobufCIntRange mesg_lsnd_usr_num__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 2 }
-};
-const ProtobufCMessageDescriptor mesg_lsnd_usr_num__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_lsnd_usr_num",
-  "MesgLsndUsrNum",
-  "MesgLsndUsrNum",
-  "",
-  sizeof(MesgLsndUsrNum),
-  2,
-  mesg_lsnd_usr_num__field_descriptors,
-  mesg_lsnd_usr_num__field_indices_by_name,
-  1,  mesg_lsnd_usr_num__number_ranges,
-  (ProtobufCMessageInit) mesg_lsnd_usr_num__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

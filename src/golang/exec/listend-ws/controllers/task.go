@@ -24,8 +24,8 @@ const (
  **作    者: # Qifeng.zou # 2017.03.09 15:21:36 #
  ******************************************************************************/
 func (ctx *LsndCntx) Task() {
-	go ctx.task_timer_kick()   /* 定时踢连接 */
-	go ctx.task_timer_report() /* 定时上报状态 */
+	go ctx.task_timer_kick()      /* 定时踢连接 */
+	go ctx.task_timer_statistic() /* 定时统计上报 */
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,16 +67,33 @@ func (ctx *LsndCntx) task_timer_kick() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: task_timer_report
- **功    能: 定时上报侦听层状态
+ **函数名称: task_timer_statistic
+ **功    能: 定时统计侦听层状态
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
- **实现描述: 拼接LSN-RPT报文, 并发送给上游模块.
+ **实现描述: 调用各维度信息统计接口, 并上报结果
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.14 14:53:13 #
  ******************************************************************************/
-func (ctx *LsndCntx) task_timer_report() {
+func (ctx *LsndCntx) task_timer_statistic() {
+	for {
+		ctx.gather_base_info() /* 采集侦听层信息, 并上报 */
+		time.Sleep(5 * time.Second)
+	}
+}
+
+/******************************************************************************
+ **函数名称: gather_base_info
+ **功    能: 上报侦听层信息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 拼接LSND-INFO报文, 并发送给上游模块.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.14 14:53:13 #
+ ******************************************************************************/
+func (ctx *LsndCntx) gather_base_info() {
 	head := &comm.MesgHeader{
 		Cmd:    comm.CMD_LSND_INFO,  // 消息类型
 		ChkSum: comm.MSG_CHKSUM_VAL, // 校验值
@@ -92,30 +109,27 @@ func (ctx *LsndCntx) task_timer_report() {
 		Port:   proto.Uint32(ctx.conf.GetPort()),   // 端口号
 	}
 
-	for {
-		/* 生成PB数据 */
-		body, err := proto.Marshal(req)
-		if nil != err {
-			ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
-			return
-		}
-
-		length := len(body)
-
-		/* > 拼接协议包 */
-		p := &comm.MesgPacket{}
-		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
-
-		head.Length = uint32(length)
-
-		comm.MesgHeadHton(head, p)
-		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
-
-		/* > 发送协议包 */
-		ctx.frwder.AsyncSend(comm.CMD_LSND_INFO, p.Buff, uint32(len(p.Buff)))
-
-		ctx.log.Debug("Send listen report succ!")
-
-		time.Sleep(5 * time.Second)
+	/* 生成PB数据 */
+	body, err := proto.Marshal(req)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return
 	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_LSND_INFO, p.Buff, uint32(len(p.Buff)))
+
+	ctx.log.Debug("Send listen report succ!")
+
 }

@@ -159,6 +159,5 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
 
 void lsnd_timer_kick_handler(void *_ctx);
 void lsnd_timer_info_handler(void *_ctx);
-void lsnd_timer_stat_handler(void *_ctx);
 
 #endif /*__LISTEND_H__*/
