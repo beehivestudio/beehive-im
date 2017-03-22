@@ -192,11 +192,11 @@ type MesgPacket struct {
 /* "主机->网络"字节序 */
 func MesgHeadHton(head *MesgHeader, p *MesgPacket) {
 	binary.BigEndian.PutUint32(p.Buff[0:4], head.Cmd)      /* CMD */
-	binary.BigEndian.PutUint32(p.Buff[8:12], head.Length)  /* LENGTH */
-	binary.BigEndian.PutUint32(p.Buff[12:16], head.ChkSum) /* CHKSUM */
-	binary.BigEndian.PutUint64(p.Buff[16:24], head.Sid)    /* SID */
-	binary.BigEndian.PutUint32(p.Buff[24:28], head.Nid)    /* NID */
-	binary.BigEndian.PutUint64(p.Buff[28:36], head.Serial) /* SERIAL */
+	binary.BigEndian.PutUint32(p.Buff[4:8], head.Length)   /* LENGTH */
+	binary.BigEndian.PutUint32(p.Buff[8:12], head.ChkSum)  /* CHKSUM */
+	binary.BigEndian.PutUint64(p.Buff[12:20], head.Sid)    /* SID */
+	binary.BigEndian.PutUint32(p.Buff[20:24], head.Nid)    /* NID */
+	binary.BigEndian.PutUint64(p.Buff[24:32], head.Serial) /* SERIAL */
 }
 
 /* "网络->主机"字节序 */
@@ -204,11 +204,11 @@ func MesgHeadNtoh(data []byte) *MesgHeader {
 	head := &MesgHeader{}
 
 	head.Cmd = binary.BigEndian.Uint32(data[0:4])
-	head.Length = binary.BigEndian.Uint32(data[8:12])
-	head.ChkSum = binary.BigEndian.Uint32(data[12:16])
-	head.Sid = binary.BigEndian.Uint64(data[16:24])
-	head.Nid = binary.BigEndian.Uint32(data[24:28])
-	head.Serial = binary.BigEndian.Uint64(data[28:36])
+	head.Length = binary.BigEndian.Uint32(data[4:8])
+	head.ChkSum = binary.BigEndian.Uint32(data[8:12])
+	head.Sid = binary.BigEndian.Uint64(data[12:20])
+	head.Nid = binary.BigEndian.Uint32(data[20:24])
+	head.Serial = binary.BigEndian.Uint64(data[24:32])
 
 	return head
 }
