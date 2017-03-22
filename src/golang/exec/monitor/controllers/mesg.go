@@ -54,7 +54,8 @@ func (ctx *MonSvrCntx) lsnd_info_parse(data []byte) (
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(0) {
-		ctx.log.Error("Mesg header of listend information is invalid!")
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
+			head.GetCmd(), head.GetNid(), head.GetChkSum())
 		return nil, nil
 	}
 
@@ -270,7 +271,8 @@ func (ctx *MonSvrCntx) frwd_info_parse(data []byte) (
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(0) {
-		ctx.log.Error("Mesg header of frwd-info is invalid!")
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
+			head.GetCmd(), head.GetNid(), head.GetChkSum())
 		return nil, nil
 	}
 
