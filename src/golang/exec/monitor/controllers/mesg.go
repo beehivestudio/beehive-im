@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -91,12 +93,12 @@ func (ctx *MonSvrCntx) lsnd_info_has_conflict(req *mesg.MesgLsndInfo) (has bool,
 	defer rds.Close()
 
 	addr := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
-	ok, err := redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSN_ADDR_TO_NID, addr))
+	ok, err := redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSND_ADDR_TO_NID, addr))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
 		return false, err
 	} else if true == ok {
-		nid, err := redis.Int(rds.Do("HGET", comm.IM_KEY_LSN_ADDR_TO_NID, addr))
+		nid, err := redis.Int(rds.Do("HGET", comm.IM_KEY_LSND_ADDR_TO_NID, addr))
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
@@ -106,12 +108,13 @@ func (ctx *MonSvrCntx) lsnd_info_has_conflict(req *mesg.MesgLsndInfo) (has bool,
 		}
 	}
 
-	ok, err = redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+	key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, req.GetNid())
+	ok, err = redis.Bool(rds.Do("HEXISTS", key, "ADDR"))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
 		return
 	} else if true == ok {
-		_addr, err := redis.String(rds.Do("HGET", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
+		_addr, err := redis.String(rds.Do("HGET", key, "ADDR"))
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
@@ -156,15 +159,22 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 
 	ttl := time.Now().Unix() + comm.CHAT_OP_TTL
 
+	/* 存储基本信息 */
+	key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, req.GetNid())
 	addr := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
-	pl.Send("HSETNX", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid(), addr)
-	pl.Send("HSETNX", comm.IM_KEY_LSN_ADDR_TO_NID, addr, req.GetNid())
 
-	/* 网络类型结合 */
+	pl.Send("HSETNX", key, "ADDR", addr)                                /* 记录NID->ADDR映射 */
+	pl.Send("HSETX", key, "USR-NUM", req.GetUserNum())                  /* 记录NID在线人数 */
+	pl.Send("HSETNX", comm.IM_KEY_LSND_ADDR_TO_NID, addr, req.GetNid()) /* 记录ADDR->NID映射 */
+
+	/* 侦听层ID集合 */
+	pl.Send("ZADD", comm.IM_KEY_LSND_NID_ZSET, ttl, req.GetNid())
+
+	/* 侦听层类型集合 */
 	pl.Send("ZADD", comm.IM_KEY_LSND_TYPE_ZSET, ttl, req.GetType())
 
 	/* 国家集合 */
-	key := fmt.Sprintf(comm.IM_KEY_LSND_NATION_ZSET, req.GetType())
+	key = fmt.Sprintf(comm.IM_KEY_LSND_NATION_ZSET, req.GetType())
 	pl.Send("ZADD", key, ttl, req.GetNation())
 
 	/* 国家 -> 运营商列表 */
@@ -307,35 +317,28 @@ func (ctx *MonSvrCntx) frwd_info_has_conflict(req *mesg.MesgFrwdInfo) (has bool,
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	addr := fmt.Sprintf("%s:%d:%d", req.GetIp(), req.GetForwardPort(), req.GetBackendPort())
-	ok, err := redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_FRWD_ADDR_TO_NID, addr))
+	key := fmt.Sprintf(comm.IM_KEY_FRWD_ATTR, req.GetNid())
+
+	vals, err := redis.Strings(rds.Do("HMGET", key, "ADDR", "BC-PORT", "FWD-PORT"))
 	if nil != err {
-		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
-		return false, err
-	} else if true == ok {
-		nid, err := redis.Int(rds.Do("HGET", comm.IM_KEY_FRWD_ADDR_TO_NID, addr))
-		if nil != err {
-			ctx.log.Error("Exec hget failed! err:%s", err.Error())
-			return false, err
-		} else if uint32(nid) != req.GetNid() {
-			ctx.log.Error("Node id conflict! nid:%d/%d", nid, req.GetNid())
-			return true, nil
-		}
+		return false, nil
 	}
 
-	ok, err = redis.Bool(rds.Do("HEXISTS", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
-	if nil != err {
-		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
-		return
-	} else if true == ok {
-		_addr, err := redis.String(rds.Do("HGET", comm.IM_KEY_LSN_NID_TO_ADDR, req.GetNid()))
-		if nil != err {
-			ctx.log.Error("Exec hget failed! err:%s", err.Error())
-			return false, err
-		} else if _addr != addr {
-			ctx.log.Error("Node id conflict! addr:%s/%s", addr, _addr)
-			return true, nil
-		}
+	addr := vals[0]
+	if addr != req.GetIp() {
+		return true, errors.New(fmt.Sprintf("Address is conflict! nid:%d", req.GetNid()))
+	}
+
+	port, err := strconv.ParseInt(vals[1], 10, 32)
+	if uint32(port) != req.GetBackendPort() {
+		return true, errors.New(fmt.Sprintf("Backend port is conflict! nid:%d port:%d/%d",
+			req.GetNid(), port, req.GetBackendPort()))
+	}
+
+	port, err = strconv.ParseInt(vals[2], 10, 32)
+	if uint32(port) != req.GetForwardPort() {
+		return true, errors.New(fmt.Sprintf("Forward port is conflict! nid:%d port:%d/%d",
+			req.GetNid(), port, req.GetForwardPort()))
 	}
 
 	return false, nil
@@ -370,11 +373,15 @@ func (ctx *MonSvrCntx) frwd_info_handler(head *comm.MesgHeader, req *mesg.MesgFr
 		return
 	}
 
-	addr := fmt.Sprintf("%s:%d:%d", req.GetIp(), req.GetForwardPort(), req.GetBackendPort())
-	pl.Send("HSETNX", comm.IM_KEY_FRWD_NID_TO_ADDR, req.GetNid(), addr)
-	pl.Send("HSETNX", comm.IM_KEY_FRWD_ADDR_TO_NID, addr, req.GetNid())
-
 	ttl := time.Now().Unix() + comm.CHAT_NID_TTL
+
+	/* > 更新数据存储 */
+	key := fmt.Sprintf(comm.IM_KEY_FRWD_ATTR, req.GetNid())
+
+	pl.Send("HSETNX", key, "ADDR", req.GetIp())
+	pl.Send("HSETNX", key, "BC-PORT", req.GetBackendPort())
+	pl.Send("HSETNX", key, "FWD-PORT", req.GetForwardPort())
+
 	pl.Send("ZADD", comm.IM_KEY_FRWD_NID_ZSET, ttl, req.GetNid())
 
 	return

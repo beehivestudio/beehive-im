@@ -293,7 +293,7 @@ func RoomSendUsrNum(frwder *rtmq.RtmqProxyCntx, pool *redis.Pool) error {
 
 	/* 获取侦听层ID列表 */
 	lsn_nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
-		comm.IM_KEY_LSN_NID_ZSET, ctm, "+inf"))
+		comm.IM_KEY_LSND_NID_ZSET, ctm, "+inf"))
 	if nil != err {
 		return err
 	}

@@ -3021,7 +3021,7 @@ func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE", comm.IM_KEY_LSN_NID_ZSET, "-inf", "+inf"))
+	nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE", comm.IM_KEY_LSND_NID_ZSET, "-inf", "+inf"))
 	if nil != err {
 		ctx.log.Error("Get listen nid failed! errmsg:%s", err.Error())
 		return -1

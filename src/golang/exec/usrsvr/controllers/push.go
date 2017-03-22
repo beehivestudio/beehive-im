@@ -335,7 +335,7 @@ func (req *RoomPushReq) push_handler(
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
 	/* > 获取侦听层集合 */
-	nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE", comm.IM_KEY_LSN_NID_ZSET, ctm, "+inf"))
+	nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE", comm.IM_KEY_LSND_NID_ZSET, ctm, "+inf"))
 	if nil != err {
 		ctx.log.Error("Get listen nid failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
