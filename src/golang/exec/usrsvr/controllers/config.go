@@ -77,6 +77,10 @@ type ListendListItem struct {
 	Total  uint32 `json:"total"`  // 在线人数
 }
 
+func (list ListendList) Len() int           { return len(list) }
+func (list ListendList) Less(i, j int) bool { return list[i].Nid < list[j].Nid }
+func (list ListendList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
+
 /******************************************************************************
  **函数名称: ListListend
  **功    能: 侦听层操作
@@ -108,7 +112,9 @@ func (this *UsrSvrConfigCtrl) ListListend(ctx *UsrSvrCntx) {
 	for idx := 0; idx < num; idx += 2 {
 		var item ListendListItem
 
-		key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, nodes[idx])
+		nid, _ := strconv.ParseInt(nodes[idx], 10, 64)
+
+		key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, nid)
 
 		vals, err := redis.Strings(rds.Do("HMGET", key, "TYPE", "ADDR", "STATUS", "USR-NUM"))
 		if nil != err {
@@ -117,10 +123,8 @@ func (this *UsrSvrConfigCtrl) ListListend(ctx *UsrSvrCntx) {
 
 		ttl, _ := strconv.ParseInt(nodes[idx+1], 10, 64)
 
-		item.Idx = idx
 		typ, _ := strconv.ParseInt(vals[0], 10, 32)
 		item.Type = uint32(typ)
-		nid, _ := strconv.ParseInt(nodes[idx], 10, 32)
 		item.Nid = uint32(nid)
 		item.IpAddr = vals[1]
 		status, _ := strconv.ParseInt(vals[2], 10, 32)
@@ -133,6 +137,16 @@ func (this *UsrSvrConfigCtrl) ListListend(ctx *UsrSvrCntx) {
 		item.Total = uint32(total)
 
 		rsp.List = append(rsp.List, item)
+	}
+
+	sort.Sort(rsp.List)
+	rsp.Len = len(rsp.List)
+	rsp.Code = 0
+	rsp.ErrMsg = "Ok"
+	for idx := 0; idx < rsp.Len; idx += 1 {
+		item := &rsp.List[idx]
+
+		item.Idx = idx + 1
 	}
 
 	this.Data["json"] = rsp
