@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -9,5 +11,10 @@ type UsrSvrQueryCtrl struct {
 }
 
 func (this *UsrSvrQueryCtrl) Query() {
-	this.Error(comm.ERR_SVR_INVALID_PARAM, "Unsupport this option!")
+	//ctx := GetUsrSvrCtx()
+
+	option := this.GetString("option")
+	switch option {
+	}
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s", option))
 }

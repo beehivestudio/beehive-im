@@ -27,12 +27,117 @@ func (this *UsrSvrConfigCtrl) Config() {
 
 	option := this.GetString("option")
 	switch option {
-	case "user-statis": // 添加在线人数统计
-		this.UserStatis(ctx)
+	case "listend": // 侦听层操作
+		this.Listend(ctx)
 		return
 	}
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", option))
+}
+
+/******************************************************************************
+ **函数名称: Listend
+ **功    能: 侦听层操作
+ **输入参数:
+ **     ctx: 上下文
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 根据action调用对应的处理函数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.22 22:23:26 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) Listend(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "list": // 侦听层列表
+		this.ListListend(ctx)
+		return
+	}
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+}
+
+/* 应答结果 */
+type ListendListRsp struct {
+	Len    int         `json:"len"`    // 列表长度
+	List   ListendList `json:"list"`   // 分组列表
+	Code   int         `json:"code"`   // 错误码
+	ErrMsg string      `json:"errmsg"` // 错误描述
+}
+
+type ListendList []ListendListItem
+
+/* 应用列表 */
+type ListendListItem struct {
+	Idx    int    `json:"idx"`    // 索引IDX
+	Nid    uint32 `json:"nid"`    // 分组列表
+	Type   uint32 `json:"type"`   // 侦听层类型(0:未知 1:TCP 2:WS)
+	IpAddr string `json:"ipaddr"` // IP+PORT
+	Status uint32 `json:"status"` // 当前状态
+	Total  uint32 `json:"total"`  // 在线人数
+}
+
+/******************************************************************************
+ **函数名称: ListListend
+ **功    能: 侦听层操作
+ **输入参数:
+ **     ctx: 上下文
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.22 21:13:52 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) ListListend(ctx *UsrSvrCntx) {
+	rsp := &ListendListRsp{}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	ctm := time.Now().Unix()
+
+	/* > 获取侦听层列表 */
+	nodes, err := redis.Strings(rds.Do(
+		"ZRANGEBYSCORE", comm.IM_KEY_LSND_NID_ZSET, "-inf", "+inf", "WITHSCORES"))
+	if nil != err {
+		ctx.log.Error("Get listend node list failed! errmsg:%s", err.Error())
+		return
+	}
+
+	num := len(nodes)
+	for idx := 0; idx < num; idx += 2 {
+		var item ListendListItem
+
+		key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, nodes[idx])
+
+		vals, err := redis.Strings(rds.Do("HMGET", key, "TYPE", "ADDR", "STATUS", "USR-NUM"))
+		if nil != err {
+			continue
+		}
+
+		ttl, _ := strconv.ParseInt(nodes[idx+1], 10, 64)
+
+		item.Idx = idx
+		typ, _ := strconv.ParseInt(vals[0], 10, 32)
+		item.Type = uint32(typ)
+		nid, _ := strconv.ParseInt(nodes[idx], 10, 32)
+		item.Nid = uint32(nid)
+		item.IpAddr = vals[1]
+		status, _ := strconv.ParseInt(vals[2], 10, 32)
+		if ttl < ctm {
+			item.Status = uint32(comm.PROC_STATUS_EXIT)
+		} else {
+			item.Status = uint32(status)
+		}
+		total, _ := strconv.ParseInt(vals[3], 10, 32)
+		item.Total = uint32(total)
+
+		rsp.List = append(rsp.List, item)
+	}
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
+	return
 }
 
 ////////////////////////////////////////////////////////////////////////////////

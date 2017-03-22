@@ -30,3 +30,10 @@ const (
 	LSND_TYPE_TCP     = 1 // 网络类型: TCP
 	LSND_TYPE_WS      = 2 // 网络类型: WebSocket
 )
+
+/* 程序状态 */
+const (
+	PROC_STATUS_EXIT = 0 // 退出状态
+	PROC_STATUS_EXEC = 1 // 正常状态
+	PROC_STATUS_BUSY = 2 // 太忙状态
+)

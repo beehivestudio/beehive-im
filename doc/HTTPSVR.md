@@ -239,28 +239,7 @@
 >}
 
 ##4. 状态查询<br>
-###4.1 查询人数分布<br>
----
-**功能描述**: 查询人数分布<br>
-**当前状态**: 未实现<br>
-**接口类型**: GET<br>
-**接口路径**: /im/query?option=user-dist<br>
-**参数描述**:<br>
-> option: 操作选项, 此时为user-dist.(M)<br>
-
-**返回结果**:<br>
->{<br>
->   "len":${len},           // 整型 | 列表长度(M)<br>
->   "list":[                // 数组 | 分组列表(M)<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"},<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "total":"${total}"}],<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
->   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
->}
-
-###4.2 某用户在线状态<br>
+###4.1 某用户在线状态<br>
 ---
 **功能描述**: 查询某用户在线状态<br>
 **当前状态**: 未实现<br>
@@ -660,10 +639,10 @@
 >{<br>
 >   "len":${len},           // 整型 | 列表长度(M)<br>
 >   "list":[                // 数组 | 分组列表(M)<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"},<br>
->      {"idx":${idx}, "nid":${nid}, "ipaddr":"{ipaddr}", "port":${port}, "status":"${status}"}],<br>
+>      {"idx":${idx}, "nid":${nid}, "type":${type}, "ipaddr":"{ipaddr}", "status":${status}, "total":"${total}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "type":${type}, "ipaddr":"{ipaddr}", "status":${status}, "total":"${total}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "type":${type}, "ipaddr":"{ipaddr}", "status":${status}, "total":"${total}"},<br>
+>      {"idx":${idx}, "nid":${nid}, "type":${type}, "ipaddr":"{ipaddr}", "status":${status}, "total":"${total}"}],<br>
 >   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
