@@ -22,6 +22,6 @@ func Router() {
 	//beego.Router("/im/group/query", &controllers.UsrSvrGroupQueryCtrl{}, "get:Query")
 	beego.Router("/im/group/config", &controllers.UsrSvrGroupConfigCtrl{}, "get:Config")
 
-	//beego.Router("/im/room/query", &controllers.UsrSvrRoomQueryCtrl{}, "get:Query")
+	beego.Router("/im/room/query", &controllers.UsrSvrRoomQueryCtrl{}, "get:Query")
 	beego.Router("/im/room/config", &controllers.UsrSvrRoomConfigCtrl{}, "get:Config")
 }
