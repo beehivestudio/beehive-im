@@ -109,12 +109,12 @@ func (ctx *MonSvrCntx) lsnd_info_has_conflict(req *mesg.MesgLsndInfo) (has bool,
 	}
 
 	key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, req.GetNid())
-	ok, err = redis.Bool(rds.Do("HEXISTS", key, "ADDR"))
+	ok, err = redis.Bool(rds.Do("HEXISTS", key, comm.IM_LSND_ATTR_ADDR))
 	if nil != err {
 		ctx.log.Error("Exec hexists failed! err:%s", err.Error())
 		return
 	} else if true == ok {
-		_addr, err := redis.String(rds.Do("HGET", key, "ADDR"))
+		_addr, err := redis.String(rds.Do("HGET", key, comm.IM_LSND_ATTR_ADDR))
 		if nil != err {
 			ctx.log.Error("Exec hget failed! err:%s", err.Error())
 			return false, err
@@ -163,9 +163,10 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 	key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, req.GetNid())
 	addr := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
 
-	pl.Send("HSETNX", key, "ADDR", addr)                                /* 记录NID->ADDR映射 */
-	pl.Send("HSET", key, "TYPE", req.GetType())                         /* 侦听层类型 */
-	pl.Send("HSET", key, "USR-NUM", req.GetUserNum())                   /* 记录NID在线人数 */
+	pl.Send("HSETNX", key, comm.IM_LSND_ATTR_ADDR, addr)              /* 记录NID->ADDR映射 */
+	pl.Send("HSET", key, comm.IM_LSND_ATTR_TYPE, req.GetType())       /* 侦听层类型 */
+	pl.Send("HSET", key, comm.IM_LSND_ATTR_USR_NUM, req.GetUserNum()) /* 记录NID在线人数 */
+
 	pl.Send("HSETNX", comm.IM_KEY_LSND_ADDR_TO_NID, addr, req.GetNid()) /* 记录ADDR->NID映射 */
 
 	/* 侦听层ID集合 */
@@ -320,7 +321,8 @@ func (ctx *MonSvrCntx) frwd_info_has_conflict(req *mesg.MesgFrwdInfo) (has bool,
 
 	key := fmt.Sprintf(comm.IM_KEY_FRWD_ATTR, req.GetNid())
 
-	vals, err := redis.Strings(rds.Do("HMGET", key, "ADDR", "BC-PORT", "FWD-PORT"))
+	vals, err := redis.Strings(rds.Do("HMGET", key,
+		comm.IM_FRWD_ATTR_ADDR, comm.IM_FRWD_ATTR_BC_PORT, comm.IM_FRWD_ATTR_FWD_PORT))
 	if nil != err {
 		return false, nil
 	}
@@ -379,9 +381,9 @@ func (ctx *MonSvrCntx) frwd_info_handler(head *comm.MesgHeader, req *mesg.MesgFr
 	/* > 更新数据存储 */
 	key := fmt.Sprintf(comm.IM_KEY_FRWD_ATTR, req.GetNid())
 
-	pl.Send("HSETNX", key, "ADDR", req.GetIp())
-	pl.Send("HSETNX", key, "BC-PORT", req.GetBackendPort())
-	pl.Send("HSETNX", key, "FWD-PORT", req.GetForwardPort())
+	pl.Send("HSETNX", key, comm.IM_FRWD_ATTR_ADDR, req.GetIp())
+	pl.Send("HSETNX", key, comm.IM_FRWD_ATTR_BC_PORT, req.GetBackendPort())
+	pl.Send("HSETNX", key, comm.IM_FRWD_ATTR_FWD_PORT, req.GetForwardPort())
 
 	pl.Send("ZADD", comm.IM_KEY_FRWD_NID_ZSET, ttl, req.GetNid())
 

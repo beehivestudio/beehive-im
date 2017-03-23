@@ -27,6 +27,9 @@ func (this *UsrSvrConfigCtrl) Config() {
 
 	option := this.GetString("option")
 	switch option {
+	case "frwder": // 转发层操作
+		this.Frwder(ctx)
+		return
 	case "listend": // 侦听层操作
 		this.Listend(ctx)
 		return
@@ -34,6 +37,129 @@ func (this *UsrSvrConfigCtrl) Config() {
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", option))
 }
+
+// 转发层操作
+
+/******************************************************************************
+ **函数名称: Frwder
+ **功    能: 转发层操作
+ **输入参数:
+ **     ctx: 上下文
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 根据action调用对应的处理函数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.22 22:23:26 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) Frwder(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "list": // 转发层列表
+		this.ListFrwder(ctx)
+		return
+	}
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+}
+
+/* 应答结果 */
+type FrwderListRsp struct {
+	Len    int        `json:"len"`    // 列表长度
+	List   FrwderList `json:"list"`   // 分组列表
+	Code   int        `json:"code"`   // 错误码
+	ErrMsg string     `json:"errmsg"` // 错误描述
+}
+
+type FrwderList []FrwderListItem
+
+/* 应用列表 */
+type FrwderListItem struct {
+	Idx     int    `json:"idx"`      // 索引IDX
+	Nid     uint32 `json:"nid"`      // 分组列表
+	IpAddr  string `json:"ipaddr"`   // IP
+	FwdPort uint16 `json:"fwd-port"` // FORWARD-PORT
+	BcPort  uint16 `json:"bc-port"`  // BACKEND-PORT
+	Status  uint32 `json:"status"`   // 当前状态
+}
+
+func (list FrwderList) Len() int           { return len(list) }
+func (list FrwderList) Less(i, j int) bool { return list[i].Nid < list[j].Nid }
+func (list FrwderList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
+
+/******************************************************************************
+ **函数名称: ListFrwder
+ **功    能: 查询转发层列表
+ **输入参数:
+ **     ctx: 上下文
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.22 21:13:52 #
+ ******************************************************************************/
+func (this *UsrSvrConfigCtrl) ListFrwder(ctx *UsrSvrCntx) {
+	rsp := &FrwderListRsp{}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	ctm := time.Now().Unix()
+
+	/* > 获取转发层列表 */
+	nodes, err := redis.Strings(rds.Do(
+		"ZRANGEBYSCORE", comm.IM_KEY_FRWD_NID_ZSET, "-inf", "+inf", "WITHSCORES"))
+	if nil != err {
+		ctx.log.Error("Get frwder list failed! errmsg:%s", err.Error())
+		return
+	}
+
+	num := len(nodes)
+	for idx := 0; idx < num; idx += 2 {
+		var item FrwderListItem
+
+		nid, _ := strconv.ParseInt(nodes[idx], 10, 64)
+
+		key := fmt.Sprintf(comm.IM_KEY_FRWD_ATTR, nid)
+
+		vals, err := redis.Strings(rds.Do("HMGET", key,
+			comm.IM_FRWD_ATTR_ADDR, comm.IM_FRWD_ATTR_FWD_PORT, comm.IM_FRWD_ATTR_BC_PORT))
+		if nil != err {
+			continue
+		}
+
+		ttl, _ := strconv.ParseInt(nodes[idx+1], 10, 64)
+		fwd_port, _ := strconv.ParseInt(vals[1], 10, 32)
+		bc_port, _ := strconv.ParseInt(vals[2], 10, 32)
+
+		item.Nid = uint32(nid)
+		item.IpAddr = vals[0]
+		if ttl < ctm {
+			item.Status = uint32(comm.PROC_STATUS_EXIT)
+		} else {
+			item.Status = uint32(comm.PROC_STATUS_EXEC)
+		}
+		item.FwdPort = uint16(fwd_port)
+		item.BcPort = uint16(bc_port)
+
+		rsp.List = append(rsp.List, item)
+	}
+
+	sort.Sort(rsp.List)
+	rsp.Len = len(rsp.List)
+	rsp.Code = 0
+	rsp.ErrMsg = "Ok"
+	for idx := 0; idx < rsp.Len; idx += 1 {
+		item := &rsp.List[idx]
+
+		item.Idx = idx + 1
+	}
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
+	return
+}
+
+// 侦听层操作
 
 /******************************************************************************
  **函数名称: Listend
@@ -104,7 +230,7 @@ func (this *UsrSvrConfigCtrl) ListListend(ctx *UsrSvrCntx) {
 	nodes, err := redis.Strings(rds.Do(
 		"ZRANGEBYSCORE", comm.IM_KEY_LSND_NID_ZSET, "-inf", "+inf", "WITHSCORES"))
 	if nil != err {
-		ctx.log.Error("Get listend node list failed! errmsg:%s", err.Error())
+		ctx.log.Error("Get listend list failed! errmsg:%s", err.Error())
 		return
 	}
 
@@ -116,7 +242,9 @@ func (this *UsrSvrConfigCtrl) ListListend(ctx *UsrSvrCntx) {
 
 		key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, nid)
 
-		vals, err := redis.Strings(rds.Do("HMGET", key, "TYPE", "ADDR", "STATUS", "USR-NUM"))
+		vals, err := redis.Strings(rds.Do("HMGET", key,
+			comm.IM_LSND_ATTR_TYPE, comm.IM_LSND_ATTR_ADDR,
+			comm.IM_LSND_ATTR_STATUS, comm.IM_LSND_ATTR_USR_NUM))
 		if nil != err {
 			continue
 		}

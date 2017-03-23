@@ -6,6 +6,22 @@ const (
 	CHAT_FMT_UID_MSGID_STR = "uid:%d:msgid:%d" //| STRING | UID+MSGID
 )
 
+/* 侦听层结点属性 */
+const (
+	IM_LSND_ATTR_ADDR    = "ATTR"    //| IP地址
+	IM_LSND_ATTR_PORT    = "PORT"    //| 侦听PORT
+	IM_LSND_ATTR_TYPE    = "TYPE"    //| 侦听层类型(0:未知 1:TCP 2:WS)
+	IM_LSND_ATTR_STATUS  = "STATUS"  //| 侦听层状态
+	IM_LSND_ATTR_USR_NUM = "USR-NUM" //| 在线人数(连接数)
+)
+
+/* 路由层结点属性 */
+const (
+	IM_FRWD_ATTR_ADDR     = "ATTR"     //| IP地址
+	IM_FRWD_ATTR_BC_PORT  = "BC-PORT"  //| 后置PORT
+	IM_FRWD_ATTR_FWD_PORT = "FWD-PORT" //| 前置PORT
+)
+
 //#IM系统REDIS键值定义列表
 const (
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
