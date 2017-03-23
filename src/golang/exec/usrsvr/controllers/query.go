@@ -83,8 +83,8 @@ func (this *UsrSvrRoomQueryCtrl) TopList(ctx *UsrSvrCntx) {
 			break
 		}
 
-		num := len(rid_list)
-		for idx := 0; idx < num; idx += 1 {
+		count := len(rid_list)
+		for idx := 0; idx < count; idx += 1 {
 			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
 			if 0 == rid {
 				continue
@@ -107,11 +107,11 @@ func (this *UsrSvrRoomQueryCtrl) TopList(ctx *UsrSvrCntx) {
 			rsp.List = append(rsp.List, *item)
 		}
 
-		if num < comm.CHAT_BAT_NUM {
+		if count < comm.CHAT_BAT_NUM {
 			break
 		}
 
-		off += num
+		off += count
 	}
 
 	/* > 进行排序处理 */
