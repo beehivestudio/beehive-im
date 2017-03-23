@@ -264,7 +264,7 @@
 ###5.1 加入群组黑名单<br>
 ---
 **功能描述**: 将某人加入群组黑名单<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=add&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -282,7 +282,7 @@
 ###5.2 移除群组黑名单<br>
 ---
 **功能描述**: 将某人移除群组黑名单<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=del&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -300,7 +300,7 @@
 ###5.3 群组禁言<br>
 ---
 **功能描述**: 禁止某人在群内发言<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=add&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -318,7 +318,7 @@
 ###5.4 群组解除禁言<br>
 ---
 **功能描述**: 禁止某人在群组发言<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=del&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -365,7 +365,7 @@
 **返回结果**:<br>
 >{<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
->  "cap":${cap}, // 整型 | 分组容量(M)<br>
+>  "cap":${cap},        // 整型 | 分组容量(M)<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
@@ -392,7 +392,7 @@
 ###5.8 群组"人数"TOP排行
 ---
 **功能描述**: 查询各群组TOP排行<br>
-**当前状态**: 待测试<br>
+**当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/query?option=top-list&num=${num}<br>
 **参数描述**:<br>
@@ -604,7 +604,7 @@
 ###6.10 查询某聊天室分组列表<br>
 ---
 **功能描述**: 查询某聊天室分组列表<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/room/query?option=group-list&rid=${rid}<br>
 **参数描述**:<br>

@@ -64,14 +64,16 @@ const (
 	CHAT_KEY_ROOM_BC_HASH           = "chat:rid:%d:broadcast:hash"    //| HASH | 聊天室广播内容 | 域:消息ID 值:广播内容 |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	//群聊
-	CHAT_KEY_GID_ZSET            = "chat:gid:zset"               //| ZSET | 群ID集合 | 成员:GID 分值:TTL |
-	CHAT_KEY_UID_TO_GID          = "chat:uid:%d:to:gid:htab"     //| HASH | 用户UID对应的GID集合 | 成员:GID 分值:0 |
-	CHAT_KEY_GID_TO_NID_ZSET     = "chat:gid:%d:to:nid:zset"     //| ZSET | 某群->帧听层 | 成员:NID 分值:TTL |
-	CHAT_KEY_GID_NID_TO_NUM_ZSET = "chat:gid:%d:nid:to:num:zset" //| ZSET | 某群各帧听层人数 | 成员:NID 分值:USERNUM | 由帧听层上报数据获取
-	CHAT_KEY_GID_TO_UID_ZSET     = "chat:gid:%d:to:uid:zset"     //| ZSET | 某群在线用户列表 | 成员:UID 分值:TTL |
-	CHAT_KEY_GID_TO_SID_ZSET     = "chat:gid:%d:to:sid:zset"     //| ZSET | 某群SID列表 | 成员:SID 分值:TTL |
-	CHAT_KEY_GROUP_MESG_QUEUE    = "chat:gid:%d:mesg:queue"      //| LIST | 群聊消息队列 |
-	CHAT_KEY_GROUP_MSGID_INCR    = "chat:gid:%d:msgid:incr"      //| STRING | 群聊消息序列递增记录 |
+	CHAT_KEY_GID_ZSET                = "chat:gid:zset"                 //| ZSET | 群ID集合 | 成员:GID 分值:TTL |
+	CHAT_KEY_UID_TO_GID              = "chat:uid:%d:to:gid:htab"       //| HASH | 用户UID对应的GID集合 | 成员:GID 分值:0 |
+	CHAT_KEY_GID_TO_NID_ZSET         = "chat:gid:%d:to:nid:zset"       //| ZSET | 某群->帧听层 | 成员:NID 分值:TTL |
+	CHAT_KEY_GID_NID_TO_NUM_ZSET     = "chat:gid:%d:nid:to:num:zset"   //| ZSET | 某群各帧听层人数 | 成员:NID 分值:USERNUM | 由帧听层上报数据获取
+	CHAT_KEY_GID_TO_UID_ZSET         = "chat:gid:%d:to:uid:zset"       //| ZSET | 某群在线用户列表 | 成员:UID 分值:TTL |
+	CHAT_KEY_GID_TO_SID_ZSET         = "chat:gid:%d:to:sid:zset"       //| ZSET | 某群SID列表 | 成员:SID 分值:TTL |
+	CHAT_KEY_GROUP_MESG_QUEUE        = "chat:gid:%d:mesg:queue"        //| LIST | 群聊消息队列 |
+	CHAT_KEY_GROUP_MSGID_INCR        = "chat:gid:%d:msgid:incr"        //| STRING | 群聊消息序列递增记录 |
+	CHAT_KEY_GROUP_USR_GAG_SET       = "chat:gid:%d:usr:gag:set"       //*| SET | 群组用户禁言名单 | 成员:UID |
+	CHAT_KEY_GROUP_USR_BLACKLIST_SET = "chat:gid:%d:usr:blacklist:set" //*| SET | 群组用户黑名单 | 成员:UID |
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
 	IM_KEY_LSND_TYPE_ZSET      = "im:lsnd:type:zset"                           //| ZSET | 帧听层"类型"集合 | 成员:"网络类型" 分值:TTL |
 	IM_KEY_LSND_NATION_ZSET    = "im:lsnd:type:%d:nation:zset"                 //| ZSET | 某"类型"的帧听层"地区/国家"集合 | 成员:"国家/地区" 分值:TTL |
