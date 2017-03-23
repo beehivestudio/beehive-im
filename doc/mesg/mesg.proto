@@ -972,7 +972,7 @@ message mesg_lsnd_info
     required string name = 4;       // M|运营商名称|字串|
     required string ip = 5;         // M|IP地址|字串|
     required uint32 port = 6;       // M|端口号|数字|
-    required uint32 user_num = 7;   // M|在线人数|数字|
+    required uint32 connections = 7;   // M|在线连接数|数字|
 }
 
 /*

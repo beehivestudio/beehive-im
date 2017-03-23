@@ -163,9 +163,9 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 	key := fmt.Sprintf(comm.IM_KEY_LSND_ATTR, req.GetNid())
 	addr := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
 
-	pl.Send("HSETNX", key, comm.IM_LSND_ATTR_ADDR, addr)              /* 记录NID->ADDR映射 */
-	pl.Send("HSET", key, comm.IM_LSND_ATTR_TYPE, req.GetType())       /* 侦听层类型 */
-	pl.Send("HSET", key, comm.IM_LSND_ATTR_USR_NUM, req.GetUserNum()) /* 记录NID在线人数 */
+	pl.Send("HSETNX", key, comm.IM_LSND_ATTR_ADDR, addr)                     /* 记录NID->ADDR映射 */
+	pl.Send("HSET", key, comm.IM_LSND_ATTR_TYPE, req.GetType())              /* 侦听层类型 */
+	pl.Send("HSET", key, comm.IM_LSND_ATTR_CONNECTION, req.GetConnections()) /* 记录NID在线连接数 */
 
 	pl.Send("HSETNX", comm.IM_KEY_LSND_ADDR_TO_NID, addr, req.GetNid()) /* 记录ADDR->NID映射 */
 
@@ -193,7 +193,7 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 	pl.Send("ZADD", key, ttl, val)
 
 	ctx.log.Debug("Handle listend information! type:%d nid:%d nation:%s opname:%s ip:%s port:%d user-num:%d",
-		req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIp(), req.GetPort(), req.GetUserNum())
+		req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIp(), req.GetPort(), req.GetConnections())
 
 	return
 }

@@ -987,7 +987,7 @@ TODO: 协议头中的to为群ID(GID)
 >   required string name = 4;       // M|运营商名称|字串|<br>
 >   required string ip = 5;         // M|IP地址|字串|<br>
 >   required uint32 port = 6;       // M|端口|数字|<br>
->   required uint32 user_num = 7;   // M|在线人数|数字|<br>
+>   required uint32 connections = 7;   // M|在线连接数|数字|<br>
 >}
 
 ---

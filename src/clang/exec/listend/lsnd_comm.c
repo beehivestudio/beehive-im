@@ -271,7 +271,7 @@ void lsnd_timer_info_handler(void *_ctx)
     info.name = conf->operator.name;
     info.ip = conf->access.ipaddr;
     info.port = conf->access.port;
-    info.user_num = hash_tab_total(ctx->conn_sid_tab);
+    info.connections = hash_tab_total(ctx->conn_sid_tab);
 
     log_debug(ctx->log, "Listen info! nid:%d nation:%s name:%s ip:%s port:%d",
             info.nid, info.nation, info.name, info.ip, info.port);

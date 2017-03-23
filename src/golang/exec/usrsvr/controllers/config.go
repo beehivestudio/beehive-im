@@ -244,7 +244,7 @@ func (this *UsrSvrConfigCtrl) ListListend(ctx *UsrSvrCntx) {
 
 		vals, err := redis.Strings(rds.Do("HMGET", key,
 			comm.IM_LSND_ATTR_TYPE, comm.IM_LSND_ATTR_ADDR,
-			comm.IM_LSND_ATTR_STATUS, comm.IM_LSND_ATTR_USR_NUM))
+			comm.IM_LSND_ATTR_STATUS, comm.IM_LSND_ATTR_CONNECTION))
 		if nil != err {
 			continue
 		}
