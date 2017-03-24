@@ -355,11 +355,13 @@ message mesg_group_creat
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
+    required string name = 3;       // M|群组名称|字串|
+    required string desc = 4;       // M|群组描述|字串|
 }
 
 /*
    命令ID: 0x0302
-   命令描述: 创建群组应答(GROUP-APPLY-ACK)
+   命令描述: 创建群组应答(GROUP-CREAT-ACK)
    协议格式: */
 message mesg_group_creat_ack
 {

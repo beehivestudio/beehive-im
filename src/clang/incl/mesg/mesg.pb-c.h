@@ -444,10 +444,12 @@ struct  _MesgGroupCreat
   ProtobufCMessage base;
   uint64_t uid;
   uint64_t gid;
+  char *name;
+  char *desc;
 };
 #define MESG_GROUP_CREAT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_group_creat__descriptor) \
-    , 0, 0 }
+    , 0, 0, NULL, NULL }
 
 
 struct  _MesgGroupCreatAck

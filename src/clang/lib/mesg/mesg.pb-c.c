@@ -5350,7 +5350,7 @@ const ProtobufCMessageDescriptor mesg_mark_del_ack__descriptor =
   (ProtobufCMessageInit) mesg_mark_del_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_creat__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_creat__field_descriptors[4] =
 {
   {
     "uid",
@@ -5376,15 +5376,41 @@ static const ProtobufCFieldDescriptor mesg_group_creat__field_descriptors[2] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "name",
+    3,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgGroupCreat, name),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "desc",
+    4,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(MesgGroupCreat, desc),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mesg_group_creat__field_indices_by_name[] = {
+  3,   /* field[3] = desc */
   1,   /* field[1] = gid */
+  2,   /* field[2] = name */
   0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_group_creat__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 2 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor mesg_group_creat__descriptor =
 {
@@ -5394,7 +5420,7 @@ const ProtobufCMessageDescriptor mesg_group_creat__descriptor =
   "MesgGroupCreat",
   "",
   sizeof(MesgGroupCreat),
-  2,
+  4,
   mesg_group_creat__field_descriptors,
   mesg_group_creat__field_indices_by_name,
   1,  mesg_group_creat__number_ranges,

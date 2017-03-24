@@ -10,6 +10,18 @@ import (
 	"beehive-im/src/golang/lib/comm"
 )
 
+/* 群组角色 */
+const (
+	GROUP_ROLE_OWNER   = 1 // 群组-所有者
+	GROUP_ROLE_MANAGER = 2 // 群组-管理员
+)
+
+/* 聊天室状态 */
+const (
+	GROUP_STAT_OPEN  = 1 // 群组-开启
+	GROUP_STAT_CLOSE = 0 // 群组-关闭
+)
+
 /******************************************************************************
  **函数名称: GroupGetGidToNidSet
  **功    能: 通过群GID获取对应的帧听层NID列表

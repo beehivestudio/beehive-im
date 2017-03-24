@@ -244,9 +244,10 @@
 **功能描述**: 查询某用户在线状态<br>
 **当前状态**: 未实现<br>
 **接口类型**: GET<br>
-**接口路径**: /im/query?option=user-online<br>
+**接口路径**: /im/query?option=user-status&uid=${uid}<br>
 **参数描述**:<br>
-> option: 操作选项, 此时为user-online.(M)<br>
+> option: 操作选项, 此时为user-status.(M)<br>
+> uid: 用户UID.(M)<br>
 
 **返回结果**:<br>
 >{<br>
@@ -256,6 +257,27 @@
 >   "list":[                // 数组 | 当前正登陆聊天室列表(M)<br>
 >      {"idx":${idx}, "rid":${rid}},     // ${rid}:聊天室ID<br>
 >      {"idx":${idx}, "rid":${rid}}],<br>
+>   "code":${code},         // 整型 | 错误码(M)<br>
+>   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
+>}
+
+###4.2 某用户SID列表<br>
+---
+**功能描述**: 查询某用户SID列表<br>
+**当前状态**: 未实现<br>
+**接口类型**: GET<br>
+**接口路径**: /im/query?option=sid-list&uid=${uid}<br>
+**参数描述**:<br>
+> option: 操作选项, 此时为sid-list.(M)<br>
+> uid: 用户UID.(M)<br>
+
+**返回结果**:<br>
+>{<br>
+>   "uid":"${uid}",         // 整型 | 用户ID(M)<br>
+>   "len":${len},           // 整型 | 列表长度(M)<br>
+>   "list":[                // 数组 | 当前正登陆设备列表(M)<br>
+>      {"idx":${idx}, "sid":${sid}},     // ${sid}:会话ID<br>
+>      {"idx":${idx}, "sid":${sid}}],<br>
 >   "code":${code},         // 整型 | 错误码(M)<br>
 >   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
 >}
