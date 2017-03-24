@@ -371,6 +371,9 @@ func (this *UsrSvrGroupConfigCtrl) blacklist_get(ctx *UsrSvrCntx) {
 func (this *UsrSvrGroupConfigCtrl) Gag(ctx *UsrSvrCntx) {
 	action := this.GetString("action")
 	switch action {
+	case "get": // 查找禁言
+		this.gag_get(ctx)
+		return
 	case "add": // 添加禁言
 		this.gag_add(ctx)
 		return
@@ -380,6 +383,127 @@ func (this *UsrSvrGroupConfigCtrl) Gag(ctx *UsrSvrCntx) {
 	}
 
 	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	return
+}
+
+/* 请求参数 */
+type GroupGagGetParam struct {
+	gid uint64 // 群组ID
+}
+
+/* 请求对象 */
+type GroupGagGetReq struct {
+	ctrl *UsrSvrGroupConfigCtrl // 空间对象
+}
+
+/* 应答结果 */
+type GroupGagGetRsp struct {
+	Len    int          `json:"len"`    // 列表长度
+	List   GroupGagList `json:"list"`   // 禁言列表
+	Code   int          `json:"code"`   // 错误码
+	ErrMsg string       `json:"errmsg"` // 错误描述
+}
+
+type GroupGagList []GroupGagItem
+
+/* 应用列表 */
+type GroupGagItem struct {
+	Idx int    `json:"idx"` // 索引ID
+	Uid uint64 `json:"uid"` // 用户ID
+}
+
+func (list GroupGagList) Len() int           { return len(list) }
+func (list GroupGagList) Less(i, j int) bool { return list[i].Uid < list[j].Uid }
+func (list GroupGagList) Swap(i, j int)      { list[i], list[j] = list[j], list[i] }
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
+ ******************************************************************************/
+func (req *GroupGagGetReq) parse_param() (*GroupGagGetParam, error) {
+	this := req.ctrl
+	param := &GroupGagGetParam{}
+
+	gid_str := this.GetString("gid")
+
+	gid, _ := strconv.ParseInt(gid_str, 10, 64)
+	if 0 == gid {
+		return nil, errors.New("Paramter [gid] is invalid!")
+	}
+
+	param.gid = uint64(gid)
+
+	return param, nil
+}
+
+/******************************************************************************
+ **函数名称: gag_get
+ **功    能: 获取禁言列表
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.获取群组黑名单
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 10:11:20 #
+ ******************************************************************************/
+func (this *UsrSvrGroupConfigCtrl) gag_get(ctx *UsrSvrCntx) {
+	rsp := &GroupGagGetRsp{}
+
+	req := &GroupGagGetReq{ctrl: this}
+
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Get gag list failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
+		return
+	}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 获取禁言用户列表 */
+	key := fmt.Sprintf(comm.CHAT_KEY_GROUP_USR_GAG_SET, param.gid)
+
+	list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, 0, "+inf"))
+	if nil != err {
+		ctx.log.Error("Get gag list failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
+		return
+	}
+
+	num := len(list)
+	for idx := 0; idx < num; idx += 1 {
+		uid, _ := strconv.ParseInt(list[idx], 10, 64)
+		if 0 == uid {
+			continue
+		}
+
+		item := &GroupGagItem{
+			Idx: idx,
+			Uid: uint64(uid),
+		}
+
+		rsp.List = append(rsp.List, *item)
+	}
+
+	sort.Sort(rsp.List) /* 按uid排序 */
+
+	rsp.Len = num
+	for idx := 0; idx < num; idx += 1 {
+		rsp.List[idx].Idx = idx
+	}
+
+	/* > 回复处理应答 */
+	this.Data["json"] = rsp
+	this.ServeJSON()
+
 	return
 }
 
