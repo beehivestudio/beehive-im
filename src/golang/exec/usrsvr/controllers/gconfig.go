@@ -12,10 +12,6 @@ import (
 	"beehive-im/src/golang/lib/comm"
 )
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-// 群组配置
-
 /* 群组配置 */
 type UsrSvrGroupConfigCtrl struct {
 	BaseController
@@ -346,6 +342,7 @@ func (this *UsrSvrGroupConfigCtrl) blacklist_get(ctx *UsrSvrCntx) {
 
 	sort.Sort(rsp.List) /* 按uid排序 */
 
+	rsp.Len = num
 	for idx := 0; idx < num; idx += 1 {
 		rsp.List[idx].Idx = idx
 	}
