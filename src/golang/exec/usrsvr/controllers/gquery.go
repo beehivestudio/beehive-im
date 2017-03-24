@@ -3,16 +3,14 @@ package controllers
 import (
 	"fmt"
 
-	_ "github.com/garyburd/redigo/redis"
-
 	"beehive-im/src/golang/lib/comm"
 )
 
-type UsrSvrQueryCtrl struct {
+type UsrSvrGroupQueryCtrl struct {
 	BaseController
 }
 
-func (this *UsrSvrQueryCtrl) Query() {
+func (this *UsrSvrGroupQueryCtrl) Query() {
 	//ctx := GetUsrSvrCtx()
 
 	option := this.GetString("option")
