@@ -697,6 +697,9 @@ func (this *UsrSvrGroupConfigCtrl) Switch(ctx *UsrSvrCntx) {
 		this.switch_off(ctx)
 		return
 	}
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	return
 }
 
 /* 请求参数 */
