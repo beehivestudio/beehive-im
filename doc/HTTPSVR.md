@@ -403,7 +403,7 @@
 
 ###5.7 解散群组<br>
 ---
-**功能描述**: 关闭聊天室<br>
+**功能描述**: 解散群组<br>
 **当前状态**: 未实现<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=close&option=group&gid=${gid}<br>
@@ -421,7 +421,7 @@
 ###5.8 设置群组"最大容量"限制<br>
 ---
 **功能描述**: 设置群组"最大容量"限制<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=set&option=cap&gid=${gid}&cap=${cap}<br>
 **参数描述**:<br>
@@ -441,7 +441,7 @@
 ###5.9 查询群组"最大容量"限制<br>
 ---
 **功能描述**: 查询群组"最大容量"限制<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=get&option=cap&gid=${gid}<br>
 **参数描述**:<br>
