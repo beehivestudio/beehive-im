@@ -22,15 +22,18 @@ func (this *UsrSvrGroupConfigCtrl) Config() {
 
 	option := this.GetString("option")
 	switch option {
-	case "blacklist": // 群组黑名单操作
+	case "blacklist": // 群组黑名单
 		this.Blacklist(ctx)
 		return
-	case "gag": // 群组禁言操作
+	case "gag": // 群组禁言
 		this.Gag(ctx)
 		return
-	case "close": // 关闭群组
+	case "switch": // 群组开关
+		this.Switch(ctx)
 		return
-	case "capacity": // 设置群组容量
+		return
+	case "capacity": // 群组容量
+		this.Capacity(ctx)
 		return
 	}
 
@@ -672,10 +675,143 @@ func (this *UsrSvrGroupConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// 群组开关操作
+
+/******************************************************************************
+ **函数名称: Switch
+ **功    能: 群组开关
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
+ ******************************************************************************/
+func (this *UsrSvrGroupConfigCtrl) Switch(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "on": // 打开群组
+		this.switch_on(ctx)
+		return
+	case "off": // 关闭群组
+		this.switch_off(ctx)
+		return
+	}
+}
+
+/* 请求参数 */
+type GroupSwitchParam struct {
+	gid uint64 // 群组ID
+}
+
+/* 请求对象 */
+type GroupSwitchReq struct {
+	ctrl *UsrSvrGroupConfigCtrl // 空间对象
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
+ ******************************************************************************/
+func (req *GroupSwitchReq) parse_param() (*GroupSwitchParam, error) {
+	this := req.ctrl
+	param := &GroupSwitchParam{}
+
+	gid_str := this.GetString("gid")
+
+	gid, _ := strconv.ParseInt(gid_str, 10, 64)
+	if 0 == gid {
+		return nil, errors.New("Paramter [gid] is invalid!")
+	}
+
+	param.gid = uint64(gid)
+
+	return param, nil
+}
+
+/******************************************************************************
+ **函数名称: switch_on
+ **功    能: 打开群组
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.修改群组状态
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.26 20:38:14 #
+ ******************************************************************************/
+func (this *UsrSvrGroupConfigCtrl) switch_on(ctx *UsrSvrCntx) {
+	req := &GroupSwitchReq{ctrl: this}
+
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Parse switch failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
+		return
+	}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 关闭群组 */
+	key := fmt.Sprintf(comm.CHAT_KEY_GID_ATTR, param.gid)
+
+	rds.Do("HSET", key, comm.CHAT_GID_ATTR_SWITCH, 1)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+/******************************************************************************
+ **函数名称: switch_off
+ **功    能: 关闭群组
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.修改群组状态
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.26 20:47:39 #
+ ******************************************************************************/
+func (this *UsrSvrGroupConfigCtrl) switch_off(ctx *UsrSvrCntx) {
+	req := &GroupSwitchReq{ctrl: this}
+
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Parse switch failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
+		return
+	}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 关闭群组 */
+	key := fmt.Sprintf(comm.CHAT_KEY_GID_ATTR, param.gid)
+
+	rds.Do("HSET", key, "SWITCH", 0)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 群组容量操作
 
 /******************************************************************************
  **函数名称: Capacity
- **功    能: 设置聊天室分组容量
+ **功    能: 设置群组分组容量
  **输入参数:
  **     ctx: 全局对象
  **输出参数: NONE
@@ -767,7 +903,7 @@ func (this *UsrSvrGroupConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
 		pl.Close()
 	}()
 
-	/* > 存储聊天室分组容量 */
+	/* > 存储群组分组容量 */
 	key := fmt.Sprintf(comm.CHAT_KEY_GROUP_CAP_ZSET)
 
 	pl.Send("ZADD", key, param.capacity, param.gid)

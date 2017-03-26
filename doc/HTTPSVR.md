@@ -401,15 +401,15 @@
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
 
-###5.7 解散群组<br>
+###5.7 群组开关<br>
 ---
 **功能描述**: 解散群组<br>
 **当前状态**: 未实现<br>
 **接口类型**: GET<br>
-**接口路径**: /im/group/config?action=close&option=group&gid=${gid}<br>
+**接口路径**: /im/group/config?action=${action}&option=switch&gid=${gid}<br>
 **参数描述**:<br>
-> action: 操作行为, 此时为close.(M)<br>
-> option: 操作选项, 此时为group.(M)<br>
+> action: 操作行为.on:打开 off:关闭(M)<br>
+> option: 操作选项, 此时为switch.(M)<br>
 > gid: 群组ID(M)<br>
 
 **返回结果**:<br>
@@ -452,7 +452,7 @@
 **返回结果**:<br>
 >{<br>
 >  "gid":${gid},        // 整型 | 群组ID(O)<br>
->  "cap":${cap},      // 整型 | 群组容量(M)<br>
+>  "cap":${cap},        // 整型 | 群组容量(M)<br>
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
