@@ -56,7 +56,7 @@
 ###2.1 广播接口<br>
 ---
 **功能描述**: 全员广播消息<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=broadcast<br>
 **参数描述**:<br>
@@ -72,7 +72,7 @@
 ###2.2 群组推送<br>
 ---
 **功能描述**: 群组广播消息<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=group&gid=${gid}<br>
 **参数描述**:<br>
@@ -109,7 +109,7 @@
 ###2.4 会话推送<br>
 ---
 **功能描述**: 指定会话SID下发消息<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=sid&sid=${sid}<br>
 **参数描述**:<br>
@@ -126,7 +126,7 @@
 ###2.5 用户推送接口<br>
 ---
 **功能描述**: 指定给某人下发消息<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=uid&uid=${uid}<br>
 **参数描述**:<br>
@@ -143,7 +143,7 @@
 ###2.6 应用推送接口<br>
 ---
 **功能描述**: 指定给应用ID下发消息<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=appid&appid=${appid}&version=${version}<br>
 **参数描述**:<br>
@@ -242,7 +242,7 @@
 ###4.1 某用户在线状态<br>
 ---
 **功能描述**: 查询某用户在线状态<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: GET<br>
 **接口路径**: /im/query?option=user-status&uid=${uid}<br>
 **参数描述**:<br>
@@ -264,7 +264,7 @@
 ###4.2 某用户SID列表<br>
 ---
 **功能描述**: 查询某用户SID列表<br>
-**当前状态**: 未实现<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/query?option=sid-list&uid=${uid}<br>
 **参数描述**:<br>
@@ -404,7 +404,7 @@
 ###5.7 群组开关<br>
 ---
 **功能描述**: 解散群组<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=${action}&option=switch&gid=${gid}<br>
 **参数描述**:<br>
@@ -456,50 +456,6 @@
 >  "code":${code},      // 整型 | 错误码(M)<br>
 >  "errmsg":"${errmsg}" // 字串 | 错误描述(M)<br>
 >}<br>
-
-###5.10 群组"人数"TOP排行
----
-**功能描述**: 查询各群组TOP排行<br>
-**当前状态**: 未实现<br>
-**接口类型**: GET<br>
-**接口路径**: /im/group/query?option=top-list&num=${num}<br>
-**参数描述**:<br>
-> option: 操作选项, 此时为top-list.(M)<br>
-> num: top-${num}排行(O). 如果未设置${num}, 则显示前top-10的排行.<br>
-
-**返回结果**:<br>
->{<br>
->   "len":${len},           // 整型 | 列表长度(M)<br>
->   "list":[                // 数组 | 排行列表(M)<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}}, // ${gid}:整型|群组ID ${total}: 整型|群组人数<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}}],<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
->   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
->}
-
-###5.11 群组"消息量"TOP排行<br>
----
-**功能描述**: 查询各群组消息量TOP排行<br>
-**当前状态**: 未实现<br>
-**接口类型**: GET<br>
-**接口路径**: /im/group/query?option=mesg-top-list&num=${num}<br>
-**参数描述**:<br>
-> option: 操作选项, 此时为mesg-top-list.(M)<br>
-> num: top-${num}排行(O). 如果未设置${num}, 则显示前top-10的排行.<br>
-
-**返回结果**:<br>
->{<br>
->   "len":${len},           // 整型 | 列表长度(M)<br>
->   "list":[                // 数组 | 排行列表(M)<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}}, // ${gid}:整型|群组ID ${total}: 整型|消息数量<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}},<br>
->      {"idx":${idx}, "gid":${gid}, "total":${total}}],<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
->   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
->}
 
 ##6. 聊天室接口<br>
 ###6.1 加入聊天室黑名单<br>
@@ -718,7 +674,7 @@
 ###7.2 添加侦听层结点<br>
 ---
 **功能描述**: 移除侦听层结点<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=add&option=listend&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
@@ -737,7 +693,7 @@
 ###7.3 移除侦听层结点<br>
 ---
 **功能描述**: 移除侦听层结点<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=del&option=listend&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
@@ -784,7 +740,7 @@
 ###7.5 添加转发层结点<br>
 ---
 **功能描述**: 添加转发层结点<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=add&option=frwder&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
@@ -803,7 +759,7 @@
 ###7.6 移除转发层结点<br>
 ---
 **功能描述**: 移除转发层结点<br>
-**当前状态**: 未实现<br>
+**当前状态**: 未完成<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=del&option=frwder&nid=${nid}&ipaddr=${ipaddr}&port=${port}<br>
 **参数描述**:<br>
