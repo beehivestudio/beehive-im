@@ -31,7 +31,6 @@ func (this *UsrSvrGroupConfigCtrl) Config() {
 	case "switch": // 群组开关
 		this.Switch(ctx)
 		return
-		return
 	case "capacity": // 群组容量
 		this.Capacity(ctx)
 		return
