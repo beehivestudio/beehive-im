@@ -670,3 +670,210 @@ func (this *UsrSvrGroupConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 
 	return
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: Capacity
+ **功    能: 设置聊天室分组容量
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
+ ******************************************************************************/
+func (this *UsrSvrGroupConfigCtrl) Capacity(ctx *UsrSvrCntx) {
+	action := this.GetString("action")
+	switch action {
+	case "set": // 设置群组容量
+		this.capacity_set(ctx)
+		return
+	case "get": // 设置群组容量
+		this.capacity_get(ctx)
+		return
+	}
+}
+
+/* 请求参数 */
+type GroupCapSetParam struct {
+	gid      uint64 // 群组ID
+	capacity int    // 群组容量
+}
+
+/* 请求对象 */
+type GroupCapSetReq struct {
+	ctrl *UsrSvrGroupConfigCtrl // 空间对象
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
+ ******************************************************************************/
+func (req *GroupCapSetReq) parse_param() (*GroupCapSetParam, error) {
+	this := req.ctrl
+	param := &GroupCapSetParam{}
+
+	gid_str := this.GetString("gid")
+	cap_str := this.GetString("cap")
+
+	gid, _ := strconv.ParseInt(gid_str, 10, 64)
+	if 0 == gid {
+		return nil, errors.New("Paramter [gid] is invalid!")
+	}
+
+	capacity, _ := strconv.ParseInt(cap_str, 10, 32)
+	if 0 == capacity {
+		return nil, errors.New("Paramter [cap] is invalid!")
+	}
+
+	param.gid = uint64(gid)
+	param.capacity = int(capacity)
+
+	return param, nil
+}
+
+/******************************************************************************
+ **函数名称: capacity_set
+ **功    能: 设置群组人数
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.移除禁言名单
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
+ ******************************************************************************/
+func (this *UsrSvrGroupConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
+	req := &GroupCapSetReq{ctrl: this}
+
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Set room capacity failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
+		return
+	}
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 存储聊天室分组容量 */
+	key := fmt.Sprintf(comm.CHAT_KEY_GROUP_CAP_ZSET)
+
+	pl.Send("ZADD", key, param.capacity, param.gid)
+
+	/* > 回复处理应答 */
+	this.Error(comm.ERR_SUCC, "Ok")
+
+	return
+}
+
+/* 请求参数 */
+type GroupCapGetParam struct {
+	gid      uint64 // 群组ID
+	capacity int    // 分组容量
+}
+
+/* 请求对象 */
+type GroupCapGetReq struct {
+	ctrl *UsrSvrGroupConfigCtrl // 空间对象
+}
+
+/* 请求应答 */
+type GroupCapGetRsp struct {
+	Gid    uint64 `json:"gid"`    // 群组ID
+	Cap    int    `json:"cap"`    // 分组容量
+	Code   int    `json:"code"`   // 错误码
+	ErrMsg string `json:"errmsg"` // 错误描述
+}
+
+/******************************************************************************
+ **函数名称: parse_param
+ **功    能: 参数解析
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 参数信息
+ **实现描述: 从url请求中抽取参数
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
+ ******************************************************************************/
+func (req *GroupCapGetReq) parse_param() (*GroupCapGetParam, error) {
+	this := req.ctrl
+	param := &GroupCapGetParam{}
+
+	gid_str := this.GetString("gid")
+	cap_str := this.GetString("cap")
+
+	gid, _ := strconv.ParseInt(gid_str, 10, 64)
+	if 0 == gid {
+		return nil, errors.New("Paramter [gid] is invalid!")
+	}
+
+	capacity, _ := strconv.ParseInt(cap_str, 10, 32)
+	if 0 == capacity {
+		return nil, errors.New("Paramter [cap] is invalid!")
+	}
+
+	param.gid = uint64(gid)
+	param.capacity = int(capacity)
+
+	return param, nil
+}
+
+/******************************************************************************
+ **函数名称: capacity_get
+ **功    能: 获取群组人数
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 1.抽取请求参数 2.移除禁言名单
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
+ ******************************************************************************/
+func (this *UsrSvrGroupConfigCtrl) capacity_get(ctx *UsrSvrCntx) {
+	req := &GroupCapGetReq{ctrl: this}
+
+	param, err := req.parse_param()
+	if nil != err {
+		ctx.log.Error("Get group capacity failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
+		return
+	}
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 存储群组容量 */
+	key := fmt.Sprintf(comm.CHAT_KEY_GROUP_CAP_ZSET)
+
+	capacity, err := redis.Int(rds.Do("ZSCORE", key, param.gid))
+	if nil != err {
+		ctx.log.Error("Get group capacity failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
+		return
+	}
+
+	/* > 回复处理应答 */
+	rsp := &GroupCapGetRsp{
+		Gid:    param.gid,
+		Cap:    capacity,
+		Code:   comm.ERR_SUCC,
+		ErrMsg: "Ok",
+	}
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
+
+	return
+}
