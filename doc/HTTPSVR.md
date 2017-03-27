@@ -239,29 +239,7 @@
 >}
 
 ##4. 状态查询<br>
-###4.1 某用户在线状态<br>
----
-**功能描述**: 查询某用户在线状态<br>
-**当前状态**: 未完成<br>
-**接口类型**: GET<br>
-**接口路径**: /im/query?option=user-status&uid=${uid}<br>
-**参数描述**:<br>
-> option: 操作选项, 此时为user-status.(M)<br>
-> uid: 用户UID.(M)<br>
-
-**返回结果**:<br>
->{<br>
->   "uid":"${uid}",         // 整型 | 用户ID(M)<br>
->   "status":${status},     // 整型 | 当前状态(0:下线 1:在线)(M)<br>
->   "len":${len},           // 整型 | 列表长度(M)<br>
->   "list":[                // 数组 | 当前正登陆聊天室列表(M)<br>
->      {"idx":${idx}, "rid":${rid}},     // ${rid}:聊天室ID<br>
->      {"idx":${idx}, "rid":${rid}}],<br>
->   "code":${code},         // 整型 | 错误码(M)<br>
->   "errmsg":"${errmsg}"    // 字串 | 错误描述(M)<br>
->}
-
-###4.2 某用户SID列表<br>
+###4.1 某用户SID列表<br>
 ---
 **功能描述**: 查询某用户SID列表<br>
 **当前状态**: 待测试<br>
@@ -404,11 +382,11 @@
 ###5.7 群组开关<br>
 ---
 **功能描述**: 解散群组<br>
-**当前状态**: 未完成<br>
+**当前状态**: 待测试<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=${action}&option=switch&gid=${gid}<br>
 **参数描述**:<br>
-> action: 操作行为.on:打开 off:关闭(M)<br>
+> action: 操作行为[on:打开 off:关闭](M)<br>
 > option: 操作选项, 此时为switch.(M)<br>
 > gid: 群组ID(M)<br>
 
