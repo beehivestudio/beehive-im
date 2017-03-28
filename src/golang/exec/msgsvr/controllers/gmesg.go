@@ -268,33 +268,30 @@ func MsgSvrGroupChatAckHandler(cmd uint32, nid uint32,
  ******************************************************************************/
 func (ctx *MsgSvrCntx) group_mesg_storage_task() {
 	for item := range ctx.group_mesg_chan {
-		ctx.group_mesg_storage_proc(item.head, item.req, item.raw)
+		item.storage(ctx)
 	}
 }
 
 /******************************************************************************
- **函数名称: group_mesg_storage_proc
+ **函数名称: storage
  **功    能: 群聊消息的存储处理
  **输入参数:
- **     head: 消息头
- **     req: 请求内容
- **     raw: 原始数据
+ **     ctx: 全局对象
  **输出参数: NONE
  **返    回: NONE
  **实现描述: 将消息存入聊天室缓存和数据库
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) group_mesg_storage_proc(
-	head *comm.MesgHeader, req *mesg.MesgGroupChat, raw []byte) {
+func (item *MesgGroupItem) storage(ctx *MsgSvrCntx) {
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
 	}()
 
-	key := fmt.Sprintf(comm.CHAT_KEY_GROUP_MESG_QUEUE, req.GetGid())
-	pl.Send("LPUSH", key, raw[comm.MESG_HEAD_SIZE:])
+	key := fmt.Sprintf(comm.CHAT_KEY_GROUP_MESG_QUEUE, item.req.GetGid())
+	pl.Send("LPUSH", key, item.raw[comm.MESG_HEAD_SIZE:])
 }
 
 /******************************************************************************

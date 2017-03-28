@@ -43,17 +43,18 @@ func (this *UsrSvrRegisterCtrl) Register() {
 /******************************************************************************
  **函数名称: register_parse_param
  **功    能: 解析参数
- **输入参数: NONE
+ **输入参数:
+ **     ctx: 全局对象
  **输出参数: NONE
  **返    回:
  **     param: 注册参数
  **     err: 错误描述
- **实现描述:
+ **实现描述: 从URL中抽取参数字段
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.25 10:30:09 #
  ******************************************************************************/
 func (this *UsrSvrRegisterCtrl) register_parse_param(ctx *UsrSvrCntx) (*UsrSvrRegisterParam, error) {
-	var param UsrSvrRegisterParam
+	param := &UsrSvrRegisterParam{}
 
 	/* > 提取注册参数 */
 	id, _ := this.GetInt64("uid")
@@ -71,10 +72,10 @@ func (this *UsrSvrRegisterCtrl) register_parse_param(ctx *UsrSvrCntx) (*UsrSvrRe
 	/* > 校验参数合法性 */
 	if 0 == param.uid || 0 == param.nation {
 		ctx.log.Error("Register param invalid! uid:%d nation:%d", param.uid, param.nation)
-		return &param, errors.New("Register param invalid!")
+		return param, errors.New("Register param invalid!")
 	}
 
-	return &param, nil
+	return param, nil
 }
 
 /* 注册应答 */

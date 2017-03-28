@@ -398,25 +398,22 @@ func MsgSvrChatAckHandler(cmd uint32, orig uint32,
  ******************************************************************************/
 func (ctx *MsgSvrCntx) mesg_storage_task() {
 	for item := range ctx.chat_chan {
-		ctx.mesg_store_proc(item.head, item.req, item.raw)
+		item.storage(ctx)
 	}
 }
 
 /******************************************************************************
- **函数名称: mesg_store_proc
+ **函数名称: storage
  **功    能: 私聊消息的存储处理
  **输入参数:
- **     head: 消息头
- **     req: 请求内容
- **     raw: 原始数据
+ **     ctx: 全局对象
  **输出参数: NONE
  **返    回: NONE
  **实现描述: 将私聊消息存入缓存和数据库
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) mesg_store_proc(
-	head *comm.MesgHeader, req *mesg.MesgChat, raw []byte) {
+func (item *MesgChatItem) storage(ctx *MsgSvrCntx) {
 	var key string
 
 	pl := ctx.redis.Get()
@@ -428,13 +425,13 @@ func (ctx *MsgSvrCntx) mesg_store_proc(
 	ctm := time.Now().Unix()
 
 	/* > 加入接收者离线列表 */
-	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
-	member := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, req.GetOrig(), head.GetSerial())
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, item.req.GetDest())
+	member := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, item.req.GetOrig(), item.head.GetSerial())
 	pl.Send("ZADD", key, member, ctm)
 
 	/* > 存储发送者离线消息 */
-	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
-	pl.Send("HSETNX", key, raw)
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, item.req.GetOrig())
+	pl.Send("HSETNX", key, item.raw)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
