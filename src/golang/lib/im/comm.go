@@ -44,10 +44,14 @@ func AllocSid(pool *redis.Pool) (sid uint64, err error) {
 
 /* 会话属性 */
 type SidAttr struct {
-	Sid uint64 // 会话SID
-	Uid uint64 // 用户ID
-	Nid uint32 // 侦听层ID
+	sid uint64 // 会话SID
+	uid uint64 // 用户ID
+	nid uint32 // 侦听层ID
 }
+
+func (attr *SidAttr) GetSid() uint64 { return attr.sid }
+func (attr *SidAttr) GetUid() uint64 { return attr.uid }
+func (attr *SidAttr) GetNid() uint32 { return attr.nid }
 
 /******************************************************************************
  **函数名称: GetSidAttr
@@ -64,6 +68,7 @@ func GetSidAttr(pool *redis.Pool, sid uint64) (attr *SidAttr, err error) {
 	rds := pool.Get()
 	defer rds.Close()
 
+	/* 获取会话属性 */
 	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
 
 	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
@@ -71,14 +76,14 @@ func GetSidAttr(pool *redis.Pool, sid uint64) (attr *SidAttr, err error) {
 		return nil, err
 	}
 
-	attr = &SidAttr{}
+	uid, _ := strconv.ParseInt(vals[0], 10, 64)
+	nid, _ := strconv.ParseInt(vals[1], 10, 64)
 
-	attr.Sid = sid
-	uid_int, _ := strconv.ParseInt(vals[0], 10, 64)
-	attr.Uid = uint64(uid_int)
-	nid_int, _ := strconv.ParseInt(vals[1], 10, 64)
-	attr.Nid = uint32(nid_int)
-
+	attr = &SidAttr{
+		sid: sid,
+		uid: uint64(uid),
+		nid: uint32(nid),
+	}
 	return attr, nil
 }
 
@@ -122,7 +127,7 @@ func CleanSidData(pool *redis.Pool, sid uint64) error {
 	}
 
 	/* > 清理相关资源 */
-	chat.RoomCleanBySid(pool, attr.Uid, attr.Nid, sid)
+	chat.RoomCleanBySid(pool, attr.uid, attr.nid, sid)
 
 	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
 
@@ -154,19 +159,19 @@ func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) (code uint32, err e
 	attr, err := GetSidAttr(pool, sid)
 	if nil != err {
 		return comm.ERR_SYS_SYSTEM, err
-	} else if 0 == attr.Uid {
+	} else if 0 == attr.uid {
 		return comm.ERR_SVR_DATA_COLLISION, errors.New("Get sid attribute failed!")
-	} else if nid != attr.Nid {
+	} else if nid != attr.nid {
 		return comm.ERR_SVR_DATA_COLLISION, errors.New("Node of session is collision!")
 	}
 
 	/* 更新会话属性 */
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, sid)
-	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.Uid)
+	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.uid)
 
 	/* > 更新聊天室信息 */
-	chat.RoomUpdateBySid(pool, attr.Uid, attr.Nid, sid)
+	chat.RoomUpdateBySid(pool, attr.uid, attr.nid, sid)
 
 	return 0, nil
 }

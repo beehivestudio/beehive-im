@@ -10,6 +10,7 @@ import (
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/im"
 	"beehive-im/src/golang/lib/mesg"
 )
 
@@ -186,7 +187,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 			continue
 		}
 
-		attr := ctx.get_sid_attr(uint64(sid))
+		attr, _ := im.GetSidAttr(ctx.redis, uint64(sid))
 		if nil == attr {
 			continue
 		} else if 0 == attr.GetNid() {
@@ -214,7 +215,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 	for idx := 0; idx < num; idx += 1 {
 		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
 
-		attr := ctx.get_sid_attr(uint64(sid))
+		attr, _ := im.GetSidAttr(ctx.redis, uint64(sid))
 		if nil == attr {
 			continue
 		} else if 0 == attr.GetNid() {
@@ -285,7 +286,6 @@ func MsgSvrChatHandler(cmd uint32, orig uint32,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
  **函数名称: chat_ack_parse
@@ -307,8 +307,7 @@ func (ctx *MsgSvrCntx) chat_ack_parse(data []byte) (
 	if !head.IsValid(1) {
 		ctx.log.Error("Header of chat is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
 			head.GetCmd(), head.GetNid(), head.GetChkSum())
-		return nil, nil, comm.ERR_SVR_HEAD_INVALID,
-			errors.New("Header of chat-ack invalid!")
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Header of chat-ack invalid!")
 	}
 
 	/* > 解析PB协议 */
@@ -316,8 +315,7 @@ func (ctx *MsgSvrCntx) chat_ack_parse(data []byte) (
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal chat-ack failed! errmsg:%s", err.Error())
-		return nil, nil, comm.ERR_SVR_BODY_INVALID,
-			errors.New("Body of chat-ack invalid!")
+		return nil, nil, comm.ERR_SVR_BODY_INVALID, err
 	}
 
 	return head, req, 0, nil
@@ -331,13 +329,13 @@ func (ctx *MsgSvrCntx) chat_ack_parse(data []byte) (
  **     req: CHAT-ACK请求
  **     data: 原始数据
  **输出参数: NONE
- **返    回: 错误信息
+ **返    回: 错误码+错误信息
  **实现描述: 清理离线消息
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.26 21:01:12 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) chat_ack_handler(
-	head *comm.MesgHeader, req *mesg.MesgChatAck, data []byte) (err error) {
+	head *comm.MesgHeader, req *mesg.MesgChatAck, data []byte) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer func() {
 		rds.Do("")
@@ -346,7 +344,7 @@ func (ctx *MsgSvrCntx) chat_ack_handler(
 
 	if 0 != req.GetCode() {
 		ctx.log.Error("code:%d errmsg:%s", req.GetCode(), req.GetErrmsg())
-		return nil
+		return req.GetCode(), errors.New(req.GetErrmsg())
 	}
 
 	/* 清理离线消息 */
@@ -357,7 +355,7 @@ func (ctx *MsgSvrCntx) chat_ack_handler(
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
 	rds.Send("HDEL", key, head.GetSerial())
 
-	return err
+	return 0, nil
 }
 
 /******************************************************************************
@@ -391,9 +389,9 @@ func MsgSvrChatAckHandler(cmd uint32, orig uint32,
 	}
 
 	/* > 进行业务处理 */
-	err = ctx.chat_ack_handler(head, req, data)
+	code, err = ctx.chat_ack_handler(head, req, data)
 	if nil != err {
-		ctx.log.Error("Handle private message ack failed!")
+		ctx.log.Error("Handle chat ack failed! code:%d errmsg:%s", code, err.Error())
 		return -1
 	}
 
@@ -401,10 +399,10 @@ func MsgSvrChatAckHandler(cmd uint32, orig uint32,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+// 定时任务
 
 /******************************************************************************
- **函数名称: mesg_storage_task
+ **函数名称: task_chat_chan_pop
  **功    能: 私聊消息的存储任务
  **输入参数: NONE
  **输出参数: NONE
@@ -413,7 +411,7 @@ func MsgSvrChatAckHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.27 11:03:42 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) mesg_storage_task() {
+func (ctx *MsgSvrCntx) task_chat_chan_pop() {
 	for item := range ctx.chat_chan {
 		item.storage(ctx)
 	}

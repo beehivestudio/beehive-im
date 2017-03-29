@@ -1,11 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-	"strconv"
-
-	"github.com/garyburd/redigo/redis"
-
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -45,50 +40,4 @@ func (ctx *MsgSvrCntx) send_data(cmd uint32, to uint64, nid uint32, seq uint64, 
 
 	/* > 发送协议包 */
 	return ctx.frwder.AsyncSend(cmd, p.Buff, uint32(len(p.Buff)))
-}
-
-/* 会话属性 */
-type SidAttr struct {
-	sid uint64 /* 会话SID */
-	uid uint64 /* 用户UID */
-	nid uint32 /* 结点ID */
-}
-
-func (attr *SidAttr) GetSid() uint64 { return attr.sid }
-func (attr *SidAttr) GetUid() uint64 { return attr.uid }
-func (attr *SidAttr) GetNid() uint32 { return attr.nid }
-
-/******************************************************************************
- **函数名称: get_sid_attr
- **功    能: 获取会话属性
- **输入参数:
- **     sid: 会话ID
- **输出参数: NONE
- **返    回: 会话对应的属性
- **实现描述:
- **应答协议:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.12.25 09:25:00 #
- ******************************************************************************/
-func (ctx *MsgSvrCntx) get_sid_attr(sid uint64) *SidAttr {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-
-	vals, err := redis.Strings(rds.Do("HGET", key, "UID", "NID"))
-	if nil != err {
-		return nil
-	}
-
-	uid, _ := strconv.ParseInt(vals[0], 10, 64)
-	nid, _ := strconv.ParseInt(vals[1], 10, 32)
-
-	attr := &SidAttr{}
-
-	attr.sid = sid
-	attr.uid = uint64(uid)
-	attr.nid = uint32(nid)
-
-	return attr
 }

@@ -317,14 +317,14 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	if nil != err {
 		ctx.send_kick(head.GetCid(), head.GetNid(), comm.ERR_SYS_SYSTEM, err.Error())
 		return
-	} else if (0 != attr.Uid && attr.Uid != req.GetUid()) ||
-		(0 != attr.Nid && attr.Nid != head.GetNid()) { // 注意：当nid为0时表示会话SID之前并未登录.
+	} else if (0 != attr.GetUid() && attr.GetUid() != req.GetUid()) ||
+		(0 != attr.GetNid() && attr.GetNid() != head.GetNid()) { // 注意：当nid为0时表示会话SID之前并未登录.
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
-			attr.Uid, req.GetSid(), attr.Nid, head.GetNid(), head.GetCid())
+			attr.GetUid(), req.GetSid(), attr.GetNid(), head.GetNid(), head.GetCid())
 		/* 清理会话数据 */
 		im.CleanSidData(ctx.redis, head.GetSid())
 		/* 将老连接踢下线 */
-		ctx.send_kick(req.GetSid(), attr.Nid, comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
+		ctx.send_kick(req.GetSid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
 
 	/* 记录SID集合 */
@@ -884,9 +884,9 @@ func UsrSvrAllocSeqHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 		ctx.log.Error("Get sid attribute failed! errmsg:%s", err.Error())
 		ctx.alloc_seq_failed(head, req, comm.ERR_SYS_SYSTEM, err.Error())
 		return -1
-	} else if req.GetUid() != attr.Uid || head.GetNid() != attr.Nid {
+	} else if req.GetUid() != attr.GetUid() || head.GetNid() != attr.GetNid() {
 		ctx.log.Error("Data is collision! uid:%d/%d nid:%d/%d",
-			attr.Uid, req.GetUid(), attr.Nid, head.GetNid())
+			attr.GetUid(), req.GetUid(), attr.GetNid(), head.GetNid())
 		ctx.alloc_seq_failed(head, req, comm.ERR_SYS_SYSTEM, "Data is collision!")
 		return -1
 	}
@@ -1124,7 +1124,7 @@ func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint3
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.blacklist_add_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.blacklist_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
@@ -1358,7 +1358,7 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.blacklist_del_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.blacklist_del_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
@@ -1594,7 +1594,7 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.gag_add_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.gag_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
@@ -1828,7 +1828,7 @@ func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.gag_del_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.Uid && attr.Uid != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.gag_del_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)

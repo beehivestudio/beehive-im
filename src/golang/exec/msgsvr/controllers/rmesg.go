@@ -317,7 +317,7 @@ func MsgSvrRoomBcAckHandler(cmd uint32, nid uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: room_mesg_storage_task
+ **函数名称: task_room_mesg_chan_pop
  **功    能: 聊天室消息的存储任务
  **输入参数: NONE
  **输出参数: NONE
@@ -326,7 +326,7 @@ func MsgSvrRoomBcAckHandler(cmd uint32, nid uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.27 23:43:03 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) room_mesg_storage_task() {
+func (ctx *MsgSvrCntx) task_room_mesg_chan_pop() {
 	for item := range ctx.room_mesg_chan {
 		item.storage(ctx)
 	}
@@ -355,7 +355,7 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
 }
 
 /******************************************************************************
- **函数名称: room_mesg_queue_clean_task
+ **函数名称: task_room_mesg_queue_clean
  **功    能: 清理聊天室缓存消息
  **输入参数: NONE
  **输出参数: NONE
@@ -364,7 +364,7 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.28 22:34:18 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) room_mesg_queue_clean_task() {
+func (ctx *MsgSvrCntx) task_room_mesg_queue_clean() {
 	for {
 		ctx.room_mesg_queue_clean()
 

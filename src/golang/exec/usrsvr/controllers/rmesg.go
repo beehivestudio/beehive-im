@@ -1168,7 +1168,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 		ctx.log.Error("Get sid attr failed! rid:%d uid:%d errmsg:%s",
 			req.GetRid(), req.GetUid(), err.Error())
 		return comm.ERR_SYS_SYSTEM, err
-	} else if !chat.IsRoomManager(ctx.redis, req.GetRid(), attr.Uid) {
+	} else if !chat.IsRoomManager(ctx.redis, req.GetRid(), attr.GetUid()) {
 		ctx.log.Error("You're not owner! rid:%d uid:%d", req.GetRid(), req.GetUid())
 		return comm.ERR_SYS_PERM_DENIED, errors.New("You're not room owner!")
 	}

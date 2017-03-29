@@ -411,9 +411,9 @@ func MsgSvrSyncHandler(cmd uint32, nid uint32,
 		ctx.log.Error("Get session attr failed! errmsg:%s", err.Error())
 		ctx.sync_failed(head, req, code, err.Error())
 		return -1
-	} else if req.GetUid() != attr.Uid {
+	} else if req.GetUid() != attr.GetUid() {
 		ctx.log.Error("Sync data failed! uid:%d/%d nid:%d/%d",
-			req.GetUid(), attr.Uid, head.GetNid(), attr.Nid)
+			req.GetUid(), attr.GetUid(), head.GetNid(), attr.GetNid())
 		ctx.sync_failed(head, req, comm.ERR_SVR_DATA_COLLISION, "Uid is collision!")
 		return -1
 	}
