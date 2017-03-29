@@ -10,15 +10,15 @@ import (
 
 /* 在线中心配置 */
 type MonConf struct {
-	NodeId   uint32             // 结点ID
-	WorkPath string             // 工作路径(自动获取)
-	AppPath  string             // 程序路径(自动获取)
-	ConfPath string             // 配置路径(自动获取)
-	Redis    MonRedisConf       // Redis配置
-	Mysql    MonMysqlConf       // Mysql配置
-	Mongo    MonMongoConf       // Mongo配置
-	Log      log.LogConf        // 日志配置
-	Frwder   rtmq.RtmqProxyConf // RTMQ配置
+	NodeId   uint32         // 结点ID
+	WorkPath string         // 工作路径(自动获取)
+	AppPath  string         // 程序路径(自动获取)
+	ConfPath string         // 配置路径(自动获取)
+	Redis    MonRedisConf   // Redis配置
+	Mysql    MonMysqlConf   // Mysql配置
+	Mongo    MonMongoConf   // Mongo配置
+	Log      log.LogConf    // 日志配置
+	Frwder   rtmq.ProxyConf // RTMQ配置
 }
 
 /******************************************************************************

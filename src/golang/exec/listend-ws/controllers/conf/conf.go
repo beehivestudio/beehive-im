@@ -18,7 +18,7 @@ type LsndConf struct {
 	Log       log.LogConf             // 日志配置
 	Operator  LsndConfOperatorXmlData // 运营商信息
 	WebSocket lws.Conf                // WEBSOCKET配置
-	Frwder    rtmq.RtmqProxyConf      // RTMQ配置
+	Frwder    rtmq.ProxyConf          // RTMQ配置
 }
 
 /******************************************************************************

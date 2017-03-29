@@ -62,7 +62,7 @@ type MesgRoomItem struct {
 type MsgSvrCntx struct {
 	conf            *conf.MsgSvrConf    /* 配置信息 */
 	log             *logs.BeeLogger     /* 日志对象 */
-	frwder          *rtmq.RtmqProxyCntx /* 代理对象 */
+	frwder          *rtmq.Proxy         /* 代理对象 */
 	redis           *redis.Pool         /* REDIS连接池 */
 	room            RoomMap             /* 聊天室映射 */
 	group           GroupMap            /* 群组映射 */
@@ -148,9 +148,9 @@ func MsgSvrInit(conf *conf.MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 func (ctx *MsgSvrCntx) Register() {
 	/* > 通用消息 */
 	ctx.frwder.Register(comm.CMD_SYNC, MsgSvrSyncHandler, ctx)
-	//ctx.frwder.Register(comm.CMD_P2P_MSG, MsgSvrP2pMsgHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_P2P, MsgSvrP2pHandler, ctx)
 
-	//ctx.frwder.Register(comm.CMD_P2P_MSG_ACK, MsgSvrP2pMsgAckHandler, ctx)
+	//ctx.frwder.Register(comm.CMD_P2P_ACK, MsgSvrP2pAckHandler, ctx)
 
 	/* > 私聊消息 */
 	ctx.frwder.Register(comm.CMD_CHAT, MsgSvrChatHandler, ctx)

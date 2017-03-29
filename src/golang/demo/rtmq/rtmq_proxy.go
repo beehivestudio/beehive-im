@@ -14,7 +14,7 @@ import (
 
 /* ONLINE注册回调 */
 func chat_cmd_online_handler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	pxy, ok := param.(*rtmq.RtmqProxyCntx)
+	pxy, ok := param.(*rtmq.Proxy)
 	if !ok {
 		fmt.Printf("Get rtmq proxy context failed!")
 		return -1
@@ -27,7 +27,7 @@ func chat_cmd_online_handler(cmd uint32, orig uint32, data []byte, length uint32
 
 /* OFFLINE注册回调 */
 func chat_cmd_offline_handler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	pxy, ok := param.(*rtmq.RtmqProxyCntx)
+	pxy, ok := param.(*rtmq.Proxy)
 	if !ok {
 		fmt.Printf("Get rtmq proxy context failed!")
 		return -1
@@ -40,7 +40,7 @@ func chat_cmd_offline_handler(cmd uint32, orig uint32, data []byte, length uint3
 
 /* OFFLINE注册回调 */
 func chat_cmd_2_handler(cmd uint32, orig uint32, data []byte, length uint32, param interface{}) int {
-	pxy, ok := param.(*rtmq.RtmqProxyCntx)
+	pxy, ok := param.(*rtmq.Proxy)
 	if !ok {
 		fmt.Printf("Get rtmq proxy context failed!")
 		return -1
@@ -71,7 +71,7 @@ func log_init() (log *logs.BeeLogger, err error) {
 
 func main() {
 	/* > 加载配置 */
-	conf := &rtmq.RtmqProxyConf{}
+	conf := &rtmq.ProxyConf{}
 
 	conf.NodeId = 1
 	conf.Usr = "qifeng"

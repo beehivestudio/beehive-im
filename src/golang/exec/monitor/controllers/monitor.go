@@ -15,10 +15,10 @@ import (
 
 /* OLS上下文 */
 type MonSvrCntx struct {
-	conf   *conf.MonConf       /* 配置信息 */
-	log    *logs.BeeLogger     /* 日志对象 */
-	frwder *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis  *redis.Pool         /* REDIS连接池 */
+	conf   *conf.MonConf   /* 配置信息 */
+	log    *logs.BeeLogger /* 日志对象 */
+	frwder *rtmq.Proxy     /* 代理对象 */
+	redis  *redis.Pool     /* REDIS连接池 */
 }
 
 /******************************************************************************

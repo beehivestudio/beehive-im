@@ -51,14 +51,14 @@ type LsndKickItem struct {
 
 /* LISTEND上下文 */
 type LsndCntx struct {
-	conf      *conf.LsndConf      /* 配置信息 */
-	log       *logs.BeeLogger     /* 日志对象 */
-	frwder    *rtmq.RtmqProxyCntx /* 代理对象 */
-	callback  MesgCallBackTab     /* 处理回调 */
-	chat      *chat_tab.ChatTab   /* 聊天关系组织表 */
-	lws       *lws.LwsCntx        /* LWS环境 */
-	protocol  *lws.Protocol       /* LWS.PROTOCOL */
-	kick_list chan *LsndKickItem  /* 被踢列表 */
+	conf      *conf.LsndConf     /* 配置信息 */
+	log       *logs.BeeLogger    /* 日志对象 */
+	frwder    *rtmq.Proxy        /* 代理对象 */
+	callback  MesgCallBackTab    /* 处理回调 */
+	chat      *chat_tab.ChatTab  /* 聊天关系组织表 */
+	lws       *lws.LwsCntx       /* LWS环境 */
+	protocol  *lws.Protocol      /* LWS.PROTOCOL */
+	kick_list chan *LsndKickItem /* 被踢列表 */
 }
 
 /* 会话扩展数据 */

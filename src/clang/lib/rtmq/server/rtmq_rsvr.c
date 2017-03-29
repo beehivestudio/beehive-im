@@ -888,7 +888,7 @@ static int rtmq_rsvr_keepalive_req_hdl(rtmq_cntx_t *ctx,
     /* > 回复消息内容 */
     head = (rtmq_header_t *)rsp;
 
-    head->type = RTMQ_CMD_KPALIVE_RSP;
+    head->type = RTMQ_CMD_KPALIVE_ACK;
     head->nid = ctx->conf.nid;
     head->length = 0;
     head->flag = RTMQ_SYS_MESG;
@@ -924,10 +924,10 @@ static int rtmq_rsvr_link_auth_rsp(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck
     int len;
     void *addr;
     rtmq_header_t *head;
-    rtmq_link_auth_rsp_t *link_auth_rsp;
+    rtmq_link_auth_ack_t *link_auth_rsp;
 
     /* > 分配消息空间 */
-    len = sizeof(rtmq_header_t) + sizeof(rtmq_link_auth_rsp_t);
+    len = sizeof(rtmq_header_t) + sizeof(rtmq_link_auth_ack_t);
 
     addr = (void *)mem_ref_alloc(len, NULL,
             (mem_alloc_cb_t)mem_alloc, (mem_dealloc_cb_t)mem_dealloc);
@@ -938,11 +938,11 @@ static int rtmq_rsvr_link_auth_rsp(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck
 
     /* > 回复消息内容 */
     head = (rtmq_header_t *)addr;
-    link_auth_rsp = (rtmq_link_auth_rsp_t *)(head + 1);
+    link_auth_rsp = (rtmq_link_auth_ack_t *)(head + 1);
 
-    head->type = RTMQ_CMD_LINK_AUTH_RSP;
+    head->type = RTMQ_CMD_LINK_AUTH_ACK;
     head->nid = ctx->conf.nid;
-    head->length = sizeof(rtmq_link_auth_rsp_t);
+    head->length = sizeof(rtmq_link_auth_ack_t);
     head->flag = RTMQ_SYS_MESG;
     head->chksum = RTMQ_CHKSUM_VAL;
 

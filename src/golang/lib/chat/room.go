@@ -285,7 +285,7 @@ func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 11:02:22 #
  ******************************************************************************/
-func RoomSendUsrNum(frwder *rtmq.RtmqProxyCntx, pool *redis.Pool) error {
+func RoomSendUsrNum(frwder *rtmq.Proxy, pool *redis.Pool) error {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -355,7 +355,7 @@ func RoomSendUsrNum(frwder *rtmq.RtmqProxyCntx, pool *redis.Pool) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 11:15:03 #
  ******************************************************************************/
-func send_room_usr_num(frwder *rtmq.RtmqProxyCntx,
+func send_room_usr_num(frwder *rtmq.Proxy,
 	pool *redis.Pool, rid uint64, nid uint32, num uint32) int {
 	rds := pool.Get()
 	defer rds.Close()

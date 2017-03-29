@@ -283,7 +283,7 @@ static int rtmq_lsn_cmd_query_conf_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtm
     memset(&rep, 0, sizeof(rep));
 
     /* 1. 设置应答信息 */
-    rep.type = RTMQ_CMD_QUERY_CONF_REP;
+    rep.type = RTMQ_CMD_QUERY_CONF_ACK;
 
     snprintf(param->path, sizeof(param->path), "%s", cf->path);
     param->port = cf->port;
@@ -329,7 +329,7 @@ static int rtmq_lsn_cmd_query_recv_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn
 
     for (idx=0; idx<ctx->conf.recv_thd_num; ++idx, ++rsvr) {
         /* 1. 设置应答信息 */
-        rep.type = RTMQ_CMD_QUERY_RECV_STAT_REP;
+        rep.type = RTMQ_CMD_QUERY_RECV_STAT_ACK;
 
         stat->connections = rsvr->connections;
         stat->recv_total = rsvr->recv_total;
@@ -371,7 +371,7 @@ static int rtmq_lsn_cmd_query_proc_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn
 
     for (idx=0; idx<ctx->conf.work_thd_num; ++idx, ++wrk) {
         /* > 设置应答信息 */
-        rep.type = RTMQ_CMD_QUERY_PROC_STAT_REP;
+        rep.type = RTMQ_CMD_QUERY_PROC_STAT_ACK;
 
         stat->proc_total = wrk->proc_total;
         stat->drop_total = wrk->drop_total;

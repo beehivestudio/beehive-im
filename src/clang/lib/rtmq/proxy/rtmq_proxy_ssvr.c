@@ -26,7 +26,7 @@ static int rtmq_proxy_ssvr_clear_mesg(rtmq_proxy_ssvr_t *ssvr);
 static int rtmq_proxy_ssvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
 
 static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
-static int rtmq_link_auth_rsp_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, rtmq_link_auth_rsp_t *rsp);
+static int rtmq_link_auth_ack_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, rtmq_link_auth_ack_t *rsp);
 static int rtmq_sub_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
 
 static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int rqid);
@@ -811,17 +811,12 @@ static int rtmq_proxy_ssvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *s
     rtmq_header_t *head = (rtmq_header_t *)addr;
 
     switch (head->type) {
-        case RTMQ_CMD_KPALIVE_RSP:      /* 保活应答 */
-        {
-            log_debug(ssvr->log, "Received keepalive respond!");
-
+        case RTMQ_CMD_KPALIVE_ACK:      /* 保活应答 */
+            log_debug(ssvr->log, "Received keepalive ack!");
             rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_SUCC);
             return RTMQ_OK;
-        }
-        case RTMQ_CMD_LINK_AUTH_RSP:    /* 链路鉴权应答 */
-        {
-            return rtmq_link_auth_rsp_hdl(pxy, ssvr, sck, addr + sizeof(rtmq_header_t));
-        }
+        case RTMQ_CMD_LINK_AUTH_ACK:    /* 链路鉴权应答 */
+            return rtmq_link_auth_ack_hdl(pxy, ssvr, sck, addr + sizeof(rtmq_header_t));
     }
 
     log_error(ssvr->log, "Unknown type [%d]!", head->type);
@@ -945,7 +940,7 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
 }
 
 /******************************************************************************
- **函数名称: rtmq_link_auth_rsp_hdl
+ **函数名称: rtmq_link_auth_ack_hdl
  **功    能: 链路鉴权请求应答的处理
  **输入参数:
  **     pxy: 全局信息
@@ -958,8 +953,8 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.05.22 #
  ******************************************************************************/
-static int rtmq_link_auth_rsp_hdl(rtmq_proxy_t *pxy,
-        rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, rtmq_link_auth_rsp_t *rsp)
+static int rtmq_link_auth_ack_hdl(rtmq_proxy_t *pxy,
+        rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, rtmq_link_auth_ack_t *rsp)
 {
     return ntohl(rsp->is_succ)? RTMQ_OK : RTMQ_ERR;
 }

@@ -27,24 +27,24 @@ type UsrSvrLsndNetWork struct {
 
 /* 用户中心上下文 */
 type UsrSvrCntx struct {
-	conf    *conf.UsrSvrConf    /* 配置信息 */
-	log     *logs.BeeLogger     /* 日志对象 */
-	ipdict  *comm.IpDict        /* IP字典 */
-	frwder  *rtmq.RtmqProxyCntx /* 代理对象 */
-	redis   *redis.Pool         /* REDIS连接池 */
-	listend UsrSvrLsndNetWork   /* 侦听层类型 */
+	conf    *conf.UsrSvrConf  /* 配置信息 */
+	log     *logs.BeeLogger   /* 日志对象 */
+	ipdict  *comm.IpDict      /* IP字典 */
+	frwder  *rtmq.Proxy       /* 代理对象 */
+	redis   *redis.Pool       /* REDIS连接池 */
+	listend UsrSvrLsndNetWork /* 侦听层类型 */
 }
 
-var g_usrsvr *UsrSvrCntx /* 全局对象 */
+var g_usrsvr_cntx *UsrSvrCntx /* 全局对象 */
 
 /* 获取全局对象 */
 func GetUsrSvrCtx() *UsrSvrCntx {
-	return g_usrsvr
+	return g_usrsvr_cntx
 }
 
 /* 设置全局对象 */
 func SetUsrSvrCtx(ctx *UsrSvrCntx) {
-	g_usrsvr = ctx
+	g_usrsvr_cntx = ctx
 }
 
 /******************************************************************************

@@ -74,7 +74,7 @@ func MsgSvrBcAckHandler(cmd uint32, nid uint32, data []byte, length uint32, para
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrP2pMsgHandler
+ **函数名称: MsgSvrP2pHandler
  **功    能: 点到点消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -93,7 +93,7 @@ func MsgSvrBcAckHandler(cmd uint32, nid uint32, data []byte, length uint32, para
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:56:56 #
  ******************************************************************************/
-func MsgSvrP2pMsgHandler(cmd uint32, nid uint32,
+func MsgSvrP2pHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {
@@ -109,7 +109,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, nid uint32,
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: MsgSvrP2pMsgAckHandler
+ **函数名称: MsgSvrP2pAckHandler
  **功    能: 点到点应答的处理
  **输入参数:
  **     cmd: 消息类型
@@ -123,7 +123,7 @@ func MsgSvrP2pMsgHandler(cmd uint32, nid uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.09 21:58:12 #
  ******************************************************************************/
-func MsgSvrP2pMsgAckHandler(cmd uint32, nid uint32,
+func MsgSvrP2pAckHandler(cmd uint32, nid uint32,
 	data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*MsgSvrCntx)
 	if !ok {

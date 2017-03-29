@@ -46,28 +46,28 @@ const (
 const (
 	RTMQ_CMD_UNKNOWN             = 0      /* 未知命令 */
 	RTMQ_CMD_LINK_AUTH_REQ       = 0x0001 /* 链路鉴权请求 */
-	RTMQ_CMD_LINK_AUTH_RSP       = 0x0002 /* 链路鉴权应答 */
+	RTMQ_CMD_LINK_AUTH_ACK       = 0x0002 /* 链路鉴权应答 */
 	RTMQ_CMD_KPALIVE_REQ         = 0x0003 /* 链路保活请求 */
-	RTMQ_CMD_KPALIVE_RSP         = 0x0004 /* 链路保活应答 */
+	RTMQ_CMD_KPALIVE_ACK         = 0x0004 /* 链路保活应答 */
 	RTMQ_CMD_SUB_ONE_REQ         = 0x0005 /* 订阅请求: 将消息只发送给一个用户 */
-	RTMQ_CMD_SUB_ONE_RSP         = 0x0006 /* 订阅应答 */
+	RTMQ_CMD_SUB_ONE_ACK         = 0x0006 /* 订阅应答 */
 	RTMQ_CMD_SUB_ALL_REQ         = 0x0007 /* 订阅请求: 将消息发送给所有用户 */
-	RTMQ_CMD_SUB_ALL_RSP         = 0x0008 /* 订阅应答 */
+	RTMQ_CMD_SUB_ALL_ACK         = 0x0008 /* 订阅应答 */
 	RTMQ_CMD_ADD_SCK             = 0x0009 /* 接收客户端数据-请求 */
 	RTMQ_CMD_DIST_REQ            = 0x000A /* 分发任务请求 */
 	RTMQ_CMD_PROC_REQ            = 0x000B /* 处理客户端数据-请求 */
 	RTMQ_CMD_SEND                = 0x000C /* 发送数据-请求 */
 	RTMQ_CMD_SEND_ALL            = 0x000D /* 发送所有数据-请求 */
 	RTMQ_CMD_QUERY_CONF_REQ      = 0x1001 /* "查询"配置信息-请求 */
-	RTMQ_CMD_QUERY_CONF_REP      = 0x1002 /* "查询"配置信息-应答 */
+	RTMQ_CMD_QUERY_CONF_ACK      = 0x1002 /* "查询"配置信息-应答 */
 	RTMQ_CMD_QUERY_RECV_STAT_REQ = 0x1003 /* "查询"接收状态-请求 */
-	RTMQ_CMD_QUERY_RECV_STAT_REP = 0x1004 /* "查询"接收状态-应答 */
+	RTMQ_CMD_QUERY_RECV_STAT_ACK = 0x1004 /* "查询"接收状态-应答 */
 	RTMQ_CMD_QUERY_PROC_STAT_REQ = 0x1005 /* "查询"处理状态-请求 */
-	RTMQ_CMD_QUERY_PROC_STAT_REP = 0x1006 /* "查询"处理状态-应答 */
+	RTMQ_CMD_QUERY_PROC_STAT_ACK = 0x1006 /* "查询"处理状态-应答 */
 )
 
 /* 配置信息 */
-type RtmqProxyConf struct {
+type ProxyConf struct {
 	NodeId      uint32 /* 结点ID */
 	Usr         string /* 用户名 */
 	Passwd      string /* 登录密码 */
@@ -104,8 +104,8 @@ type RtmqRegItem struct {
 }
 
 /* TCP连接对象 */
-type RtmqProxyConn struct {
-	svr           *RtmqProxyServer
+type ProxyConn struct {
+	svr           *ProxyServer
 	conn          *net.TCPConn         /* 原始TCP连接 */
 	extra         interface{}          /* 扩展数据 */
 	is_close      int32                /* 连接是否关闭 */
@@ -121,9 +121,9 @@ type RtmqProxyConn struct {
 }
 
 /* 代理服务 */
-type RtmqProxyServer struct {
-	ctx       *RtmqProxyCntx       /* 全局对象 */
-	conf      *RtmqProxyConf       /* 配置数据 */
+type ProxyServer struct {
+	ctx       *Proxy               /* 全局对象 */
+	conf      *ProxyConf           /* 配置数据 */
 	log       *logs.BeeLogger      /* 日志对象 */
 	send_chan chan *RtmqPacket     /* 发送队列 */
 	recv_chan chan *RtmqRecvPacket /* 接收队列 */
@@ -132,15 +132,15 @@ type RtmqProxyServer struct {
 }
 
 /* 上下文信息 */
-type RtmqProxyCntx struct {
-	conf   *RtmqProxyConf                  /* 配置数据 */
-	log    *logs.BeeLogger                 /* 日志对象 */
-	reg    map[uint32]*RtmqRegItem         /* 回调注册 */
-	server [RTMQ_SSVR_NUM]*RtmqProxyServer /* 服务对象 */
+type Proxy struct {
+	conf   *ProxyConf                  /* 配置数据 */
+	log    *logs.BeeLogger             /* 日志对象 */
+	reg    map[uint32]*RtmqRegItem     /* 回调注册 */
+	server [RTMQ_SSVR_NUM]*ProxyServer /* 服务对象 */
 }
 
 /* 获取日志对象 */
-func (pxy *RtmqProxyCntx) GetLog() *logs.BeeLogger {
+func (pxy *Proxy) GetLog() *logs.BeeLogger {
 	return pxy.log
 }
 
@@ -156,7 +156,7 @@ func (pxy *RtmqProxyCntx) GetLog() *logs.BeeLogger {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:56:41 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) OnDial() (conn *net.TCPConn, err error) {
+func (svr *ProxyServer) OnDial() (conn *net.TCPConn, err error) {
 	conf := svr.conf
 
 	addr, err := net.ResolveTCPAddr("tcp4", conf.RemoteAddr)
@@ -185,7 +185,7 @@ func (svr *RtmqProxyServer) OnDial() (conn *net.TCPConn, err error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:56:41 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) OnConnect(c *RtmqProxyConn) bool {
+func (svr *ProxyServer) OnConnect(c *ProxyConn) bool {
 	return true
 }
 
@@ -202,7 +202,7 @@ func (svr *RtmqProxyServer) OnConnect(c *RtmqProxyConn) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:06:03 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqRecvPacket) bool {
+func (svr *ProxyServer) OnMessage(c *ProxyConn, p *RtmqRecvPacket) bool {
 	ctx := svr.ctx
 	header := rtmq_head_ntoh(p)
 
@@ -238,7 +238,7 @@ func (svr *RtmqProxyServer) OnMessage(c *RtmqProxyConn, p *RtmqRecvPacket) bool 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:06:03 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) OnClose(c *RtmqProxyConn) {
+func (svr *ProxyServer) OnClose(c *ProxyConn) {
 	svr.log.Error("Connection was closed! ip:%svr", c.GetRawConn().RemoteAddr())
 }
 
@@ -254,8 +254,8 @@ func (svr *RtmqProxyServer) OnClose(c *RtmqProxyConn) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:09:33 #
  ******************************************************************************/
-func ProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
-	ctx := &RtmqProxyCntx{}
+func ProxyInit(conf *ProxyConf, log *logs.BeeLogger) *Proxy {
+	ctx := &Proxy{}
 
 	ctx.log = log
 	ctx.conf = conf
@@ -285,7 +285,7 @@ func ProxyInit(conf *RtmqProxyConf, log *logs.BeeLogger) *RtmqProxyCntx {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:17:46 #
  ******************************************************************************/
-func (ctx *RtmqProxyCntx) Register(cmd uint32, proc RtmqRegCb, param interface{}) bool {
+func (ctx *Proxy) Register(cmd uint32, proc RtmqRegCb, param interface{}) bool {
 	item := &RtmqRegItem{}
 
 	if _, ok := ctx.reg[cmd]; ok {
@@ -310,7 +310,7 @@ func (ctx *RtmqProxyCntx) Register(cmd uint32, proc RtmqRegCb, param interface{}
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:24:34 #
  ******************************************************************************/
-func (ctx *RtmqProxyCntx) Launch() {
+func (ctx *Proxy) Launch() {
 	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
 		go ctx.server[idx].StartConnector(3)
 	}
@@ -329,7 +329,7 @@ func (ctx *RtmqProxyCntx) Launch() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 09:36:10 #
  ******************************************************************************/
-func (ctx *RtmqProxyCntx) AsyncSend(cmd uint32, data []byte, length uint32) int {
+func (ctx *Proxy) AsyncSend(cmd uint32, data []byte, length uint32) int {
 	/* > 设置协议头 */
 	head := &RtmqHeader{}
 
@@ -371,9 +371,9 @@ func (ctx *RtmqProxyCntx) AsyncSend(cmd uint32, data []byte, length uint32) int 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:17:46 #
  ******************************************************************************/
-func (ctx *RtmqProxyCntx) server_new() *RtmqProxyServer {
+func (ctx *Proxy) server_new() *ProxyServer {
 	conf := ctx.conf
-	return &RtmqProxyServer{
+	return &ProxyServer{
 		ctx:       ctx,
 		conf:      conf,
 		log:       ctx.log,
@@ -395,7 +395,7 @@ func (ctx *RtmqProxyCntx) server_new() *RtmqProxyServer {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:24:34 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) StartConnector(timeout time.Duration) {
+func (svr *ProxyServer) StartConnector(timeout time.Duration) {
 	svr.waitGroup.Add(1)
 	defer func() {
 		svr.waitGroup.Done()
@@ -438,7 +438,7 @@ func (svr *RtmqProxyServer) StartConnector(timeout time.Duration) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:47:58 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) Stop() {
+func (svr *ProxyServer) Stop() {
 	close(svr.exit_chan)
 	svr.waitGroup.Wait()
 }
@@ -476,8 +476,8 @@ func rtmq_head_hton(header *RtmqHeader, p *RtmqPacket) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:50:50 #
  ******************************************************************************/
-func (svr *RtmqProxyServer) conn_new(conn *net.TCPConn) *RtmqProxyConn {
-	return &RtmqProxyConn{
+func (svr *ProxyServer) conn_new(conn *net.TCPConn) *ProxyConn {
+	return &ProxyConn{
 		svr:           svr,
 		conn:          conn,
 		close_chan:    make(chan struct{}),
@@ -491,12 +491,12 @@ func (svr *RtmqProxyServer) conn_new(conn *net.TCPConn) *RtmqProxyConn {
 }
 
 /* 获取TCP连接对象 */
-func (c *RtmqProxyConn) GetRawConn() *net.TCPConn {
+func (c *ProxyConn) GetRawConn() *net.TCPConn {
 	return c.conn
 }
 
 /* 关闭连接 */
-func (c *RtmqProxyConn) Close() {
+func (c *ProxyConn) Close() {
 	c.close_once.Do(func() {
 		atomic.StoreInt32(&c.is_close, 1)
 		close(c.mesg_chan)
@@ -507,7 +507,7 @@ func (c *RtmqProxyConn) Close() {
 }
 
 /* 判断连接是否关闭 */
-func (c *RtmqProxyConn) IsClosed() bool {
+func (c *ProxyConn) IsClosed() bool {
 	return (1 == atomic.LoadInt32(&c.is_close))
 }
 
@@ -522,7 +522,7 @@ func (c *RtmqProxyConn) IsClosed() bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:07:19 #
  ******************************************************************************/
-func (c *RtmqProxyConn) Start(num uint32) {
+func (c *ProxyConn) Start(num uint32) {
 	var i uint32
 
 	if !c.svr.OnConnect(c) {
@@ -553,7 +553,7 @@ func (c *RtmqProxyConn) Start(num uint32) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:10:36 #
  ******************************************************************************/
-func (c *RtmqProxyConn) recv_routine() {
+func (c *ProxyConn) recv_routine() {
 	log := c.svr.log
 	c.svr.waitGroup.Add(1)
 	defer func() {
@@ -610,7 +610,7 @@ func (c *RtmqProxyConn) recv_routine() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:10:36 #
  ******************************************************************************/
-func (c *RtmqProxyConn) send_routine() {
+func (c *ProxyConn) send_routine() {
 	log := c.svr.log
 	c.svr.waitGroup.Add(1)
 	defer func() {
@@ -666,7 +666,7 @@ func (c *RtmqProxyConn) send_routine() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:10:36 #
  ******************************************************************************/
-func (c *RtmqProxyConn) handle_routine() {
+func (c *ProxyConn) handle_routine() {
 	c.svr.waitGroup.Add(1)
 	defer func() {
 		recover()
@@ -698,7 +698,7 @@ func (c *RtmqProxyConn) handle_routine() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:10:36 #
  ******************************************************************************/
-func (c *RtmqProxyConn) keepalive() {
+func (c *ProxyConn) keepalive() {
 	svr := c.svr
 	conf := svr.conf
 
@@ -735,7 +735,7 @@ type RtmqAuthRsp struct {
 }
 
 /* 设置鉴权请求 */
-func rtmq_set_auth_req(conf *RtmqProxyConf, p *RtmqPacket) {
+func rtmq_set_auth_req(conf *ProxyConf, p *RtmqPacket) {
 	off := 0
 	copy(p.body[:RTMQ_USR_MAX_LEN], []byte(conf.Usr))
 	off += RTMQ_USR_MAX_LEN
@@ -752,7 +752,7 @@ func rtmq_set_auth_req(conf *RtmqProxyConf, p *RtmqPacket) {
  **注意事项: 系统内部消息放在mesg_chan队列中
  **作    者: # Qifeng.zou # 2016.10.30 22:07:19 #
  ******************************************************************************/
-func (c *RtmqProxyConn) auth() {
+func (c *ProxyConn) auth() {
 	svr := c.svr
 	conf := svr.conf
 
@@ -796,7 +796,7 @@ func rtmq_set_sub_req(req *RtmqSubReq, p *RtmqPacket) {
  **注意事项: 系统内部消息放在mesg_chan队列中
  **作    者: # Qifeng.zou # 2016.10.30 22:03:59 #
  ******************************************************************************/
-func (c *RtmqProxyConn) subscribe() {
+func (c *ProxyConn) subscribe() {
 	svr := c.svr
 	ctx := svr.ctx
 	conf := svr.conf
@@ -839,18 +839,18 @@ func (c *RtmqProxyConn) subscribe() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
  ******************************************************************************/
-func (c *RtmqProxyConn) mesg_handler(cmd uint32, p *RtmqRecvPacket) bool {
+func (c *ProxyConn) mesg_handler(cmd uint32, p *RtmqRecvPacket) bool {
 	switch cmd {
-	case RTMQ_CMD_LINK_AUTH_RSP:
-		return c.auth_rsp_handler(p)
-	case RTMQ_CMD_KPALIVE_RSP:
-		return c.keepalive_rsp_handler(p)
+	case RTMQ_CMD_LINK_AUTH_ACK:
+		return c.auth_ack_handler(p)
+	case RTMQ_CMD_KPALIVE_ACK:
+		return c.keepalive_ack_handler(p)
 	}
 	return true
 }
 
 /******************************************************************************
- **函数名称: auth_rsp_handler
+ **函数名称: auth_ack_handler
  **功    能: 鉴权应答处理
  **输入参数:
  **     p: 数据包对象
@@ -860,7 +860,7 @@ func (c *RtmqProxyConn) mesg_handler(cmd uint32, p *RtmqRecvPacket) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
  ******************************************************************************/
-func (c *RtmqProxyConn) auth_rsp_handler(p *RtmqRecvPacket) bool {
+func (c *ProxyConn) auth_ack_handler(p *RtmqRecvPacket) bool {
 	log := c.svr.log
 	conf := c.svr.conf
 
@@ -878,7 +878,7 @@ func (c *RtmqProxyConn) auth_rsp_handler(p *RtmqRecvPacket) bool {
 }
 
 /******************************************************************************
- **函数名称: keepalive_rsp_handler
+ **函数名称: keepalive_ack_handler
  **功    能: 保活应答处理
  **输入参数:
  **     p: 数据包对象
@@ -888,7 +888,7 @@ func (c *RtmqProxyConn) auth_rsp_handler(p *RtmqRecvPacket) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:38:12 #
  ******************************************************************************/
-func (c *RtmqProxyConn) keepalive_rsp_handler(p *RtmqRecvPacket) bool {
+func (c *ProxyConn) keepalive_ack_handler(p *RtmqRecvPacket) bool {
 	log := c.svr.log
 
 	c.kpalive_times = 0
