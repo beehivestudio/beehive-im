@@ -205,8 +205,12 @@ func MsgSvrGroupChatHandler(cmd uint32, nid uint32,
 
 	/* > 解析ROOM-MSG协议 */
 	head, req := ctx.group_chat_parse(data)
-	if nil == head || nil == req {
-		ctx.log.Error("Parse group-msg failed!")
+	if nil == head {
+		ctx.log.Error("Parse header of group chat failed!")
+		return -1
+	} else if nil == req {
+		ctx.log.Error("Parse body of group chat failed!")
+		ctx.group_chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, "Body is invalid!")
 		return -1
 	}
 

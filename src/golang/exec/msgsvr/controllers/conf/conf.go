@@ -18,7 +18,7 @@ type MsgSvrConf struct {
 	Mysql    MsgSvrMysqlConf // Mysql配置
 	Mongo    MsgSvrMongoConf // Mongo配置
 	Cipher   string          // 私密密钥
-	Log      log.LogConf     // 日志配置
+	Log      log.Conf        // 日志配置
 	Frwder   rtmq.ProxyConf  // RTMQ配置
 }
 

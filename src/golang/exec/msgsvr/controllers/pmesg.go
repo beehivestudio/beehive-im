@@ -22,40 +22,42 @@ import (
  **返    回:
  **     head: 通用协议头
  **     req: 协议体内容
- **实现描述:
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述: 1.对通用头进行字节序转换 2.解析PB协议体
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.05 13:23:54 #
  ******************************************************************************/
 func (ctx *MsgSvrCntx) chat_parse(data []byte) (
-	head *comm.MesgHeader, req *mesg.MesgChat) {
+	head *comm.MesgHeader, req *mesg.MesgChat, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
 			head.GetCmd(), head.GetNid(), head.GetChkSum())
-		return nil, nil
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Header of chat is invalid")
 	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgChat{}
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal prvt-msg failed! errmsg:%s", err.Error())
-		return nil, nil
+		ctx.log.Error("Unmarshal body failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
 	} else if 0 == req.GetOrig() || 0 == req.GetDest() {
 		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetOrig(), req.GetDest())
-		return nil, nil
+		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Paramter isn't right!")
 	}
 
-	return head, req
+	return head, req, comm.OK, nil
 }
 
 /******************************************************************************
  **函数名称: chat_failed
- **功    能: 发送PRVT-MSG应答(异常)
+ **功    能: 发送CHAT应答(异常)
  **输入参数:
  **     head: 协议头
- **     req: 上线请求
+ **     req: CHAT请求
  **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
@@ -81,13 +83,15 @@ func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
 		Errmsg: proto.String(errmsg),
 	}
 
-	/* 生成PB数据 */
+	/* > 生成PB数据 */
 	body, err := proto.Marshal(ack)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
 	}
 
+	/* > 发送应答数据 */
+	body, err = proto.Marshal(ack)
 	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
@@ -96,6 +100,8 @@ func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
  **函数名称: chat_ack
  **功    能: 发送私聊应答
  **输入参数:
+ **     head: 协议头
+ **     req: CHAT请求
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
@@ -114,26 +120,27 @@ func (ctx *MsgSvrCntx) chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
 		Errmsg: proto.String("Ok"),
 	}
 
-	/* 生成PB数据 */
+	/* > 生成PB数据 */
 	body, err := proto.Marshal(ack)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
 	}
 
+	/* > 发送应答数据 */
 	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
 		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
 }
 
 /******************************************************************************
  **函数名称: chat_handler
- **功    能: PRVT-MSG处理
+ **功    能: CHAT处理
  **输入参数:
  **     head: 协议头
- **     req: PRVT-MSG请求
+ **     req: CHAT请求
  **     data: 原始数据
  **输出参数: NONE
- **返    回:
+ **返    回: 错误码+错误描述
  **实现描述:
  **     1. 将消息放入UID离线队列
  **	    2. 发送给"发送方"的其他终端.
@@ -145,8 +152,8 @@ func (ctx *MsgSvrCntx) chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.18 20:33:18 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) chat_handler(
-	head *comm.MesgHeader, req *mesg.MesgChat, data []byte) (err error) {
+func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
+	req *mesg.MesgChat, data []byte) (code uint32, err error) {
 	var key string
 
 	rds := ctx.redis.Get()
@@ -169,7 +176,7 @@ func (ctx *MsgSvrCntx) chat_handler(
 	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
 		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetOrig())
-		return err
+		return comm.ERR_SYS_DB, err
 	}
 
 	num := len(sid_list)
@@ -180,11 +187,15 @@ func (ctx *MsgSvrCntx) chat_handler(
 		}
 
 		attr := ctx.get_sid_attr(uint64(sid))
-		if uint64(attr.uid) != req.GetOrig() || 0 == attr.nid {
+		if nil == attr {
+			continue
+		} else if 0 == attr.GetNid() {
+			continue
+		} else if uint64(attr.GetUid()) != req.GetOrig() {
 			continue
 		}
 
-		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.nid),
+		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.GetNid()),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -196,7 +207,7 @@ func (ctx *MsgSvrCntx) chat_handler(
 	sid_list, err = redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
 		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDest())
-		return err
+		return comm.ERR_SYS_DB, err
 	}
 
 	num = len(sid_list)
@@ -204,19 +215,21 @@ func (ctx *MsgSvrCntx) chat_handler(
 		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
 
 		attr := ctx.get_sid_attr(uint64(sid))
-		if uint64(attr.uid) != req.GetOrig() || 0 == attr.nid {
+		if nil == attr {
+			continue
+		} else if 0 == attr.GetNid() {
+			continue
+		} else if uint64(attr.GetUid()) != req.GetOrig() {
+			continue
+		} else if uint64(attr.GetUid()) != req.GetDest() {
 			continue
 		}
 
-		if uint64(attr.uid) != req.GetDest() || 0 == attr.nid {
-			continue
-		}
-
-		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.nid),
+		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.GetNid()),
 			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
-	return err
+	return 0, nil
 }
 
 /******************************************************************************
@@ -245,20 +258,24 @@ func MsgSvrChatHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Recv private message!")
+	ctx.log.Debug("Recv chat message!")
 
-	/* > 解析ROOM-MSG协议 */
-	head, req := ctx.chat_parse(data)
-	if nil == head || nil == req {
-		ctx.log.Error("Parse private message failed!")
+	/* > 解析CHAT协议 */
+	head, req, code, err := ctx.chat_parse(data)
+	if nil == head {
+		ctx.log.Error("Parse chat failed! errmsg:%s", err.Error())
+		return -1
+	} else if nil == req {
+		ctx.log.Error("Parse chat failed! errmsg:%s", err.Error())
+		ctx.chat_failed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 进行业务处理 */
-	err := ctx.chat_handler(head, req, data)
+	code, err = ctx.chat_handler(head, req, data)
 	if nil != err {
-		ctx.log.Error("Parse private message failed!")
-		ctx.chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		ctx.log.Error("Handle chat failed! errmsg:%s", err.Error())
+		ctx.chat_failed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -288,19 +305,19 @@ func (ctx *MsgSvrCntx) chat_ack_parse(data []byte) (
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
+		ctx.log.Error("Header of chat is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
 			head.GetCmd(), head.GetNid(), head.GetChkSum())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID,
-			errors.New("Header of private chat message failed!")
+			errors.New("Header of chat-ack invalid!")
 	}
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgChatAck{}
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal prvt-msg failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal chat-ack failed! errmsg:%s", err.Error())
 		return nil, nil, comm.ERR_SVR_BODY_INVALID,
-			errors.New("Body of private chat message failed!")
+			errors.New("Body of chat-ack invalid!")
 	}
 
 	return head, req, 0, nil
@@ -308,10 +325,10 @@ func (ctx *MsgSvrCntx) chat_ack_parse(data []byte) (
 
 /******************************************************************************
  **函数名称: chat_ack_handler
- **功    能: PRVT-CHAT-ACK处理
+ **功    能: CHAT-ACK处理
  **输入参数:
  **     head: 协议头
- **     req: PRVT-MSG-ACK请求
+ **     req: CHAT-ACK请求
  **     data: 原始数据
  **输出参数: NONE
  **返    回: 错误信息
@@ -365,7 +382,7 @@ func MsgSvrChatAckHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	/* > 解析PRVT-MSG-ACK协议 */
+	/* > 解析CHAT-ACK协议 */
 	head, req, code, err := ctx.chat_ack_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse private message ack failed! code:%d errmsg:%s",

@@ -54,6 +54,10 @@ type SidAttr struct {
 	nid uint32 /* 结点ID */
 }
 
+func (attr *SidAttr) GetSid() uint64 { return attr.sid }
+func (attr *SidAttr) GetUid() uint64 { return attr.uid }
+func (attr *SidAttr) GetNid() uint32 { return attr.nid }
+
 /******************************************************************************
  **函数名称: get_sid_attr
  **功    能: 获取会话属性
@@ -71,7 +75,11 @@ func (ctx *MsgSvrCntx) get_sid_attr(sid uint64) *SidAttr {
 	defer rds.Close()
 
 	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
-	vals, _ := redis.Strings(rds.Do("HGET", key, "UID", "NID"))
+
+	vals, err := redis.Strings(rds.Do("HGET", key, "UID", "NID"))
+	if nil != err {
+		return nil
+	}
 
 	uid, _ := strconv.ParseInt(vals[0], 10, 64)
 	nid, _ := strconv.ParseInt(vals[1], 10, 32)
