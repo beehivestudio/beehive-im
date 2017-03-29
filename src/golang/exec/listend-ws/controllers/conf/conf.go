@@ -15,7 +15,7 @@ type LsndConf struct {
 	WorkPath  string                  // 工作路径(自动获取)
 	AppPath   string                  // 程序路径(自动获取)
 	ConfPath  string                  // 配置路径(自动获取)
-	Log       log.LogConf             // 日志配置
+	Log       log.Conf                // 日志配置
 	Operator  LsndConfOperatorXmlData // 运营商信息
 	WebSocket lws.Conf                // WEBSOCKET配置
 	Frwder    rtmq.ProxyConf          // RTMQ配置

@@ -9,7 +9,7 @@ import (
 )
 
 /* 日志配置 */
-type LogConf struct {
+type Conf struct {
 	Level int    // 日志级别
 	Path  string // 日志目录
 }

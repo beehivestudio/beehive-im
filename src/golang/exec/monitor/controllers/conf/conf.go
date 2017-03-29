@@ -17,7 +17,7 @@ type MonConf struct {
 	Redis    MonRedisConf   // Redis配置
 	Mysql    MonMysqlConf   // Mysql配置
 	Mongo    MonMongoConf   // Mongo配置
-	Log      log.LogConf    // 日志配置
+	Log      log.Conf       // 日志配置
 	Frwder   rtmq.ProxyConf // RTMQ配置
 }
 

@@ -146,7 +146,7 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_add(ctx *UsrSvrCntx) {
 	pl.Send("ZADD", key, time.Now().Unix(), param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -228,7 +228,7 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
 	pl.Send("ZREM", key, param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -339,7 +339,7 @@ func (this *UsrSvrRoomConfigCtrl) gag_add(ctx *UsrSvrCntx) {
 	pl.Send("ZADD", key, time.Now().Unix(), param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -421,7 +421,7 @@ func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 	pl.Send("ZREM", key, param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -525,7 +525,7 @@ func (this *UsrSvrRoomConfigCtrl) room_open(ctx *UsrSvrCntx) {
 	}
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -601,7 +601,7 @@ func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
 	}
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -708,7 +708,7 @@ func (this *UsrSvrRoomConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
 	pl.Send("ZADD", key, param.capacity, param.rid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -803,7 +803,7 @@ func (this *UsrSvrRoomConfigCtrl) capacity_get(ctx *UsrSvrCntx) {
 	rsp := &RoomCapGetRsp{
 		Rid:    param.rid,
 		Cap:    capacity,
-		Code:   comm.ERR_SUCC,
+		Code:   comm.OK,
 		ErrMsg: "Ok",
 	}
 

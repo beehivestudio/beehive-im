@@ -383,7 +383,7 @@ func (this *UsrSvrConfigCtrl) user_statis_add(ctx *UsrSvrCntx) {
 	pl.Send("ZADD", key, param.num, param.prec)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -453,7 +453,7 @@ func (this *UsrSvrConfigCtrl) user_statis_del(ctx *UsrSvrCntx) {
 	pl.Send("ZREM", key, param.prec)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }

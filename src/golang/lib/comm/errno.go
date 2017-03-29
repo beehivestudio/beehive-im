@@ -1,7 +1,7 @@
 package comm
 
 const (
-	ERR_SUCC = 0 // 正常
+	OK = 0 // 正常
 )
 
 /*
@@ -31,6 +31,7 @@ const (
 	ERR_SYS_HTTP_NOT_SUPPORT          = 10021 // HTTP method is not suported for this request | 请求的HTTP METHOD不支持, 请检查是否选择了正确的POST/GET方式 |
 	ERR_SYS_IP_REQ_OUT_OF_RATE_LIMIT  = 10022 // IP requests out of rate limit | IP请求频次超过上限 |
 	ERR_SYS_USR_REQ_OUT_OF_RATE_LIMIT = 10023 // User requests out of rate limit | 用户请求频次超过上限 |
+	ERR_SYS_DB                        = 10024 // Database error | 数据库错误 |
 )
 
 // 业务级错误码

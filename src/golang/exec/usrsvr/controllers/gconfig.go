@@ -148,7 +148,7 @@ func (this *UsrSvrGroupConfigCtrl) blacklist_add(ctx *UsrSvrCntx) {
 	pl.Send("ZADD", key, time.Now().Unix(), param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -230,7 +230,7 @@ func (this *UsrSvrGroupConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
 	pl.Send("ZREM", key, param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -586,7 +586,7 @@ func (this *UsrSvrGroupConfigCtrl) gag_add(ctx *UsrSvrCntx) {
 	pl.Send("ZADD", key, time.Now().Unix(), param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -668,7 +668,7 @@ func (this *UsrSvrGroupConfigCtrl) gag_del(ctx *UsrSvrCntx) {
 	pl.Send("ZREM", key, param.uid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -768,7 +768,7 @@ func (this *UsrSvrGroupConfigCtrl) switch_on(ctx *UsrSvrCntx) {
 	rds.Do("HSET", key, comm.CHAT_GID_ATTR_SWITCH, 1)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -803,7 +803,7 @@ func (this *UsrSvrGroupConfigCtrl) switch_off(ctx *UsrSvrCntx) {
 	rds.Do("HSET", key, "SWITCH", 0)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -911,7 +911,7 @@ func (this *UsrSvrGroupConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
 	pl.Send("ZADD", key, param.capacity, param.gid)
 
 	/* > 回复处理应答 */
-	this.Error(comm.ERR_SUCC, "Ok")
+	this.Error(comm.OK, "Ok")
 
 	return
 }
@@ -1006,7 +1006,7 @@ func (this *UsrSvrGroupConfigCtrl) capacity_get(ctx *UsrSvrCntx) {
 	rsp := &GroupCapGetRsp{
 		Gid:    param.gid,
 		Cap:    capacity,
-		Code:   comm.ERR_SUCC,
+		Code:   comm.OK,
 		ErrMsg: "Ok",
 	}
 
