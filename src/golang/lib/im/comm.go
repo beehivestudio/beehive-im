@@ -27,7 +27,7 @@ import (
  **作    者: # Qifeng.zou # 2016.11.02 10:48:40 #
  ******************************************************************************/
 func AllocSid(db *sql.DB) (sid uint64, err error) {
-	sql := fmt.Sprintf("UPDATE SESSION_INCR_TAB SET sid=sid+1 WHERE ID=1 AND @val:=sid+1; SELECT @val")
+	sql := fmt.Sprintf("UPDATE IM_SID_GEN_TAB SET sid=sid+1 WHERE type=0 AND @val:=sid+1; SELECT @val")
 
 	stmt, err := db.Prepare(sql)
 	if nil != err {
@@ -40,27 +40,12 @@ func AllocSid(db *sql.DB) (sid uint64, err error) {
 		return 0, err
 	}
 
-	cols, err := rows.Columns()
-	if nil != cols {
-		return 0, err
-	}
-
-	data := make([][]byte, len(cols))
-	dest := make([]interface{}, len(cols))
-	for i, _ := range data {
-		dest[i] = &data[i]
-	}
-
 	if rows.Next() {
-		err = rows.Scan(dest...)
-		for _, raw := range data {
-			if nil == raw {
-				return 0, errors.New("Alloc sid failed!")
-			} else {
-				sid, _ := strconv.ParseInt(string(raw), 10, 64)
-				return uint64(sid), nil
-			}
+		err = rows.Scan(&sid)
+		if nil != err {
+			return 0, err
 		}
+		return sid, nil
 	}
 
 	return 0, errors.New("Alloc sid failed!")
