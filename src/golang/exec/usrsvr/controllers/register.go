@@ -104,7 +104,7 @@ func (this *UsrSvrRegisterCtrl) register_handler(param *UsrSvrRegisterParam) {
 	ctx := GetUsrSvrCtx()
 
 	/* > 申请会话ID */
-	sid, err := im.AllocSid(ctx.redis)
+	sid, err := im.AllocSid(ctx.mysql)
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SYS_RPC, err.Error())

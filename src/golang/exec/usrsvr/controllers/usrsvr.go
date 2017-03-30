@@ -36,7 +36,7 @@ type UsrSvrCntx struct {
 	ipdict  *comm.IpDict      /* IP字典 */
 	frwder  *rtmq.Proxy       /* 代理对象 */
 	redis   *redis.Pool       /* REDIS连接池 */
-	mysql   *sql.DB           /* MYSQL连接池 */
+	mysql   *sql.DB           /* MYSQL数据库 */
 	listend UsrSvrLsndNetWork /* 侦听层类型 */
 }
 
