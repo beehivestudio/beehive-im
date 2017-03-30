@@ -296,6 +296,8 @@ func MsgSvrChatHandler(cmd uint32, orig uint32,
  **返    回:
  **     head: 通用协议头
  **     req: 协议体内容
+ **     code: 错误码
+ **     err: 错误描述
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.26 20:38:42 #

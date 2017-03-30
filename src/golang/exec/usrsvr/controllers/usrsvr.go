@@ -1,14 +1,18 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
+	_ "github.com/go-sql-driver/mysql"
 
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/log"
+	"beehive-im/src/golang/lib/rds"
 	"beehive-im/src/golang/lib/rtmq"
 
 	"beehive-im/src/golang/exec/usrsvr/controllers/conf"
@@ -32,6 +36,7 @@ type UsrSvrCntx struct {
 	ipdict  *comm.IpDict      /* IP字典 */
 	frwder  *rtmq.Proxy       /* 代理对象 */
 	redis   *redis.Pool       /* REDIS连接池 */
+	mysql   *sql.DB           /* MYSQL连接池 */
 	listend UsrSvrLsndNetWork /* 侦听层类型 */
 }
 
@@ -81,28 +86,20 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	ctx.listend.types = make(map[int]*UsrSvrLsndList)
 
 	/* > REDIS连接池 */
-	ctx.redis = &redis.Pool{
-		MaxIdle:   80,
-		MaxActive: 12000,
-		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", conf.Redis.Addr)
-			if nil != err {
-				panic(err.Error())
-				return nil, err
-			}
-			if 0 != len(conf.Redis.Passwd) {
-				if _, err := c.Do("AUTH", conf.Redis.Passwd); nil != err {
-					c.Close()
-					panic(err.Error())
-					return nil, err
-				}
-			}
-			return c, err
-		},
-	}
+	ctx.redis = rds.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 512, 1000)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s", conf.Redis.Addr)
 		return nil, errors.New("Create redis pool failed!")
+	}
+
+	/* > MYSQL连接池 */
+	addr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
+		conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Database)
+
+	ctx.mysql, err = sql.Open("mysql", addr)
+	if nil != err {
+		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s", addr, err.Error())
+		return nil, err
 	}
 
 	/* > 初始化RTMQ-PROXY */

@@ -44,7 +44,7 @@ func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal room-msg failed! errmsg:%s", err.Error())
-		return nil, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Body is invalid!")
+		return nil, nil, comm.ERR_SVR_BODY_INVALID, err
 	}
 
 	return head, req, 0, nil

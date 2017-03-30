@@ -1,7 +1,7 @@
 <MONITOR ID="33000"> <!-- ID: 结点ID -->
   <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
   <REDIS ADDR="127.0.0.1:6379" USR="beehive" PASSWD="111111" /> <!-- REDIS配置 -->
-  <MYSQL ADDR="127.0.0.1:7379" USR="beehive" PASSWD="111111" /> <!-- MYSQL配置 -->
+  <MYSQL ADDR="127.0.0.1:7379" USR="beehive" PASSWD="111111" DATABASE="testdb" /> <!-- MYSQL配置 -->
   <MONGO ADDR="127.0.0.1:8379" USR="beehive" PASSWD="111111" /> <!-- MONGO配置 -->
   <FRWDER ADDR="127.0.0.1:28889"> <!-- RTMQ代理 -->
     <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->

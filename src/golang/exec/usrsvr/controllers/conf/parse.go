@@ -26,10 +26,11 @@ type UsrSvrRedisConf struct {
 
 /* MYSQL配置 */
 type UsrSvrMysqlConf struct {
-	Name   xml.Name `xml:"MYSQL"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Name     xml.Name `xml:"MYSQL"`         // 结点名
+	Addr     string   `xml:"ADDR,attr"`     // 地址(IP+端口)
+	Usr      string   `xml:"USR,attr"`      // 用户名
+	Passwd   string   `xml:"PASSWD,attr"`   // 登录密码
+	Database string   `xml:"DATABASE,attr"` // 数据库名
 }
 
 /* MONGO配置 */
@@ -145,6 +146,11 @@ func (conf *UsrSvrConf) conf_parse() (err error) {
 	conf.Mysql.Passwd = node.Mysql.Passwd
 	if 0 == len(conf.Mysql.Passwd) {
 		return errors.New("Get password of mysql failed!")
+	}
+
+	conf.Mysql.Database = node.Mysql.Database
+	if 0 == len(conf.Mysql.Database) {
+		return errors.New("Get database of mysql failed!")
 	}
 
 	/* MONGO配置 */
