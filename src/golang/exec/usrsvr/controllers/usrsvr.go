@@ -94,7 +94,7 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 
 	/* > MYSQL连接池 */
 	addr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
-		conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Database)
+		conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Dbname)
 
 	ctx.mysql, err = sql.Open("mysql", addr)
 	if nil != err {
