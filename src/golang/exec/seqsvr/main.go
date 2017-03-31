@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"syscall"
 
-	"beehive-im/src/golang/exec/tasker/controllers"
-	"beehive-im/src/golang/exec/tasker/controllers/conf"
+	"beehive-im/src/golang/exec/seqsvr/controllers"
+	"beehive-im/src/golang/exec/seqsvr/controllers/conf"
 )
 
 /* 输入参数 */
@@ -22,7 +22,7 @@ func parse_param() *InputParam {
 	param := &InputParam{}
 
 	/* 配置文件 */
-	param.conf = flag.String("c", "../conf/tasker.xml", "Configuration path")
+	param.conf = flag.String("c", "../conf/seqsvr.xml", "Configuration path")
 
 	flag.Parse()
 
@@ -30,20 +30,20 @@ func parse_param() *InputParam {
 }
 
 func main() {
-	var conf conf.TaskerConf
+	var conf conf.SeqSvrConf
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	param := parse_param()
 
-	/* > 加载OLS配置 */
+	/* > 加载SEQSVR配置 */
 	if err := conf.Load(*param.conf); nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}
 
 	/* > 初始化OLSVR环境 */
-	ctx, err := controllers.TaskerInit(&conf)
+	ctx, err := controllers.SeqSvrInit(&conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

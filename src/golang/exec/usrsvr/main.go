@@ -48,7 +48,7 @@ func _init() *controllers.UsrSvrCntx {
 	param := parse_param()
 
 	/* > 加载HTTPSVR配置 */
-	if err := conf.LoadConf(*param.conf); nil != err {
+	if err := conf.Load(*param.conf); nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return nil
 	}

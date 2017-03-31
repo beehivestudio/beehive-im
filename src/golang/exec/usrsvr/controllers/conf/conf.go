@@ -24,7 +24,7 @@ type UsrSvrConf struct {
 }
 
 /******************************************************************************
- **函数名称: LoadConf
+ **函数名称: Load
  **功    能: 加载配置信息
  **输入参数:
  **     path: 配置路径
@@ -34,13 +34,13 @@ type UsrSvrConf struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *UsrSvrConf) LoadConf(path string) error {
+func (conf *UsrSvrConf) Load(path string) error {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
 	conf.ConfPath = path
 
-	return conf.conf_parse()
+	return conf.parse()
 }
 
 /* 获取结点ID */

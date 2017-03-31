@@ -23,7 +23,7 @@ type MsgSvrConf struct {
 }
 
 /******************************************************************************
- **函数名称: LoadConf
+ **函数名称: Load
  **功    能: 加载配置信息
  **输入参数:
  **     path: 配置路径
@@ -34,7 +34,7 @@ type MsgSvrConf struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *MsgSvrConf) LoadConf(path string) (err error) {
+func (conf *MsgSvrConf) Load(path string) (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))

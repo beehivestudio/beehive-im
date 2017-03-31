@@ -5,20 +5,20 @@ import (
 	"path/filepath"
 
 	"beehive-im/src/golang/lib/log"
-	"beehive-im/src/golang/lib/rtmq"
 )
 
 /* 在线中心配置 */
-type MonConf struct {
-	NodeId   uint32         // 结点ID
-	WorkPath string         // 工作路径(自动获取)
-	AppPath  string         // 程序路径(自动获取)
-	ConfPath string         // 配置路径(自动获取)
-	Redis    MonRedisConf   // Redis配置
-	Mysql    MonMysqlConf   // Mysql配置
-	Mongo    MonMongoConf   // Mongo配置
-	Log      log.Conf       // 日志配置
-	Frwder   rtmq.ProxyConf // RTMQ配置
+type SeqSvrConf struct {
+	NodeId   uint32          // 结点ID
+	WorkPath string          // 工作路径(自动获取)
+	AppPath  string          // 程序路径(自动获取)
+	ConfPath string          // 配置路径(自动获取)
+	Port     uint16          // 侦听端口
+	Redis    SeqSvrRedisConf // REDIS配置
+	Mysql    SeqSvrMysqlConf // MYSQL配置
+	Mongo    SeqSvrMongoConf // MONGO配置
+	Cipher   string          // 私密密钥
+	Log      log.Conf        // 日志配置
 }
 
 /******************************************************************************
@@ -33,16 +33,16 @@ type MonConf struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *MonConf) Load(path string) (err error) {
+func (conf *SeqSvrConf) Load(path string) (err error) {
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
 	conf.ConfPath = path
 
-	return conf.conf_parse()
+	return conf.parse()
 }
 
 /* 获取结点ID */
-func (conf *MonConf) GetNid() uint32 {
+func (conf *SeqSvrConf) GetNid() uint32 {
 	return conf.NodeId
 }

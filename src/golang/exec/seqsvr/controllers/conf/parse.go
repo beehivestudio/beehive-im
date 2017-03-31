@@ -10,14 +10,14 @@ import (
 )
 
 /* 日志配置 */
-type TaskerConfLogXmlData struct {
+type SeqSvrConfLogXmlData struct {
 	Name  xml.Name `xml:"LOG"`        // 结点名
 	Level string   `xml:"LEVEL,attr"` // 日志级别
 	Path  string   `xml:"PATH,attr"`  // 日志路径
 }
 
 /* REDIS配置 */
-type TaskerRedisConf struct {
+type SeqSvrRedisConf struct {
 	Name   xml.Name `xml:"REDIS"`       // 结点名
 	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
@@ -25,52 +25,36 @@ type TaskerRedisConf struct {
 }
 
 /* MYSQL配置 */
-type TaskerMysqlConf struct {
+type SeqSvrMysqlConf struct {
 	Name   xml.Name `xml:"MYSQL"`       // 结点名
 	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Dbname string   `xml:"DBNAME,attr"` // 数据库名
 }
 
 /* MONGO配置 */
-type TaskerMongoConf struct {
+type SeqSvrMongoConf struct {
 	Name   xml.Name `xml:"MONGO"`       // 结点名
 	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
-/* 鉴权配置 */
-type TaskerConfRtmqAuthXmlData struct {
-	Name   xml.Name `xml:"AUTH"`        // 结点名
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
-}
-
-/* RTMQ代理配置 */
-type TaskerConfRtmqProxyXmlData struct {
-	Name        xml.Name                  `xml:"FRWDER"`        // 结点名
-	Auth        TaskerConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
-	RemoteAddr  string                    `xml:"ADDR,attr"`     // 对端IP(IP+PROT)
-	WorkerNum   uint32                    `xml:"WORKER-NUM"`    // 协程数
-	SendChanLen uint32                    `xml:"SEND-CHAN-LEN"` // 发送队列长度
-	RecvChanLen uint32                    `xml:"RECV-CHAN-LEN"` // 接收队列长度
-}
-
 /* 在线中心XML配置 */
-type TaskerConfXmlData struct {
-	Name   xml.Name                   `xml:"TASKER"`  // 根结点名
-	Id     uint32                     `xml:"ID,attr"` // 结点ID
-	Redis  TaskerRedisConf            `xml:"REDIS"`   // REDIS配置
-	Mysql  TaskerMysqlConf            `xml:"MYSQL"`   // MYSQL配置
-	Mongo  TaskerMongoConf            `xml:"MONGO"`   // MONGO配置
-	Cipher string                     `xml:"CIPHER"`  // 私密密钥
-	Log    TaskerConfLogXmlData       `xml:"LOG"`     // 日志配置
-	Frwder TaskerConfRtmqProxyXmlData `xml:"FRWDER"`  // RTMQ PROXY配置
+type SeqSvrConfXmlData struct {
+	Name   xml.Name             `xml:"SEQSVR"`  // 根结点名
+	Id     uint32               `xml:"ID,attr"` // 结点ID
+	Port   uint16               `xml:"ID,attr"` // 侦听端口
+	Redis  SeqSvrRedisConf      `xml:"REDIS"`   // REDIS配置
+	Mysql  SeqSvrMysqlConf      `xml:"MYSQL"`   // MYSQL配置
+	Mongo  SeqSvrMongoConf      `xml:"MONGO"`   // MONGO配置
+	Cipher string               `xml:"CIPHER"`  // 私密密钥
+	Log    SeqSvrConfLogXmlData `xml:"LOG"`     // 日志配置
 }
 
 /******************************************************************************
- **函数名称: conf_parse
+ **函数名称: parse
  **功    能: 解析配置信息
  **输入参数: NONE
  **输出参数: NONE
@@ -80,7 +64,7 @@ type TaskerConfXmlData struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *TaskerConf) conf_parse() (err error) {
+func (conf *SeqSvrConf) parse() (err error) {
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)
 	if nil != err {
@@ -94,7 +78,7 @@ func (conf *TaskerConf) conf_parse() (err error) {
 		return err
 	}
 
-	node := TaskerConfXmlData{}
+	node := SeqSvrConfXmlData{}
 
 	err = xml.Unmarshal(data, &node)
 	if nil != err {
@@ -106,6 +90,12 @@ func (conf *TaskerConf) conf_parse() (err error) {
 	conf.NodeId = node.Id
 	if 0 == conf.NodeId {
 		return errors.New("Get node id failed!")
+	}
+
+	/* 侦听端口 */
+	conf.Port = node.Port
+	if 0 == conf.Port {
+		return errors.New("Get port failed!")
 	}
 
 	/* Redis配置 */
@@ -140,6 +130,11 @@ func (conf *TaskerConf) conf_parse() (err error) {
 		return errors.New("Get password of mysql failed!")
 	}
 
+	conf.Mysql.Dbname = node.Mysql.Dbname
+	if 0 == len(conf.Mysql.Dbname) {
+		return errors.New("Get database of mysql failed!")
+	}
+
 	/* MONGO配置 */
 	conf.Mongo.Addr = node.Mongo.Addr
 	if 0 == len(conf.Mongo.Addr) {
@@ -168,40 +163,6 @@ func (conf *TaskerConf) conf_parse() (err error) {
 	conf.Log.Path = node.Log.Path
 	if 0 == len(conf.Log.Path) {
 		return errors.New("Get log path failed!")
-	}
-
-	/* FRWDER配置 */
-	conf.Frwder.NodeId = conf.NodeId
-
-	/* 鉴权信息 */
-	conf.Frwder.Usr = node.Frwder.Auth.Usr
-	conf.Frwder.Passwd = node.Frwder.Auth.Passwd
-	if 0 == len(conf.Frwder.Usr) || 0 == len(conf.Frwder.Passwd) {
-		return errors.New("Get auth conf failed!")
-	}
-
-	/* 转发层(IP+PROT) */
-	conf.Frwder.RemoteAddr = node.Frwder.RemoteAddr
-	if 0 == len(conf.Frwder.RemoteAddr) {
-		return errors.New("Get Frwder addr failed!")
-	}
-
-	/* 发送队列长度 */
-	conf.Frwder.SendChanLen = node.Frwder.SendChanLen
-	if 0 == conf.Frwder.SendChanLen {
-		return errors.New("Get send channel length failed!")
-	}
-
-	/* 接收队列长度 */
-	conf.Frwder.RecvChanLen = node.Frwder.RecvChanLen
-	if 0 == conf.Frwder.RecvChanLen {
-		return errors.New("Get recv channel length failed!")
-	}
-
-	/* 协程数 */
-	conf.Frwder.WorkerNum = node.Frwder.WorkerNum
-	if 0 == conf.Frwder.WorkerNum {
-		return errors.New("Get worker number failed!")
 	}
 
 	return nil

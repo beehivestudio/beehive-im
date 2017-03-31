@@ -37,7 +37,7 @@ func main() {
 	param := parse_param()
 
 	/* > 加载LSND-WS配置 */
-	if err := conf.LoadConf(*param.conf); nil != err {
+	if err := conf.Load(*param.conf); nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}

@@ -60,19 +60,19 @@ type UsrSvrRtmqProxyConf struct {
 
 /* 在线中心XML配置 */
 type UsrSvrConfXmlData struct {
-	Name   xml.Name            `xml:"USRSVR"`  // 根结点名
-	Id     uint32              `xml:"ID,attr"` // 结点ID
-	Port   int16               `xml:"PORT"`    // HTTP侦听端口
-	Redis  UsrSvrRedisConf     `xml:"REDIS"`   // Redis配置
-	Mysql  UsrSvrMysqlConf     `xml:"MYSQL"`   // Mysql配置
-	Mongo  UsrSvrMongoConf     `xml:"MONGO"`   // Mongo配置
-	Cipher string              `xml:"CIPHER"`  // 私密密钥
-	Log    UsrSvrLogConf       `xml:"LOG"`     // 日志配置
-	Frwder UsrSvrRtmqProxyConf `xml:"FRWDER"`  // RTMQ PROXY配置
+	Name   xml.Name            `xml:"USRSVR"`    // 根结点名
+	Id     uint32              `xml:"ID,attr"`   // 结点ID
+	Port   int16               `xml:"PORT",attr` // HTTP侦听端口
+	Redis  UsrSvrRedisConf     `xml:"REDIS"`     // Redis配置
+	Mysql  UsrSvrMysqlConf     `xml:"MYSQL"`     // Mysql配置
+	Mongo  UsrSvrMongoConf     `xml:"MONGO"`     // Mongo配置
+	Cipher string              `xml:"CIPHER"`    // 私密密钥
+	Log    UsrSvrLogConf       `xml:"LOG"`       // 日志配置
+	Frwder UsrSvrRtmqProxyConf `xml:"FRWDER"`    // RTMQ PROXY配置
 }
 
 /******************************************************************************
- **函数名称: conf_parse
+ **函数名称: parse
  **功    能: 解析配置信息
  **输入参数: NONE
  **输出参数: NONE
@@ -82,7 +82,7 @@ type UsrSvrConfXmlData struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *UsrSvrConf) conf_parse() (err error) {
+func (conf *UsrSvrConf) parse() (err error) {
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)
 	if nil != err {
