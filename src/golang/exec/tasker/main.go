@@ -30,20 +30,19 @@ func parse_param() *InputParam {
 }
 
 func main() {
-	var conf conf.TaskerConf
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	param := parse_param()
 
-	/* > 加载OLS配置 */
-	if err := conf.Load(*param.conf); nil != err {
+	/* > 加载TASKER配置 */
+	conf, err := conf.Load(*param.conf)
+	if nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}
 
 	/* > 初始化OLSVR环境 */
-	ctx, err := controllers.TaskerInit(&conf)
+	ctx, err := controllers.TaskerInit(conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

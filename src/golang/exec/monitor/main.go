@@ -30,20 +30,19 @@ func parse_param() *InputParam {
 }
 
 func main() {
-	var conf conf.MonConf
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	param := parse_param()
 
 	/* > 加载监控配置 */
-	if err := conf.Load(*param.conf); nil != err {
+	conf, err := conf.Load(*param.conf)
+	if nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}
 
 	/* > 初始化环境 */
-	ctx, err := controllers.MonInit(&conf)
+	ctx, err := controllers.MonInit(conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

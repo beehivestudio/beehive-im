@@ -30,20 +30,19 @@ func parse_param() *InputParam {
 }
 
 func main() {
-	var conf conf.LsndConf
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	param := parse_param()
 
 	/* > 加载LSND-WS配置 */
-	if err := conf.Load(*param.conf); nil != err {
+	conf, err := conf.Load(*param.conf)
+	if nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}
 
 	/* > 初始化LSND-WS环境 */
-	ctx, err := controllers.LsndInit(&conf)
+	ctx, err := controllers.LsndInit(conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return

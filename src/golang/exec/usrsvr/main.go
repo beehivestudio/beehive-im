@@ -41,22 +41,21 @@ func beego_config(conf *conf.UsrSvrConf) {
 
 /* 初始化 */
 func _init() *controllers.UsrSvrCntx {
-	var conf conf.UsrSvrConf
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	param := parse_param()
 
-	/* > 加载HTTPSVR配置 */
-	if err := conf.Load(*param.conf); nil != err {
+	/* > 加载USRSVR配置 */
+	conf, err := conf.Load(*param.conf)
+	if nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return nil
 	}
 
-	beego_config(&conf)
+	beego_config(conf)
 
-	/* > 初始化HTTPSVR环境 */
-	ctx, err := controllers.UsrSvrInit(&conf)
+	/* > 初始化USRSVR环境 */
+	ctx, err := controllers.UsrSvrInit(conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return nil

@@ -70,7 +70,7 @@ type TaskerConfXmlData struct {
 }
 
 /******************************************************************************
- **函数名称: conf_parse
+ **函数名称: parse
  **功    能: 解析配置信息
  **输入参数: NONE
  **输出参数: NONE
@@ -80,7 +80,7 @@ type TaskerConfXmlData struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *TaskerConf) conf_parse() (err error) {
+func (conf *TaskerConf) parse() (err error) {
 	/* > 加载配置文件 */
 	file, err := os.Open(conf.ConfPath)
 	if nil != err {

@@ -33,13 +33,19 @@ type MonConf struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:35:28 #
  ******************************************************************************/
-func (conf *MonConf) Load(path string) (err error) {
+func Load(path string) (conf *MonConf, err error) {
+	conf = &MonConf{}
+
 	conf.WorkPath, _ = os.Getwd()
 	conf.WorkPath, _ = filepath.Abs(conf.WorkPath)
 	conf.AppPath, _ = filepath.Abs(filepath.Dir(os.Args[0]))
 	conf.ConfPath = path
 
-	return conf.conf_parse()
+	err = conf.parse()
+	if nil != err {
+		return nil, err
+	}
+	return conf, err
 }
 
 /* 获取结点ID */

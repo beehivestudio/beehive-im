@@ -30,20 +30,19 @@ func parse_param() *InputParam {
 }
 
 func main() {
-	var conf conf.SeqSvrConf
-
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	param := parse_param()
 
 	/* > 加载SEQSVR配置 */
-	if err := conf.Load(*param.conf); nil != err {
+	conf, err := conf.Load(*param.conf)
+	if nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
 		return
 	}
 
 	/* > 初始化OLSVR环境 */
-	ctx, err := controllers.SeqSvrInit(&conf)
+	ctx, err := controllers.SeqSvrInit(conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return
