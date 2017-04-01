@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"beehive-im/src/golang/lib/comm"
-	"beehive-im/src/golang/lib/im"
 )
 
 /* 注册处理 */
@@ -104,7 +103,7 @@ func (this *UsrSvrRegisterCtrl) register_handler(param *UsrSvrRegisterParam) {
 	ctx := GetUsrSvrCtx()
 
 	/* > 申请会话ID */
-	sid, err := im.AllocSid(ctx.mysql)
+	sid, err := ctx.seqsvr.AllocSid()
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SYS_RPC, err.Error())
@@ -113,7 +112,7 @@ func (this *UsrSvrRegisterCtrl) register_handler(param *UsrSvrRegisterParam) {
 
 	ctx.log.Debug("Alloc sid success! uid:%d sid:%d", param.uid, sid)
 
-	this.success(param, sid)
+	this.success(param, uint64(sid))
 
 	return
 }

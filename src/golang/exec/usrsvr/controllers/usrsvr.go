@@ -3,16 +3,19 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"fmt"
+	_ "fmt"
 	"sync"
 
+	"git.apache.org/thrift.git/lib/go/thrift"
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 
+	"beehive-im/src/golang/lib/cache"
 	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/dbase"
 	"beehive-im/src/golang/lib/log"
-	"beehive-im/src/golang/lib/rds"
+	"beehive-im/src/golang/lib/mesg/seqsvr"
 	"beehive-im/src/golang/lib/rtmq"
 
 	"beehive-im/src/golang/exec/usrsvr/controllers/conf"
@@ -31,13 +34,14 @@ type UsrSvrLsndNetWork struct {
 
 /* 用户中心上下文 */
 type UsrSvrCntx struct {
-	conf    *conf.UsrSvrConf  /* 配置信息 */
-	log     *logs.BeeLogger   /* 日志对象 */
-	ipdict  *comm.IpDict      /* IP字典 */
-	frwder  *rtmq.Proxy       /* 代理对象 */
-	redis   *redis.Pool       /* REDIS连接池 */
-	mysql   *sql.DB           /* MYSQL数据库 */
-	listend UsrSvrLsndNetWork /* 侦听层类型 */
+	conf    *conf.UsrSvrConf           /* 配置信息 */
+	log     *logs.BeeLogger            /* 日志对象 */
+	ipdict  *comm.IpDict               /* IP字典 */
+	frwder  *rtmq.Proxy                /* 代理对象 */
+	redis   *redis.Pool                /* REDIS连接池 */
+	mysql   *sql.DB                    /* MYSQL数据库 */
+	seqsvr  *seqsvr.SeqSvrThriftClient /* SEQSVR客户端 */
+	listend UsrSvrLsndNetWork          /* 侦听层类型 */
 }
 
 var g_usrsvr_cntx *UsrSvrCntx /* 全局对象 */
@@ -86,19 +90,18 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	ctx.listend.types = make(map[int]*UsrSvrLsndList)
 
 	/* > REDIS连接池 */
-	ctx.redis = rds.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 512, 1000)
+	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 512, 1000)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s", conf.Redis.Addr)
 		return nil, errors.New("Create redis pool failed!")
 	}
 
 	/* > MYSQL连接池 */
-	addr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
-		conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Dbname)
+	auth := dbase.MySqlAuthStr(conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Dbname)
 
-	ctx.mysql, err = sql.Open("mysql", addr)
+	ctx.mysql, err = sql.Open("mysql", auth)
 	if nil != err {
-		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s", addr, err.Error())
+		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s!", auth, err.Error())
 		return nil, err
 	}
 
@@ -173,7 +176,30 @@ func (ctx *UsrSvrCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) Launch() {
-	ctx.frwder.Launch()
+	//ctx.frwder.Launch()
+	ctx.launch_seqsvr()
 
 	go ctx.start_task()
+}
+
+func (ctx *UsrSvrCntx) launch_seqsvr() error {
+	transport := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
+	protocol := thrift.NewTBinaryProtocolFactoryDefault()
+
+	//port := fmt.Sprintf(ctx.conf.SeqSvr.Port)
+	//socket, err = thrift.NewTSocket(net.JoinHostPort(ctx.conf.SeqSvr.Addr, port))
+	socket, err := thrift.NewTSocket(ctx.conf.Seqsvr.Addr)
+	if nil != err {
+		ctx.log.Error("Resolve address [%s] failed! errmsg:%s", ctx.conf.Seqsvr.Addr, err.Error())
+		return err
+	}
+
+	trans := transport.GetTransport(socket)
+	ctx.seqsvr = seqsvr.NewSeqSvrThriftClientFactory(trans, protocol)
+	if err := socket.Open(); nil != err {
+		ctx.log.Error("Opening socket [%s] failed! errmsg:%s", ctx.conf.Seqsvr.Addr, err.Error())
+		return err
+	}
+
+	return nil
 }

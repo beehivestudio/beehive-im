@@ -1,11 +1,11 @@
-package rds
+package cache
 
 import (
 	"github.com/garyburd/redigo/redis"
 )
 
 /******************************************************************************
- **函数名称: CreatePool
+ **函数名称: CreateRedisPool
  **功    能: 创建连接池
  **输入参数:
  **     addr: IP地址
@@ -21,7 +21,7 @@ import (
  **     2. 如果idle配置过小, 可能会出现大量'TIMEWAIT'的TCP状态.
  **作    者: # Qifeng.zou # 2017.03.30 22:18:34 #
  ******************************************************************************/
-func CreatePool(addr string, passwd string, max_idle int, max_active int) *redis.Pool {
+func CreateRedisPool(addr string, passwd string, max_idle int, max_active int) *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:   max_idle,
 		MaxActive: max_active,

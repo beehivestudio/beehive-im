@@ -16,6 +16,12 @@ type UsrSvrLogConf struct {
 	Path  string   `xml:"PATH,attr"`  // 日志路径
 }
 
+/* Seqsvr配置 */
+type UsrSvrSeqsvrConf struct {
+	Name xml.Name `xml:"SEQSVR"`    // 结点名
+	Addr string   `xml:"ADDR,attr"` // 地址(IP+端口)
+}
+
 /* REDIS配置 */
 type UsrSvrRedisConf struct {
 	Name   xml.Name `xml:"REDIS"`       // 结点名
@@ -62,7 +68,8 @@ type UsrSvrRtmqProxyConf struct {
 type UsrSvrConfXmlData struct {
 	Name   xml.Name            `xml:"USRSVR"`    // 根结点名
 	Id     uint32              `xml:"ID,attr"`   // 结点ID
-	Port   int16               `xml:"PORT",attr` // HTTP侦听端口
+	Port   int16               `xml:"PORT,attr"` // HTTP侦听端口
+	Seqsvr UsrSvrSeqsvrConf    `xml:"SEQSVR"`    // Seqsvr配置
 	Redis  UsrSvrRedisConf     `xml:"REDIS"`     // Redis配置
 	Mysql  UsrSvrMysqlConf     `xml:"MYSQL"`     // Mysql配置
 	Mongo  UsrSvrMongoConf     `xml:"MONGO"`     // Mongo配置
@@ -114,6 +121,12 @@ func (conf *UsrSvrConf) parse() (err error) {
 	conf.Port = node.Port
 	if 0 == conf.Port {
 		return errors.New("Get listen port failed!")
+	}
+
+	/* SeqSvr配置 */
+	conf.Seqsvr.Addr = node.Seqsvr.Addr
+	if 0 == len(conf.Seqsvr.Addr) {
+		return errors.New("Get seqsvr addr failed!")
 	}
 
 	/* Redis配置 */

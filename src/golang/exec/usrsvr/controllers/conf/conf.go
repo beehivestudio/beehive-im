@@ -10,17 +10,18 @@ import (
 
 /* 在线中心配置 */
 type UsrSvrConf struct {
-	NodeId   uint32          // 结点ID
-	Port     int16           // HTTP侦听端口
-	WorkPath string          // 工作路径(自动获取)
-	AppPath  string          // 程序路径(自动获取)
-	ConfPath string          // 配置路径(自动获取)
-	Redis    UsrSvrRedisConf // REDIS配置
-	Mysql    UsrSvrMysqlConf // MYSQL配置
-	Mongo    UsrSvrMongoConf // MONGO配置
-	Cipher   string          // 私密密钥
-	Log      log.Conf        // 日志配置
-	Frwder   rtmq.ProxyConf  // RTMQ配置
+	NodeId   uint32           // 结点ID
+	Port     int16            // HTTP侦听端口
+	WorkPath string           // 工作路径(自动获取)
+	AppPath  string           // 程序路径(自动获取)
+	ConfPath string           // 配置路径(自动获取)
+	Seqsvr   UsrSvrSeqsvrConf // SEQSVR配置
+	Redis    UsrSvrRedisConf  // REDIS配置
+	Mysql    UsrSvrMysqlConf  // MYSQL配置
+	Mongo    UsrSvrMongoConf  // MONGO配置
+	Cipher   string           // 私密密钥
+	Log      log.Conf         // 日志配置
+	Frwder   rtmq.ProxyConf   // RTMQ配置
 }
 
 /******************************************************************************

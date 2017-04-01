@@ -43,14 +43,13 @@ type SeqSvrMongoConf struct {
 
 /* 在线中心XML配置 */
 type SeqSvrConfXmlData struct {
-	Name   xml.Name             `xml:"SEQSVR"`  // 根结点名
-	Id     uint32               `xml:"ID,attr"` // 结点ID
-	Port   uint16               `xml:"ID,attr"` // 侦听端口
-	Redis  SeqSvrRedisConf      `xml:"REDIS"`   // REDIS配置
-	Mysql  SeqSvrMysqlConf      `xml:"MYSQL"`   // MYSQL配置
-	Mongo  SeqSvrMongoConf      `xml:"MONGO"`   // MONGO配置
-	Cipher string               `xml:"CIPHER"`  // 私密密钥
-	Log    SeqSvrConfLogXmlData `xml:"LOG"`     // 日志配置
+	Name   xml.Name             `xml:"SEQSVR"`    // 根结点名
+	Addr   string               `xml:"ADDR,attr"` // 侦听地址(如:127.0.0.1:8000)
+	Redis  SeqSvrRedisConf      `xml:"REDIS"`     // REDIS配置
+	Mysql  SeqSvrMysqlConf      `xml:"MYSQL"`     // MYSQL配置
+	Mongo  SeqSvrMongoConf      `xml:"MONGO"`     // MONGO配置
+	Cipher string               `xml:"CIPHER"`    // 私密密钥
+	Log    SeqSvrConfLogXmlData `xml:"LOG"`       // 日志配置
 }
 
 /******************************************************************************
@@ -86,16 +85,10 @@ func (conf *SeqSvrConf) parse() (err error) {
 	}
 
 	/* > 解析配置文件 */
-	/* 结点ID */
-	conf.NodeId = node.Id
-	if 0 == conf.NodeId {
-		return errors.New("Get node id failed!")
-	}
-
 	/* 侦听端口 */
-	conf.Port = node.Port
-	if 0 == conf.Port {
-		return errors.New("Get port failed!")
+	conf.Addr = node.Addr
+	if 0 == len(conf.Addr) {
+		return errors.New("Get addr failed!")
 	}
 
 	/* Redis配置 */

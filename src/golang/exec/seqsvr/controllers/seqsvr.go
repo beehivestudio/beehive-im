@@ -3,14 +3,15 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"fmt"
+	_ "fmt"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 
+	"beehive-im/src/golang/lib/cache"
+	"beehive-im/src/golang/lib/dbase"
 	"beehive-im/src/golang/lib/log"
-	"beehive-im/src/golang/lib/rds"
 
 	"beehive-im/src/golang/exec/seqsvr/controllers/conf"
 )
@@ -48,7 +49,7 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 	}
 
 	/* > REDIS连接池 */
-	ctx.redis = rds.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 512, 1000)
+	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 512, 1000)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s passwd:%s",
 			conf.Redis.Addr, conf.Redis.Passwd)
@@ -56,12 +57,11 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 	}
 
 	/* > MYSQL连接池 */
-	addr := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8",
-		conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Dbname)
+	auth := dbase.MySqlAuthStr(conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Dbname)
 
-	ctx.mysql, err = sql.Open("mysql", addr)
+	ctx.mysql, err = sql.Open("mysql", auth)
 	if nil != err {
-		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s", addr, err.Error())
+		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s", auth, err.Error())
 		return nil, err
 	}
 
@@ -92,7 +92,5 @@ func (ctx *SeqSvrCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *SeqSvrCntx) Launch() {
-	go ctx.timer_clean()
-	go ctx.timer_update()
-	go ctx.launch_thrift(ctx.conf.Port)
+	go ctx.launch_thrift(ctx.conf.Addr)
 }

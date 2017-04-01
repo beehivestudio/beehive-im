@@ -9,11 +9,10 @@ import (
 
 /* 在线中心配置 */
 type SeqSvrConf struct {
-	NodeId   uint32          // 结点ID
 	WorkPath string          // 工作路径(自动获取)
 	AppPath  string          // 程序路径(自动获取)
 	ConfPath string          // 配置路径(自动获取)
-	Port     uint16          // 侦听端口
+	Addr     string          // 侦听地址(IP + 端口)
 	Redis    SeqSvrRedisConf // REDIS配置
 	Mysql    SeqSvrMysqlConf // MYSQL配置
 	Mongo    SeqSvrMongoConf // MONGO配置
@@ -47,9 +46,4 @@ func Load(path string) (conf *SeqSvrConf, err error) {
 		return nil, err
 	}
 	return conf, err
-}
-
-/* 获取结点ID */
-func (conf *SeqSvrConf) GetNid() uint32 {
-	return conf.NodeId
 }
