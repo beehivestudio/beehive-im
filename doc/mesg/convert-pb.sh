@@ -9,7 +9,7 @@ do
     echo ${ITEM}
     if [ -e ${ITEM} ]; then
         protoc --go_out=. ${ITEM};
-        mv "mesg.pb.go" ${GOLANG_MESG_DIR};
+        cp -fr "mesg.pb.go" ${GOLANG_MESG_DIR};
     fi
 done
 
@@ -25,8 +25,8 @@ do
     if [ -e ${ITEM} ]; then
         protoc-c --c_out=. ${ITEM};
 
-        echo "mv mesg.pb-c.h ${CLANG_INCL_DIR}";
-        mv "mesg.pb-c.c" ${CLANG_SRC_DIR};
-        mv "mesg.pb-c.h" ${CLANG_INCL_DIR};
+        echo "cp -fr mesg.pb-c.h ${CLANG_INCL_DIR}";
+        cp -fr "mesg.pb-c.c" ${CLANG_SRC_DIR};
+        cp -fr "mesg.pb-c.h" ${CLANG_INCL_DIR};
     fi
 done

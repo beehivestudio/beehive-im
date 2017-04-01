@@ -41,14 +41,14 @@ func main() {
 		return
 	}
 
-	/* > 初始化OLSVR环境 */
+	/* > 初始化SEQSVR环境 */
 	ctx, err := controllers.SeqSvrInit(conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())
 		return
 	}
 
-	/* > 启动OLSVR服务 */
+	/* > 启动SEQSVR服务 */
 	ctx.Launch()
 
 	/* > 捕捉中断信号 */

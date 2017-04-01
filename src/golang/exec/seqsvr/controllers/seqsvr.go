@@ -94,4 +94,5 @@ func (ctx *SeqSvrCntx) Register() {
 func (ctx *SeqSvrCntx) Launch() {
 	go ctx.timer_clean()
 	go ctx.timer_update()
+	go ctx.launch_thrift(ctx.conf.Port)
 }
