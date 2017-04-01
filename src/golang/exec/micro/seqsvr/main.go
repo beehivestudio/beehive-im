@@ -8,8 +8,8 @@ import (
 	"runtime"
 	"syscall"
 
-	"beehive-im/src/golang/exec/seqsvr/controllers"
-	"beehive-im/src/golang/exec/seqsvr/controllers/conf"
+	"beehive-im/src/golang/exec/micro/seqsvr/controllers"
+	"beehive-im/src/golang/exec/micro/seqsvr/controllers/conf"
 )
 
 /* 输入参数 */
