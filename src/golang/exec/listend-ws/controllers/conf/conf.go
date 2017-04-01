@@ -28,6 +28,7 @@ type LsndConf struct {
  **     path: 配置路径
  **输出参数: NONE
  **返    回:
+ **     conf: 配置信息
  **     err: 错误描述
  **实现描述:
  **注意事项:
