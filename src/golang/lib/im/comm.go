@@ -27,20 +27,32 @@ import (
  **作    者: # Qifeng.zou # 2016.11.02 10:48:40 #
  ******************************************************************************/
 func AllocSid(db *sql.DB) (sid uint64, err error) {
-	rows, err := db.Query("SELECT sid from IM_SID_GEN_TAB WHERE type=0 FOR UPDATE")
+	tx, err := db.Begin()
 	if nil != err {
 		return 0, err
 	}
 
-	if rows.Next() {
+	defer tx.Commit()
+
+	rows, err := tx.Query("SELECT sid from IM_SID_GEN_TAB WHERE type=0 FOR UPDATE")
+	if nil != err {
+		rows.Close()
+		return 0, err
+	} else if rows.Next() {
 		err = rows.Scan(&sid)
+		if nil != err {
+			rows.Close()
+			return 0, err
+		}
+		rows.Close()
+		_, err := tx.Exec("UPDATE IM_SID_GEN_TAB SET sid=sid+1 WHERE type=0")
 		if nil != err {
 			return 0, err
 		}
-		db.Query("UPDATE IM_SID_GEN_TAB SET sid=sid+1 WHERE type=0")
 		return sid, nil
 	}
 
+	rows.Close()
 	return 0, errors.New("Alloc sid failed!")
 }
 
