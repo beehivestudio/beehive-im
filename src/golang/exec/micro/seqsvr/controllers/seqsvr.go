@@ -65,6 +65,15 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 		return nil, err
 	}
 
+	err = ctx.mysql.Ping()
+	if nil != err {
+		ctx.log.Error("Ping [%s] failed! errmsg:%s", auth, err.Error())
+		return nil, err
+	}
+
+	ctx.mysql.SetMaxIdleConns(1024)
+	ctx.mysql.SetMaxOpenConns(1024)
+
 	return ctx, nil
 }
 

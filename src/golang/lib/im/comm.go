@@ -27,15 +27,7 @@ import (
  **作    者: # Qifeng.zou # 2016.11.02 10:48:40 #
  ******************************************************************************/
 func AllocSid(db *sql.DB) (sid uint64, err error) {
-	sql := fmt.Sprintf("UPDATE IM_SID_GEN_TAB SET sid=sid+1 WHERE type=0 AND @val:=sid+1; SELECT @val")
-
-	stmt, err := db.Prepare(sql)
-	if nil != err {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	rows, err := stmt.Query()
+	rows, err := db.Query("SELECT sid from IM_SID_GEN_TAB WHERE type=0 FOR UPDATE")
 	if nil != err {
 		return 0, err
 	}
@@ -45,6 +37,7 @@ func AllocSid(db *sql.DB) (sid uint64, err error) {
 		if nil != err {
 			return 0, err
 		}
+		db.Query("UPDATE IM_SID_GEN_TAB SET sid=sid+1 WHERE type=0")
 		return sid, nil
 	}
 
