@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"beehive-im/src/golang/lib/comm"
+	"beehive-im/src/golang/lib/mesg/seqsvr"
 )
 
 /* 注册处理 */
@@ -93,8 +94,8 @@ type UsrSvrRegisterRsp struct {
  **功    能: 注册处理
  **输入参数:
  **     param: 注册参数
- **输出参数:
- **返    回: NONE
+ **输出参数: NONE
+ **返    回: VOID
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.24 17:34:27 #
@@ -102,8 +103,18 @@ type UsrSvrRegisterRsp struct {
 func (this *UsrSvrRegisterCtrl) register_handler(param *UsrSvrRegisterParam) {
 	ctx := GetUsrSvrCtx()
 
+	/* > 取SEQSVR连接 */
+	conn, err := ctx.seqsvr_pool.Get()
+	if nil != err {
+		ctx.log.Error("Get seqsvr connection pool failed! errmsg:%s", err.Error())
+		this.Error(comm.ERR_SYS_RPC, err.Error())
+		return
+	}
+	client := conn.(*seqsvr.SeqSvrThriftClient)
+	defer ctx.seqsvr_pool.Put(client, false)
+
 	/* > 申请会话ID */
-	sid, err := ctx.seqsvr.AllocSid()
+	sid, err := client.AllocSid()
 	if nil != err {
 		ctx.log.Error("Alloc sid failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SYS_RPC, err.Error())

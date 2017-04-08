@@ -17,6 +17,7 @@ import (
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/mesg/seqsvr"
 	"beehive-im/src/golang/lib/rtmq"
+	"beehive-im/src/golang/lib/thrift_pool"
 
 	"beehive-im/src/golang/exec/usrsvr/controllers/conf"
 )
@@ -32,16 +33,20 @@ type UsrSvrLsndNetWork struct {
 	types        map[int]*UsrSvrLsndList /* 侦听层类型:map[网络类型]UsrSvrLsndList */
 }
 
+/* 侦听层列表 */
+type UsrSvrThriftClient struct {
+}
+
 /* 用户中心上下文 */
 type UsrSvrCntx struct {
-	conf    *conf.UsrSvrConf           /* 配置信息 */
-	log     *logs.BeeLogger            /* 日志对象 */
-	ipdict  *comm.IpDict               /* IP字典 */
-	frwder  *rtmq.Proxy                /* 代理对象 */
-	redis   *redis.Pool                /* REDIS连接池 */
-	mysql   *sql.DB                    /* MYSQL数据库 */
-	seqsvr  *seqsvr.SeqSvrThriftClient /* SEQSVR客户端 */
-	listend UsrSvrLsndNetWork          /* 侦听层类型 */
+	conf        *conf.UsrSvrConf  /* 配置信息 */
+	log         *logs.BeeLogger   /* 日志对象 */
+	ipdict      *comm.IpDict      /* IP字典 */
+	frwder      *rtmq.Proxy       /* 代理对象 */
+	redis       *redis.Pool       /* REDIS连接池 */
+	mysql       *sql.DB           /* MYSQL数据库 */
+	seqsvr_pool *thrift_pool.Pool /* SEQSVR连接池 */
+	listend     UsrSvrLsndNetWork /* 侦听层类型 */
 }
 
 var g_usrsvr_cntx *UsrSvrCntx /* 全局对象 */
@@ -90,7 +95,7 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	ctx.listend.types = make(map[int]*UsrSvrLsndList)
 
 	/* > REDIS连接池 */
-	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 512, 1000)
+	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 2048)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s", conf.Redis.Addr)
 		return nil, errors.New("Create redis pool failed!")
@@ -102,6 +107,13 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	ctx.mysql, err = sql.Open("mysql", auth)
 	if nil != err {
 		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s!", auth, err.Error())
+		return nil, err
+	}
+
+	/* > SEQSVR连接池 */
+	ctx.seqsvr_pool = ctx.seqsvr_pool_init(ctx.conf.Seqsvr.Addr)
+	if nil == ctx.seqsvr_pool {
+		ctx.log.Error("Connect seqsvr failed! errmsg:%s!", err.Error())
 		return nil, err
 	}
 
@@ -167,7 +179,7 @@ func (ctx *UsrSvrCntx) Register() {
 
 /******************************************************************************
  **函数名称: Launch
- **功    能: 启动OLSVR服务
+ **功    能: 启动USRSVR服务
  **输入参数: NONE
  **输出参数: NONE
  **返    回: VOID
@@ -176,30 +188,54 @@ func (ctx *UsrSvrCntx) Register() {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) Launch() {
-	//ctx.frwder.Launch()
-	ctx.launch_seqsvr()
+	ctx.frwder.Launch()
 
 	go ctx.start_task()
 }
 
-func (ctx *UsrSvrCntx) launch_seqsvr() error {
-	transport := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
-	protocol := thrift.NewTBinaryProtocolFactoryDefault()
+////////////////////////////////////////////////////////////////////////////////
 
-	//port := fmt.Sprintf(ctx.conf.SeqSvr.Port)
-	//socket, err = thrift.NewTSocket(net.JoinHostPort(ctx.conf.SeqSvr.Addr, port))
-	socket, err := thrift.NewTSocket(ctx.conf.Seqsvr.Addr)
-	if nil != err {
-		ctx.log.Error("Resolve address [%s] failed! errmsg:%s", ctx.conf.Seqsvr.Addr, err.Error())
-		return err
+/******************************************************************************
+ **函数名称: seqsvr_pool_init
+ **功    能: 创建SEQSVR连接池
+ **输入参数:
+ **     ctx: 全局对象
+ **     addr: 服务端IP+PORT
+ **输出参数: NONE
+ **返    回: SEQSVR连接池
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.04.08 23:15:35 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) seqsvr_pool_init(addr string) *thrift_pool.Pool {
+	pool := &thrift_pool.Pool{
+		Dial: func() (interface{}, error) {
+			socket, err := thrift.NewTSocket(addr)
+			if nil != err {
+				ctx.log.Error("Resolve address [%s] failed! errmsg:%s", addr, err.Error())
+				return nil, err
+			}
+
+			transport := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
+			protocol := thrift.NewTBinaryProtocolFactoryDefault()
+
+			trans := transport.GetTransport(socket)
+			client := seqsvr.NewSeqSvrThriftClientFactory(trans, protocol)
+			if err := client.Transport.Open(); nil != err {
+				ctx.log.Error("Opening socket [%s] failed! errmsg:%s", addr, err.Error())
+				return nil, err
+			}
+
+			return client, nil
+		},
+		Close: func(client interface{}) error {
+			client.(*seqsvr.SeqSvrThriftClient).Transport.Close()
+			return nil
+		},
+		MaxIdle:     2048,
+		MaxActive:   2048,
+		IdleTimeout: 1800,
 	}
 
-	trans := transport.GetTransport(socket)
-	ctx.seqsvr = seqsvr.NewSeqSvrThriftClientFactory(trans, protocol)
-	if err := socket.Open(); nil != err {
-		ctx.log.Error("Opening socket [%s] failed! errmsg:%s", ctx.conf.Seqsvr.Addr, err.Error())
-		return err
-	}
-
-	return nil
+	return pool
 }
