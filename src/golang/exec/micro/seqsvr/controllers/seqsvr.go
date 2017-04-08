@@ -49,7 +49,7 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 	}
 
 	/* > REDIS连接池 */
-	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 512, 1000)
+	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 512)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s passwd:%s",
 			conf.Redis.Addr, conf.Redis.Passwd)
