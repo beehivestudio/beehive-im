@@ -21,10 +21,9 @@ import (
  **     2. 如果idle配置过小, 可能会出现大量'TIMEWAIT'的TCP状态.
  **作    者: # Qifeng.zou # 2017.03.30 22:18:34 #
  ******************************************************************************/
-func CreateRedisPool(addr string, passwd string, max_idle int, max_active int) *redis.Pool {
+func CreateRedisPool(addr string, passwd string, max_idle int) *redis.Pool {
 	return &redis.Pool{
-		MaxIdle:   max_idle,
-		MaxActive: max_active,
+		MaxIdle: max_idle,
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", addr)
 			if nil != err {
