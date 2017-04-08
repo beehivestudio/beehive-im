@@ -21,6 +21,7 @@ func Usage() {
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
 	fmt.Fprintln(os.Stderr, "  i64 AllocSid()")
+	fmt.Fprintln(os.Stderr, "  i64 AllocSeq(i64 uid)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -121,6 +122,20 @@ func main() {
 			flag.Usage()
 		}
 		fmt.Print(client.AllocSid())
+		fmt.Print("\n")
+		break
+	case "AllocSeq":
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "AllocSeq requires 1 args")
+			flag.Usage()
+		}
+		argvalue0, err10 := (strconv.ParseInt(flag.Arg(1), 10, 64))
+		if err10 != nil {
+			Usage()
+			return
+		}
+		value0 := argvalue0
+		fmt.Print(client.AllocSeq(value0))
 		fmt.Print("\n")
 		break
 	case "":
