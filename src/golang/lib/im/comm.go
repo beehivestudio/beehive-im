@@ -1,7 +1,6 @@
 package im
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -12,49 +11,6 @@ import (
 	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 )
-
-/******************************************************************************
- **函数名称: AllocSid
- **功    能: 申请会话SID
- **输入参数:
- **     db: 数据库
- **输出参数: NONE
- **返    回:
- **     sid: 会话SID
- **     err: 日志对象
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2016.11.02 10:48:40 #
- ******************************************************************************/
-func AllocSid(db *sql.DB) (sid uint64, err error) {
-	tx, err := db.Begin()
-	if nil != err {
-		return 0, err
-	}
-
-	defer tx.Commit()
-
-	rows, err := tx.Query("SELECT sid from IM_SID_GEN_TAB WHERE type=0 FOR UPDATE")
-	if nil != err {
-		rows.Close()
-		return 0, err
-	} else if rows.Next() {
-		err = rows.Scan(&sid)
-		if nil != err {
-			rows.Close()
-			return 0, err
-		}
-		rows.Close()
-		_, err := tx.Exec("UPDATE IM_SID_GEN_TAB SET sid=sid+1 WHERE type=0")
-		if nil != err {
-			return 0, err
-		}
-		return sid, nil
-	}
-
-	rows.Close()
-	return 0, errors.New("Alloc sid failed!")
-}
 
 /* 会话属性 */
 type SidAttr struct {
