@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	_ "fmt"
+	"sync"
 
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
@@ -16,12 +17,43 @@ import (
 	"beehive-im/src/golang/exec/micro/seqsvr/controllers/conf"
 )
 
+const (
+	USER_LIST_LEN    = 100
+	SECTION_LIST_LEN = 100000
+)
+
 /* SeqSvr上下文 */
 type SeqSvrCntx struct {
-	conf  *conf.SeqSvrConf /* 配置信息 */
-	log   *logs.BeeLogger  /* 日志对象 */
-	mysql *sql.DB          /* MYSQL数据库 */
-	redis *redis.Pool      /* REDIS连接池 */
+	conf    *conf.SeqSvrConf              /* 配置信息 */
+	log     *logs.BeeLogger               /* 日志对象 */
+	mysql   *sql.DB                       /* MYSQL数据库 */
+	redis   *redis.Pool                   /* REDIS连接池 */
+	section [SECTION_LIST_LEN]SectionList /* SECTION列表 */
+}
+
+/* 段管理列表 */
+type SectionList struct {
+	sync.RWMutex                         /* 读写锁 */
+	items        map[uint64]*SectionItem /* 段信息[通过id查找对应段信息] */
+}
+
+type SectionItem struct {
+	sync.RWMutex                         /* 读写锁 */
+	min          uint64                  /* 最小序列号 */
+	max          uint64                  /* 最大序列号 */
+	ulist        [USER_LIST_LEN]UserList /* 用户列表 */
+}
+
+/* 用户管理列表 */
+type UserList struct {
+	sync.RWMutex                      /* 读写锁 */
+	items        map[uint64]*UserItem /* 用户信息 */
+}
+
+type UserItem struct {
+	sync.RWMutex        /* 读写锁 */
+	uid          uint64 /* 用户UID */
+	seq          uint64 /* 当前序列号 */
 }
 
 /******************************************************************************
@@ -46,6 +78,11 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "seqsvr.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
+	}
+
+	/* > SECTION列表 */
+	for idx := 0; idx < SECTION_LIST_LEN; idx += 1 {
+		ctx.section[idx].items = make(map[uint64]*SectionItem)
 	}
 
 	/* > REDIS连接池 */

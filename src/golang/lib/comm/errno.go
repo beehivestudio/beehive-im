@@ -48,4 +48,5 @@ const (
 	ERR_SVR_HEAD_INVALID   = 20010 // Head invalid | 头部不合法 |
 	ERR_SVR_BODY_INVALID   = 20011 // Body invalid| 报体不合法 |
 	ERR_SVR_CHECK_FAIL     = 20012 // Check invalid| 校验失败 |
+	ERR_SVR_SEQ_EXHAUSTION = 20013 // Seqence exhaustion | 序列号耗尽 |
 )

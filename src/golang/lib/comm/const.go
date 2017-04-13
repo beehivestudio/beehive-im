@@ -37,3 +37,7 @@ const (
 	PROC_STATUS_EXEC = 1 // 正常状态
 	PROC_STATUS_BUSY = 2 // 太忙状态
 )
+
+const (
+	SECTION_UID_NUM = 100000 // 各段UID个数
+)
