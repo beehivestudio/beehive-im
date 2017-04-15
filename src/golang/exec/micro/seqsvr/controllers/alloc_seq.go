@@ -60,10 +60,10 @@ func (this *SeqSvrThrift) AllocSeq(uid int64) (int64, error) {
  **作    者: # Qifeng.zou # 2017.04.11 23:45:32 #
  ******************************************************************************/
 func (ctx *SeqSvrCntx) section_add(id uint64) error {
-	list := ctx.section[id/SECTION_LIST_LEN]
+	list := ctx.ctrl.section[id/SECTION_LIST_LEN]
 AGAIN:
 	list.RLock()
-	item, ok := list.items[id]
+	section, ok := list.section[id]
 	if !ok {
 		list.RUnlock()
 		min, max, err := ctx.alloc_seq_from_db(id)
@@ -72,19 +72,16 @@ AGAIN:
 		}
 
 		list.Lock()
-		item, ok = list.items[id]
+		section, ok = list.section[id]
 		if !ok {
 			section := &SectionItem{min: min, max: max}
-			for idx := 0; idx < USER_LIST_LEN; idx += 1 {
-				section.ulist[idx].items = make(map[uint64]*UserItem)
-			}
-			list.items[id] = section
+			list.section[id] = section
 		} else { // 无需更新min值
-			item.Lock()
-			if item.max < max {
-				item.max = max
+			section.Lock()
+			if section.max < max {
+				section.max = max
 			}
-			item.Unlock()
+			section.Unlock()
 		}
 		list.Unlock()
 		goto AGAIN
@@ -93,6 +90,58 @@ AGAIN:
 
 	return nil
 }
+
+/******************************************************************************
+ **函数名称: section_find
+ **功    能: 查找SECTION
+ **输入参数:
+ **     id: SECTION编号
+ **输出参数: NONE
+ **返    回: 最小&最大序列号
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.04.14 00:18:03 #
+ ******************************************************************************/
+func (ctx *SeqSvrCntx) section_find(id uint64) (min uint64, max uint64, err error) {
+	list := ctx.ctrl.section[id/SECTION_LIST_LEN]
+
+	list.RLock()
+	section, ok := list.section[id]
+	if !ok {
+		list.RUnlock()
+
+		/* 从DB中申请序列号 */
+		min, max, err := ctx.alloc_seq_from_db(id)
+		if nil != err {
+			return 0, 0, err
+		}
+
+		list.Lock()
+		section, ok = list.section[id]
+		if !ok {
+			list.section[id] = &SectionItem{min: min, max: max}
+		} else { // 无需更新min值
+			section.Lock()
+			if section.max < max {
+				section.max = max
+			}
+			section.Unlock()
+		}
+		list.Unlock()
+		return min, max, nil
+	}
+	defer list.RUnlock()
+
+	section.RLock()
+	defer section.RUnlock()
+
+	min = section.min
+	max = section.max
+
+	return min, max, nil
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
  **函数名称: alloc_seq_from_db
@@ -115,6 +164,7 @@ func (ctx *SeqSvrCntx) alloc_seq_from_db(id uint64) (min uint64, max uint64, err
 
 	defer tx.Commit()
 
+AGAIN:
 	rows, err := tx.Query("SELECT seq from IM_SEQ_GEN_TAB WHERE id=? FOR UPDATE", id)
 	if nil != err {
 		rows.Close()
@@ -134,7 +184,13 @@ func (ctx *SeqSvrCntx) alloc_seq_from_db(id uint64) (min uint64, max uint64, err
 	}
 
 	rows.Close()
-	return 0, 0, errors.New("Alloc seq failed!")
+
+	_, err = tx.Exec("INSERT INTO IM_SEQ_GEN_TAB(id, seq) SET VALUES(?, 1)", id)
+	if nil != err {
+		return 0, 0, err
+	}
+
+	goto AGAIN
 }
 
 /******************************************************************************
@@ -153,7 +209,7 @@ func (ctx *SeqSvrCntx) alloc_seq(id uint64, uid uint64) (seq uint64, err error) 
 	has_update := false
 
 AGAIN:
-	seq, code, err := ctx.alloc_seq_from_section(id, uint64(uid))
+	seq, code, err := ctx.alloc_seq_by_uid(id, uid)
 	if comm.ERR_SVR_SEQ_EXHAUSTION == code {
 		if has_update {
 			return 0, errors.New("Update sequence failed!")
@@ -169,7 +225,7 @@ AGAIN:
 }
 
 /******************************************************************************
- **函数名称: alloc_seq_from_section
+ **函数名称: alloc_seq_by_uid
  **功    能: 申请序列号
  **输入参数:
  **     id: 段编号
@@ -183,32 +239,22 @@ AGAIN:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.04.12 23:18:51 #
  ******************************************************************************/
-func (ctx *SeqSvrCntx) alloc_seq_from_section(id uint64, uid uint64) (seq uint64, code int, err error) {
-	slist := &ctx.section[id/SECTION_LIST_LEN]
-
-	slist.RLock()
-	defer slist.RUnlock()
-
-	section, ok := slist.items[id]
-	if !ok {
-		ctx.log.Error("Get section failed! uid:%d id:%d", uid, id)
-		return 0, comm.ERR_SVR_SEQ_EXHAUSTION, errors.New("Get section failed!")
-	}
-
-	section.RLock()
-	defer section.RUnlock()
-
-	ulist := section.ulist[uid/USER_LIST_LEN]
+func (ctx *SeqSvrCntx) alloc_seq_by_uid(id uint64, uid uint64) (seq uint64, code int, err error) {
+	ulist := ctx.ctrl.ulist[uid/USER_LIST_LEN]
 
 USER:
 	ulist.RLock()
-	user, ok := ulist.items[uid]
+	user, ok := ulist.user[uid]
 	if !ok {
 		ulist.RUnlock()
+		min, max, err := ctx.section_find(id)
+		if nil != err {
+			return 0, 0, err
+		}
 		ulist.Lock()
-		_, ok = ulist.items[uid]
+		_, ok = ulist.user[uid]
 		if !ok {
-			ulist.items[uid] = &UserItem{uid: uid, seq: section.min}
+			ulist.user[uid] = &UserItem{uid: uid, seq: min, max: max}
 		}
 		ulist.Unlock()
 		goto USER
@@ -219,12 +265,12 @@ USER:
 	defer user.Unlock()
 
 	seq = user.seq + 1
-	if seq > section.max {
+	if seq > user.max {
 		return seq, comm.ERR_SVR_SEQ_EXHAUSTION, errors.New("Sequence exhaustion!")
 	}
 	user.seq += 1
 
-	ctx.log.Debug("Alloc sequence success! uid:%d section:%d", uid, section)
+	ctx.log.Debug("Alloc sequence success! uid:%d max:%d", uid, user.max)
 
 	return seq, 0, nil
 }
@@ -242,26 +288,26 @@ USER:
  **作    者: # Qifeng.zou # 2017.04.11 23:54:14 #
  ******************************************************************************/
 func (ctx *SeqSvrCntx) update_seq(id uint64, seq uint64) error {
-	list := ctx.section[id/SECTION_LIST_LEN]
+	list := ctx.ctrl.section[id/SECTION_LIST_LEN]
 
 	list.RLock()
 	defer list.RUnlock()
-	item, ok := list.items[id]
+	section, ok := list.section[id]
 	if !ok {
 		return errors.New(fmt.Sprintf("Didn't find section! id:%d", id))
 	}
 
-	item.Lock()
-	defer item.Unlock()
+	section.Lock()
+	defer section.Unlock()
 
 AGAIN:
-	if item.max < seq {
+	if section.max < seq {
 		_, max, err := ctx.alloc_seq_from_db(id)
 		if nil != err {
 			return err
 		}
-		if item.max < max {
-			item.max = max
+		if section.max < max {
+			section.max = max
 		}
 		goto AGAIN
 	}
