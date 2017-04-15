@@ -159,25 +159,31 @@ func (ctx *SeqSvrCntx) alloc_seq_from_db(id uint64) (min uint64, max uint64, err
 
 	tx, err := ctx.mysql.Begin()
 	if nil != err {
+		ctx.log.Error("Create transaction failed! id:%d errmsg:%s", id, err.Error())
 		return 0, 0, err
 	}
 
 	defer tx.Commit()
 
 AGAIN:
+	/* > 查询消息序列号 */
 	rows, err := tx.Query("SELECT seq from IM_SEQ_GEN_TAB WHERE id=? FOR UPDATE", id)
 	if nil != err {
 		rows.Close()
+		ctx.log.Error("Query SEQ [%d] failed! errmsg:%s", id, err.Error())
 		return 0, 0, err
 	} else if rows.Next() {
 		err = rows.Scan(&seq)
 		if nil != err {
 			rows.Close()
+			ctx.log.Error("Scan query failed! id:%d errmsg:%s", id, err.Error())
 			return 0, 0, err
 		}
 		rows.Close()
+		/* > 更新消息序列号 */
 		_, err := tx.Exec("UPDATE IM_SEQ_GEN_TAB SET seq=seq+1000 WHERE id=?", id)
 		if nil != err {
+			ctx.log.Error("Update SEQ [%d] failed! errmsg:%s", id, err.Error())
 			return 0, 0, err
 		}
 		return seq, seq + 1000, nil
@@ -185,8 +191,10 @@ AGAIN:
 
 	rows.Close()
 
-	_, err = tx.Exec("INSERT INTO IM_SEQ_GEN_TAB(id, seq) SET VALUES(?, 1)", id)
+	/* > 新增消息序列号 */
+	_, err = tx.Exec("INSERT INTO IM_SEQ_GEN_TAB(id, seq) VALUES(?, 1)", id)
 	if nil != err {
+		ctx.log.Error("Add SEQ [%d] failed! errmsg:%s", id, err.Error())
 		return 0, 0, err
 	}
 
