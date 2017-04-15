@@ -144,6 +144,43 @@ func (ctx *SeqSvrCntx) section_find(id uint64) (min uint64, max uint64, err erro
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
+ **函数名称: load_seq_from_db
+ **功    能: 从DB中加载序列号
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 错误描述
+ **实现描述: 遍历SEQ生成表所有段id.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.04.15 11:21:34 #
+ ******************************************************************************/
+func (ctx *SeqSvrCntx) load_seq_from_db() (err error) {
+	var id uint64
+
+	/* > 查询消息序列 */
+	rows, err := ctx.mysql.Query("SELECT id from IM_SEQ_GEN_TAB")
+	if nil != err {
+		rows.Close()
+		ctx.log.Error("Query SEQ [%d] failed! errmsg:%s", id, err.Error())
+		return err
+	}
+
+	/* > 遍历查询结果 */
+	for rows.Next() {
+		err = rows.Scan(&id)
+		if nil != err {
+			rows.Close()
+			ctx.log.Error("Scan query failed! id:%d errmsg:%s", id, err.Error())
+			return err
+		}
+		ctx.section_add(id)
+	}
+
+	rows.Close()
+
+	return nil
+}
+
+/******************************************************************************
  **函数名称: alloc_seq_from_db
  **功    能: 从DB中申请序列号
  **输入参数:

@@ -121,6 +121,9 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 	ctx.mysql.SetMaxIdleConns(1024)
 	ctx.mysql.SetMaxOpenConns(1024)
 
+	/* > 加载各段序列号 */
+	ctx.load_seq_from_db()
+
 	return ctx, nil
 }
 
