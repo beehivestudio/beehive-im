@@ -26,7 +26,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.04.08 00:02:24 #
  ******************************************************************************/
-func (this *SeqSvrThrift) AllocSeq(uid int64) (int64, error) {
+func (this *SeqSvrThrift) AllocSeq(uid int64, num int16) (int64, error) {
 	ctx := this.ctx
 
 	id := uint64(uid) / comm.SECTION_UID_NUM
@@ -37,7 +37,7 @@ func (this *SeqSvrThrift) AllocSeq(uid int64) (int64, error) {
 		return 0, err
 	}
 
-	seq, err := ctx.alloc_seq(id, uint64(uid))
+	seq, err := ctx.alloc_seq(id, uint64(uid), uint16(num))
 	if nil != err {
 		ctx.log.Error("Alloc seq failed! uid:%d errmsg:%s", uid, err.Error())
 		return 0, err
@@ -253,11 +253,11 @@ AGAIN:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.04.12 23:18:51 #
  ******************************************************************************/
-func (ctx *SeqSvrCntx) alloc_seq(id uint64, uid uint64) (seq uint64, err error) {
+func (ctx *SeqSvrCntx) alloc_seq(id uint64, uid uint64, num uint16) (seq uint64, err error) {
 	has_update := false
 
 AGAIN:
-	seq, code, err := ctx.alloc_seq_by_uid(id, uid)
+	seq, code, err := ctx.alloc_seq_by_uid(id, uid, num)
 	if comm.ERR_SVR_SEQ_EXHAUSTION == code {
 		if has_update {
 			return 0, errors.New("Update sequence failed!")
@@ -287,7 +287,7 @@ AGAIN:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.04.12 23:18:51 #
  ******************************************************************************/
-func (ctx *SeqSvrCntx) alloc_seq_by_uid(id uint64, uid uint64) (seq uint64, code int, err error) {
+func (ctx *SeqSvrCntx) alloc_seq_by_uid(id uint64, uid uint64, num uint16) (seq uint64, code int, err error) {
 	ulist := ctx.ctrl.ulist[uid/USER_LIST_LEN]
 
 USER:
@@ -319,13 +319,13 @@ USER:
 	user.Lock()
 	defer user.Unlock()
 
-	if user.seq >= user.max {
+	seq = user.seq + uint64(num)
+	if seq >= user.max {
 		return seq, comm.ERR_SVR_SEQ_EXHAUSTION, errors.New("Sequence exhaustion!")
 	}
-	seq = user.seq
-	user.seq += 1
+	user.seq = seq
 
-	ctx.log.Debug("Alloc sequence success! uid:%d max:%d", uid, user.max)
+	ctx.log.Debug("Alloc sequence success! uid:%d seq:%d max:%d", uid, seq, user.max)
 
 	return seq, 0, nil
 }

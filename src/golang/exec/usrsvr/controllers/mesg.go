@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/crypt"
 	"beehive-im/src/golang/lib/im"
 	"beehive-im/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/mesg/seqsvr"
 )
 
 // 通用请求
@@ -696,26 +696,24 @@ func (ctx *UsrSvrCntx) alloc_seq_handler(
 	defer rds.Close()
 
 	/* > 申请用户消息序列号 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_MSGID_INCR, req.GetUid())
-
-	seq_str, err := redis.String(rds.Do("INCRBY", key, req.GetNum()))
+	conn, err := ctx.seqsvr_pool.Get()
 	if nil != err {
-		ctx.log.Error("Alloc seq failed! errmsg:%s", err.Error())
+		ctx.log.Error("Get seqsvr connection pool failed! errmsg:%s", err.Error())
+		return 0, errors.New("Get seqsvr connection failed!")
+	}
+	client := conn.(*seqsvr.SeqSvrThriftClient)
+	defer ctx.seqsvr_pool.Put(client, false)
+
+	seq_int, err := client.AllocSeq(int64(req.GetUid()), int16(req.GetNum()))
+	if nil != err {
+		ctx.log.Error("Alloc sequence from seqsvr failed! errmsg:%s", err.Error())
 		return 0, err
+	} else if 0 == seq_int {
+		ctx.log.Error("Sequence value is invalid!")
+		return 0, errors.New("Sequence value is invalid!")
 	}
 
-	seq_int, err := strconv.ParseInt(seq_str, 10, 64)
-	if nil != err {
-		ctx.log.Error("Parse seq-str failed! errmsg:%s", err.Error())
-		return 0, err
-	} else if 0 == seq {
-		ctx.log.Error("Alloced seq is invalid!")
-		return 0, errors.New("Alloced seq is invalid!")
-	}
-
-	seq = uint64(seq_int) - uint64(req.GetNum())
-
-	return seq, nil
+	return uint64(seq_int) - uint64(req.GetNum()), nil
 }
 
 /******************************************************************************
