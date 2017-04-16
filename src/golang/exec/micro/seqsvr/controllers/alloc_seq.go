@@ -297,9 +297,16 @@ USER:
 			return 0, 0, err
 		}
 		ulist.Lock()
-		_, ok = ulist.user[uid]
+		user, ok = ulist.user[uid]
 		if !ok {
 			ulist.user[uid] = &UserItem{uid: uid, seq: min, max: max}
+		} else {
+			user.Lock()
+			if user.max < max {
+				user.seq = min
+				user.max = max
+			}
+			user.Unlock()
 		}
 		ulist.Unlock()
 		goto USER
@@ -309,10 +316,10 @@ USER:
 	user.Lock()
 	defer user.Unlock()
 
-	seq = user.seq + 1
-	if seq > user.max {
+	if user.seq > user.max {
 		return seq, comm.ERR_SVR_SEQ_EXHAUSTION, errors.New("Sequence exhaustion!")
 	}
+	seq = user.seq
 	user.seq += 1
 
 	ctx.log.Debug("Alloc sequence success! uid:%d max:%d", uid, user.max)
@@ -347,12 +354,13 @@ func (ctx *SeqSvrCntx) update_seq(id uint64, seq uint64) error {
 
 AGAIN:
 	if section.max < seq {
-		_, max, err := ctx.alloc_seq_from_db(id)
+		min, max, err := ctx.alloc_seq_from_db(id)
 		if nil != err {
 			return err
 		}
 		if section.max < max {
-			section.max = max
+			section.min = min // 更新最小值
+			section.max = max // 更新最大值
 		}
 		goto AGAIN
 	}
