@@ -56,7 +56,7 @@ func (this *SeqSvrThrift) AllocSeq(uid int64) (int64, error) {
  **输出参数: NONE
  **返    回: 错误描述
  **实现描述:
- **注意事项:
+ **注意事项: 为了支持分布式部署, 当更新各段max值时, 也需同时更新缓存section的min值.
  **作    者: # Qifeng.zou # 2017.04.11 23:45:32 #
  ******************************************************************************/
 func (ctx *SeqSvrCntx) section_add(id uint64) error {
@@ -76,9 +76,12 @@ AGAIN:
 		if !ok {
 			section := &SectionItem{min: min, max: max}
 			list.section[id] = section
-		} else { // 无需更新min值
+		} else {
 			section.Lock()
 			if section.max < max {
+				if min != section.max {
+					section.min = min
+				}
 				section.max = max
 			}
 			section.Unlock()
@@ -187,8 +190,8 @@ func (ctx *SeqSvrCntx) load_seq_from_db() (err error) {
  **     id: 段编号
  **输出参数: NONE
  **返    回: 最小&最大序列号
- **实现描述:
- **注意事项: 返回值为0时表示系统异常
+ **实现描述: 当被查找的段id不存在时, 则新建一条记录.
+ **注意事项:
  **作    者: # Qifeng.zou # 2017.04.11 23:54:14 #
  ******************************************************************************/
 func (ctx *SeqSvrCntx) alloc_seq_from_db(id uint64) (min uint64, max uint64, err error) {
@@ -316,7 +319,7 @@ USER:
 	user.Lock()
 	defer user.Unlock()
 
-	if user.seq > user.max {
+	if user.seq >= user.max {
 		return seq, comm.ERR_SVR_SEQ_EXHAUSTION, errors.New("Sequence exhaustion!")
 	}
 	seq = user.seq
