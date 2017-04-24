@@ -16,8 +16,8 @@
 | 12 | 0x010C | 通用异常消息应答 | EXCEPT-ACK | 暂无 |
 | 13 | 0x010D | 消息同步 | SYNC | Ok |
 | 14 | 0x010E | 消息同步应答 | SYNC-ACK | Ok |
-| 15 | 0x0110 | 申请序列号 | ALLOC-SEQ | Ok |
-| 16 | 0x0111 | 申请序列号应答 | ALLOC-SEQ-ACK | Ok |
+| 15 | 0x0110 | 申请序列号 | ALLOC-SEQ | 废弃 |
+| 16 | 0x0111 | 申请序列号应答 | ALLOC-SEQ-ACK | 废弃 |
 | 17 | 0x0112 | 踢连接下线 | KICK | Ok |
 | 18 | 0x0113 | 踢连接下线应答 | KICK-ACK | Ok |
 | 19 | 0x0150 | 上线通知 | ONLINE-NTC | 实时消息 |

@@ -23,11 +23,12 @@ message mesg_online_ack
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 sid = 2;        // M|会话ID|数字|
-    required string app = 3;        // M|APP名|字串|
-    required string version = 4;    // M|APP版本|字串|
-    optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
-    required uint32 code = 6;       // M|错误码|数字|
-    required string errmsg = 7;     // M|错误描述|字串|
+    required uint64 seq = 3;        // M|消息序列号|数字|
+    required string app = 4;        // M|APP名|字串|
+    required string version = 5;    // M|APP版本|字串|
+    optional uint32 terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+    required uint32 code = 7;       // M|错误码|数字|
+    required string errmsg = 8;     // M|错误描述|字串|
 }
 
 /*
@@ -123,29 +124,6 @@ message mesg_sync_ack
    required uint64 uid = 1;        // M|用户ID|数字|
    required uint32 code = 2;       // M|错误码|数字|
    required string errmsg = 3;     // M|错误描述|字串|
-}
-
-/*
-   命令ID: 0x0110
-   命令描述: 申请序列号(ALLOC-SEQ)
-   协议格式: */
-message mesg_alloc_seq
-{
-    required uint64 uid = 1;        // M|用户ID|数字|
-    required uint32 num = 2;        // M|申请序列号个数|数字|
-}
-
-/*
-   命令ID: 0x0111
-   命令描述: 申请序列号应答(ALLOC-SEQ-ACK)
-   协议格式: */
-message mesg_alloc_seq_ack
-{
-    required uint64 uid = 1;        // M|用户ID|数字|
-    required uint64 seq = 2;        // M|序列号起始值|数字|
-    required uint32 num = 3;        // M|分配序列号个数|数字|
-    required uint32 code = 4;       // M|错误码|数字|
-    required string errmsg = 5;     // M|错误描述|字串|
 }
 
 /*

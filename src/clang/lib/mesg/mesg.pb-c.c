@@ -394,92 +394,6 @@ void   mesg_sync_ack__free_unpacked
   assert(message->base.descriptor == &mesg_sync_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_alloc_seq__init
-                     (MesgAllocSeq         *message)
-{
-  static MesgAllocSeq init_value = MESG_ALLOC_SEQ__INIT;
-  *message = init_value;
-}
-size_t mesg_alloc_seq__get_packed_size
-                     (const MesgAllocSeq *message)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t mesg_alloc_seq__pack
-                     (const MesgAllocSeq *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t mesg_alloc_seq__pack_to_buffer
-                     (const MesgAllocSeq *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-MesgAllocSeq *
-       mesg_alloc_seq__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (MesgAllocSeq *)
-     protobuf_c_message_unpack (&mesg_alloc_seq__descriptor,
-                                allocator, len, data);
-}
-void   mesg_alloc_seq__free_unpacked
-                     (MesgAllocSeq *message,
-                      ProtobufCAllocator *allocator)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
-void   mesg_alloc_seq_ack__init
-                     (MesgAllocSeqAck         *message)
-{
-  static MesgAllocSeqAck init_value = MESG_ALLOC_SEQ_ACK__INIT;
-  *message = init_value;
-}
-size_t mesg_alloc_seq_ack__get_packed_size
-                     (const MesgAllocSeqAck *message)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq_ack__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t mesg_alloc_seq_ack__pack
-                     (const MesgAllocSeqAck *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq_ack__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t mesg_alloc_seq_ack__pack_to_buffer
-                     (const MesgAllocSeqAck *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq_ack__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-MesgAllocSeqAck *
-       mesg_alloc_seq_ack__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (MesgAllocSeqAck *)
-     protobuf_c_message_unpack (&mesg_alloc_seq_ack__descriptor,
-                                allocator, len, data);
-}
-void   mesg_alloc_seq_ack__free_unpacked
-                     (MesgAllocSeqAck *message,
-                      ProtobufCAllocator *allocator)
-{
-  assert(message->base.descriptor == &mesg_alloc_seq_ack__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
 void   mesg_kick__init
                      (MesgKick         *message)
 {
@@ -3765,7 +3679,7 @@ const ProtobufCMessageDescriptor mesg_online__descriptor =
   (ProtobufCMessageInit) mesg_online__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
+static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[8] =
 {
   {
     "uid",
@@ -3792,8 +3706,20 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "app",
+    "seq",
     3,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgOnlineAck, seq),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "app",
+    4,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -3805,7 +3731,7 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   },
   {
     "version",
-    4,
+    5,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -3817,7 +3743,7 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   },
   {
     "terminal",
-    5,
+    6,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
     offsetof(MesgOnlineAck, has_terminal),
@@ -3829,7 +3755,7 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   },
   {
     "code",
-    6,
+    7,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -3841,7 +3767,7 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   },
   {
     "errmsg",
-    7,
+    8,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -3853,18 +3779,19 @@ static const ProtobufCFieldDescriptor mesg_online_ack__field_descriptors[7] =
   },
 };
 static const unsigned mesg_online_ack__field_indices_by_name[] = {
-  2,   /* field[2] = app */
-  5,   /* field[5] = code */
-  6,   /* field[6] = errmsg */
+  3,   /* field[3] = app */
+  6,   /* field[6] = code */
+  7,   /* field[7] = errmsg */
+  2,   /* field[2] = seq */
   1,   /* field[1] = sid */
-  4,   /* field[4] = terminal */
+  5,   /* field[5] = terminal */
   0,   /* field[0] = uid */
-  3,   /* field[3] = version */
+  4,   /* field[4] = version */
 };
 static const ProtobufCIntRange mesg_online_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 7 }
+  { 0, 8 }
 };
 const ProtobufCMessageDescriptor mesg_online_ack__descriptor =
 {
@@ -3874,7 +3801,7 @@ const ProtobufCMessageDescriptor mesg_online_ack__descriptor =
   "MesgOnlineAck",
   "",
   sizeof(MesgOnlineAck),
-  7,
+  8,
   mesg_online_ack__field_descriptors,
   mesg_online_ack__field_indices_by_name,
   1,  mesg_online_ack__number_ranges,
@@ -4236,147 +4163,6 @@ const ProtobufCMessageDescriptor mesg_sync_ack__descriptor =
   mesg_sync_ack__field_indices_by_name,
   1,  mesg_sync_ack__number_ranges,
   (ProtobufCMessageInit) mesg_sync_ack__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor mesg_alloc_seq__field_descriptors[2] =
-{
-  {
-    "uid",
-    1,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT64,
-    0,   /* quantifier_offset */
-    offsetof(MesgAllocSeq, uid),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "num",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(MesgAllocSeq, num),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned mesg_alloc_seq__field_indices_by_name[] = {
-  1,   /* field[1] = num */
-  0,   /* field[0] = uid */
-};
-static const ProtobufCIntRange mesg_alloc_seq__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 2 }
-};
-const ProtobufCMessageDescriptor mesg_alloc_seq__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_alloc_seq",
-  "MesgAllocSeq",
-  "MesgAllocSeq",
-  "",
-  sizeof(MesgAllocSeq),
-  2,
-  mesg_alloc_seq__field_descriptors,
-  mesg_alloc_seq__field_indices_by_name,
-  1,  mesg_alloc_seq__number_ranges,
-  (ProtobufCMessageInit) mesg_alloc_seq__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor mesg_alloc_seq_ack__field_descriptors[5] =
-{
-  {
-    "uid",
-    1,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT64,
-    0,   /* quantifier_offset */
-    offsetof(MesgAllocSeqAck, uid),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "seq",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT64,
-    0,   /* quantifier_offset */
-    offsetof(MesgAllocSeqAck, seq),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "num",
-    3,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(MesgAllocSeqAck, num),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "code",
-    4,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT32,
-    0,   /* quantifier_offset */
-    offsetof(MesgAllocSeqAck, code),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "errmsg",
-    5,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_STRING,
-    0,   /* quantifier_offset */
-    offsetof(MesgAllocSeqAck, errmsg),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned mesg_alloc_seq_ack__field_indices_by_name[] = {
-  3,   /* field[3] = code */
-  4,   /* field[4] = errmsg */
-  2,   /* field[2] = num */
-  1,   /* field[1] = seq */
-  0,   /* field[0] = uid */
-};
-static const ProtobufCIntRange mesg_alloc_seq_ack__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 5 }
-};
-const ProtobufCMessageDescriptor mesg_alloc_seq_ack__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_alloc_seq_ack",
-  "MesgAllocSeqAck",
-  "MesgAllocSeqAck",
-  "",
-  sizeof(MesgAllocSeqAck),
-  5,
-  mesg_alloc_seq_ack__field_descriptors,
-  mesg_alloc_seq_ack__field_indices_by_name,
-  1,  mesg_alloc_seq_ack__number_ranges,
-  (ProtobufCMessageInit) mesg_alloc_seq_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_kick__field_descriptors[2] =

@@ -27,12 +27,12 @@ const (
 	CMD_EXCEPT_MSG_ACK = 0x010C /* 通用异常消息应答 */
 	CMD_SYNC           = 0x010D /* 同步消息 */
 	CMD_SYNC_ACK       = 0x010E /* 同步消息应答(客户端) */
-	CMD_ALLOC_SEQ      = 0x0110 /* 申请序列号 */
-	CMD_ALLOC_SEQ_ACK  = 0x0111 /* 申请序列号应答 */
-	CMD_KICK_REQ       = 0x0112 /* 踢人请求 */
-	CMD_KICK_ACK       = 0x0113 /* 踢人应答 */
-	CMD_ONLINE_NTC     = 0x0151 /* 上线通知 */
-	CMD_OFFLINE_NTC    = 0x0152 /* 下线通知 */
+	//CMD_ALLOC_SEQ      = 0x0110 /* 申请序列号 */
+	//CMD_ALLOC_SEQ_ACK  = 0x0111 /* 申请序列号应答 */
+	CMD_KICK_REQ    = 0x0112 /* 踢人请求 */
+	CMD_KICK_ACK    = 0x0113 /* 踢人应答 */
+	CMD_ONLINE_NTC  = 0x0151 /* 上线通知 */
+	CMD_OFFLINE_NTC = 0x0152 /* 下线通知 */
 
 	/* 私聊消息 */
 	CMD_CHAT              = 0x0201 /* 私聊消息 */

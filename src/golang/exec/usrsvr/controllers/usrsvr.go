@@ -145,7 +145,6 @@ func (ctx *UsrSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_PING, UsrSvrPingHandler, ctx)
 	ctx.frwder.Register(comm.CMD_SUB, UsrSvrSubHandler, ctx)
 	ctx.frwder.Register(comm.CMD_UNSUB, UsrSvrUnsubHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ALLOC_SEQ, UsrSvrAllocSeqHandler, ctx)
 
 	/* > 私聊消息 */
 	ctx.frwder.Register(comm.CMD_BLACKLIST_ADD, UsrSvrBlacklistAddHandler, ctx)

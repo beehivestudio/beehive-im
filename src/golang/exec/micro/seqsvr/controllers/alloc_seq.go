@@ -8,7 +8,7 @@ import (
 )
 
 /******************************************************************************
- **函数名称: GetSessionSeq
+ **函数名称: QuerySeqBySid
  **功    能: 获取会话SID对应的最新序列号
  **输入参数:
  **     sid: 会话SID
@@ -26,7 +26,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.04.08 00:02:24 #
  ******************************************************************************/
-func (this *SeqSvrThrift) GetSessionSeq(sid int64) (int64, error) {
+func (this *SeqSvrThrift) QuerySeqBySid(sid int64) (int64, error) {
 	ctx := this.ctx
 
 	secid := uint64(sid) / comm.SECTION_SID_NUM

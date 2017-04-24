@@ -17,8 +17,8 @@ var _ = fmt.Printf
 type SeqSvrThrift interface {
 	AllocSid() (r int64, err error)
 	// Parameters:
-	//  - Uid
-	GetSessionSeq(uid int64) (r int64, err error)
+	//  - Sid
+	QuerySeqBySid(sid int64) (r int64, err error)
 }
 
 type SeqSvrThriftClient struct {
@@ -104,31 +104,31 @@ func (p *SeqSvrThriftClient) recvAllocSid() (value int64, err error) {
 }
 
 // Parameters:
-//  - Uid
-func (p *SeqSvrThriftClient) GetSessionSeq(uid int64) (r int64, err error) {
-	if err = p.sendGetSessionSeq(uid); err != nil {
+//  - Sid
+func (p *SeqSvrThriftClient) QuerySeqBySid(sid int64) (r int64, err error) {
+	if err = p.sendQuerySeqBySid(sid); err != nil {
 		return
 	}
-	return p.recvGetSessionSeq()
+	return p.recvQuerySeqBySid()
 }
 
-func (p *SeqSvrThriftClient) sendGetSessionSeq(uid int64) (err error) {
+func (p *SeqSvrThriftClient) sendQuerySeqBySid(sid int64) (err error) {
 	oprot := p.OutputProtocol
 	if oprot == nil {
 		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
 		p.OutputProtocol = oprot
 	}
 	p.SeqId++
-	oprot.WriteMessageBegin("GetSessionSeq", thrift.CALL, p.SeqId)
-	args4 := NewGetSessionSeqArgs()
-	args4.Uid = uid
+	oprot.WriteMessageBegin("QuerySeqBySid", thrift.CALL, p.SeqId)
+	args4 := NewQuerySeqBySidArgs()
+	args4.Sid = sid
 	err = args4.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
 	return
 }
 
-func (p *SeqSvrThriftClient) recvGetSessionSeq() (value int64, err error) {
+func (p *SeqSvrThriftClient) recvQuerySeqBySid() (value int64, err error) {
 	iprot := p.InputProtocol
 	if iprot == nil {
 		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
@@ -155,7 +155,7 @@ func (p *SeqSvrThriftClient) recvGetSessionSeq() (value int64, err error) {
 		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
 		return
 	}
-	result5 := NewGetSessionSeqResult()
+	result5 := NewQuerySeqBySidResult()
 	err = result5.Read(iprot)
 	iprot.ReadMessageEnd()
 	value = result5.Success
@@ -184,7 +184,7 @@ func NewSeqSvrThriftProcessor(handler SeqSvrThrift) *SeqSvrThriftProcessor {
 
 	self8 := &SeqSvrThriftProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
 	self8.processorMap["AllocSid"] = &seqSvrThriftProcessorAllocSid{handler: handler}
-	self8.processorMap["GetSessionSeq"] = &seqSvrThriftProcessorGetSessionSeq{handler: handler}
+	self8.processorMap["QuerySeqBySid"] = &seqSvrThriftProcessorQuerySeqBySid{handler: handler}
 	return self8
 }
 
@@ -250,32 +250,32 @@ func (p *seqSvrThriftProcessorAllocSid) Process(seqId int32, iprot, oprot thrift
 	return true, err
 }
 
-type seqSvrThriftProcessorGetSessionSeq struct {
+type seqSvrThriftProcessorQuerySeqBySid struct {
 	handler SeqSvrThrift
 }
 
-func (p *seqSvrThriftProcessorGetSessionSeq) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
-	args := NewGetSessionSeqArgs()
+func (p *seqSvrThriftProcessorQuerySeqBySid) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := NewQuerySeqBySidArgs()
 	if err = args.Read(iprot); err != nil {
 		iprot.ReadMessageEnd()
 		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
-		oprot.WriteMessageBegin("GetSessionSeq", thrift.EXCEPTION, seqId)
+		oprot.WriteMessageBegin("QuerySeqBySid", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush()
 		return
 	}
 	iprot.ReadMessageEnd()
-	result := NewGetSessionSeqResult()
-	if result.Success, err = p.handler.GetSessionSeq(args.Uid); err != nil {
-		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing GetSessionSeq: "+err.Error())
-		oprot.WriteMessageBegin("GetSessionSeq", thrift.EXCEPTION, seqId)
+	result := NewQuerySeqBySidResult()
+	if result.Success, err = p.handler.QuerySeqBySid(args.Sid); err != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing QuerySeqBySid: "+err.Error())
+		oprot.WriteMessageBegin("QuerySeqBySid", thrift.EXCEPTION, seqId)
 		x.Write(oprot)
 		oprot.WriteMessageEnd()
 		oprot.Flush()
 		return
 	}
-	if err2 := oprot.WriteMessageBegin("GetSessionSeq", thrift.REPLY, seqId); err2 != nil {
+	if err2 := oprot.WriteMessageBegin("QuerySeqBySid", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 := result.Write(oprot); err == nil && err2 != nil {
@@ -432,15 +432,15 @@ func (p *AllocSidResult) String() string {
 	return fmt.Sprintf("AllocSidResult(%+v)", *p)
 }
 
-type GetSessionSeqArgs struct {
-	Uid int64 `thrift:"uid,1"`
+type QuerySeqBySidArgs struct {
+	Sid int64 `thrift:"sid,1"`
 }
 
-func NewGetSessionSeqArgs() *GetSessionSeqArgs {
-	return &GetSessionSeqArgs{}
+func NewQuerySeqBySidArgs() *QuerySeqBySidArgs {
+	return &QuerySeqBySidArgs{}
 }
 
-func (p *GetSessionSeqArgs) Read(iprot thrift.TProtocol) error {
+func (p *QuerySeqBySidArgs) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error", p)
 	}
@@ -472,17 +472,17 @@ func (p *GetSessionSeqArgs) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *GetSessionSeqArgs) readField1(iprot thrift.TProtocol) error {
+func (p *QuerySeqBySidArgs) readField1(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return fmt.Errorf("error reading field 1: %s")
 	} else {
-		p.Uid = v
+		p.Sid = v
 	}
 	return nil
 }
 
-func (p *GetSessionSeqArgs) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("GetSessionSeq_args"); err != nil {
+func (p *QuerySeqBySidArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("QuerySeqBySid_args"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	if err := p.writeField1(oprot); err != nil {
@@ -497,35 +497,35 @@ func (p *GetSessionSeqArgs) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *GetSessionSeqArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err := oprot.WriteFieldBegin("uid", thrift.I64, 1); err != nil {
-		return fmt.Errorf("%T write field begin error 1:uid: %s", p, err)
+func (p *QuerySeqBySidArgs) writeField1(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("sid", thrift.I64, 1); err != nil {
+		return fmt.Errorf("%T write field begin error 1:sid: %s", p, err)
 	}
-	if err := oprot.WriteI64(int64(p.Uid)); err != nil {
-		return fmt.Errorf("%T.uid (1) field write error: %s", p)
+	if err := oprot.WriteI64(int64(p.Sid)); err != nil {
+		return fmt.Errorf("%T.sid (1) field write error: %s", p)
 	}
 	if err := oprot.WriteFieldEnd(); err != nil {
-		return fmt.Errorf("%T write field end error 1:uid: %s", p, err)
+		return fmt.Errorf("%T write field end error 1:sid: %s", p, err)
 	}
 	return err
 }
 
-func (p *GetSessionSeqArgs) String() string {
+func (p *QuerySeqBySidArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("GetSessionSeqArgs(%+v)", *p)
+	return fmt.Sprintf("QuerySeqBySidArgs(%+v)", *p)
 }
 
-type GetSessionSeqResult struct {
+type QuerySeqBySidResult struct {
 	Success int64 `thrift:"success,0"`
 }
 
-func NewGetSessionSeqResult() *GetSessionSeqResult {
-	return &GetSessionSeqResult{}
+func NewQuerySeqBySidResult() *QuerySeqBySidResult {
+	return &QuerySeqBySidResult{}
 }
 
-func (p *GetSessionSeqResult) Read(iprot thrift.TProtocol) error {
+func (p *QuerySeqBySidResult) Read(iprot thrift.TProtocol) error {
 	if _, err := iprot.ReadStructBegin(); err != nil {
 		return fmt.Errorf("%T read error", p)
 	}
@@ -557,7 +557,7 @@ func (p *GetSessionSeqResult) Read(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *GetSessionSeqResult) readField0(iprot thrift.TProtocol) error {
+func (p *QuerySeqBySidResult) readField0(iprot thrift.TProtocol) error {
 	if v, err := iprot.ReadI64(); err != nil {
 		return fmt.Errorf("error reading field 0: %s")
 	} else {
@@ -566,8 +566,8 @@ func (p *GetSessionSeqResult) readField0(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *GetSessionSeqResult) Write(oprot thrift.TProtocol) error {
-	if err := oprot.WriteStructBegin("GetSessionSeq_result"); err != nil {
+func (p *QuerySeqBySidResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("QuerySeqBySid_result"); err != nil {
 		return fmt.Errorf("%T write struct begin error: %s", p, err)
 	}
 	switch {
@@ -585,7 +585,7 @@ func (p *GetSessionSeqResult) Write(oprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *GetSessionSeqResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *QuerySeqBySidResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if err := oprot.WriteFieldBegin("success", thrift.I64, 0); err != nil {
 		return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
 	}
@@ -598,9 +598,9 @@ func (p *GetSessionSeqResult) writeField0(oprot thrift.TProtocol) (err error) {
 	return err
 }
 
-func (p *GetSessionSeqResult) String() string {
+func (p *QuerySeqBySidResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("GetSessionSeqResult(%+v)", *p)
+	return fmt.Sprintf("QuerySeqBySidResult(%+v)", *p)
 }

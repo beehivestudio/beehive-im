@@ -21,7 +21,7 @@ func Usage() {
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
 	fmt.Fprintln(os.Stderr, "  i64 AllocSid()")
-	fmt.Fprintln(os.Stderr, "  i64 GetSessionSeq(i64 uid)")
+	fmt.Fprintln(os.Stderr, "  i64 QuerySeqBySid(i64 sid)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -124,9 +124,9 @@ func main() {
 		fmt.Print(client.AllocSid())
 		fmt.Print("\n")
 		break
-	case "GetSessionSeq":
+	case "QuerySeqBySid":
 		if flag.NArg()-1 != 1 {
-			fmt.Fprintln(os.Stderr, "GetSessionSeq requires 1 args")
+			fmt.Fprintln(os.Stderr, "QuerySeqBySid requires 1 args")
 			flag.Usage()
 		}
 		argvalue0, err10 := (strconv.ParseInt(flag.Arg(1), 10, 64))
@@ -135,7 +135,7 @@ func main() {
 			return
 		}
 		value0 := argvalue0
-		fmt.Print(client.GetSessionSeq(value0))
+		fmt.Print(client.QuerySeqBySid(value0))
 		fmt.Print("\n")
 		break
 	case "":

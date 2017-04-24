@@ -36,8 +36,8 @@ typedef enum
     , CMD_SYNC                  = 0x010D    /* 同步消息 */
     , CMD_SYNC_ACK              = 0x010E    /* 同步消息应答(客户端) */
 
-    , CMD_ALLOC_SEQ             = 0x0110    /* 申请序列号 */
-    , CMD_ALLOC_SEQ_ACK         = 0x0111    /* 申请序列号应答 */
+    //, CMD_ALLOC_SEQ             = 0x0110    /* 申请序列号 */
+    //, CMD_ALLOC_SEQ_ACK         = 0x0111    /* 申请序列号应答 */
 
     , CMD_KICK_REQ              = 0x0112    /* 踢人请求 */
     , CMD_KICK_ACK              = 0x0113    /* 踢人应答 */
