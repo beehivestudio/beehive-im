@@ -704,7 +704,7 @@ func (ctx *UsrSvrCntx) alloc_seq_handler(
 	client := conn.(*seqsvr.SeqSvrThriftClient)
 	defer ctx.seqsvr_pool.Put(client, false)
 
-	seq_int, err := client.AllocSeq(int64(req.GetUid()), int16(req.GetNum()))
+	seq_int, err := client.GetSessionSeq(int64(req.GetUid()))
 	if nil != err {
 		ctx.log.Error("Alloc sequence from seqsvr failed! errmsg:%s", err.Error())
 		return 0, err

@@ -33,14 +33,14 @@ type SeqSvrCntx struct {
 
 /* 段管理 */
 type SectionCtrl struct {
-	ulist   [USER_LIST_LEN]UserList       /* USER列表 */
+	session [USER_LIST_LEN]SessionList    /* 会话列表 */
 	section [SECTION_LIST_LEN]SectionList /* SECTION列表 */
 }
 
 /* 段管理列表 */
 type SectionList struct {
 	sync.RWMutex                         /* 读写锁 */
-	section      map[uint64]*SectionItem /* 段信息[通过id查找对应段信息] */
+	item         map[uint64]*SectionItem /* 段信息[通过id查找对应段信息] */
 }
 
 type SectionItem struct {
@@ -49,15 +49,15 @@ type SectionItem struct {
 	max          uint64 /* 最大序列号 */
 }
 
-/* 用户管理列表 */
-type UserList struct {
-	sync.RWMutex                      /* 读写锁 */
-	user         map[uint64]*UserItem /* 用户信息 */
+/* 会话列表 */
+type SessionList struct {
+	sync.RWMutex                         /* 读写锁 */
+	item         map[uint64]*SessionItem /* 会话信息 */
 }
 
-type UserItem struct {
+type SessionItem struct {
 	sync.RWMutex        /* 读写锁 */
-	uid          uint64 /* 用户UID */
+	sid          uint64 /* 会话SID */
 	seq          uint64 /* 当前序列号 */
 	max          uint64 /* 最大序列号(注:与对应SECTION中的MAX同步) */
 }
@@ -88,11 +88,11 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 
 	/* > SECTION管理表 */
 	for idx := 0; idx < USER_LIST_LEN; idx += 1 {
-		ctx.ctrl.ulist[idx].user = make(map[uint64]*UserItem)
+		ctx.ctrl.session[idx].item = make(map[uint64]*SessionItem)
 	}
 
 	for idx := 0; idx < SECTION_LIST_LEN; idx += 1 {
-		ctx.ctrl.section[idx].section = make(map[uint64]*SectionItem)
+		ctx.ctrl.section[idx].item = make(map[uint64]*SectionItem)
 	}
 
 	/* > REDIS连接池 */

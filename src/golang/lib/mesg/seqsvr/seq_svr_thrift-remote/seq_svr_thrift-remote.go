@@ -21,7 +21,7 @@ func Usage() {
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
 	fmt.Fprintln(os.Stderr, "  i64 AllocSid()")
-	fmt.Fprintln(os.Stderr, "  i64 AllocSeq(i64 uid, i16 num)")
+	fmt.Fprintln(os.Stderr, "  i64 GetSessionSeq(i64 uid)")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -124,9 +124,9 @@ func main() {
 		fmt.Print(client.AllocSid())
 		fmt.Print("\n")
 		break
-	case "AllocSeq":
-		if flag.NArg()-1 != 2 {
-			fmt.Fprintln(os.Stderr, "AllocSeq requires 2 args")
+	case "GetSessionSeq":
+		if flag.NArg()-1 != 1 {
+			fmt.Fprintln(os.Stderr, "GetSessionSeq requires 1 args")
 			flag.Usage()
 		}
 		argvalue0, err10 := (strconv.ParseInt(flag.Arg(1), 10, 64))
@@ -135,14 +135,7 @@ func main() {
 			return
 		}
 		value0 := argvalue0
-		tmp1, err11 := (strconv.Atoi(flag.Arg(2)))
-		if err11 != nil {
-			Usage()
-			return
-		}
-		argvalue1 := byte(tmp1)
-		value1 := argvalue1
-		fmt.Print(client.AllocSeq(value0, value1))
+		fmt.Print(client.GetSessionSeq(value0))
 		fmt.Print("\n")
 		break
 	case "":

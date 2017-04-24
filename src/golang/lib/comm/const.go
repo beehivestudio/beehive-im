@@ -39,5 +39,5 @@ const (
 )
 
 const (
-	SECTION_UID_NUM = 100000 // 各段UID个数
+	SECTION_SID_NUM = 100000 // 各段SID个数
 )
