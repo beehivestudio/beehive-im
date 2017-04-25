@@ -179,6 +179,9 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 	if !ok {
 		ctx.log.Error("Convert session extra failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
+	} else if 0 != session.UpdateSeq(ack.GetSeq()) {
+		ctx.log.Error("Update session req failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
+		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	}
 
 	session.SetStatus(CONN_STATUS_LOGIN) /* 已登录 */

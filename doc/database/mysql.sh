@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS IM_SID_GEN_TAB(
 
 # 创建序号SEQ生成表
 CREATE TABLE IF NOT EXISTS IM_SEQ_GEN_TAB(
-    id bigint(20) NOT NULL default 0,    # 段编号
-    seq bigint(20) NOT NULL default 1,   # 序列号最新值
+    id bigint(20) NOT NULL default 0,      # 段编号
+    seq bigint(20) NOT NULL default 100,   # 序列号最新值
     PRIMARY KEY(id)
     );
 quit"

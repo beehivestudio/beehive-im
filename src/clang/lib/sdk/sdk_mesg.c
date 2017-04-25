@@ -54,7 +54,7 @@ int sdk_mesg_send_ping_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head->type = CMD_PING;
     head->length = 0;
     head->sid = ctx->sid;
-    head->serial = sdk_gen_serial(ctx);
+    head->seq = sdk_gen_seq(ctx);
     head->chksum = MSG_CHKSUM_VAL;
 
     /* 3. 加入发送列表 */
@@ -118,7 +118,7 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head->type = CMD_ONLINE;
     head->length = size - sizeof(mesg_header_t);
     head->sid = info->sid;
-    head->serial = sdk_gen_serial(ctx);
+    head->seq = sdk_gen_seq(ctx);
     head->chksum = MSG_CHKSUM_VAL;
 
     mesg_online__pack(&online, addr+sizeof(mesg_header_t));

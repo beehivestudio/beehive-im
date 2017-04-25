@@ -142,7 +142,7 @@ type MesgHeader struct {
 	ChkSum uint32 /* 校验值 */
 	Sid    uint64 /* 会话ID */
 	Nid    uint32 /* 结点ID */
-	Serial uint64 /* 流水号(注: 全局唯一流水号) */
+	Seq    uint64 /* 流水号(注: 全局唯一流水号) */
 }
 
 func (head *MesgHeader) SetCmd(cmd uint32) {
@@ -181,8 +181,8 @@ func (head *MesgHeader) GetNid() uint32 {
 	return head.Nid
 }
 
-func (head *MesgHeader) GetSerial() uint64 {
-	return head.Serial
+func (head *MesgHeader) GetSeq() uint64 {
+	return head.Seq
 }
 
 type MesgPacket struct {
@@ -191,12 +191,12 @@ type MesgPacket struct {
 
 /* "主机->网络"字节序 */
 func MesgHeadHton(head *MesgHeader, p *MesgPacket) {
-	binary.BigEndian.PutUint32(p.Buff[0:4], head.Cmd)      /* CMD */
-	binary.BigEndian.PutUint32(p.Buff[4:8], head.Length)   /* LENGTH */
-	binary.BigEndian.PutUint32(p.Buff[8:12], head.ChkSum)  /* CHKSUM */
-	binary.BigEndian.PutUint64(p.Buff[12:20], head.Sid)    /* SID */
-	binary.BigEndian.PutUint32(p.Buff[20:24], head.Nid)    /* NID */
-	binary.BigEndian.PutUint64(p.Buff[24:32], head.Serial) /* SERIAL */
+	binary.BigEndian.PutUint32(p.Buff[0:4], head.Cmd)     /* CMD */
+	binary.BigEndian.PutUint32(p.Buff[4:8], head.Length)  /* LENGTH */
+	binary.BigEndian.PutUint32(p.Buff[8:12], head.ChkSum) /* CHKSUM */
+	binary.BigEndian.PutUint64(p.Buff[12:20], head.Sid)   /* SID */
+	binary.BigEndian.PutUint32(p.Buff[20:24], head.Nid)   /* NID */
+	binary.BigEndian.PutUint64(p.Buff[24:32], head.Seq)   /* SEQ */
 }
 
 /* "网络->主机"字节序 */
@@ -208,7 +208,7 @@ func MesgHeadNtoh(data []byte) *MesgHeader {
 	head.ChkSum = binary.BigEndian.Uint32(data[8:12])
 	head.Sid = binary.BigEndian.Uint64(data[12:20])
 	head.Nid = binary.BigEndian.Uint32(data[20:24])
-	head.Serial = binary.BigEndian.Uint64(data[24:32])
+	head.Seq = binary.BigEndian.Uint64(data[24:32])
 
 	return head
 }

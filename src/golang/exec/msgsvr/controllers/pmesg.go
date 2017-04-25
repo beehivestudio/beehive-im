@@ -94,7 +94,7 @@ func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
 	/* > 发送应答数据 */
 	body, err = proto.Marshal(ack)
 	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
+		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -130,7 +130,7 @@ func (ctx *MsgSvrCntx) chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
 
 	/* > 发送应答数据 */
 	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
+		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -197,7 +197,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 		}
 
 		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.GetNid()),
-			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
 	/* > 发送给"接收方"所有终端.
@@ -227,7 +227,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 		}
 
 		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.GetNid()),
-			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
 	return 0, nil
@@ -351,11 +351,11 @@ func (ctx *MsgSvrCntx) chat_ack_handler(
 
 	/* 清理离线消息 */
 	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
-	field := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, req.GetOrig(), head.GetSerial())
+	field := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, req.GetOrig(), head.GetSeq())
 	rds.Send("ZREM", key, field)
 
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
-	rds.Send("HDEL", key, head.GetSerial())
+	rds.Send("HDEL", key, head.GetSeq())
 
 	return 0, nil
 }
@@ -443,7 +443,7 @@ func (item *MesgChatItem) storage(ctx *MsgSvrCntx) {
 
 	/* > 加入接收者离线列表 */
 	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, item.req.GetDest())
-	member := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, item.req.GetOrig(), item.head.GetSerial())
+	member := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, item.req.GetOrig(), item.head.GetSeq())
 	pl.Send("ZADD", key, member, ctm)
 
 	/* > 存储发送者离线消息 */

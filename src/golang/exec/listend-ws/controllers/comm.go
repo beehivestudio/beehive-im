@@ -98,6 +98,19 @@ func (session *LsndSessionExtra) GetCid() uint64 {
 	return session.cid
 }
 
+/* 更新消息序列号
+ * 注意: 参数seq必须比原有消息序列号大 */
+func (session *LsndSessionExtra) UpdateSeq(seq uint64) int {
+	session.Lock()
+	defer session.Unlock()
+
+	if session.seq < seq {
+		session.seq = seq
+		return 0
+	}
+	return -1
+}
+
 /* 设置连接状态 */
 func (session *LsndSessionExtra) SetStatus(status int) {
 	session.Lock()

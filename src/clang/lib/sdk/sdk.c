@@ -231,7 +231,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
 {
     int ret;
     void *addr;
-    uint64_t serial;
+    uint64_t seq;
     mesg_header_t *head;
     sdk_send_item_t *item;
     sdk_ssvr_t *ssvr = ctx->ssvr;
@@ -243,7 +243,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
         return -1; /* 网络已断开 */
     }
 
-    serial = sdk_gen_serial(ctx);
+    seq = sdk_gen_seq(ctx);
 
     /* > 申请内存空间 */
     addr = (void *)calloc(1, sizeof(mesg_header_t)+size+Random()%20);
@@ -260,13 +260,13 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
     head->type = cmd;
     head->length = size;
     head->sid = ctx->sid;
-    head->serial = serial;
+    head->seq = seq;
     head->chksum = MSG_CHKSUM_VAL;
 
     memcpy(head+1, data, size);
 
-    log_debug(ctx->log, "Head type:0x%02X sid:%d length:%d serial:%lu chksum:0x%08X!",
-            head->type, head->sid, head->length, head->serial, head->chksum);
+    log_debug(ctx->log, "Head type:0x%02X sid:%d length:%d seq:%lu chksum:0x%08X!",
+            head->type, head->sid, head->length, head->seq, head->chksum);
 
     /* > 设置发送单元 */
     item = (sdk_send_item_t *)calloc(1, sizeof(sdk_send_item_t));
@@ -277,7 +277,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
         return SDK_ERR;
     }
 
-    item->serial = serial;
+    item->seq = seq;
     item->stat = SDK_STAT_IN_SENDQ;
     item->cmd = cmd;
     item->len = size;
@@ -305,7 +305,7 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
     /* > 通知发送线程 */
     sdk_cli_cmd_send_req(ctx);
 
-    return serial;
+    return seq;
 }
 
 /******************************************************************************

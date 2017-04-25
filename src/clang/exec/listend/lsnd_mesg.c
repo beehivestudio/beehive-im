@@ -45,8 +45,8 @@ int lsnd_mesg_def_handler(lsnd_conn_extra_t *conn, unsigned int type, void *data
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, &hhead);
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            hhead.sid, hhead.serial, len, hhead.body);
+    log_debug(lsnd->log, "sid:%lu seq:%lu len:%d body:%s!",
+            hhead.sid, hhead.seq, len, hhead.body);
 
     /* > 转发数据 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -87,16 +87,16 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
     if (!MESG_CHKSUM_ISVALID(head)) {
-        log_error(lsnd->log, "Head is invalid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
-                head->sid, head->serial, len, head->chksum);
+        log_error(lsnd->log, "Head is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
+                head->sid, head->seq, len, head->chksum);
         return -1;
     }
 
     head->sid = conn->cid;
     head->nid = conf->nid;
 
-    log_debug(lsnd->log, "Head is valid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
-            head->sid, head->serial, len, head->chksum);
+    log_debug(lsnd->log, "Head is valid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
+            head->sid, head->seq, len, head->chksum);
 
     MESG_HEAD_HTON(head, head);
 
@@ -117,7 +117,7 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: TODO: 从该应答信息中提取UID, SID等信息, 并构建索引关系.
- **注意事项:
+ **注意事项: 更新变量extra的相关数据时, 无需加锁.
  **作    者: # Qifeng.zou # 2016.10.01 21:06:07 #
  ******************************************************************************/
 static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t cid)
@@ -147,6 +147,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     }
 
     extra->sid = ack->sid;
+    extra->seq = ack->seq;
     extra->loc |= CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
@@ -182,11 +183,12 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
  ** {
  **     required uint64 uid = 1;        // M|用户ID|数字|
  **     required uint64 sid = 2;        // M|会话ID|数字|
- **     required string app = 3;        // M|APP名|字串|
- **     required string version = 4;    // M|APP版本|字串|
- **     optional uint32 terminal = 5;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
- **     required uint32 code = 6;     // M|错误码|数字|
- **     required string errmsg = 7;     // M|错误描述|字串|
+ **     required uint64 seq = 3;        // M|消息序列号|数字|
+ **     required string app = 4;        // M|APP名|字串|
+ **     required string version = 5;    // M|APP版本|字串|
+ **     optional uint32 terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|
+ **     required uint32 code = 7;     // M|错误码|数字|
+ **     required string errmsg = 8;     // M|错误描述|字串|
  ** }
  **注意事项: 此时head.sid为cid.
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
@@ -238,7 +240,7 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
  **输出参数:
  **返    回: 0:成功 !0:失败(注: 该函数始终返回-1)
  **实现描述: 修改连接状态 + 并释放相关资源.
- **注意事项: 需要将协议头转换为"本机"字节序
+ **注意事项: 1.需要将协议头转换为"本机"字节序 2.无需设置消息序列号
  **作    者: # Qifeng.zou # 2016.10.01 09:15:01 #
  ******************************************************************************/
 int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
@@ -253,8 +255,8 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
 
     head->nid = ntohl(conf->nid);
 
-    log_debug(lsnd->log, "sid:%lu serial:%lu len:%d body:%s!",
-            hhead.sid, hhead.serial, len, hhead.body);
+    log_debug(lsnd->log, "sid:%lu seq:%lu len:%d body:%s!",
+            hhead.sid, hhead.seq, len, hhead.body);
 
     /* > 查找扩展数据 */
     key.sid = head->sid;
@@ -302,15 +304,15 @@ int lsnd_mesg_room_join_handler(lsnd_conn_extra_t *conn, int type, void *data, i
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
     if (!MESG_CHKSUM_ISVALID(head)) {
-        log_error(lsnd->log, "Head is invalid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
-                head->sid, head->serial, len, head->chksum);
+        log_error(lsnd->log, "Head is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
+                head->sid, head->seq, len, head->chksum);
         return -1;
     }
 
     head->nid = conf->nid;
 
-    log_debug(lsnd->log, "Head is valid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
-            head->sid, head->serial, len, head->chksum);
+    log_debug(lsnd->log, "Head is valid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
+            head->sid, head->seq, len, head->chksum);
 
     MESG_HEAD_HTON(head, head);
 
@@ -428,15 +430,15 @@ int lsnd_mesg_room_quit_handler(lsnd_conn_extra_t *conn, int type, void *data, i
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
     if (!MESG_CHKSUM_ISVALID(head)) {
-        log_error(lsnd->log, "Head is invalid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
-                head->sid, head->serial, len, head->chksum);
+        log_error(lsnd->log, "Head is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
+                head->sid, head->seq, len, head->chksum);
         return -1;
     }
 
     head->nid = conf->nid;
 
-    log_debug(lsnd->log, "Head is valid! sid:%lu serial:%lu len:%d chksum:0x%08X!",
-            head->sid, head->serial, len, head->chksum);
+    log_debug(lsnd->log, "Head is valid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
+            head->sid, head->seq, len, head->chksum);
 
     MESG_HEAD_HTON(head, head);
 
@@ -478,8 +480,8 @@ int lsnd_mesg_ping_handler(lsnd_conn_extra_t *conn, int type, void *data, int le
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
 
-    log_debug(lsnd->log, "cid:%lu sid:%lu serial:%lu len:%d chksum:0x%08X!",
-            conn->cid, head->sid, head->serial, len, head->chksum);
+    log_debug(lsnd->log, "cid:%lu sid:%lu seq:%lu len:%d chksum:0x%08X!",
+            conn->cid, head->sid, head->seq, len, head->chksum);
 
     head->nid = conf->nid;
     head->type = CMD_PONG;
@@ -672,7 +674,8 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项:
+ **注意事项: 各连接上下文由固定线程维护. 因此, 该连接对象数据的删除只能由固定线程
+ **          操作, 故无需加锁.
  **作    者: # Qifeng.zou # 2016.09.20 22:03:02 #
  ******************************************************************************/
 int lsnd_callback(acc_cntx_t *acc,
@@ -729,6 +732,7 @@ static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_co
     /* 初始化设置 */
     extra->ctx = lsnd;
     extra->sck = sck;
+    pthread_rwlock_init(&extra->lock, NULL);
 
     extra->sid = 0;
     extra->cid = acc_sck_get_cid(sck);
@@ -769,6 +773,8 @@ static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_co
 static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra)
 {
     lsnd_conn_extra_t key, *item;
+
+    pthread_rwlock_destroy(&extra->lock);
 
     extra->stat = CHAT_CONN_STAT_CLOSED;
     chat_del_session(lsnd->chat_tab, extra->sid);
@@ -819,17 +825,33 @@ static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_
  **注意事项:
  **     1. 暂无需加锁. 原因: 注册表在程序启动时, 就已固定不变.
  **     2. 本函数收到的数据是一条完整的数据, 且其内容网络字节序.
+ **     3. 消息序列号必须依次递增
  **作    者: # Qifeng.zou # 2016.09.20 21:44:40 #
  ******************************************************************************/
 static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd,
     socket_t *sck, lsnd_conn_extra_t *conn, void *in, int len)
 {
     lsnd_reg_t *reg, key;
-    mesg_header_t *head = (mesg_header_t *)in;
+    mesg_header_t hhead, *head = (mesg_header_t *)in;
+
+    /* > 字节序转换 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    /* > 更新序列号 */
+    pthread_rwlock_wrlock(&conn->lock);
+    if (conn->seq < hhead.seq) {
+        pthread_rwlock_unlock(&conn->lock);
+        log_debug(lsnd->log, "Message seq is invalid! sid:%lu seq:%lu/%lu len:%d",
+                hhead.sid, hhead.seq, conn->seq, len);
+        return -1;
+    }
+    conn->seq = hhead.seq;
+    pthread_rwlock_unlock(&conn->lock);
 
     log_debug(lsnd->log, "Recv data! cid:%lu", conn->cid);
 
-    key.type = ntohl(head->type);
+    /* > 查找回调函数 */
+    key.type = hhead.type;
 
     reg = avl_query(lsnd->reg, &key);
     if (NULL == reg) {

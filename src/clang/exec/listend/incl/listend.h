@@ -81,8 +81,10 @@ typedef struct
 {
     socket_t *sck;                  /* 所属TCP连接 */
     lsnd_cntx_t *ctx;               /* 全局上下文 */
+    pthread_rwlock_t lock;          /* 读写锁 */
 
     uint64_t sid;                   /* 会话ID */
+    uint64_t seq;                   /* 消息序列号 */
     uint64_t cid;                   /* 连接ID */
     uint64_t uid;                   /* 用户ID */
     lsnd_conn_stat_e stat;          /* 连接状态 */
@@ -158,5 +160,7 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
 
 void lsnd_timer_kick_handler(void *_ctx);
 void lsnd_timer_info_handler(void *_ctx);
+
+void lsnd_conn_update_seq(lsnd_conn_extra_t *extra, uint64_t seq);
 
 #endif /*__LISTEND_H__*/

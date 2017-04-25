@@ -131,10 +131,10 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
-	ctx.log.Debug("Online request header! cmd:0x%04X length:%d chksum:0x%08X cid:%d nid:%d serial:%d head:%d",
+	ctx.log.Debug("Online request header! cmd:0x%04X length:%d chksum:0x%08X cid:%d nid:%d seq:%d head:%d",
 		head.GetCmd(), head.GetLength(),
 		head.GetChkSum(), head.GetSid(), head.GetNid(),
-		head.GetSerial(), comm.MESG_HEAD_SIZE)
+		head.GetSeq(), comm.MESG_HEAD_SIZE)
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgOnline{}

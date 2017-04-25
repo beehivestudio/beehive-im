@@ -144,29 +144,6 @@
 >}
 
 ---
-命令ID: 0x0110<br>
-命令描述: 申请序列号(ALLOC-SEQ)<br>
-协议格式:<br>
->message mesg_alloc_seq<br>
->{<br>
->   required uint64 uid = 1;        // M|用户ID|数字|<br>
->   required uint16 num = 2;        // M|申请序列号个数|数字|<br>
->}
-
----
-命令ID: 0x0111<br>
-命令描述: 申请序列号应答(ALLOC-SEQ-ACK)<br>
-协议格式: NONE<br>
->message mesg_alloc_seq_ack<br>
->{<br>
->   required uint64 uid = 1;        // M|用户ID|数字|<br>
->   required uint64 seq = 2;        // M|序列号起始值|数字|<br>
->   required uint16 num = 3;        // M|分配序列号个数|数字|<br>
->   required uint32 code = 4;       // M|错误码|数字|<br>
->   required string errmsg = 5;     // M|错误描述|字串|<br>
->}
-
----
 命令ID: 0x0112<br>
 命令描述: 踢连接下线(KICK)<br>
 协议格式: <br>

@@ -33,7 +33,7 @@ func (ctx *MsgSvrCntx) send_data(cmd uint32, to uint64, nid uint32, seq uint64, 
 	head.Nid = nid
 	head.Length = length
 	head.ChkSum = comm.MSG_CHKSUM_VAL
-	head.Serial = seq
+	head.Seq = seq
 
 	comm.MesgHeadHton(&head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], data)

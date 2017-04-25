@@ -91,7 +91,7 @@ func (ctx *MsgSvrCntx) group_chat_failed(head *comm.MesgHeader,
 	}
 
 	return ctx.send_data(comm.CMD_GROUP_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
+		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -126,7 +126,7 @@ func (ctx *MsgSvrCntx) group_chat_ack(head *comm.MesgHeader, req *mesg.MesgGroup
 	}
 
 	return ctx.send_data(comm.CMD_GROUP_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSerial(), body, uint32(len(body)))
+		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -169,7 +169,7 @@ func (ctx *MsgSvrCntx) group_chat_handler(
 		ctx.log.Debug("gid:%d nid:%d", req.GetGid(), nid)
 
 		ctx.send_data(comm.CMD_GROUP_CHAT, req.GetGid(), uint32(nid),
-			head.GetSerial(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 	return err
 }

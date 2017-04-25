@@ -65,6 +65,7 @@ type LsndCntx struct {
 type LsndSessionExtra struct {
 	sid          uint64 /* 会话ID */
 	sync.RWMutex        /* 读写锁 */
+	seq          uint64 /* 消息序列号 */
 	cid          uint64 /* 连接ID */
 	status       int    /* 连接状态(CONN_STATUS_READY...) */
 }

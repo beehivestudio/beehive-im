@@ -56,6 +56,11 @@ func LsndMesgCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, len
 
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
+	if 0 != session.UpdateSeq(head.GetSeq()) {
+		ctx.log.Error("Update session req failed! cmd:0x%04X sid:%d cid:%d",
+			head.GetCmd(), head.GetSid(), session.GetCid())
+		return -1
+	}
 
 	head.SetNid(ctx.conf.GetNid())
 
@@ -89,7 +94,7 @@ func LsndMesgCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, len
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 将ONLINE请求转发给上游模块
- **注意事项:
+ **注意事项: 无需验证消息序列号
  **作    者: # Qifeng.zou # 2017.03.04 23:10:58 #
  ******************************************************************************/
 func LsndMesgOnlineHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
@@ -179,7 +184,7 @@ func LsndMesgOfflineHandler(session *LsndSessionExtra, cmd uint32, data []byte, 
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 转发给上游模块, 并回复PONG应答.
- **注意事项:
+ **注意事项: 无需验证消息序列号
  **作    者: # Qifeng.zou # 2017.03.04 23:40:55 #
  ******************************************************************************/
 func LsndMesgPingHandler(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
