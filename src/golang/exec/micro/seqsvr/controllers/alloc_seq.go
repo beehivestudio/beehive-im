@@ -160,7 +160,7 @@ func (ctx *SeqSvrCntx) load_seq_from_db() (err error) {
 	var secid uint64
 
 	/* > 查询消息序列 */
-	rows, err := ctx.mysql.Query("SELECT secid from IM_SEQ_GEN_TAB")
+	rows, err := ctx.mysql.Query("SELECT id from IM_SEQ_GEN_TAB")
 	if nil != err {
 		rows.Close()
 		ctx.log.Error("Query SEQ [%d] failed! errmsg:%s", secid, err.Error())
