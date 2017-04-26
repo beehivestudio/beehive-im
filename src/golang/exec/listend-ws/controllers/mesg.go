@@ -56,11 +56,6 @@ func LsndMesgCommHandler(session *LsndSessionExtra, cmd uint32, data []byte, len
 
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
-	if 0 != session.UpdateSeq(head.GetSeq()) {
-		ctx.log.Error("Update session req failed! cmd:0x%04X sid:%d cid:%d",
-			head.GetCmd(), head.GetSid(), session.GetCid())
-		return -1
-	}
 
 	head.SetNid(ctx.conf.GetNid())
 

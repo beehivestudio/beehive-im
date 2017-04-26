@@ -57,6 +57,13 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 		return -1
 	}
 
+	/* > 更新消息序列号 */
+	if 0 != session.UpdateSeq(head.GetSeq()) {
+		ctx.log.Error("Update session req failed! cmd:0x%04X sid:%d cid:%d",
+			head.GetCmd(), head.GetSid(), session.GetCid())
+		return -1
+	}
+
 	/* > 查找&执行回调 */
 	cb, param := ctx.callback.Query(head.GetCmd())
 	if nil == cb {
