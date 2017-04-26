@@ -30,7 +30,7 @@ const (
 )
 
 /* 上行消息处理回调类型 */
-type MesgCallBack func(session *LsndSessionExtra, cmd uint32, data []byte, length uint32, param interface{}) int
+type MesgCallBack func(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int
 
 type MesgCallBackItem struct {
 	cmd   uint32       /* 消息ID */
@@ -61,8 +61,17 @@ type LsndCntx struct {
 	kick_list chan *LsndKickItem /* 被踢列表 */
 }
 
+/* 连接扩展数据 */
+type LsndConnExtra struct {
+	sync.RWMutex        /* 读写锁 */
+	cid          uint64 /* 连接ID */
+	sid          uint64 /* 会话ID */
+	seq          uint64 /* 消息序列号 */
+	status       int    /* 连接状态(CONN_STATUS_READY...) */
+}
+
 /* 会话扩展数据 */
-type LsndSessionExtra struct {
+type LsndSessionData struct {
 	sid          uint64 /* 会话ID */
 	sync.RWMutex        /* 读写锁 */
 	seq          uint64 /* 消息序列号 */

@@ -17,13 +17,13 @@ import (
  **作    者: # Qifeng.zou # 2017.03.04 18:53:16 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
-	session := &LsndSessionExtra{
+	conn := &LsndConnExtra{
 		sid:    0,
 		cid:    client.GetCid(),
 		status: CONN_STATUS_READY,
 	}
 
-	client.SetUserData(session)
+	client.SetUserData(conn)
 
 	return 0
 }
@@ -42,7 +42,7 @@ func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int) int {
-	session, ok := client.GetUserData().(*LsndSessionExtra)
+	conn, ok := client.GetUserData().(*LsndConnExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
@@ -58,9 +58,9 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 	}
 
 	/* > 更新消息序列号 */
-	if 0 != session.UpdateSeq(head.GetSeq()) {
-		ctx.log.Error("Update session req failed! cmd:0x%04X sid:%d cid:%d",
-			head.GetCmd(), head.GetSid(), session.GetCid())
+	if 0 != conn.UpdateSeq(head.GetSeq()) {
+		ctx.log.Error("Update conn req failed! cmd:0x%04X sid:%d cid:%d",
+			head.GetCmd(), head.GetSid(), conn.GetCid())
 		return -1
 	}
 
@@ -74,7 +74,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 		}
 	}
 
-	cb(session, head.GetCmd(), data, uint32(length), param)
+	cb(conn, head.GetCmd(), data, uint32(length), param)
 
 	return 0
 }
@@ -93,7 +93,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int) int {
-	session, ok := client.GetUserData().(*LsndSessionExtra)
+	conn, ok := client.GetUserData().(*LsndConnExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
@@ -102,7 +102,7 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
 	head := comm.MesgHeadNtoh(data)
 
 	ctx.log.Debug("Send data to cid [%d]! cmd:0x%04X sid:%d chksum:0x%08X",
-		session.cid, head.GetCmd(), head.GetSid(), head.GetChkSum())
+		conn.cid, head.GetCmd(), head.GetSid(), head.GetChkSum())
 
 	return 0
 }
@@ -119,16 +119,16 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client) int {
-	session, ok := client.GetUserData().(*LsndSessionExtra)
+	conn, ok := client.GetUserData().(*LsndConnExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
 	}
 
-	ctx.log.Debug("Connection was closed! cid:%d sid:%d", session.GetCid(), session.GetSid())
+	ctx.log.Debug("Connection was closed! cid:%d sid:%d", conn.GetCid(), conn.GetSid())
 
-	ctx.chat.SessionDel(session.GetSid()) /* 清理数据 */
-	ctx.closed_notify(session.GetSid())   /* 上报给上游模块 */
+	ctx.chat.SessionDel(conn.GetSid()) /* 清理数据 */
+	ctx.closed_notify(conn.GetSid())   /* 上报给上游模块 */
 
 	return 0
 }

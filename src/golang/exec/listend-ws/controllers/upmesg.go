@@ -74,20 +74,20 @@ func LsndUpMesgCommHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	/* > 获取会话数据 */
 	extra := ctx.chat.SessionGetParam(head.GetSid())
 	if nil == extra {
-		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
+		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := extra.(*LsndSessionExtra)
+	conn, ok := extra.(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		ctx.log.Error("Convert conn extra failed! sid:%d", head.GetSid())
 		return -1
 	}
 
 	ctx.log.Debug("Session extra data. sid:%d cid:%d status:%d",
-		session.GetSid(), session.GetCid(), session.GetStatus())
+		conn.GetSid(), conn.GetCid(), conn.GetStatus())
 
-	ctx.lws.AsyncSend(session.GetCid(), data)
+	ctx.lws.AsyncSend(conn.GetCid(), data)
 
 	return 0
 }
@@ -171,20 +171,20 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 	/* > 获取&更新会话状态 */
 	extra := ctx.chat.SessionGetParam(ack.GetSid())
 	if nil == extra {
-		ctx.log.Error("Didn't find session data! cid:%d sid:%d", head.GetCid(), ack.GetSid())
+		ctx.log.Error("Didn't find conn data! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	}
 
-	session, ok := extra.(*LsndSessionExtra)
+	conn, ok := extra.(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Convert session extra failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
+		ctx.log.Error("Convert conn extra failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
-	} else if 0 != session.UpdateSeq(ack.GetSeq()) {
-		ctx.log.Error("Update session req failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
+	} else if 0 != conn.UpdateSeq(ack.GetSeq()) {
+		ctx.log.Error("Update conn req failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	}
 
-	session.SetStatus(CONN_STATUS_LOGIN) /* 已登录 */
+	conn.SetStatus(CONN_STATUS_LOGIN) /* 已登录 */
 
 	/* > 下发ONLINE-ACK消息 */
 	p := &comm.MesgPacket{Buff: data}
@@ -193,7 +193,7 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 
 	ctx.lws.AsyncSend(cid, data)
 
-	ctx.log.Debug("Send online ack success! cid:%d/%d sid:%d", session.GetCid(), cid, ack.GetSid())
+	ctx.log.Debug("Send online ack success! cid:%d/%d sid:%d", conn.GetCid(), cid, ack.GetSid())
 
 	return 0
 }
@@ -249,17 +249,17 @@ func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 	/* > 下发SUB-ACK消息 */
 	extra := ctx.chat.SessionGetParam(head.GetSid())
 	if nil == extra {
-		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
+		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := extra.(*LsndSessionExtra)
+	conn, ok := extra.(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		ctx.log.Error("Convert conn extra failed! sid:%d", head.GetSid())
 		return -1
 	}
 
-	ctx.lws.AsyncSend(session.GetCid(), data)
+	ctx.lws.AsyncSend(conn.GetCid(), data)
 
 	return 0
 }
@@ -317,18 +317,18 @@ func LsndUpMesgUnsubAckHandler(cmd uint32, nid uint32, data []byte, length uint3
 	/* > 获取会话数据 */
 	extra := ctx.chat.SessionGetParam(head.GetSid())
 	if nil == extra {
-		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
+		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := extra.(*LsndSessionExtra)
+	conn, ok := extra.(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		ctx.log.Error("Convert conn extra failed! sid:%d", head.GetSid())
 		return -1
 	}
 
 	/* > 下发SUB-ACK消息 */
-	ctx.lws.AsyncSend(session.GetCid(), data)
+	ctx.lws.AsyncSend(conn.GetCid(), data)
 
 	return 0
 }
@@ -366,18 +366,18 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
 	/* > 获取会话数据 */
 	extra := ctx.chat.SessionGetParam(sid)
 	if nil == extra {
-		ctx.log.Error("Didn't find session data! sid:%d", sid)
+		ctx.log.Error("Didn't find conn data! sid:%d", sid)
 		return -1
 	}
 
-	session, ok := extra.(*LsndSessionExtra)
+	conn, ok := extra.(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Convert session extra failed! sid:%d", sid)
+		ctx.log.Error("Convert conn extra failed! sid:%d", sid)
 		return -1
 	}
 
 	/* > 下发ROOM各种消息 */
-	ctx.lws.AsyncSend(session.GetCid(), dp.data)
+	ctx.lws.AsyncSend(conn.GetCid(), dp.data)
 
 	return 0
 }
@@ -434,21 +434,21 @@ func LsndUpMesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 获取会话数据 */
 	extra := ctx.chat.SessionGetParam(head.GetSid())
 	if nil == extra {
-		ctx.log.Error("Didn't find session data! sid:%d", head.GetSid())
+		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
 	}
 
-	session, ok := extra.(*LsndSessionExtra)
+	conn, ok := extra.(*LsndConnExtra)
 	if !ok {
-		ctx.log.Error("Convert session extra failed! sid:%d", head.GetSid())
+		ctx.log.Error("Convert conn extra failed! sid:%d", head.GetSid())
 		return -1
 	}
 
 	ctx.log.Debug("Session extra data. sid:%d cid:%d status:%d",
-		session.GetSid(), session.GetCid(), session.GetStatus())
+		conn.GetSid(), conn.GetCid(), conn.GetStatus())
 
 	/* > 下发ROOM-JOIN-ACK消息 */
-	ctx.lws.AsyncSend(session.GetCid(), data)
+	ctx.lws.AsyncSend(conn.GetCid(), data)
 
 	return 0
 }

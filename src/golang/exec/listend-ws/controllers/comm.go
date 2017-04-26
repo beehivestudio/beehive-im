@@ -67,72 +67,72 @@ func (tab *MesgCallBackTab) Query(cmd uint32) (cb MesgCallBack, param interface{
 // 连接扩展数据操作
 
 /* 设置会话SID */
-func (session *LsndSessionExtra) SetSid(sid uint64) {
-	session.Lock()
-	defer session.Unlock()
+func (conn *LsndConnExtra) SetSid(sid uint64) {
+	conn.Lock()
+	defer conn.Unlock()
 
-	session.sid = sid
+	conn.sid = sid
 }
 
 /* 获取会话SID */
-func (session *LsndSessionExtra) GetSid() uint64 {
-	session.RLock()
-	defer session.RUnlock()
+func (conn *LsndConnExtra) GetSid() uint64 {
+	conn.RLock()
+	defer conn.RUnlock()
 
-	return session.sid
+	return conn.sid
 }
 
 /* 获取连接CID */
-func (session *LsndSessionExtra) SetCid(cid uint64) {
-	session.Lock()
-	defer session.Unlock()
+func (conn *LsndConnExtra) SetCid(cid uint64) {
+	conn.Lock()
+	defer conn.Unlock()
 
-	session.cid = cid
+	conn.cid = cid
 }
 
 /* 获取连接CID */
-func (session *LsndSessionExtra) GetCid() uint64 {
-	session.RLock()
-	defer session.RUnlock()
+func (conn *LsndConnExtra) GetCid() uint64 {
+	conn.RLock()
+	defer conn.RUnlock()
 
-	return session.cid
+	return conn.cid
 }
 
 /* 更新消息序列号
  * 注意: 参数seq必须比原有消息序列号大 */
-func (session *LsndSessionExtra) UpdateSeq(seq uint64) int {
-	session.Lock()
-	defer session.Unlock()
+func (conn *LsndConnExtra) UpdateSeq(seq uint64) int {
+	conn.Lock()
+	defer conn.Unlock()
 
-	if session.seq < seq {
-		session.seq = seq
+	if conn.seq < seq {
+		conn.seq = seq
 		return 0
 	}
 	return -1
 }
 
 /* 设置连接状态 */
-func (session *LsndSessionExtra) SetStatus(status int) {
-	session.Lock()
-	defer session.Unlock()
+func (conn *LsndConnExtra) SetStatus(status int) {
+	conn.Lock()
+	defer conn.Unlock()
 
-	session.status = status
+	conn.status = status
 }
 
 /* 获取连接状态 */
-func (session *LsndSessionExtra) GetStatus() int {
-	session.RLock()
-	defer session.RUnlock()
+func (conn *LsndConnExtra) GetStatus() int {
+	conn.RLock()
+	defer conn.RUnlock()
 
-	return session.status
+	return conn.status
 }
 
 /* 判断连接状态 */
-func (session *LsndSessionExtra) IsStatus(status int) bool {
-	session.RLock()
-	defer session.RUnlock()
+func (conn *LsndConnExtra) IsStatus(status int) bool {
+	conn.RLock()
+	defer conn.RUnlock()
 
-	if session.status == status {
+	if conn.status == status {
 		return true
 	}
 	return false
