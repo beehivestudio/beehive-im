@@ -63,8 +63,8 @@ type LsndCntx struct {
 
 /* 连接扩展数据 */
 type LsndConnExtra struct {
-	sync.RWMutex        /* 读写锁 */
 	cid          uint64 /* 连接ID */
+	sync.RWMutex        /* 读写锁 */
 	sid          uint64 /* 会话ID */
 	seq          uint64 /* 消息序列号 */
 	status       int    /* 连接状态(CONN_STATUS_READY...) */

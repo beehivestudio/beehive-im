@@ -3,7 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	_ "fmt"
+	"fmt"
 	"sync"
 
 	"git.apache.org/thrift.git/lib/go/thrift"
@@ -91,7 +91,7 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		return nil, err
 	}
 
-	/* > 创建侦听层列表 */
+	///* > 创建侦听层列表 */
 	ctx.listend.types = make(map[int]*UsrSvrLsndList)
 
 	/* > REDIS连接池 */
@@ -110,6 +110,12 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		return nil, err
 	}
 
+	/* > 初始化RTMQ-PROXY */
+	ctx.frwder = rtmq.ProxyInit(&conf.Frwder, ctx.log)
+	if nil == ctx.frwder {
+		return nil, err
+	}
+
 	/* > SEQSVR连接池 */
 	ctx.seqsvr_pool = ctx.seqsvr_pool_init(ctx.conf.Seqsvr.Addr)
 	if nil == ctx.seqsvr_pool {
@@ -117,15 +123,15 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		return nil, err
 	}
 
-	/* > 初始化RTMQ-PROXY */
-	ctx.frwder = rtmq.ProxyInit(&conf.Frwder, ctx.log)
-	if nil == ctx.frwder {
-		return nil, err
-	}
-
 	SetUsrSvrCtx(ctx)
 
 	return ctx, nil
+}
+
+func test(conf *rtmq.ProxyConf) {
+	fmt.Printf("This is just a test! nodeid:%d usr:%s passwd:%s addr:%s num:%d len:%d",
+		conf.NodeId, conf.Usr, conf.Passwd, conf.RemoteAddr, conf.WorkerNum, conf.SendChanLen)
+	return
 }
 
 /******************************************************************************

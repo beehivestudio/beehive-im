@@ -33,6 +33,7 @@ typedef struct
 /* 全局对象 */
 typedef struct
 {
+    uint64_t seq; // 序列号
     wsc_opt_t opt;
 
     struct lws_context *lws;
@@ -54,7 +55,7 @@ typedef enum
 
 
 int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session);
-int lws_mesg_online_ack_handler(mesg_header_t *head, void *body);
+int lws_mesg_online_ack_handler(lws_cntx_t *ctx, mesg_header_t *head, void *body);
 
 int lws_mesg_ping_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session);
 int lws_mesg_pong_handler(mesg_header_t *head, void *body);

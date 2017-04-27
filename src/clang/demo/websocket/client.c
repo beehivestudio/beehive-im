@@ -42,8 +42,7 @@ int lws_recv_handler(struct lws_context *lws,
 
     switch (head->type) {
         case CMD_ONLINE_ACK:
-
-            if (lws_mesg_online_ack_handler(head, body)) {
+            if (lws_mesg_online_ack_handler(ctx, head, body)) {
                 return -1;
             }
             return lws_mesg_room_join_handler(lws, wsi, ctx, session);
@@ -210,8 +209,7 @@ static int wsc_getopt(int argc, char *argv[], wsc_opt_t *opt)
     }
 
     if (0 == opt->port
-        || NULL == opt->ipaddr)
-    {
+        || NULL == opt->ipaddr) {
         return -1;
     }
 

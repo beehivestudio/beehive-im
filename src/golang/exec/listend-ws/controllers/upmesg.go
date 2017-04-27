@@ -161,7 +161,7 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 		ctx.log.Error("Unmarshal online-ack failed! errmsg:%s", err.Error())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	} else if 0 != ack.GetCode() {
-		ctx.log.Error("Logon failed! cid:%d sid:%d code:%d errmsg:%s",
+		ctx.log.Error("Online failed! cid:%d sid:%d code:%d errmsg:%s",
 			head.GetCid(), ack.GetSid(), ack.GetCode(), ack.GetErrmsg())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	}

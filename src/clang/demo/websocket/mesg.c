@@ -68,6 +68,8 @@ int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t
     head->type = htonl(CMD_ONLINE);
     head->length = htonl(len);
     head->sid = hton64(AWS_SID);
+    ++ctx->seq;
+    head->seq = hton64(ctx->seq);
     head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);
@@ -78,7 +80,7 @@ int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t
 }
 
 /* 处理ONLINE-ACK消息 */
-int lws_mesg_online_ack_handler(mesg_header_t *head, void *body)
+int lws_mesg_online_ack_handler(lws_cntx_t *ctx, mesg_header_t *head, void *body)
 {
     MesgOnlineAck *ack;
 
@@ -90,8 +92,9 @@ int lws_mesg_online_ack_handler(mesg_header_t *head, void *body)
     }
 
     fprintf(stderr, "Unpack online ack success!\n");
-    fprintf(stderr, "uid:%lu sid:%lu app:%s version:%s code:%d errmsg:%s\n",
-            ack->uid, ack->sid, ack->app, ack->version, ack->code, ack->errmsg);
+    fprintf(stderr, "uid:%lu sid:%lu seq:%lu app:%s version:%s code:%d errmsg:%s\n",
+            ack->uid, ack->sid, ack->seq, ack->app, ack->version, ack->code, ack->errmsg);
+    ctx->seq = ack->seq;
 
     mesg_online_ack__free_unpacked(ack, NULL);
 
@@ -137,6 +140,8 @@ int lws_mesg_ping_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *
     head->type = htonl(CMD_PING);
     head->length = htonl(0);
     head->sid = hton64(AWS_SID);
+    ++ctx->seq;
+    head->seq = hton64(ctx->seq);
     head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);
@@ -203,6 +208,8 @@ int lws_mesg_room_join_handler(struct lws_context *lws, struct lws *wsi, lws_cnt
     head->type = htonl(CMD_ROOM_JOIN);
     head->length = htonl(len);
     head->sid = hton64(AWS_SID);
+    ++ctx->seq;
+    head->seq = hton64(ctx->seq);
     head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);

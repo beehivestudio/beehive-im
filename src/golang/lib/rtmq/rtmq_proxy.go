@@ -405,12 +405,16 @@ func (svr *ProxyServer) StartConnector(timeout time.Duration) {
 		/* > 建立TCP连接 */
 		conn, err := svr.OnDial()
 		if nil != err {
+			svr.log.Error("Dial failed! errmsg:%s", err.Error())
 			select {
 			case <-svr.exit_chan:
+				svr.log.Error("Recv exit signal! errmsg:%s", err.Error())
 				return
 			case <-time.After(time.Second * timeout):
+				svr.log.Error("Dial timeout! errmsg:%s", err.Error())
 				continue
 			}
+			continue
 		}
 
 		/* > 创建连接对象 */

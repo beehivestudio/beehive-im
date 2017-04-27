@@ -193,6 +193,7 @@ func (ctx *UsrSvrCntx) online_failed(head *comm.MesgHeader,
 	if nil != req {
 		ack.Uid = proto.Uint64(req.GetUid())
 		ack.Sid = proto.Uint64(req.GetSid())
+		ack.Seq = proto.Uint64(0)
 		ack.App = proto.String(req.GetApp())
 		ack.Version = proto.String(req.GetVersion())
 		ack.Terminal = proto.Uint32(req.GetTerminal())
@@ -303,6 +304,12 @@ func (ctx *UsrSvrCntx) online_ack(head *comm.MesgHeader, req *mesg.MesgOnline, s
 func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) (seq uint64, err error) {
 	var key string
 
+	/* 获取消息序列号 */
+	seq, err = ctx.query_seq_by_sid(req.GetSid())
+	if nil != err {
+		return 0, err
+	}
+
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -342,9 +349,6 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	/* 记录UID->SID集合 */
 	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetUid())
 	pl.Send("SADD", key, req.GetSid())
-
-	/* 获取消息序列号 */
-	seq, err = ctx.query_seq_by_sid(req.GetSid())
 
 	return seq, err
 }
@@ -1606,7 +1610,7 @@ func (ctx *UsrSvrCntx) query_seq_by_sid(sid uint64) (seq uint64, err error) {
 
 	seq_int, err := client.QuerySeqBySid(int64(sid))
 	if nil != err {
-		ctx.log.Error("Alloc sequence from seqsvr failed! errmsg:%s", err.Error())
+		ctx.log.Error("Alloc seq from seqsvr failed! errmsg:%s", err.Error())
 		return 0, err
 	} else if 0 == seq_int {
 		ctx.log.Error("Sequence value is invalid!")
