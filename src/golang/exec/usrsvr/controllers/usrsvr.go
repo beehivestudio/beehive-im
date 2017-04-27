@@ -3,7 +3,6 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"sync"
 
 	"git.apache.org/thrift.git/lib/go/thrift"
@@ -126,12 +125,6 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	SetUsrSvrCtx(ctx)
 
 	return ctx, nil
-}
-
-func test(conf *rtmq.ProxyConf) {
-	fmt.Printf("This is just a test! nodeid:%d usr:%s passwd:%s addr:%s num:%d len:%d",
-		conf.NodeId, conf.Usr, conf.Passwd, conf.RemoteAddr, conf.WorkerNum, conf.SendChanLen)
-	return
 }
 
 /******************************************************************************
