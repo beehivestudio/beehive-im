@@ -15,6 +15,7 @@ const (
 	IP_DICT_START_IP_IDX = 0  // 开始IP
 	IP_DICT_END_IP_IDX   = 1  // 结束IP
 	IP_DICT_COUNTRY_IDX  = 2  // 国家
+	IP_DICT_OPID_IDX     = 6  // 运营商ID
 	IP_DICT_NAME_IDX     = -1 // 运营商名称
 )
 
@@ -28,8 +29,9 @@ type IpDict struct {
 type IpDictItem struct {
 	start_ip uint32 // 起始IP
 	end_ip   uint32 // 结束IP
-	nation   string // 国家或地区名
+	opid     uint32 // 运营商ID
 	operator string // 运营商名称
+	nation   string // 国家或地区名
 }
 
 /******************************************************************************
@@ -108,8 +110,9 @@ func LoadIpDict(path string) (dict *IpDict, err error) {
 
 		item.start_ip = Ipv4Str2Uint32(segment[IP_DICT_START_IP_IDX]) /* 起始IP */
 		item.end_ip = Ipv4Str2Uint32(segment[IP_DICT_END_IP_IDX])     /* 结束IP */
-		item.nation = segment[IP_DICT_COUNTRY_IDX]                    /* 国家或地区 */
+		item.opid = Ipv4Str2Uint32(segment[IP_DICT_OPID_IDX])         /* 运营商ID */
 		item.operator = segment[len(segment)-1]                       /* 运营商名称 */
+		item.nation = segment[IP_DICT_COUNTRY_IDX]                    /* 国家或地区 */
 		if 0 == item.start_ip || 0 == item.end_ip ||
 			"" == item.nation || "" == item.operator {
 			errmsg := fmt.Sprintf("Data isn't right! line:%d", idx)
@@ -178,6 +181,11 @@ func (dict *IpDict) Query(ipv4 string) *IpDictItem {
 /* 获取国家或地区 */
 func (item *IpDictItem) GetNation() string {
 	return item.nation
+}
+
+/* 获取运营商ID */
+func (item *IpDictItem) GetOpid() uint32 {
+	return item.opid
 }
 
 /* 获取运营商名 */

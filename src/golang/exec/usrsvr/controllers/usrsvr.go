@@ -24,7 +24,7 @@ import (
 /* 侦听层列表 */
 type UsrSvrLsndList struct {
 	sync.RWMutex                                  /* 读写锁 */
-	list         map[string](map[string][]string) /* 侦听层列表:map[TCP/WS](map[国家/地区](map([运营商名称][]IP列表))) */
+	list         map[string](map[uint32][]string) /* 侦听层列表:map[TCP/WS](map[国家/地区](map([运营商ID][]IP列表))) */
 }
 
 type UsrSvrLsndNetWork struct {

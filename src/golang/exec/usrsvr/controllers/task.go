@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -94,7 +95,7 @@ func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 	ctm := time.Now().Unix()
 
 	lsnd := &UsrSvrLsndList{
-		list: make(map[string](map[string][]string)),
+		list: make(map[string](map[uint32][]string)),
 	}
 
 	/* > 获取"国家/地区"列表 */
@@ -118,13 +119,15 @@ func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 			return nil
 		}
 
-		operator_set := make(map[string][]string, 0)
+		operator_set := make(map[uint32][]string, 0)
 
 		operator_num := len(operators)
 		for n := 0; n < operator_num; n += 1 {
-			ctx.log.Debug("    Operator:%s", operators[n])
+			opid, _ := strconv.ParseInt(operators[n], 10, 32)
+
+			ctx.log.Debug("    Operator:%d", uint32(opid))
 			/* > 获取"运营商"对应的"IP+PORT"列表 */
-			key := fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, typ, nations[m], operators[n])
+			key := fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, typ, nations[m], uint32(opid))
 
 			iplist, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 			if nil != err {
@@ -135,7 +138,7 @@ func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 			iplist_num := len(iplist)
 			for k := 0; k < iplist_num; k += 1 {
 				ctx.log.Debug("    iplist:%s", iplist[k])
-				operator_set[operators[n]] = append(operator_set[operators[n]], iplist[k])
+				operator_set[uint32(opid)] = append(operator_set[uint32(opid)], iplist[k])
 			}
 		}
 
