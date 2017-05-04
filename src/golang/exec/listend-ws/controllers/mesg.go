@@ -89,7 +89,7 @@ func LsndMesgCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 将ONLINE请求转发给上游模块
- **注意事项: 无需验证消息序列号
+ **注意事项: 如果会话SID已经上线, 则强制踢连接下线.
  **作    者: # Qifeng.zou # 2017.03.04 23:10:58 #
  ******************************************************************************/
 func LsndMesgOnlineHandler(conn *LsndConnExtra, cmd uint32, data []byte, length uint32, param interface{}) int {
@@ -108,6 +108,14 @@ func LsndMesgOnlineHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
 
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
+	extra := ctx.chat.SessionGetParam(head.GetSid())
+	if nil != extra {
+		old_conn := extra.(*LsndConnExtra)
+		/* 将当前&原有连接踢下线 */
+		ctx.kick_add(old_conn.GetCid())
+		ctx.kick_add(conn.GetCid())
+		return 0
+	}
 
 	conn.SetSid(head.GetSid())
 	ctx.chat.SessionSetParam(head.GetSid(), conn)

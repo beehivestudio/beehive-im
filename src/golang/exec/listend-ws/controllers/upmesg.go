@@ -23,6 +23,7 @@ func (ctx *LsndCntx) UpMesgRegister() {
 
 	/* > 通用消息 */
 	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndUpMesgOnlineAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_KICK_REQ, LsndUpMesgKickHandler, ctx)
 	ctx.frwder.Register(comm.CMD_SUB_ACK, LsndUpMesgSubAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpMesgUnsubAckHandler, ctx)
 
@@ -62,7 +63,7 @@ func LsndUpMesgCommHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 		return -1
 	}
 
-	ctx.log.Debug("Recv command [%d]!", cmd)
+	ctx.log.Debug("Recv command [0x%04X]!", cmd)
 
 	/* > 验证合法性 */
 	head := comm.MesgHeadNtoh(data)
@@ -194,6 +195,70 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 	ctx.lws.AsyncSend(cid, data)
 
 	ctx.log.Debug("Send online ack success! cid:%d/%d sid:%d", conn.GetCid(), cid, ack.GetSid())
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndUpMesgKickHandler
+ **功    能: KICK消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.04.29 19:39:30 #
+ ******************************************************************************/
+func LsndUpMesgKickHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv kick command!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid(0) {
+		ctx.log.Error("Header of kick is invalid!")
+		return -1
+	}
+
+	/* > 消息KICK的处理 */
+	kick := &mesg.MesgKick{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], kick) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal kick failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	ctx.log.Debug("Kick command! code:%d errmsg:%s", kick.GetCode(), kick.GetErrmsg())
+
+	/* > 下发KICK消息 */
+	extra := ctx.chat.SessionGetParam(head.GetSid())
+	if nil == extra {
+		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
+		return -1
+	}
+
+	conn, ok := extra.(*LsndConnExtra)
+	if !ok {
+		ctx.log.Error("Convert conn extra failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	ctx.lws.AsyncSend(conn.GetCid(), data)
+
+	/* > 执行KICK指令 */
+	ctx.kick_add(conn.GetCid())
 
 	return 0
 }

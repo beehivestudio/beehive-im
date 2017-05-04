@@ -53,14 +53,14 @@ func (conf *LsndConf) GetNid() uint32 {
 	return conf.NodeId
 }
 
+/* 获取运营商ID */
+func (conf *LsndConf) GetOpid() uint32 {
+	return conf.Operator.Id
+}
+
 /* 获取国家 */
 func (conf *LsndConf) GetNation() string {
 	return conf.Operator.Nation
-}
-
-/* 获取运营商名称 */
-func (conf *LsndConf) GetName() string {
-	return conf.Operator.OpName
 }
 
 /* 获取IP地址 */

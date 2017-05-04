@@ -8319,24 +8319,24 @@ static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[7] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "nation",
+    "opid",
     3,
     PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_STRING,
+    PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgLsndInfo, nation),
+    offsetof(MesgLsndInfo, opid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "name",
+    "nation",
     4,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgLsndInfo, name),
+    offsetof(MesgLsndInfo, nation),
     NULL,
     NULL,
     0,             /* flags */
@@ -8382,9 +8382,9 @@ static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[7] =
 static const unsigned mesg_lsnd_info__field_indices_by_name[] = {
   6,   /* field[6] = connections */
   4,   /* field[4] = ip */
-  3,   /* field[3] = name */
-  2,   /* field[2] = nation */
+  3,   /* field[3] = nation */
   1,   /* field[1] = nid */
+  2,   /* field[2] = opid */
   5,   /* field[5] = port */
   0,   /* field[0] = type */
 };

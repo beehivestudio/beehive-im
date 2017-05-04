@@ -247,8 +247,8 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
  **     {
  **         required uint32 network = 1;    // M|网络类型(0:UNKNOWN 1:TCP 2:WS)|数字|<br>
  **         required uint32 nid = 2;        // M|结点ID|数字|<br>
- **         required string nation = 3;     // M|所属国家|字串|<br>
- **         required string name = 4;       // M|运营商名称|字串|<br>
+ **         required uint32 opid = 3;       // M|运营商ID|数字|<br>
+ **         required string nation = 4;     // M|所属国家|字串|<br>
  **         required string ip = 5;     // M|IP地址|字串|<br>
  **         required uint32 port = 6;       // M|端口号|数字|<br>
  **     }
@@ -267,14 +267,14 @@ void lsnd_timer_info_handler(void *_ctx)
     /* > 设置上报数据 */
     info.type = LSND_TYPE_TCP;
     info.nid = conf->nid;
+    info.opid = conf->operator.id;
     info.nation = conf->operator.nation;
-    info.name = conf->operator.name;
     info.ip = conf->access.ipaddr;
     info.port = conf->access.port;
     info.connections = hash_tab_total(ctx->conn_sid_tab);
 
-    log_debug(ctx->log, "Listen info! nid:%d nation:%s name:%s ip:%s port:%d",
-            info.nid, info.nation, info.name, info.ip, info.port);
+    log_debug(ctx->log, "Listen info! nid:%d nation:%s opid:%s ip:%s port:%d",
+            info.nid, info.nation, info.opid, info.ip, info.port);
 
     /* > 组装PB协议 */
     len = mesg_lsnd_info__get_packed_size(&info);

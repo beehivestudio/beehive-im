@@ -70,15 +70,6 @@ type LsndConnExtra struct {
 	status       int    /* 连接状态(CONN_STATUS_READY...) */
 }
 
-/* 会话扩展数据 */
-type LsndSessionData struct {
-	sid          uint64 /* 会话ID */
-	sync.RWMutex        /* 读写锁 */
-	seq          uint64 /* 消息序列号 */
-	cid          uint64 /* 连接ID */
-	status       int    /* 连接状态(CONN_STATUS_READY...) */
-}
-
 /******************************************************************************
  **函数名称: LsndInit
  **功    能: 初始化对象

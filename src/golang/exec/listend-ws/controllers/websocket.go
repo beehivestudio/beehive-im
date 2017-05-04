@@ -64,6 +64,9 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 		return -1
 	}
 
+	ctx.log.Debug("Recv data! cmd:0x%04X sid:%d cid:%d seq:%d",
+		head.GetCmd(), head.GetSid(), conn.GetCid(), head.GetSeq())
+
 	/* > 查找&执行回调 */
 	cb, param := ctx.callback.Query(head.GetCmd())
 	if nil == cb {

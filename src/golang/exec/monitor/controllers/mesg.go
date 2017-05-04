@@ -31,7 +31,6 @@ func (ctx *MonSvrCntx) lsnd_info_isvalid(req *mesg.MesgLsndInfo) bool {
 	if 0 == req.GetNid() ||
 		0 == req.GetPort() ||
 		0 == len(req.GetNation()) ||
-		0 == len(req.GetName()) ||
 		0 == len(req.GetIp()) {
 		return false
 	}
@@ -152,8 +151,8 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 		ctx.log.Error("Something was wrong! errmsg:%s!", err.Error())
 		return
 	} else if true == has {
-		ctx.log.Error("Data has conflict! type:%d nid:%d nation:%s opname:%s ip:%s port:%d",
-			req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIp(), req.GetPort())
+		ctx.log.Error("Data has conflict! type:%d nid:%d nation:%s opid:%d ip:%s port:%d",
+			req.GetType(), req.GetNid(), req.GetNation(), req.GetOpid(), req.GetIp(), req.GetPort())
 		return
 	}
 
@@ -181,19 +180,19 @@ func (ctx *MonSvrCntx) lsnd_info_handler(head *comm.MesgHeader, req *mesg.MesgLs
 
 	/* 国家 -> 运营商列表 */
 	key = fmt.Sprintf(comm.IM_KEY_LSND_OP_ZSET, req.GetType(), req.GetNation())
-	pl.Send("ZADD", key, ttl, req.GetName())
+	pl.Send("ZADD", key, ttl, req.GetOpid())
 
 	/* 国家+运营商 -> 结点列表 */
-	key = fmt.Sprintf(comm.IM_KEY_LSND_OP_TO_NID_ZSET, req.GetType(), req.GetNation(), req.GetName())
+	key = fmt.Sprintf(comm.IM_KEY_LSND_OP_TO_NID_ZSET, req.GetType(), req.GetNation(), req.GetOpid())
 	pl.Send("ZADD", key, ttl, req.GetNid())
 
 	/* 国家+运营商 -> 侦听层IP列表 */
-	key = fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, req.GetType(), req.GetNation(), req.GetName())
+	key = fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, req.GetType(), req.GetNation(), req.GetOpid())
 	val := fmt.Sprintf(comm.IM_FMT_IP_PORT_STR, req.GetIp(), req.GetPort())
 	pl.Send("ZADD", key, ttl, val)
 
-	ctx.log.Debug("Handle listend information! type:%d nid:%d nation:%s opname:%s ip:%s port:%d user-num:%d",
-		req.GetType(), req.GetNid(), req.GetNation(), req.GetName(), req.GetIp(), req.GetPort(), req.GetConnections())
+	ctx.log.Debug("Handle listend information! type:%d nid:%d nation:%s opid:%d ip:%s port:%d user-num:%d",
+		req.GetType(), req.GetNid(), req.GetNation(), req.GetOpid(), req.GetIp(), req.GetPort(), req.GetConnections())
 
 	return
 }

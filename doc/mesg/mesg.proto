@@ -948,8 +948,8 @@ message mesg_lsnd_info
 {
     required uint32 type = 1;       // M|类型(0:UNKNOWN 1:TCP 2:WS)|数字|
     required uint32 nid = 2;        // M|结点ID|数字|
-    required string nation = 3;     // M|所属国家|字串|
-    required string name = 4;       // M|运营商名称|字串|
+    required uint32 opid = 3;       // M|运营商ID|数字|
+    required string nation = 4;     // M|所属国家|字串|
     required string ip = 5;         // M|IP地址|字串|
     required uint32 port = 6;       // M|端口号|数字|
     required uint32 connections = 7;   // M|在线连接数|数字|

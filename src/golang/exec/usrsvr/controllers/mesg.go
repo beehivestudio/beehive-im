@@ -304,12 +304,6 @@ func (ctx *UsrSvrCntx) online_ack(head *comm.MesgHeader, req *mesg.MesgOnline, s
 func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) (seq uint64, err error) {
 	var key string
 
-	/* 获取消息序列号 */
-	seq, err = ctx.query_seq_by_sid(req.GetSid())
-	if nil != err {
-		return 0, err
-	}
-
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -324,7 +318,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	/* 获取会话属性 */
 	attr, err := im.GetSidAttr(ctx.redis, req.GetSid())
 	if nil != err {
-		ctx.send_kick(head.GetCid(), head.GetNid(), comm.ERR_SYS_SYSTEM, err.Error())
+		ctx.send_kick(req.GetSid(), head.GetNid(), comm.ERR_SYS_SYSTEM, err.Error())
 		return
 	} else if (0 != attr.GetUid() && attr.GetUid() != req.GetUid()) ||
 		(0 != attr.GetNid() && attr.GetNid() != head.GetNid()) { // 注意：当nid为0时表示会话SID之前并未登录.
@@ -334,6 +328,14 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 		im.CleanSidData(ctx.redis, head.GetSid())
 		/* 将老连接踢下线 */
 		ctx.send_kick(req.GetSid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
+	}
+
+	/* 获取消息序列号 */
+	seq, err = ctx.query_seq_by_sid(req.GetSid())
+	if nil != err {
+		ctx.log.Error("Query seq by sid failed! uid:%d sid:%d nid:%d cid:%d",
+			attr.GetUid(), req.GetSid(), head.GetNid(), head.GetCid())
+		return 0, err
 	}
 
 	/* 记录SID集合 */

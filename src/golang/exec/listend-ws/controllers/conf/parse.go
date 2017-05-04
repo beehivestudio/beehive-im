@@ -12,8 +12,8 @@ import (
 /* 运营商配置 */
 type LsndConfOperatorXmlData struct {
 	Name   xml.Name `xml:"OPERATOR"`    // 结点名
+	Id     uint32   `xml:"ID,attr"`     // 运营商ID
 	Nation string   `xml:"NATION,attr"` // 所属国家
-	OpName string   `xml:"NAME,attr"`   // 运营商名称
 }
 
 /* 分发队列配置 */
@@ -128,9 +128,9 @@ func (conf *LsndConf) parse() (err error) {
 	}
 
 	/* > 运营商配置 */
+	conf.Operator.Id = node.Operator.Id         // 运营商ID
 	conf.Operator.Nation = node.Operator.Nation // 所属国家
-	conf.Operator.OpName = node.Operator.OpName // 运营商名称
-	if 0 == len(conf.Operator.Nation) || 0 == len(conf.Operator.OpName) {
+	if 0 == len(conf.Operator.Nation) {
 		return errors.New("Get operator information failed!")
 	}
 

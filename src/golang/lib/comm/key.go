@@ -86,8 +86,8 @@ const (
 	IM_KEY_LSND_TYPE_ZSET      = "im:lsnd:type:zset"                           //| ZSET | 帧听层"类型"集合 | 成员:"网络类型" 分值:TTL |
 	IM_KEY_LSND_NATION_ZSET    = "im:lsnd:type:%d:nation:zset"                 //| ZSET | 某"类型"的帧听层"地区/国家"集合 | 成员:"国家/地区" 分值:TTL |
 	IM_KEY_LSND_OP_ZSET        = "im:lsnd:type:%d:nation:%s:op:zset"           //| ZSET | 帧听层"地区/国家"对应的运营商集合 | 成员:运营商名称 分值:TTL |
-	IM_KEY_LSND_IP_ZSET        = "im:lsnd:type:%d:nation:%s:op:%s:zset"        //| ZSET | 帧听层"地区/国家"-运营商对应的IP集合 | 成员:IP 分值:TTL |
-	IM_KEY_LSND_OP_TO_NID_ZSET = "im:lsnd:type:%d:nation:%s:op:%s:to:nid:zset" //| ZSET | 运营商帧听层NID集合 | 成员:NID 分值:TTL |
+	IM_KEY_LSND_IP_ZSET        = "im:lsnd:type:%d:nation:%s:op:%d:zset"        //| ZSET | 帧听层"地区/国家"-运营商对应的IP集合 | 成员:IP 分值:TTL |
+	IM_KEY_LSND_OP_TO_NID_ZSET = "im:lsnd:type:%d:nation:%s:op:%d:to:nid:zset" //| ZSET | 运营商帧听层NID集合 | 成员:NID 分值:TTL |
 	IM_KEY_LSND_NID_ZSET       = "im:lsnd:nid:zset"                            //| ZSET | 帧听层NID集合 | 成员:NID 分值:TTL |
 	IM_KEY_LSND_ATTR           = "im:lsnd:nid:%d:attr"                         //| HASH | 帧听层NID->地址 | 键:NID/值:外网IP+端口 |
 	IM_KEY_LSND_ADDR_TO_NID    = "im:lsnd:addr:to:nid"                         //| HASH | 转发层地址->NID | 键:内网IP+端口/值:NID |

@@ -1052,15 +1052,15 @@ struct  _MesgLsndInfo
   ProtobufCMessage base;
   uint32_t type;
   uint32_t nid;
+  uint32_t opid;
   char *nation;
-  char *name;
   char *ip;
   uint32_t port;
   uint32_t connections;
 };
 #define MESG_LSND_INFO__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_lsnd_info__descriptor) \
-    , 0, 0, NULL, NULL, NULL, 0, 0 }
+    , 0, 0, 0, NULL, NULL, 0, 0 }
 
 
 struct  _MesgFrwdInfo
