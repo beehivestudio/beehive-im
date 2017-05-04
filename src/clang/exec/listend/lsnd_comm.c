@@ -273,7 +273,7 @@ void lsnd_timer_info_handler(void *_ctx)
     info.port = conf->access.port;
     info.connections = hash_tab_total(ctx->conn_sid_tab);
 
-    log_debug(ctx->log, "Listen info! nid:%d nation:%s opid:%s ip:%s port:%d",
+    log_debug(ctx->log, "Listen info! nid:%d nation:%s opid:%d ip:%s port:%d",
             info.nid, info.nation, info.opid, info.ip, info.port);
 
     /* > 组装PB协议 */
