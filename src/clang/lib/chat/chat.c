@@ -24,10 +24,29 @@ static uint64_t chat_session_hash_cb(chat_session_t *s)
     return s->sid;
 }
 
-/* 会话ID比较回调 */
+/* 会话SID+连接CID比较回调 */
 static int chat_session_cmp_cb(chat_session_t *s1, chat_session_t *s2)
 {
-    return (int)(s1->sid - s2->sid);
+    int diff;
+
+    diff = (int)(s1->sid - s2->sid);
+    if (0 == diff) {
+        return (int)(s1->cid - s2->cid);
+    }
+
+    return diff;
+}
+
+/* SID->CID哈希回调 */
+static uint64_t chat_sid2cid_hash_cb(chat_sid2cid_item_t *item)
+{
+    return item->sid;
+}
+
+/* SID->CID比较回调 */
+static int chat_sid2cid_cmp_cb(chat_sid2cid_item_t *item1, chat_sid2cid_item_t *item2)
+{
+    return (int)(item1->sid - item2->sid);
 }
 
 /******************************************************************************
@@ -56,26 +75,35 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
 
     do {
         /* > 初始化聊天室表 */
-        chat->room_tab = hash_tab_creat(len,
+        chat->rooms = hash_tab_creat(len,
                 (hash_cb_t)chat_room_hash_cb,
                 (cmp_cb_t)chat_room_cmp_cb, NULL);
-        if (NULL == chat->room_tab) {
+        if (NULL == chat->rooms) {
             break;
         }
 
         /* > 初始化SESSION表 */
-        chat->session_tab = hash_tab_creat(len,
+        chat->sessions = hash_tab_creat(len,
                 (hash_cb_t)chat_session_hash_cb,
                 (cmp_cb_t)chat_session_cmp_cb, NULL);
-        if (NULL == chat->session_tab) {
+        if (NULL == chat->sessions) {
+            break;
+        }
+
+        /* > 初始化SID->CID表 */
+        chat->sid2cids = hash_tab_creat(len,
+                (hash_cb_t)chat_sid2cid_hash_cb,
+                (cmp_cb_t)chat_sid2cid_cmp_cb, NULL);
+        if (NULL == chat->sid2cids) {
             break;
         }
         return chat;
     } while(0);
 
     /* > 释放内存 */
-    hash_tab_destroy(chat->room_tab, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
-    hash_tab_destroy(chat->session_tab, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
+    hash_tab_destroy(chat->rooms, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
+    hash_tab_destroy(chat->sessions, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
+    hash_tab_destroy(chat->sid2cids, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
     FREE(chat);
 
     return NULL;
@@ -87,8 +115,9 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
  **输入参数: 
  **     chat: CHAT对象
  **     rid: 聊天室ID
- **     sid: 会话ID
  **     gid: 分组ID
+ **     sid: 会话ID
+ **     cid: 连接ID
  **输出参数: NONE
  **返    回: 分组ID
  **实现描述:
@@ -101,36 +130,38 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
  **     3. 防止锁出现交错的情况, 从而造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.20 10:53:18 #
  ******************************************************************************/
-uint32_t chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid)
+uint32_t chat_room_add_session(chat_tab_t *chat,
+        uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid)
 {
     chat_session_t *ssn, key;
 
     /* > 判断该SID是否已经存在 */
     key.sid = sid;
+    key.cid = cid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->session_tab, (void *)&key, RDLOCK);
+    ssn = (chat_session_t *)hash_tab_query(chat->sessions, (void *)&key, RDLOCK);
     if (NULL != ssn) {
         if (ssn->rid == rid) {
             gid = ssn->gid;
-            hash_tab_unlock(chat->session_tab, (void *)&key, RDLOCK);
+            hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
             return gid; /* 已存在 */
         }
-        hash_tab_unlock(chat->session_tab, (void *)&key, RDLOCK);
+        hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
         return -1; /* 失败: SID所在聊天室与申请的聊天室冲突 */
     }
 
     /* > 将会话加入聊天室 */
-    if (_chat_room_add_session(chat, rid, gid, sid)) {
-        log_error(chat->log, "Chat room add sid failed. rid:%lu gid:%u sid:%lu",
-                rid, gid, sid);
+    if (_chat_room_add_session(chat, rid, gid, sid, cid)) {
+        log_error(chat->log, "Chat room add sid failed. rid:%lu gid:%u sid:%lu cid:%lu",
+                rid, gid, sid, cid);
         return -1;
     }
 
     /* > 构建SID索引表 */
-    if (chat_session_tab_add(chat, rid, gid, sid)) {
-        _chat_room_del_session(chat, rid, gid, sid);
-        log_error(chat->log, "Add sid into session table failed. rid:%lu gid:%u sid:%lu",
-                rid, gid, sid);
+    if (chat_session_tab_add(chat, rid, gid, sid, cid)) {
+        _chat_room_del_session(chat, rid, gid, sid, cid);
+        log_error(chat->log, "Add sid into session table failed. rid:%lu gid:%u sid:%lu cid:%lu",
+                rid, gid, sid, cid);
         return -1;
     }
 
@@ -143,32 +174,105 @@ uint32_t chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uin
  **输入参数: 
  **     chat: CHAT对象
  **     sid: 会话ID
+ **     cid: 连接ID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
- **     1. session_tab中的chat_session_t对象的内存在group->sid_list中被引用.
+ **     1. sessions中的chat_session_t对象的内存在group->sid_list中被引用.
  **作    者: # Qifeng.zou # 2016.09.20 19:59:38 #
  ******************************************************************************/
-int chat_del_session(chat_tab_t *chat, uint64_t sid)
+int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 {
     chat_session_t *ssn, key;
 
     /* > 删除SID索引 */
     key.sid = sid;
+    key.cid = cid;
 
-    ssn = hash_tab_delete(chat->session_tab, (void *)&key, WRLOCK);
+    ssn = hash_tab_delete(chat->sessions, (void *)&key, WRLOCK);
     if (NULL == ssn) {
         log_error(chat->log, "Didn't find sid[%u]. ptr:%p", sid, ssn);
         return 0; /* Didn't find */
     }
 
     /* > 从聊天室剔除 */
-    _chat_room_del_session(chat, ssn->rid, ssn->gid, sid);
+    _chat_room_del_session(chat, ssn->rid, ssn->gid, sid, cid);
 
     /* > 释放会话对象 */
     hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
     FREE(ssn);
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: chat_get_cid_by_sid
+ **功    能: 通过SID获取CID
+ **输入参数: 
+ **     chat: CHAT对象
+ **     sid: 会话ID
+ **输出参数: NONE
+ **返    回: 连接CID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.07 10:24:42 #
+ ******************************************************************************/
+uint64_t chat_get_cid_by_sid(chat_tab_t *chat, uint64_t sid)
+{
+    uint64_t cid;
+    chat_sid2cid_item_t *item, key;
+
+    /* > 删除SID索引 */
+    key.sid = sid;
+
+    item = hash_tab_query(chat->sid2cids, (void *)&key, RDLOCK);
+    if (NULL == item) {
+        log_error(chat->log, "Didn't find cid by sid. sid:%u.", sid);
+        return 0; /* Didn't find */
+    }
+
+    cid = item->cid;
+
+    hash_tab_unlock(chat->sid2cids, (void *)&key, RDLOCK);
+
+    return cid;
+}
+
+/******************************************************************************
+ **函数名称: chat_set_sid_to_cid
+ **功    能: 设置SID->CID映射
+ **输入参数: 
+ **     chat: CHAT对象
+ **     sid: 会话ID
+ **     cid: 连接ID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.07 10:48:27 #
+ ******************************************************************************/
+uint64_t chat_set_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
+{
+    int ret;
+    chat_sid2cid_item_t *item;
+
+    /* > 删除SID索引 */
+    item = (chat_sid2cid_item_t *)calloc(1, sizeof(chat_sid2cid_item_t));
+    if (NULL == item) {
+        log_error(chat->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+        return -1;
+    }
+
+    item->sid = sid;
+    item->cid = cid;
+
+    ret = hash_tab_insert(chat->sid2cids, (void *)item, WRLOCK);
+    if (0 != ret) {
+        free(item);
+        log_error(chat->log, "Insert sid to cid map failed. sid:%lu cid:%lu.", sid, cid);
+        return -1;
+    }
+
     return 0;
 }
 
@@ -195,14 +299,14 @@ int chat_room_trav(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc,
 
     key.rid = rid;
 
-    room = (chat_room_t *)hash_tab_query(chat->room_tab, (void *)&key, RDLOCK);
+    room = (chat_room_t *)hash_tab_query(chat->rooms, (void *)&key, RDLOCK);
     if (NULL == room) {
         return 0; /* Didn't find */
     }
 
     chat_group_trav(chat, room, gid, proc, args);
 
-    hash_tab_unlock(chat->room_tab, (void *)&key, RDLOCK);
+    hash_tab_unlock(chat->rooms, (void *)&key, RDLOCK);
 
     return 0;
 }
@@ -223,8 +327,10 @@ int chat_room_trav(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc,
 int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 {
     int ret;
+    uint64_t cid;
     chat_sub_item_t *item;
     chat_session_t *ssn, key;
+    chat_sid2cid_item_t *item2, key2;
 
     /* 准备数据 */
     item = (chat_sub_item_t *)calloc(1, sizeof(chat_sub_item_t));
@@ -234,10 +340,23 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 
     item->cmd = cmd;
 
+    /* 查找SID->CID映射 */
+    key2.sid = sid;
+
+    item2 = (chat_sid2cid_item_t *)hash_tab_query(chat->sid2cids, (void *)&key2, RDLOCK);
+    if (NULL == item2) {
+        return -1;
+    }
+
+    cid = item2->cid;
+
+    hash_tab_unlock(chat->sid2cids, (void *)&key2, RDLOCK);
+
     /* 查找对象 */
     key.sid = sid;
+    key.cid = cid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->session_tab, &key, RDLOCK);
+    ssn = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
     if (NULL == ssn) {
         free(item);
         return -1;
@@ -245,12 +364,12 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 
     ret = hash_tab_insert(ssn->sub, (void *)item, WRLOCK);
     if (AVL_OK != ret) {
-        hash_tab_unlock(chat->session_tab, ssn, RDLOCK);
+        hash_tab_unlock(chat->sessions, ssn, RDLOCK);
         free(item);
         return (AVL_NODE_EXIST == ret)? 0 : -1;
     }
 
-    hash_tab_unlock(chat->session_tab, (void *)&key, RDLOCK);
+    hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
 
     return 0;
 }
@@ -270,13 +389,28 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
  ******************************************************************************/
 int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 {
+    uint64_t cid;
     chat_session_t *ssn, key;
     chat_sub_item_t sub_key, *item;
+    chat_sid2cid_item_t *item2, key2;
+
+    /* 查找SID->CID映射 */
+    key2.sid = sid;
+
+    item2 = (chat_sid2cid_item_t *)hash_tab_query(chat->sid2cids, (void *)&key2, RDLOCK);
+    if (NULL == item2) {
+        return -1;
+    }
+
+    cid = item2->cid;
+
+    hash_tab_unlock(chat->sid2cids, (void *)&key2, RDLOCK);
 
     /* > 查找会话对象 */
     key.sid = sid;
+    key.cid = cid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->session_tab, &key, RDLOCK);
+    ssn = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
     if (NULL == ssn) {
         return -1;
     }
@@ -286,11 +420,11 @@ int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 
     item = hash_tab_delete(ssn->sub, &sub_key, WRLOCK);
     if (NULL == item) {
-        hash_tab_unlock(chat->session_tab, &key, RDLOCK);
+        hash_tab_unlock(chat->sessions, &key, RDLOCK);
         return  0;
     }
 
-    hash_tab_unlock(chat->session_tab, &key, RDLOCK);
+    hash_tab_unlock(chat->sessions, &key, RDLOCK);
 
     free(item);
 
@@ -317,14 +451,14 @@ bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 
     key.sid = sid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->session_tab, &key, RDLOCK);
+    ssn = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
     if (NULL == ssn) {
         return false;
     }
 
     has_sub = _chat_has_sub(ssn, cmd);
 
-    hash_tab_unlock(chat->session_tab, &key, RDLOCK);
+    hash_tab_unlock(chat->sessions, &key, RDLOCK);
 
     return has_sub;
 }
@@ -402,7 +536,7 @@ int chat_clean_hdl(chat_tab_t *chat)
         return 0;
     }
 
-    hash_tab_trav(chat->room_tab, (trav_cb_t)chat_room_get_clean_list, clean_list, RDLOCK);
+    hash_tab_trav(chat->rooms, (trav_cb_t)chat_room_get_clean_list, clean_list, RDLOCK);
 
     while (1) {
         rid = list_lpop(clean_list);

@@ -171,7 +171,13 @@ static uint64_t lsnd_conn_sid_hash_cb(lsnd_conn_extra_t *extra)
 /* SID比较回调 */
 static int lsnd_conn_sid_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
 {
-    return (int)(extra1->sid - extra2->sid);
+    int diff;
+
+    diff = (int)(extra1->sid - extra2->sid);
+    if (0 == diff) {
+        return (int)(extra1->cid - extra2->cid);
+    }
+    return diff;
 }
 
 /* KICK哈希回调 */
@@ -229,15 +235,6 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         ctx->reg = avl_creat(NULL, (cmp_cb_t)lsnd_acc_reg_cmp_cb);
         if (NULL == ctx->reg) {
             log_error(log, "Initialize register table failed!");
-            break;
-        }
-
-        /* > 初始化CID管理表 */
-        ctx->conn_cid_tab = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
-                (hash_cb_t)lsnd_conn_cid_hash_cb,
-                (cmp_cb_t)lsnd_conn_cid_cmp_cb, NULL);
-        if (NULL == ctx->conn_cid_tab) {
-            log_error(log, "Initialize conn cid table failed!");
             break;
         }
 

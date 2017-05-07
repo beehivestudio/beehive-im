@@ -144,8 +144,7 @@ typedef struct _lsnd_cntx_t
     timer_task_t timer_kick;        /* 定时清理被踢列表 */
     timer_task_t timer_info;        /* 定时上报帧听层信息 */
     /* 注意: 以下三个表互斥, 共同个管理类为lsnd_conn_extra_t的数据  */
-    hash_tab_t *conn_sid_tab;       /* 连接管理表(以SID为主键, 数据:lsnd_conn_extra_t) */
-    hash_tab_t *conn_cid_tab;       /* 连接管理表(以CID为主键, 数据:lsnd_conn_extra_t) */
+    hash_tab_t *conn_sid_tab;       /* 连接管理表(以(SID+CID)为主键, 数据:lsnd_conn_extra_t) */
     hash_tab_t *conn_kick_list;     /* 被踢管理表(以SCK为主键, 数据:lsnd_conn_extra_t) */
 
     thread_pool_t *timer_task_tp;   /* 定时任务线程池 */
