@@ -73,7 +73,13 @@ func LsndUpMesgCommHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	}
 
 	/* > 获取会话数据 */
-	extra := ctx.chat.SessionGetParam(head.GetSid())
+	cid := ctx.chat.GetCidBySid(head.GetSid())
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
@@ -170,7 +176,7 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 	head.SetSid(ack.GetSid())
 
 	/* > 获取&更新会话状态 */
-	extra := ctx.chat.SessionGetParam(ack.GetSid())
+	extra := ctx.chat.SessionGetParam(ack.GetSid(), cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
@@ -186,6 +192,13 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 	}
 
 	conn.SetStatus(CONN_STATUS_LOGIN) /* 已登录 */
+
+	/* 更新SID->CID映射 */
+	_cid := ctx.chat.GetCidBySid(ack.GetSid())
+	if cid != _cid {
+		ctx.kick_add(_cid)
+	}
+	ctx.chat.SessionSetCid(ack.GetSid(), cid)
 
 	/* > 下发ONLINE-ACK消息 */
 	p := &comm.MesgPacket{Buff: data}
@@ -243,7 +256,13 @@ func LsndUpMesgKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	ctx.log.Debug("Kick command! code:%d errmsg:%s", kick.GetCode(), kick.GetErrmsg())
 
 	/* > 下发KICK消息 */
-	extra := ctx.chat.SessionGetParam(head.GetSid())
+	cid := ctx.chat.GetCidBySid(head.GetSid())
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
@@ -312,7 +331,13 @@ func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 	ctx.chat.SubAdd(head.GetSid(), ack.GetSub())
 
 	/* > 下发SUB-ACK消息 */
-	extra := ctx.chat.SessionGetParam(head.GetSid())
+	cid := ctx.chat.GetCidBySid(head.GetSid())
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
@@ -380,7 +405,13 @@ func LsndUpMesgUnsubAckHandler(cmd uint32, nid uint32, data []byte, length uint3
 	ctx.chat.SubDel(head.GetSid(), ack.GetSub())
 
 	/* > 获取会话数据 */
-	extra := ctx.chat.SessionGetParam(head.GetSid())
+	cid := ctx.chat.GetCidBySid(head.GetSid())
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
@@ -429,7 +460,13 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
 	ctx := dp.ctx
 
 	/* > 获取会话数据 */
-	extra := ctx.chat.SessionGetParam(sid)
+	cid := ctx.chat.GetCidBySid(sid)
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", sid)
+		return -1
+	}
+
+	extra := ctx.chat.SessionGetParam(sid, cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", sid)
 		return -1
@@ -497,7 +534,13 @@ func LsndUpMesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length ui
 	ctx.chat.RoomJoin(ack.GetRid(), ack.GetGid(), head.GetSid())
 
 	/* > 获取会话数据 */
-	extra := ctx.chat.SessionGetParam(head.GetSid())
+	cid := ctx.chat.GetCidBySid(head.GetSid())
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1

@@ -30,7 +30,11 @@ func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
 	defer ss.Unlock()
 
 	/* > 判断会话是否存在 */
-	ssn, ok := ss.session[sid]
+	cid := ctx.GetCidBySid(sid)
+
+	key := &ChatSessionKey{sid: sid, cid: cid}
+
+	ssn, ok := ss.session[*key]
 	if ok {
 		_gid, ok := ssn.room[rid]
 		if !ok {
@@ -51,7 +55,7 @@ func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
 
 	ssn.room[rid] = gid
 
-	ss.session[sid] = ssn
+	ss.session[*key] = ssn
 
 	return 0
 }
@@ -75,8 +79,12 @@ func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bo
 	ss.Lock()
 	defer ss.Unlock()
 
+	cid := ctx.GetCidBySid(sid)
+
+	key := &ChatSessionKey{sid: sid, cid: cid}
+
 	/* > 判断会话是否存在 */
-	ssn, ok := ss.session[sid]
+	ssn, ok := ss.session[*key]
 	if ok {
 		gid, ok := ssn.room[rid]
 		if !ok {
@@ -93,24 +101,27 @@ func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bo
  **功    能: 移除会话管理表
  **输入参数:
  **     sid: 会话SID
+ **     cid: 连接CID
  **输出参数: NONE
  **返    回: 会话数据
  **实现描述: 从session[]表中删除sid的会话数据
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.02 10:13:34 #
  ******************************************************************************/
-func (ctx *ChatTab) session_del(sid uint64) *ChatSessionItem {
+func (ctx *ChatTab) session_del(sid uint64, cid uint64) *ChatSessionItem {
 	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
 	defer ss.Unlock()
 
 	/* > 判断会话是否存在 */
-	ssn, ok := ss.session[sid]
+	key := &ChatSessionKey{sid: sid, cid: cid}
+
+	ssn, ok := ss.session[*key]
 	if !ok {
 		return nil // 无数据
 	}
-	delete(ss.session, sid)
+	delete(ss.session, *key)
 
 	return ssn
 }

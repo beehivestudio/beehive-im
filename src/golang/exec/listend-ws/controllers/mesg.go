@@ -108,17 +108,13 @@ func LsndMesgOnlineHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
 
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
-	extra := ctx.chat.SessionGetParam(head.GetSid())
+	extra := ctx.chat.SessionGetParam(head.GetSid(), conn.GetCid())
 	if nil != extra {
-		old_conn := extra.(*LsndConnExtra)
-		/* 将当前&原有连接踢下线 */
-		ctx.kick_add(old_conn.GetCid())
-		ctx.kick_add(conn.GetCid())
-		return 0
+		return 0 // 已收到ONLINE请求
 	}
 
 	conn.SetSid(head.GetSid())
-	ctx.chat.SessionSetParam(head.GetSid(), conn)
+	ctx.chat.SessionSetParam(head.GetSid(), conn.GetCid(), conn)
 
 	head.SetSid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())

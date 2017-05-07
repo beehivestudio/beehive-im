@@ -346,7 +346,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 
 	/* 记录SID->UID/NID */
 	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, req.GetSid())
-	pl.Send("HMSET", key, "UID", req.GetUid(), "NID", head.GetNid())
+	pl.Send("HMSET", key, "CID", head.GetCid(), "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
 	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetUid())

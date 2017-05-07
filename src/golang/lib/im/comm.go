@@ -15,11 +15,13 @@ import (
 /* 会话属性 */
 type SidAttr struct {
 	sid uint64 // 会话SID
+	cid uint64 // 连接CID
 	uid uint64 // 用户ID
 	nid uint32 // 侦听层ID
 }
 
 func (attr *SidAttr) GetSid() uint64 { return attr.sid }
+func (attr *SidAttr) GetCid() uint64 { return attr.cid }
 func (attr *SidAttr) GetUid() uint64 { return attr.uid }
 func (attr *SidAttr) GetNid() uint32 { return attr.nid }
 
@@ -41,16 +43,18 @@ func GetSidAttr(pool *redis.Pool, sid uint64) (attr *SidAttr, err error) {
 	/* 获取会话属性 */
 	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
 
-	vals, err := redis.Strings(rds.Do("HMGET", key, "UID", "NID"))
+	vals, err := redis.Strings(rds.Do("HMGET", key, "CID", "UID", "NID"))
 	if nil != err {
 		return nil, err
 	}
 
-	uid, _ := strconv.ParseInt(vals[0], 10, 64)
-	nid, _ := strconv.ParseInt(vals[1], 10, 64)
+	cid, _ := strconv.ParseInt(vals[0], 10, 64)
+	uid, _ := strconv.ParseInt(vals[1], 10, 64)
+	nid, _ := strconv.ParseInt(vals[2], 10, 64)
 
 	attr = &SidAttr{
 		sid: sid,
+		cid: uint64(cid),
 		uid: uint64(uid),
 		nid: uint32(nid),
 	}
