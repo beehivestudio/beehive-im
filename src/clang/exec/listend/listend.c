@@ -163,13 +163,13 @@ static int lsnd_conn_cid_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *ex
 }
 
 /* SID哈希回调 */
-static uint64_t lsnd_conn_sid_hash_cb(lsnd_conn_extra_t *extra)
+static uint64_t lsnd_conn_list_hash_cb(lsnd_conn_extra_t *extra)
 {
     return extra->sid;
 }
 
 /* SID比较回调 */
-static int lsnd_conn_sid_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
+static int lsnd_conn_list_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
 {
     int diff;
 
@@ -181,13 +181,13 @@ static int lsnd_conn_sid_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *ex
 }
 
 /* KICK哈希回调 */
-static uint64_t lsnd_conn_kick_hash_cb(lsnd_kick_item_t *item)
+static uint64_t lsnd_kick_list_hash_cb(lsnd_kick_item_t *item)
 {
     return (uint64_t)item->cid;
 }
 
 /* KICK比较回调 */
-static int lsnd_conn_kick_cmp_cb(lsnd_kick_item_t *item1, lsnd_kick_item_t *item2)
+static int lsnd_kick_list_cmp_cb(lsnd_kick_item_t *item1, lsnd_kick_item_t *item2)
 {
     return (int)(item1->cid - item2->cid);
 }
@@ -240,19 +240,19 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
 
         /* > 初始化连接列表 */
         ctx->conn_list = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
-                (hash_cb_t)lsnd_conn_sid_hash_cb,
-                (cmp_cb_t)lsnd_conn_sid_cmp_cb, NULL);
+                (hash_cb_t)lsnd_conn_list_hash_cb,
+                (cmp_cb_t)lsnd_conn_list_cmp_cb, NULL);
         if (NULL == ctx->conn_list) {
-            log_error(log, "Initialize conn sid table failed!");
+            log_error(log, "Initialize conn list failed!");
             break;
         }
 
         /* > 初始化KICK管理表 */
         ctx->kick_list = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
-                (hash_cb_t)lsnd_conn_kick_hash_cb,
-                (cmp_cb_t)lsnd_conn_kick_cmp_cb, NULL);
+                (hash_cb_t)lsnd_kick_list_hash_cb,
+                (cmp_cb_t)lsnd_kick_list_cmp_cb, NULL);
         if (NULL == ctx->kick_list) {
-            log_error(log, "Initialize conn kick table failed!");
+            log_error(log, "Initialize kick list failed!");
             break;
         }
 
