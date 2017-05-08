@@ -257,6 +257,7 @@ func (this *UsrSvrIplistCtrl) iplist_get(ctx *UsrSvrCntx, typ int, clientip stri
  ******************************************************************************/
 func (listend *UsrSvrLsndList) get_default(ctx *UsrSvrCntx) []string {
 	var ok bool
+	var typ, n uint32
 
 	/* > 获取"默认"国家/地区下辖的运营商ID列表 */
 	operators, ok := listend.list["CN"]
@@ -265,12 +266,19 @@ func (listend *UsrSvrLsndList) get_default(ctx *UsrSvrCntx) []string {
 		return nil
 	}
 
+	idx := rand.Intn(len(operators)) % len(operators)
+
+	n = 0
 	for k, v := range operators {
+		if n == uint32(idx) {
+			typ = k
+			break
+		}
 		ctx.log.Debug("k:%d v:%s", k, v)
 	}
 
 	/* > 获取"默认"运营商下辖的侦听层列表 */
-	list, ok := operators[0]
+	list, ok := operators[typ]
 	if nil == list || 0 == len(list) || !ok {
 		ctx.log.Error("Get default iplist by operator failed!")
 		return nil
