@@ -23,16 +23,13 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.01 23:37:33 #
  ******************************************************************************/
-func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
+func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64, cid uint64) int {
 	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
+
+	key := &ChatSessionKey{sid: sid, cid: cid}
 
 	ss.Lock()
 	defer ss.Unlock()
-
-	/* > 判断会话是否存在 */
-	cid := ctx.GetCidBySid(sid)
-
-	key := &ChatSessionKey{sid: sid, cid: cid}
 
 	ssn, ok := ss.session[*key]
 	if ok {
@@ -49,6 +46,7 @@ func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64) int {
 	/* > 添加会话信息 */
 	ssn = &ChatSessionItem{
 		sid:  sid,                     // 会话ID
+		cid:  cid,                     // 连接ID
 		room: make(map[uint64]uint32), // 聊天室信息
 		sub:  make(map[uint32]bool),   // 订阅列表
 	}
@@ -240,7 +238,7 @@ func (ctx *ChatTab) room_unlock(rid uint64, lck int) int {
  **注意事项: 尽量使用读锁, 降低锁冲突.
  **作    者: # Qifeng.zou # 2017.03.02 10:20:10 #
  ******************************************************************************/
-func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
+func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64, cid uint64) int {
 	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 
 	/* > 查找ROOM对象 */
@@ -267,12 +265,14 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64) int {
 	group.Lock()
 	defer group.Unlock()
 
-	_, ok = group.sid_list[sid]
+	key := &ChatSessionKey{sid: sid, cid: cid}
+
+	_, ok = group.sid_list[*key]
 	if ok {
 		return 0 // 无数据
 	}
 
-	delete(group.sid_list, sid)
+	delete(group.sid_list, *key)
 
 	atomic.AddInt64(&room.sid_num, -1)  // 人数减1
 	atomic.AddInt64(&group.sid_num, -1) // 人数减1
@@ -303,10 +303,10 @@ func (room *ChatRoomItem) group_add(gid uint32) int {
 	group, ok := gs.group[gid]
 	if !ok {
 		group = &ChatGroupItem{
-			gid:       gid,                   // 分组ID
-			sid_num:   0,                     // 会话数目
-			create_tm: time.Now().Unix(),     // 创建时间
-			sid_list:  make(map[uint64]bool), // 会话列表
+			gid:       gid,                           // 分组ID
+			sid_num:   0,                             // 会话数目
+			create_tm: time.Now().Unix(),             // 创建时间
+			sid_list:  make(map[ChatSessionKey]bool), // 会话列表
 		}
 
 		atomic.AddInt64(&group.sid_num, 1)
@@ -394,8 +394,8 @@ func (room *ChatRoomItem) group_trav(group *ChatGroupItem, proc ChatTravProcCb, 
 	group.RLock()
 	defer group.RUnlock()
 
-	for sid, _ := range group.sid_list {
-		proc(sid, param)
+	for key, _ := range group.sid_list {
+		proc(key.sid, key.cid, param)
 	}
 	return 0
 }

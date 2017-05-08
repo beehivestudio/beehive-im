@@ -312,7 +312,7 @@ func LsndMesgRoomQuitHandler(conn *LsndConnExtra, cmd uint32, data []byte, lengt
 		return -1
 	}
 
-	ctx.chat.RoomQuit(req.GetRid(), conn.GetSid())
+	ctx.chat.RoomQuit(req.GetRid(), conn.GetSid(), conn.GetCid())
 
 	/* > 转发给上游模块 */
 	p := &comm.MesgPacket{Buff: data}

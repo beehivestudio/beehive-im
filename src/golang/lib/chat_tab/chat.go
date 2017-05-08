@@ -13,11 +13,12 @@ const (
 )
 
 /* 遍历回调 */
-type ChatTravProcCb func(sid uint64, param interface{}) int
+type ChatTravProcCb func(sid uint64, cid uint64, param interface{}) int
 
 /* 会话信息 */
 type ChatSessionItem struct {
-	sid          uint64            // 会话ID
+	sid          uint64            // 会话SID
+	cid          uint64            // 连接CID
 	sync.RWMutex                   // 读写锁
 	room         map[uint64]uint32 // 聊天室信息map[rid]gid
 	sub          map[uint32]bool   // 订阅列表(true:订阅 false:未订阅)
@@ -33,7 +34,7 @@ type ChatSessionKey struct {
 /* SESSION TAB信息 */
 type ChatSessionList struct {
 	sync.RWMutex                                     // 读写锁
-	session      map[ChatSessionKey]*ChatSessionItem // 会话集合[sid]*ChatSessionItem
+	session      map[ChatSessionKey]*ChatSessionItem // 会话集合[sid&cid]*ChatSessionItem
 }
 
 /* SID->CID信息 */
@@ -44,11 +45,11 @@ type ChatSid2CidList struct {
 
 /* 分组信息 */
 type ChatGroupItem struct {
-	gid          uint32          // 分组ID
-	sid_num      int64           // 会话数目
-	create_tm    int64           // 创建时间
-	sync.RWMutex                 // 读写锁
-	sid_list     map[uint64]bool // 会话列表[sid]bool
+	gid          uint32                  // 分组ID
+	sid_num      int64                   // 会话数目
+	create_tm    int64                   // 创建时间
+	sync.RWMutex                         // 读写锁
+	sid_list     map[ChatSessionKey]bool // 会话列表[sid&cid]bool
 }
 
 /* GROUP TAB信息 */
@@ -126,9 +127,9 @@ func Init() *ChatTab {
  **注意事项: 各层级读写锁的操作, 降低锁粒度, 防止死锁.
  **作    者: # Qifeng.zou # 2017.02.22 20:32:20 #
  ******************************************************************************/
-func (ctx *ChatTab) RoomJoin(rid uint64, gid uint32, sid uint64) int {
+func (ctx *ChatTab) RoomJoin(rid uint64, gid uint32, sid uint64, cid uint64) int {
 	/* > 加入会话管理表 */
-	ret := ctx.session_join_room(rid, gid, sid)
+	ret := ctx.session_join_room(rid, gid, sid, cid)
 	if 0 != ret {
 		return -1 // 异常
 	}
@@ -162,9 +163,11 @@ GROUP:
 	group.Lock()
 	defer group.Unlock()
 
-	_, ok := group.sid_list[sid]
+	key := &ChatSessionKey{sid: sid, cid: cid}
+
+	_, ok := group.sid_list[*key]
 	if !ok {
-		group.sid_list[sid] = true
+		group.sid_list[*key] = true
 		return 0
 	}
 
@@ -183,14 +186,14 @@ GROUP:
  **注意事项: 各层级读写锁的操作, 降低锁粒度, 防止死锁.
  **作    者: # Qifeng.zou # 2017.03.08 22:02:17 #
  ******************************************************************************/
-func (ctx *ChatTab) RoomQuit(rid uint64, sid uint64) int {
+func (ctx *ChatTab) RoomQuit(rid uint64, sid uint64, cid uint64) int {
 	/* > 移除指定聊天室数据 */
 	gid, ok := ctx.session_quit_room(rid, sid)
 	if !ok {
 		return 0 // 无数据
 	}
 
-	return ctx.room_del_session(rid, gid, sid)
+	return ctx.room_del_session(rid, gid, sid, cid)
 }
 
 /******************************************************************************
@@ -264,7 +267,7 @@ func (ctx *ChatTab) SessionDel(sid uint64, cid uint64) int {
 
 	/* > 清理ROOM会话数据 */
 	for rid, gid := range ssn.room {
-		ctx.room_del_session(rid, gid, sid)
+		ctx.room_del_session(rid, gid, sid, cid)
 	}
 
 	return 0
@@ -299,6 +302,7 @@ func (ctx *ChatTab) SessionSetParam(sid uint64, cid uint64, param interface{}) i
 	/* > 添加会话信息 */
 	ssn = &ChatSessionItem{
 		sid:   sid,                     // 会话ID
+		cid:   cid,                     // 连接ID
 		room:  make(map[uint64]uint32), // 聊天室信息
 		sub:   make(map[uint32]bool),   // 订阅列表
 		param: param,                   // 扩展数据

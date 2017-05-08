@@ -444,6 +444,7 @@ type LsndRoomDataParam struct {
  **功    能: 将聊天室各种消息下发给指定客户端
  **输入参数:
  **     sid: 会话SID
+ **     cid: 连接CID
  **     param: 附加参数
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
@@ -451,7 +452,7 @@ type LsndRoomDataParam struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
  ******************************************************************************/
-func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
+func lsnd_room_send_data_cb(sid uint64, cid uint64, param interface{}) int {
 	dp, ok := param.(*LsndRoomDataParam)
 	if !ok {
 		return -1
@@ -460,12 +461,6 @@ func lsnd_room_send_data_cb(sid uint64, param interface{}) int {
 	ctx := dp.ctx
 
 	/* > 获取会话数据 */
-	cid := ctx.chat.GetCidBySid(sid)
-	if 0 == cid {
-		ctx.log.Error("Get cid by sid failed! sid:%d", sid)
-		return -1
-	}
-
 	extra := ctx.chat.SessionGetParam(sid, cid)
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", sid)
@@ -530,15 +525,15 @@ func LsndUpMesgRoomJoinAckHandler(cmd uint32, nid uint32, data []byte, length ui
 	ctx.log.Debug("Room join ack. uid:%d rid:%d gid:%d code:%d errmsg:%s",
 		ack.GetUid(), ack.GetRid(), ack.GetGid(), ack.GetCode(), ack.GetErrmsg())
 
-	/* > 加入聊天室 */
-	ctx.chat.RoomJoin(ack.GetRid(), ack.GetGid(), head.GetSid())
-
 	/* > 获取会话数据 */
 	cid := ctx.chat.GetCidBySid(head.GetSid())
 	if 0 == cid {
 		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
 		return -1
 	}
+
+	/* > 加入聊天室 */
+	ctx.chat.RoomJoin(ack.GetRid(), ack.GetGid(), head.GetSid(), cid)
 
 	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
 	if nil == extra {
