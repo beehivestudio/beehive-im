@@ -359,7 +359,7 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
     MESG_HEAD_NTOH(head, &hhead);
 
     MESG_HEAD_PRINT(lsnd->log, &hhead)
-    log_debug(lsnd->log, "Recv room join ack");
+    log_debug(lsnd->log, "Recv room join ack! sid:%lu seq:%lu", hhead.sid, hhead.seq);
 
     /* > 提取应答信息 */
     ack = mesg_room_join_ack__unpack(NULL, hhead.length, (void *)(head + 1));
