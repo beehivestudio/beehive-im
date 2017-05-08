@@ -1102,7 +1102,7 @@ static int sdk_ssvr_http_conn_info(sdk_cntx_t *ctx, char *conn_info_str)
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, conn_info_str);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 3);
 
-    snprintf(url, sizeof(url), "%s/im/query?opt=iplist&uid=%lu&sid=%lu&clientip=1.0.1.3",
+    snprintf(url, sizeof(url), "%s/im/iplist?type=1&uid=%lu&sid=%lu&clientip=1.0.1.3",
             conf->httpsvr, conf->uid, conf->sid);
     log_debug(ctx->log, "url: %s!", url);
     curl_easy_setopt(curl, CURLOPT_URL, url);
