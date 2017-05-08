@@ -934,15 +934,7 @@ static int sdk_exp_mesg_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck, 
     mesg_header_t *head = (mesg_header_t *)addr;
 
     ++ssvr->recv_total;
-
-    /* > 验证长度 */
     len = MESG_TOTAL_LEN(head->length);
-    if ((int)len > sdk_queue_length(&ctx->recvq)) {
-        ++ssvr->drop_total;
-        log_error(ctx->log, "Data is too long! len:%d drop:%lu total:%lu",
-              len, ssvr->drop_total, ssvr->recv_total);
-        return SDK_ERR_TOO_LONG;
-    }
 
     /* > 申请空间 */
     idx = rand() % ctx->conf.work_thd_num;

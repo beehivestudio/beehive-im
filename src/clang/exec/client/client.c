@@ -16,7 +16,7 @@ void client_set_conf(sdk_conf_t *conf)
     snprintf(conf->app, sizeof(conf->app), "beehive chat");
     snprintf(conf->version, sizeof(conf->version), "1.0.0");    /* 客户端自身版本号(留做统计用) */
 
-    conf->log_level = LOG_LEVEL_DEBUG;                      /* 日志级别 */
+    conf->log_level = LOG_LEVEL_TRACE;                      /* 日志级别 */
     snprintf(conf->log_path, sizeof(conf->log_path), "client.log");   /* 日志路径(路径+文件名) */
     snprintf(conf->httpsvr, sizeof(conf->httpsvr), "127.0.0.1:8000");      /* HTTP端(IP+端口) */
 
@@ -111,6 +111,7 @@ int main(int argc, char *argv[])
     }
 
     sdk_cmd_add(ctx, CMD_PING, CMD_PONG);
+    sdk_cmd_add(ctx, CMD_ROOM_JOIN, CMD_ROOM_JOIN_ACK);
 
     sdk_register(ctx, CMD_PONG, (sdk_reg_cb_t)sdk_cmd_pong_handler, NULL);
 
