@@ -163,6 +163,8 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
     extra->terminal = ack->terminal;
 
+    chat_set_sid_to_cid(lsnd->chat_tab, extra->sid, extra->cid);
+
     hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
 
     return 0;
@@ -357,7 +359,7 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
     MESG_HEAD_NTOH(head, &hhead);
 
     MESG_HEAD_PRINT(lsnd->log, &hhead)
-    log_debug(lsnd->log, "body:%s", head->body);
+    log_debug(lsnd->log, "Recv room join ack");
 
     /* > 提取应答信息 */
     ack = mesg_room_join_ack__unpack(NULL, hhead.length, (void *)(head + 1));
