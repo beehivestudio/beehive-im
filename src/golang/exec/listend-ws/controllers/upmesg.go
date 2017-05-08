@@ -459,6 +459,7 @@ func lsnd_room_send_data_cb(sid uint64, cid uint64, param interface{}) int {
 	}
 
 	ctx := dp.ctx
+	ctx.log.Debug("Send room data! sid:%d cid:%d", sid, cid)
 
 	/* > 获取会话数据 */
 	extra := ctx.chat.SessionGetParam(sid, cid)
@@ -626,7 +627,7 @@ func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Recv room chat message!")
+	ctx.log.Debug("Recv room broadcast message!")
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
@@ -643,6 +644,8 @@ func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 		ctx.log.Error("Unmarshal room broadcast failed! errmsg:%s", err.Error())
 		return -1
 	}
+
+	ctx.log.Debug("Recv room broadcast! rid:%d", req.GetRid())
 
 	/* > 遍历下发ROOM-CHAT消息 */
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}

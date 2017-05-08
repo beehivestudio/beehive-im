@@ -194,7 +194,7 @@ int lws_mesg_room_join_handler(struct lws_context *lws, struct lws *wsi, lws_cnt
 
     /* 设置ONLINE消息 */
     join.uid = 18600522324;
-    join.rid = 10000000015;
+    join.rid = 1000000015;
 
     len = mesg_room_join__get_packed_size(&join);
     item->len = sizeof(mesg_header_t) + (uint32_t)len;

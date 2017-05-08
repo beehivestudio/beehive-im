@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -298,13 +297,11 @@ func (req *RoomPushReq) push_handler(
 	/* > 申请聊天室消息序列号  */
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_MSGID_INCR, param.rid)
 
-	msgid_str, err := redis.String(rds.Do("ZINCRBY", key, 1))
+	msgid, err := redis.Uint64(rds.Do("INCRBY", key, 1))
 	if nil != err {
-		ctx.log.Error("Get room msgid failed! errmsg:%s", err.Error())
+		ctx.log.Error("Get room msgid failed! key:%s errmsg:%s", key, err.Error())
 		return comm.ERR_SYS_SYSTEM, err
 	}
-
-	msgid, _ := strconv.ParseInt(msgid_str, 10, 64)
 
 	/* > 生成PB数据 */
 	rsp := &mesg.MesgRoomBc{
