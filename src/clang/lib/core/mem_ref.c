@@ -52,25 +52,32 @@ static int mem_ref_cmp_cb(const mem_ref_item_t *item1, const mem_ref_item_t *ite
  ******************************************************************************/
 int mem_ref_init(void)
 {
-    g_mem_ref_tab = hash_tab_creat(333,
+    hash_tab_t *tab;
+
+    tab = hash_tab_creat(333,
             (hash_cb_t)mem_ref_hash_cb,
             (cmp_cb_t)mem_ref_cmp_cb, NULL);
 
-    return (NULL == g_mem_ref_tab)? -1 : 0;
+    g_mem_ref_tab = tab;
+
+    return (NULL == tab)? -1 : 0;
 }
 
 /******************************************************************************
  **函数名称: mem_ref_alloc
  **功    能: 申请内存空间
- **输入参数: NONE
+ **输入参数:
+ **     size: 申请内存大小
+ **     pool: 内存池
+ **     alloc: 内存分配函数
+ **     dealloc: 内存回收函数
  **输出参数: NONE
  **返    回: 内存地址
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.07.04 00:33:34 #
  ******************************************************************************/
-void *mem_ref_alloc(size_t size, void *pool,
-        mem_alloc_cb_t alloc, mem_dealloc_cb_t dealloc)
+void *mem_ref_alloc(size_t size, void *pool, mem_alloc_cb_t alloc, mem_dealloc_cb_t dealloc)
 {
     void *addr;
 
@@ -89,6 +96,8 @@ void *mem_ref_alloc(size_t size, void *pool,
  **功    能: 添加新的引用
  **输入参数:
  **     addr: 内存地址
+ **     pool: 内存池
+ **     dealloc: 内存回收函数
  **输出参数: NONE
  **返    回: 引用次数
  **实现描述:
@@ -99,15 +108,16 @@ static int mem_ref_add(void *addr, void *pool, mem_dealloc_cb_t dealloc)
 {
     int cnt;
     mem_ref_item_t *item, key;
+    hash_tab_t *tab = g_mem_ref_tab;
 
 AGAIN:
     /* > 查询引用 */
     key.addr = addr;
 
-    item = hash_tab_query(g_mem_ref_tab, (void *)&key, RDLOCK);
+    item = hash_tab_query(tab, (void *)&key, RDLOCK);
     if (NULL != item) {
         cnt = (int)atomic32_inc(&item->count);
-        hash_tab_unlock(g_mem_ref_tab, &key, RDLOCK);
+        hash_tab_unlock(tab, &key, RDLOCK);
         return cnt;
     }
 
@@ -122,7 +132,7 @@ AGAIN:
     item->pool = pool;
     item->dealloc = dealloc;
 
-    if (hash_tab_insert(g_mem_ref_tab, item, WRLOCK)) {
+    if (hash_tab_insert(tab, item, WRLOCK)) {
         free(item);
         goto AGAIN;
     }
@@ -133,7 +143,9 @@ AGAIN:
 /******************************************************************************
  **函数名称: mem_ref_dealloc
  **功    能: 回收内存空间
- **输入参数: NONE
+ **输入参数:
+ **     pool: 内存池
+ **     addr: 内存地址
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
@@ -151,7 +163,7 @@ void mem_ref_dealloc(void *pool, void *addr)
  **输入参数:
  **     addr: 内存地址
  **输出参数: NONE
- **返    回: 内存池对象
+ **返    回: 内存池
  **实现描述:
  **注意事项: 内存addr必须由mem_ref_alloc进行分配.
  **作    者: # Qifeng.zou # 2016.07.06 #
@@ -160,16 +172,17 @@ int mem_ref_incr(void *addr)
 {
     int cnt;
     mem_ref_item_t *item, key;
+    hash_tab_t *tab = g_mem_ref_tab;
 
     key.addr = addr;
 
-    item = hash_tab_query(g_mem_ref_tab, (void *)&key, RDLOCK);
+    item = hash_tab_query(tab, (void *)&key, RDLOCK);
     if (NULL != item) {
         cnt = (int)atomic32_inc(&item->count);
-        hash_tab_unlock(g_mem_ref_tab, &key, RDLOCK);
+        hash_tab_unlock(tab, &key, RDLOCK);
         return cnt;
     }
-    hash_tab_unlock(g_mem_ref_tab, &key, RDLOCK);
+    hash_tab_unlock(tab, &key, RDLOCK);
 
     return -1; // 未创建结点
 }
@@ -191,32 +204,35 @@ int mem_ref_decr(void *addr)
 {
     int cnt;
     mem_ref_item_t *item, key;
+    hash_tab_t *tab = g_mem_ref_tab;
 
+    /* > 修改统计计数 */
     key.addr = addr;
 
-    item = hash_tab_query(g_mem_ref_tab, (void *)&key, RDLOCK);
+    item = hash_tab_query(tab, (void *)&key, RDLOCK);
     if (NULL == item) {
         return 0; // Didn't find
     }
 
     cnt = (int)atomic32_dec(&item->count);
 
-    hash_tab_unlock(g_mem_ref_tab, &key, RDLOCK);
+    hash_tab_unlock(tab, &key, RDLOCK);
 
+    /* > 是否释放内存 */
     if (0 == cnt) {
-        item = hash_tab_query(g_mem_ref_tab, (void *)&key, WRLOCK);
+        item = hash_tab_query(tab, (void *)&key, WRLOCK);
         if (NULL == item) {
-            return 0; // Didn't find
+            return 0; // 已被释放
         }
         else if (0 == item->count) {
-            hash_tab_delete(g_mem_ref_tab, (void *)&key, NONLOCK);
-            hash_tab_unlock(g_mem_ref_tab, &key, WRLOCK);
+            hash_tab_delete(tab, (void *)&key, NONLOCK);
+            hash_tab_unlock(tab, &key, WRLOCK);
 
             item->dealloc(item->pool, item->addr); // 释放被管理的内存
             free(item);
             return 0;
         }
-        hash_tab_unlock(g_mem_ref_tab, &key, WRLOCK);
+        hash_tab_unlock(tab, &key, WRLOCK);
         return 0;
     }
     return cnt;
@@ -237,19 +253,17 @@ int mem_ref_check(void *addr)
 {
     int cnt;
     mem_ref_item_t *item, key;
+    hash_tab_t *tab = g_mem_ref_tab;
 
     /* > 查询引用 */
     key.addr = addr;
 
-    item = (mem_ref_item_t *)hash_tab_query(g_mem_ref_tab, (void *)&key, RDLOCK);
+    item = (mem_ref_item_t *)hash_tab_query(tab, (void *)&key, RDLOCK);
     if (NULL != item) {
         cnt = item->count;
-        hash_tab_unlock(g_mem_ref_tab, &key, RDLOCK);
+        hash_tab_unlock(tab, &key, RDLOCK);
         return cnt;
     }
-    hash_tab_unlock(g_mem_ref_tab, &key, RDLOCK);
 
     return 0;
 }
-
-
