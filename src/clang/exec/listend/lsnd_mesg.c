@@ -800,6 +800,8 @@ static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_
         assert(0);
     }
 
+    log_debug(lsnd->log, "Connection was closed! sid:%lu cid:%lu", extra->sid, extra->cid);
+
     return 0;
 }
 

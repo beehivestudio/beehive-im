@@ -298,14 +298,17 @@ int chat_del_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 
     /* > 删除SID索引 */
     key.sid = sid;
-    key.cid = cid;
 
     item = hash_tab_query(chat->sid2cids, (void *)&key, WRLOCK);
     if (NULL != item) {
-        hash_tab_delete(chat->sid2cids, (void *)&key, NONLOCK);
-        hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
-        free(item);
-        return 0;
+        if (item->cid == cid) {
+            hash_tab_delete(chat->sid2cids, (void *)&key, NONLOCK);
+            hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
+            free(item);
+        }
+        else {
+            hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
+        }
     }
 
     return 0;
@@ -365,7 +368,6 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
     uint64_t cid;
     chat_sub_item_t *item;
     chat_session_t *ssn, key;
-    chat_sid2cid_item_t *item2, key2;
 
     /* 准备数据 */
     item = (chat_sub_item_t *)calloc(1, sizeof(chat_sub_item_t));
@@ -376,16 +378,10 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
     item->cmd = cmd;
 
     /* 查找SID->CID映射 */
-    key2.sid = sid;
-
-    item2 = (chat_sid2cid_item_t *)hash_tab_query(chat->sid2cids, (void *)&key2, RDLOCK);
-    if (NULL == item2) {
+    cid = chat_get_cid_by_sid(chat, sid);
+    if (0 == cid) {
         return -1;
     }
-
-    cid = item2->cid;
-
-    hash_tab_unlock(chat->sid2cids, (void *)&key2, RDLOCK);
 
     /* 查找对象 */
     key.sid = sid;
@@ -427,19 +423,12 @@ int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
     uint64_t cid;
     chat_session_t *ssn, key;
     chat_sub_item_t sub_key, *item;
-    chat_sid2cid_item_t *item2, key2;
 
     /* 查找SID->CID映射 */
-    key2.sid = sid;
-
-    item2 = (chat_sid2cid_item_t *)hash_tab_query(chat->sid2cids, (void *)&key2, RDLOCK);
-    if (NULL == item2) {
+    cid = chat_get_cid_by_sid(chat, sid);
+    if (0 == cid) {
         return -1;
     }
-
-    cid = item2->cid;
-
-    hash_tab_unlock(chat->sid2cids, (void *)&key2, RDLOCK);
 
     /* > 查找会话对象 */
     key.sid = sid;
