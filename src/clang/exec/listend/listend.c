@@ -238,20 +238,20 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
             break;
         }
 
-        /* > 初始化SID管理表 */
-        ctx->conn_sid_tab = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
+        /* > 初始化连接列表 */
+        ctx->conn_list = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
                 (hash_cb_t)lsnd_conn_sid_hash_cb,
                 (cmp_cb_t)lsnd_conn_sid_cmp_cb, NULL);
-        if (NULL == ctx->conn_sid_tab) {
+        if (NULL == ctx->conn_list) {
             log_error(log, "Initialize conn sid table failed!");
             break;
         }
 
         /* > 初始化KICK管理表 */
-        ctx->conn_kick_list = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
+        ctx->kick_list = hash_tab_creat(LSND_CONN_HASH_TAB_LEN,
                 (hash_cb_t)lsnd_conn_kick_hash_cb,
                 (cmp_cb_t)lsnd_conn_kick_cmp_cb, NULL);
-        if (NULL == ctx->conn_kick_list) {
+        if (NULL == ctx->kick_list) {
             log_error(log, "Initialize conn kick table failed!");
             break;
         }

@@ -190,14 +190,14 @@ void lsnd_timer_kick_handler(void *_ctx)
     }
 
     /* > 获取已经的被踢连接CID列表 */
-    hash_tab_trav(ctx->conn_kick_list, (trav_cb_t)lsnd_kick_trav_cb, timeout_list, RDLOCK);
+    hash_tab_trav(ctx->kick_list, (trav_cb_t)lsnd_kick_trav_cb, timeout_list, RDLOCK);
 
     /* > 依次执行踢除连接的操作 */
     while (NULL != (addr = list_lpop(timeout_list))) {
         cid = (uint64_t)addr;
 
         key.cid = cid;
-        item = hash_tab_delete(ctx->conn_kick_list, &key, WRLOCK);
+        item = hash_tab_delete(ctx->kick_list, &key, WRLOCK);
         if (NULL == item) {
             continue;
         }
@@ -239,7 +239,7 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
     item->cid = conn->cid;
     item->ttl = conn->kick_ttl;
 
-    hash_tab_insert(ctx->conn_kick_list, item, WRLOCK);
+    hash_tab_insert(ctx->kick_list, item, WRLOCK);
 
     return 0;
 }
@@ -282,7 +282,7 @@ void lsnd_timer_info_handler(void *_ctx)
     info.nation = conf->operator.nation;
     info.ip = conf->access.ipaddr;
     info.port = conf->access.port;
-    info.connections = hash_tab_total(ctx->conn_sid_tab);
+    info.connections = hash_tab_total(ctx->conn_list);
 
     log_debug(ctx->log, "Listen info! nid:%d nation:%s opid:%d ip:%s port:%d",
             info.nid, info.nation, info.opid, info.ip, info.port);

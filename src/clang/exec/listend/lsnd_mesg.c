@@ -97,7 +97,7 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
     head->nid = conf->nid;
 
     /* > 插入SID表(SID+CID为主键) */
-    if (hash_tab_insert(lsnd->conn_sid_tab, conn, WRLOCK)) {
+    if (hash_tab_insert(lsnd->conn_list, conn, WRLOCK)) {
         log_error(lsnd->log, "Insert into sid table failed! sid:%lu cid:%lu seq:%lu len:%d chksum:0x%08X!",
                 conn->sid, conn->cid, head->seq, len, head->chksum);
         return -1;
@@ -136,7 +136,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     key.sid = ack->sid;
     key.cid = cid;
 
-    extra = hash_tab_query(lsnd->conn_sid_tab, &key, WRLOCK);
+    extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK);
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu", ack->sid, cid);
         return -1;
@@ -144,12 +144,12 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
         log_error(lsnd->log, "Connection status isn't establish! sid:%lu cid:%lu", ack->sid, cid);
         lsnd_kick_insert(lsnd, extra);
-        hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK);
+        hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
         return -1;
     }
     else if (0 == ack->sid) { /* SID分配失败 */
         lsnd_kick_insert(lsnd, extra);
-        hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK);
+        hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
         log_error(lsnd->log, "Alloc sid failed! kick this connection! sid:%lu cid:%lu errmsg:%s",
                 ack->sid, cid, ack->errmsg);
         return -1;
@@ -163,7 +163,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
     extra->terminal = ack->terminal;
 
-    hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK);
+    hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
 
     return 0;
 }
@@ -265,7 +265,7 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
     key.sid = head->sid;
     key.cid = conn->cid;
 
-    extra = hash_tab_query(lsnd->conn_sid_tab, &key, WRLOCK); // 加写锁
+    extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK); // 加写锁
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", head->sid);
         return -1;
@@ -273,7 +273,7 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
 
     extra->stat = CHAT_CONN_STAT_OFFLINE;
 
-    hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+    hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
 
     /* > 转发下线请求 */
     rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -368,14 +368,14 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
     key.sid = hhead.sid;
     key.cid = chat_get_cid_by_sid(lsnd->chat_tab, hhead.sid);
 
-    extra = hash_tab_query(lsnd->conn_sid_tab, &key, WRLOCK); // 加写锁
+    extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK); // 加写锁
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
         mesg_room_join_ack__free_unpacked(ack, NULL);
         return 0;
     }
     else if (CHAT_CONN_STAT_ONLINE != extra->stat) {
-        hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+        hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
         mesg_room_join_ack__free_unpacked(ack, NULL);
         log_error(lsnd->log, "Connection status isn't online! sid:%lu", hhead.sid);
         return 0;
@@ -391,12 +391,12 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
     if ((uint32_t)-1 == gid) {
         log_error(lsnd->log, "Add into chat room failed! sid:%lu rid:%lu gid:%u",
                 hhead.sid, ack->rid, ack->gid);
-        hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+        hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
         mesg_room_join_ack__free_unpacked(ack, NULL);
         return -1;
     }
 
-    hash_tab_unlock(lsnd->conn_sid_tab, &key, WRLOCK); // 解锁
+    hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
     mesg_room_join_ack__free_unpacked(ack, NULL);
 
     /* 下发应答请求 */
@@ -532,14 +532,14 @@ static int lsnd_room_mesg_trav_send_handler(uint64_t *sid, lsnd_room_mesg_param_
     key.sid = (uint64_t)sid;
     key.cid = chat_get_cid_by_sid(lsnd->chat_tab, (uint64_t)sid);
 
-    extra = hash_tab_query(lsnd->conn_sid_tab, &key, RDLOCK);
+    extra = hash_tab_query(lsnd->conn_list, &key, RDLOCK);
     if (NULL == extra) {
         return 0;
     }
 
     cid = extra->cid;
 
-    hash_tab_unlock(lsnd->conn_sid_tab, &key, RDLOCK);
+    hash_tab_unlock(lsnd->conn_list, &key, RDLOCK);
 
     /* > 下发数据给指定连接 */
     acc_async_send(lsnd->access, head->type, cid, param->data, param->length);
@@ -646,7 +646,7 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
     key.sid = hhead.sid;
     key.cid = chat_get_cid_by_sid(lsnd->chat_tab, hhead.sid);
 
-    conn = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
+    conn = hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
     if (NULL == conn) {
         log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
         return -1;
@@ -777,7 +777,7 @@ static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_
     /* 从SID表中清除 */
     key.sid = extra->sid;
     key.cid = extra->cid;
-    item = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
+    item = hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
     if (item != extra) {
         assert(0);
     }
