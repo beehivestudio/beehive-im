@@ -234,6 +234,7 @@ int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
         return -1;
     }
 
+    conn->stat = CHAT_CONN_STAT_KICK;
     conn->kick_ttl = time(NULL) + LSND_KICK_TTL;
 
     item->cid = conn->cid;

@@ -130,7 +130,8 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
  ******************************************************************************/
 static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uint64_t cid)
 {
-    lsnd_conn_extra_t *extra, key;
+    uint64_t old_cid;
+    lsnd_conn_extra_t *extra, key, *old_extra;
 
     /* > 查找扩展数据 */
     key.sid = ack->sid;
@@ -155,6 +156,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
         return -1;
     }
 
+    /* > 更新扩展数据 */
     extra->sid = ack->sid;
     extra->seq = ack->seq;
     extra->stat = CHAT_CONN_STAT_ONLINE;
@@ -163,9 +165,21 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
     extra->terminal = ack->terminal;
 
-    chat_set_sid_to_cid(lsnd->chat_tab, extra->sid, extra->cid);
-
     hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
+
+    /* > 踢除老连接 */
+    old_cid = chat_get_cid_by_sid(lsnd->chat_tab, key.sid);
+    if ((0 != old_cid) && (old_cid != cid)) {
+        key.sid = key.sid;
+        key.cid = old_cid;
+        old_extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK);
+        if (NULL != old_extra) {
+            lsnd_kick_insert(lsnd, old_extra);
+            hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
+        }
+    }
+
+    chat_set_sid_to_cid(lsnd->chat_tab, key.sid, cid);
 
     return 0;
 }
@@ -818,7 +832,13 @@ static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd,
 
     /* > 更新序列号 */
     pthread_rwlock_wrlock(&conn->lock);
-    if (conn->seq >= hhead.seq) {
+    if (CHAT_CONN_STAT_KICK == conn->stat) {
+        pthread_rwlock_unlock(&conn->lock);
+        log_debug(lsnd->log, "This connection was kicked! sid:%lu cid:%lu",
+                conn->sid, conn->cid);
+        return 0;
+    }
+    else if (conn->seq >= hhead.seq) {
         pthread_rwlock_unlock(&conn->lock);
         log_debug(lsnd->log, "Message seq is invalid! cmd:0x%04X sid:%lu seq:%lu/%lu len:%d",
                 hhead.type, hhead.sid, hhead.seq, conn->seq, len);
