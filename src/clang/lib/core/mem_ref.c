@@ -81,6 +81,10 @@ void *mem_ref_alloc(size_t size, void *pool, mem_alloc_cb_t alloc, mem_dealloc_c
 {
     void *addr;
 
+    if (0 == size) {
+        return NULL;
+    }
+
     addr = (void *)alloc(pool, size);
     if (NULL == addr) {
         return NULL;

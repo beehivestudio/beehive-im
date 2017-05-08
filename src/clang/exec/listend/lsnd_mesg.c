@@ -814,7 +814,7 @@ static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd,
 
     /* > 更新序列号 */
     pthread_rwlock_wrlock(&conn->lock);
-    if (conn->seq < hhead.seq) {
+    if (conn->seq >= hhead.seq) {
         pthread_rwlock_unlock(&conn->lock);
         log_debug(lsnd->log, "Message seq is invalid! sid:%lu seq:%lu/%lu len:%d",
                 hhead.sid, hhead.seq, conn->seq, len);

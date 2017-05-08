@@ -267,6 +267,7 @@ static int lsnd_conf_parse_access_queue(xml_tree_t *xml, acc_conf_t *conf, log_c
     /* > 获取队列配置 */
     LSND_LOAD_QUEUE(xml, fix, ".CONNQ", &conf->connq);
     LSND_LOAD_QUEUE(xml, fix, ".SENDQ", &conf->sendq);
+    LSND_LOAD_QUEUE(xml, fix, ".SENDQ", &conf->recvq);
 
     return 0;
 }
