@@ -50,8 +50,8 @@ typedef struct
 typedef struct
 {
     time_t next_trav_tm;                /* 下一次遍历时间 */
-    pthread_rwlock_t lock;              /* 读写锁 */
     uint64_t seq;                       /* 序列号 */
+    pthread_rwlock_t lock;              /* 读写锁 */
     rbt_tree_t *tab;                    /* 管理表 */
 } sdk_send_mgr_t;
 

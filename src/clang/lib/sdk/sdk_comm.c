@@ -372,9 +372,7 @@ uint64_t sdk_gen_seq(sdk_cntx_t *ctx)
     uint64_t seq;
     sdk_send_mgr_t *mgr = &ctx->mgr;
 
-    pthread_rwlock_wrlock(&mgr->lock);
-    seq = ++mgr->seq;
-    pthread_rwlock_unlock(&mgr->lock);
+    seq = atomic64_inc(&mgr->seq);
 
     return seq;
 }

@@ -176,6 +176,8 @@ int sdk_mesg_send_sync_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
     head->type = CMD_SYNC;
     head->length = 0;
     head->sid = info->sid;
+    head->seq = sdk_gen_seq(ctx);
+    head->chksum = MSG_CHKSUM_VAL;
 
     /* 3. 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
@@ -257,7 +259,10 @@ int sdk_mesg_ping_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
 int sdk_mesg_online_ack_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck, void *addr)
 {
     MesgOnlineAck *ack;
+    sdk_send_mgr_t *mgr = &ctx->mgr;
     mesg_header_t *head = (mesg_header_t *)addr;
+
+    log_debug(ctx->log, "Recv online ack!");
 
     /* > 提取上线应答数据*/
     ack = mesg_online_ack__unpack(NULL, head->length, (void *)(head + 1));
@@ -265,6 +270,8 @@ int sdk_mesg_online_ack_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sc
         log_error(ctx->log, "Unpack online ack failed!");
         return SDK_ERR;
     }
+
+    mgr->seq = ack->seq;
 
     if (!ack->code) {
         SDK_SSVR_SET_ONLINE(ssvr, true);

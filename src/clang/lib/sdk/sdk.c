@@ -243,8 +243,6 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
         return -1; /* 网络已断开 */
     }
 
-    seq = sdk_gen_seq(ctx);
-
     /* > 申请内存空间 */
     addr = (void *)calloc(1, sizeof(mesg_header_t)+size+Random()%20);
     if (NULL == addr) {
@@ -260,8 +258,10 @@ uint32_t sdk_async_send(sdk_cntx_t *ctx, uint32_t cmd,
     head->type = cmd;
     head->length = size;
     head->sid = ctx->sid;
-    head->seq = seq;
+    head->seq = sdk_gen_seq(ctx);
     head->chksum = MSG_CHKSUM_VAL;
+
+    seq = head->seq;
 
     memcpy(head+1, data, size);
 

@@ -203,6 +203,8 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
+    log_debug(lsnd->log, "Recv online ack!");
+
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
 
@@ -816,8 +818,8 @@ static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd,
     pthread_rwlock_wrlock(&conn->lock);
     if (conn->seq >= hhead.seq) {
         pthread_rwlock_unlock(&conn->lock);
-        log_debug(lsnd->log, "Message seq is invalid! sid:%lu seq:%lu/%lu len:%d",
-                hhead.sid, hhead.seq, conn->seq, len);
+        log_debug(lsnd->log, "Message seq is invalid! cmd:0x%04X sid:%lu seq:%lu/%lu len:%d",
+                hhead.type, hhead.sid, hhead.seq, conn->seq, len);
         return -1;
     }
     conn->seq = hhead.seq;

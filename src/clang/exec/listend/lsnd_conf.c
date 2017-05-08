@@ -477,6 +477,7 @@ static int lsnd_conf_load_frwder(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t 
     }
 
     conf->sendq.max = str_to_num(node->value.str);
+    conf->recvq.max = conf->sendq.max;
     if (0 == conf->sendq.max) {
         log_error(log, "SENDQ.MAX is zero!");
         return -1;
@@ -491,6 +492,7 @@ static int lsnd_conf_load_frwder(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t 
     }
 
     conf->sendq.size = str_to_num(node->value.str);
+    conf->recvq.size = conf->sendq.size;
     if (0 == conf->sendq.size) {
         log_error(log, "SENDQ.SIZE is zero!");
         return -1;

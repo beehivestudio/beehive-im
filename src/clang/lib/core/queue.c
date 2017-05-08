@@ -28,6 +28,10 @@ queue_t *queue_creat(int max, int size)
 {
     queue_t *queue;
 
+    if (0 == max || 0 == size) {
+        return NULL;
+    }
+
     /* > 新建对象 */
     queue = (queue_t *)calloc(1, sizeof(queue_t));
     if (NULL == queue) {
