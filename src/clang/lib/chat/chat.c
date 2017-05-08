@@ -186,7 +186,10 @@ int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 {
     chat_session_t *ssn, key;
 
-    /* > 删除SID索引 */
+    /* > 删除SID->CID映射 */
+    chat_del_sid_to_cid(chat, sid, cid);
+
+    /* > 删除SID+CID索引 */
     key.sid = sid;
     key.cid = cid;
 
@@ -251,7 +254,7 @@ uint64_t chat_get_cid_by_sid(chat_tab_t *chat, uint64_t sid)
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.07 10:48:27 #
  ******************************************************************************/
-uint64_t chat_set_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
+int chat_set_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 {
     int ret;
     chat_sid2cid_item_t *item;
@@ -271,6 +274,38 @@ uint64_t chat_set_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
         free(item);
         log_error(chat->log, "Insert sid to cid map failed. sid:%lu cid:%lu.", sid, cid);
         return -1;
+    }
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: chat_del_sid_to_cid
+ **功    能: 删除SID->CID映射
+ **输入参数: 
+ **     chat: CHAT对象
+ **     sid: 会话ID
+ **     cid: 连接ID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.08 08:37:58 #
+ ******************************************************************************/
+int chat_del_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
+{
+    chat_sid2cid_item_t *item, key;
+
+    /* > 删除SID索引 */
+    key.sid = sid;
+    key.cid = cid;
+
+    item = hash_tab_query(chat->sid2cids, (void *)&key, WRLOCK);
+    if (NULL != item) {
+        hash_tab_delete(chat->sid2cids, (void *)&key, NONLOCK);
+        hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
+        free(item);
+        return 0;
     }
 
     return 0;

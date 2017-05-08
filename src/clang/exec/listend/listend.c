@@ -181,15 +181,15 @@ static int lsnd_conn_sid_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *ex
 }
 
 /* KICK哈希回调 */
-static uint64_t lsnd_conn_kick_hash_cb(lsnd_conn_extra_t *extra)
+static uint64_t lsnd_conn_kick_hash_cb(lsnd_kick_item_t *item)
 {
-    return (uint64_t)extra->sck;
+    return (uint64_t)item->cid;
 }
 
 /* KICK比较回调 */
-static int lsnd_conn_kick_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
+static int lsnd_conn_kick_cmp_cb(lsnd_kick_item_t *item1, lsnd_kick_item_t *item2)
 {
-    return (int)(extra1->sck - extra2->sck);
+    return (int)(item1->cid - item2->cid);
 }
 
 /******************************************************************************

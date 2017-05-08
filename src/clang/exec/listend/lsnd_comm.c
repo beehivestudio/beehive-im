@@ -217,18 +217,29 @@ void lsnd_timer_kick_handler(void *_ctx)
  **功    能: 清理踢人列表中的连接
  **输入参数:
  **     ctx: 全局信息
- **输出参数:
- **返    回: VOID
- **实现描述: 
+ **     conn: 被踢连接
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 将cid加入被踢列表
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.03 18:05:31 #
  ******************************************************************************/
 int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 {
-    conn->loc |= CHAT_EXTRA_LOC_KICK_TAB;
+    lsnd_kick_item_t *item;
+
+    item = calloc(1, sizeof(lsnd_kick_item_t));
+    if (NULL == item) {
+        log_error(ctx->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+        return -1;
+    }
+
     conn->kick_ttl = time(NULL) + LSND_KICK_TTL;
 
-    hash_tab_insert(ctx->conn_kick_list, conn, WRLOCK);
+    item->cid = conn->cid;
+    item->ttl = conn->kick_ttl;
+
+    hash_tab_insert(ctx->conn_kick_list, item, WRLOCK);
 
     return 0;
 }

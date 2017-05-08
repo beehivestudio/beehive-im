@@ -79,7 +79,8 @@ uint32_t chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uin
 int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid); // OK
 
 uint64_t chat_get_cid_by_sid(chat_tab_t *chat, uint64_t sid); // OK
-uint64_t chat_set_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid); // OK
+int chat_set_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid); // OK
+int chat_del_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid); // OK
 
 int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK

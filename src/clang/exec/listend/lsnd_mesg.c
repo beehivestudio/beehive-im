@@ -157,7 +157,6 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
 
     extra->sid = ack->sid;
     extra->seq = ack->seq;
-    extra->loc |= CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
     snprintf(extra->app_name, sizeof(extra->app_name), "%s", ack->app);
@@ -385,7 +384,6 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
     cid = extra->cid;
 
     /* > 更新扩展数据 */
-    extra->loc = CHAT_EXTRA_LOC_SID_TAB;
     extra->stat = CHAT_CONN_STAT_ONLINE;
 
     /* 将SID加入聊天室 */
@@ -654,8 +652,6 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
         return -1;
     }
 
-    conn->loc &= ~CHAT_EXTRA_LOC_SID_TAB;
-
     cid = conn->cid;
     lsnd_kick_insert(lsnd, conn); /* 放入被踢列表 */
 
@@ -748,7 +744,6 @@ static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_co
     extra->recv_time = ctm;
     extra->send_time = ctm;
     extra->keepalive_time = ctm;
-    extra->loc = CHAT_EXTRA_LOC_UNKNOWN;
     extra->stat = CHAT_CONN_STAT_ESTABLISH;
 
     return 0;
@@ -779,23 +774,12 @@ static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_
     extra->stat = CHAT_CONN_STAT_CLOSED;
     chat_del_session(lsnd->chat_tab, extra->sid, extra->cid);
 
-    if (extra->loc & CHAT_EXTRA_LOC_SID_TAB) {
-        key.sid = extra->sid;
-        item = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
-        if (item != extra) {
-            assert(0);
-        }
-        extra->loc &= ~CHAT_EXTRA_LOC_SID_TAB;
-    }
-
-    if (extra->loc & CHAT_EXTRA_LOC_KICK_TAB) {
-        key.sck = sck;
-        item = hash_tab_delete(lsnd->conn_kick_list, &key, WRLOCK);
-        if (item != extra) {
-            assert(0);
-        }
-
-        extra->loc &= ~CHAT_EXTRA_LOC_KICK_TAB;
+    /* 从SID表中清除 */
+    key.sid = extra->sid;
+    key.cid = extra->cid;
+    item = hash_tab_delete(lsnd->conn_sid_tab, &key, WRLOCK);
+    if (item != extra) {
+        assert(0);
     }
 
     return 0;

@@ -58,12 +58,6 @@ typedef enum
     , CHAT_TERM_TYPE_TOTAL
 } lsnd_terminal_type_e;
 
-/* 会话数据由哪个表维护 */
-#define CHAT_EXTRA_LOC_UNKNOWN      (0)      /* 未知 */
-#define CHAT_EXTRA_LOC_CID_TAB      (0x0001) /* CID表 */
-#define CHAT_EXTRA_LOC_SID_TAB      (0x0002) /* SID表 */
-#define CHAT_EXTRA_LOC_KICK_TAB     (0x0004) /* KICK表 */
-
 /* 连接状态 */
 typedef enum
 {
@@ -88,7 +82,6 @@ typedef struct
     uint64_t cid;                   /* 连接ID */
     uint64_t uid;                   /* 用户ID */
     lsnd_conn_stat_e stat;          /* 连接状态 */
-    uint32_t  loc;                  /* 用户数据由哪个表维护(CHAT_EXTRA_LOC_UNKNOWN~) */
 
     time_t create_time;             /* 创建时间 */
     time_t recv_time;               /* 最近接收数据时间 */
@@ -145,7 +138,7 @@ typedef struct _lsnd_cntx_t
     timer_task_t timer_info;        /* 定时上报帧听层信息 */
     /* 注意: 以下三个表互斥, 共同个管理类为lsnd_conn_extra_t的数据  */
     hash_tab_t *conn_sid_tab;       /* 连接管理表(以(SID+CID)为主键, 数据:lsnd_conn_extra_t) */
-    hash_tab_t *conn_kick_list;     /* 被踢管理表(以SCK为主键, 数据:lsnd_conn_extra_t) */
+    hash_tab_t *conn_kick_list;     /* 被踢管理表(以SCK为主键, 数据:lsnd_kick_item_t) */
 
     thread_pool_t *timer_task_tp;   /* 定时任务线程池 */
 } lsnd_cntx_t;
