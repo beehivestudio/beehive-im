@@ -537,13 +537,13 @@ static int rtmq_proxy_ssvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
         /* 2.1 转化字节序 */
         RTMQ_HEAD_NTOH(head, head);
 
-        log_trace(ssvr->log, "CheckSum:%u/%u type:%d len:%d flag:%d",
-                head->chksum, RTMQ_CHKSUM_VAL, head->type, head->length, head->flag);
+        log_trace(ssvr->log, "type:0x%04X len:%d flag:%d CheckSum:%u/%u",
+                head->type, head->length, head->flag, head->chksum, RTMQ_CHKSUM_VAL);
 
         /* 2.2 校验合法性 */
         if (!RTMQ_HEAD_ISVALID(head)) {
             ++ssvr->err_total;
-            log_error(ssvr->log, "Header is invalid! CheckSum:%u/%u type:%d len:%d flag:%d",
+            log_error(ssvr->log, "Header is invalid! CheckSum:%u/%u type:0x%04X len:%d flag:%d",
                     head->chksum, RTMQ_CHKSUM_VAL, head->type, head->length, head->flag);
             return RTMQ_ERR;
         }
@@ -819,7 +819,7 @@ static int rtmq_proxy_ssvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *s
             return rtmq_link_auth_ack_hdl(pxy, ssvr, sck, addr + sizeof(rtmq_header_t));
     }
 
-    log_error(ssvr->log, "Unknown type [%d]!", head->type);
+    log_error(ssvr->log, "Unknown type [0x%04X]!", head->type);
     return RTMQ_ERR;
 }
 

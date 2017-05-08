@@ -259,6 +259,8 @@ static int rtmq_proxy_worker_cmd_proc_req_hdl(rtmq_proxy_t *pxy, rtmq_worker_t *
                 reg = avl_query(pxy->reg, &key);
                 if (NULL == reg) {
                     ++worker->drop_total;   /* 丢弃计数 */
+                    log_trace(worker->log, "Drop message! type:0x%04X total:%d!",
+                            head->type, worker->drop_total);
                     queue_dealloc(rq, addr[idx]);
                     continue;
                 }

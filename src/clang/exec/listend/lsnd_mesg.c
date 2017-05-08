@@ -538,28 +538,13 @@ typedef struct
     mesg_header_t *hhead;       // 主机套接字
 } lsnd_room_mesg_param_t;
 
-static int lsnd_room_mesg_trav_send_handler(uint64_t *sid, lsnd_room_mesg_param_t *param)
+static int lsnd_room_mesg_trav_send_handler(chat_sid2cid_item_t *item, lsnd_room_mesg_param_t *param)
 {
-    uint64_t cid;
-    lsnd_conn_extra_t *extra, key;
     lsnd_cntx_t *lsnd = param->lsnd;
     mesg_header_t *head = param->hhead;
 
-    /* > 查找扩展数据 */
-    key.sid = (uint64_t)sid;
-    key.cid = chat_get_cid_by_sid(lsnd->chat_tab, (uint64_t)sid);
-
-    extra = hash_tab_query(lsnd->conn_list, &key, RDLOCK);
-    if (NULL == extra) {
-        return 0;
-    }
-
-    cid = extra->cid;
-
-    hash_tab_unlock(lsnd->conn_list, &key, RDLOCK);
-
     /* > 下发数据给指定连接 */
-    acc_async_send(lsnd->access, head->type, cid, param->data, param->length);
+    acc_async_send(lsnd->access, head->type, item->cid, param->data, param->length);
 
     return 0;
 }
@@ -613,6 +598,57 @@ int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void
 
     /* > 释放PROTO-BUF空间 */
     mesg_room_chat__free_unpacked(mesg, NULL);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_mesg_room_bc_handler
+ **功    能: 下发聊天室广播消息(下行)
+ **输入参数:
+ **     type: 数据类型
+ **     orig: 源结点ID
+ **     data: 需要转发的数据
+ **     len: 数据长度
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
+ **作    者: # Qifeng.zou # 2017.05.08 22:29:58 #
+ ******************************************************************************/
+int lsnd_mesg_room_bc_handler(int type, int orig, void *data, size_t len, void *args)
+{
+    MesgRoomBc *mesg;
+    lsnd_room_mesg_param_t param;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
+
+    log_debug(lsnd->log, "Recv chat room broadcast!");
+
+    /* > 转化字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+
+    /* > 解压PROTO-BUF */
+    mesg = mesg_room_bc__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == mesg) {
+        log_error(lsnd->log, "Unpack chat room broadcast failed!");
+        return -1;
+    }
+
+    /* > 给制定聊天室和分组发送消息 */
+    param.lsnd = lsnd;
+    param.data = data;
+    param.length = len;
+    param.hhead = &hhead;
+
+    chat_room_trav(lsnd->chat_tab, mesg->rid, 0,
+            (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
+
+    /* > 释放PROTO-BUF空间 */
+    mesg_room_bc__free_unpacked(mesg, NULL);
 
     return 0;
 }

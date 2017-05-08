@@ -282,7 +282,7 @@ int rtmq_proxy_launch(rtmq_proxy_t *pxy)
  **功    能: 消息处理的注册接口
  **输入参数:
  **     pxy: 全局对象
- **     type: 扩展消息类型 Range:(0 ~ RTMQ_TYPE_MAX)
+ **     type: 扩展消息类型
  **     proc: 回调函数
  **     param: 附加参数
  **输出参数: NONE
@@ -308,7 +308,7 @@ int rtmq_proxy_reg_add(rtmq_proxy_t *pxy, int type, rtmq_reg_cb_t proc, void *pa
     item->param = param;
 
     if (avl_insert(pxy->reg, item)) {
-        log_error(pxy->log, "Register maybe repeat! type:%d!", type);
+        log_error(pxy->log, "Register callback failed! type:0x%04X!", type);
         free(item);
         return RTMQ_ERR_REPEAT_REG;
     }

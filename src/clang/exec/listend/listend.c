@@ -357,7 +357,8 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_RTQ_REG_CB(ctx, CMD_KICK_REQ, lsnd_mesg_kick_handler, ctx);
 
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_JOIN_ACK, lsnd_mesg_room_join_ack_handler, ctx);
-    LSND_ACC_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_mesg_room_chat_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_mesg_room_chat_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_BC, lsnd_mesg_room_bc_handler, ctx);
 
     /* 注册定时任务回调 */
     lsnd_set_timer(ctx);
