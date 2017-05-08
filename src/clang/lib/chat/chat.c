@@ -257,23 +257,56 @@ uint64_t chat_get_cid_by_sid(chat_tab_t *chat, uint64_t sid)
 int chat_set_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 {
     int ret;
-    chat_sid2cid_item_t *item;
+    chat_sid2cid_item_t *item, key;
 
-    /* > 删除SID索引 */
-    item = (chat_sid2cid_item_t *)calloc(1, sizeof(chat_sid2cid_item_t));
-    if (NULL == item) {
-        log_error(chat->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
-        return -1;
+AGAIN:
+    /* > 查询SID->CID项 */
+    key.sid = sid;
+
+    item = hash_tab_query(chat->sid2cids, (void *)&key, WRLOCK);
+    if (NULL != item) {
+        if (item->cid == cid) {
+            hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
+            return 0; // 已存在
+        }
+        hash_tab_delete(chat->sid2cids, (void *)&key, NONLOCK); // 已加锁
+
+        /* > 新建SID->CID项 */
+        item = (chat_sid2cid_item_t *)calloc(1, sizeof(chat_sid2cid_item_t));
+        if (NULL == item) {
+            log_error(chat->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+            return -1;
+        }
+
+        item->sid = sid;
+        item->cid = cid;
+
+        ret = hash_tab_insert(chat->sid2cids, (void *)item, NONLOCK); // 已加锁
+        if (0 != ret) {
+            hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
+            free(item);
+            log_error(chat->log, "Insert sid to cid map failed. sid:%lu cid:%lu.", sid, cid);
+            return -1;
+        }
+        hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
     }
+    else {
+        /* > 新建SID->CID项 */
+        item = (chat_sid2cid_item_t *)calloc(1, sizeof(chat_sid2cid_item_t));
+        if (NULL == item) {
+            log_error(chat->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+            return -1;
+        }
 
-    item->sid = sid;
-    item->cid = cid;
+        item->sid = sid;
+        item->cid = cid;
 
-    ret = hash_tab_insert(chat->sid2cids, (void *)item, WRLOCK);
-    if (0 != ret) {
-        free(item);
-        log_error(chat->log, "Insert sid to cid map failed. sid:%lu cid:%lu.", sid, cid);
-        return -1;
+        ret = hash_tab_insert(chat->sid2cids, (void *)item, WRLOCK); // 加写锁
+        if (0 != ret) {
+            free(item);
+            log_error(chat->log, "Insert sid to cid map failed. sid:%lu cid:%lu.", sid, cid);
+            goto AGAIN;
+        }
     }
 
     return 0;
@@ -301,7 +334,7 @@ int chat_del_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 
     item = hash_tab_query(chat->sid2cids, (void *)&key, WRLOCK);
     if (NULL != item) {
-        if (item->cid == cid) {
+        if (item->cid == cid) { // 相等时才执行删除操作
             hash_tab_delete(chat->sid2cids, (void *)&key, NONLOCK);
             hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
             free(item);

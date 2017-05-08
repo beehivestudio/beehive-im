@@ -464,8 +464,7 @@ int lsnd_mesg_room_quit_handler(lsnd_conn_extra_t *conn, int type, void *data, i
 
     MESG_HEAD_HTON(head, head);
 
-    /* > 从聊天室中删除此会话 */
-    chat_del_session(lsnd->chat_tab, conn->sid, conn->cid);
+    /* > 从聊天室删除此会话 */
 
     /* > 转发UNJOIN请求 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -785,20 +784,17 @@ static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_co
  ******************************************************************************/
 static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra)
 {
-    lsnd_conn_extra_t key, *item;
+    lsnd_conn_extra_t key;
 
     pthread_rwlock_destroy(&extra->lock);
 
     extra->stat = CHAT_CONN_STAT_CLOSED;
     chat_del_session(lsnd->chat_tab, extra->sid, extra->cid);
 
-    /* 从SID表中清除 */
+    /* > 从CONN列表中清除 */
     key.sid = extra->sid;
     key.cid = extra->cid;
-    item = hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
-    if (item != extra) {
-        assert(0);
-    }
+    hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
 
     log_debug(lsnd->log, "Connection was closed! sid:%lu cid:%lu", extra->sid, extra->cid);
 
