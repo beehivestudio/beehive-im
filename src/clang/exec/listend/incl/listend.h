@@ -13,7 +13,7 @@
 #include "thread_pool.h"
 
 #define LSND_DEF_CONF_PATH      "../conf/listend.xml"     /* 默认配置路径 */
-#define LSND_CONN_HASH_TAB_LEN  (999999)    /* 哈希表长度 */
+#define LSND_CONN_HASH_TAB_LEN  (999)       /* 哈希表长度 */
 #define LSND_KICK_TTL           (5)
 
 #define CHAT_APP_NAME_LEN       (64)        /* APP名长度 */
