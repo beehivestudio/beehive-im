@@ -306,6 +306,7 @@ func (req *RoomPushReq) push_handler(
 	/* > 生成PB数据 */
 	rsp := &mesg.MesgRoomBc{
 		Rid:    proto.Uint64(param.rid),    // 聊天室ID
+		Msgid:  proto.Uint64(msgid),        // 消息ID
 		Level:  proto.Uint32(0),            // 优先级别
 		Time:   proto.Uint64(uint64(ctm)),  // 发送时间
 		Expire: proto.Uint32(param.expire), // 超时时间

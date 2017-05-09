@@ -18,4 +18,3 @@ do
         echo "$root/$item exists!"
     fi
 done
-

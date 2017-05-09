@@ -984,6 +984,7 @@ struct  _MesgRoomBc
 {
   ProtobufCMessage base;
   uint64_t rid;
+  uint64_t msgid;
   uint32_t level;
   uint64_t time;
   uint32_t expire;
@@ -991,19 +992,20 @@ struct  _MesgRoomBc
 };
 #define MESG_ROOM_BC__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_bc__descriptor) \
-    , 0, 0, 0, 0, {0,NULL} }
+    , 0, 0, 0, 0, 0, {0,NULL} }
 
 
 struct  _MesgRoomBcAck
 {
   ProtobufCMessage base;
   uint64_t rid;
+  uint64_t msgid;
   uint32_t code;
   char *errmsg;
 };
 #define MESG_ROOM_BC_ACK__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_bc_ack__descriptor) \
-    , 0, 0, NULL }
+    , 0, 0, 0, NULL }
 
 
 struct  _MesgRoomUsrNum

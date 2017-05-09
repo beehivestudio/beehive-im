@@ -7973,7 +7973,7 @@ const ProtobufCMessageDescriptor mesg_room_chat_ack__descriptor =
   (ProtobufCMessageInit) mesg_room_chat_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[5] =
+static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[6] =
 {
   {
     "rid",
@@ -7988,8 +7988,20 @@ static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[5] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "level",
+    "msgid",
     2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomBc, msgid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "level",
+    3,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -8001,7 +8013,7 @@ static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[5] =
   },
   {
     "time",
-    3,
+    4,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
@@ -8013,7 +8025,7 @@ static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[5] =
   },
   {
     "expire",
-    4,
+    5,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -8025,7 +8037,7 @@ static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[5] =
   },
   {
     "data",
-    5,
+    6,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_BYTES,
     0,   /* quantifier_offset */
@@ -8037,16 +8049,17 @@ static const ProtobufCFieldDescriptor mesg_room_bc__field_descriptors[5] =
   },
 };
 static const unsigned mesg_room_bc__field_indices_by_name[] = {
-  4,   /* field[4] = data */
-  3,   /* field[3] = expire */
-  1,   /* field[1] = level */
+  5,   /* field[5] = data */
+  4,   /* field[4] = expire */
+  2,   /* field[2] = level */
+  1,   /* field[1] = msgid */
   0,   /* field[0] = rid */
-  2,   /* field[2] = time */
+  3,   /* field[3] = time */
 };
 static const ProtobufCIntRange mesg_room_bc__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 5 }
+  { 0, 6 }
 };
 const ProtobufCMessageDescriptor mesg_room_bc__descriptor =
 {
@@ -8056,14 +8069,14 @@ const ProtobufCMessageDescriptor mesg_room_bc__descriptor =
   "MesgRoomBc",
   "",
   sizeof(MesgRoomBc),
-  5,
+  6,
   mesg_room_bc__field_descriptors,
   mesg_room_bc__field_indices_by_name,
   1,  mesg_room_bc__number_ranges,
   (ProtobufCMessageInit) mesg_room_bc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[3] =
+static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[4] =
 {
   {
     "rid",
@@ -8078,8 +8091,20 @@ static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[3] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "code",
+    "msgid",
     2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomBcAck, msgid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "code",
+    3,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
@@ -8091,7 +8116,7 @@ static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[3] =
   },
   {
     "errmsg",
-    3,
+    4,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -8103,14 +8128,15 @@ static const ProtobufCFieldDescriptor mesg_room_bc_ack__field_descriptors[3] =
   },
 };
 static const unsigned mesg_room_bc_ack__field_indices_by_name[] = {
-  1,   /* field[1] = code */
-  2,   /* field[2] = errmsg */
+  2,   /* field[2] = code */
+  3,   /* field[3] = errmsg */
+  1,   /* field[1] = msgid */
   0,   /* field[0] = rid */
 };
 static const ProtobufCIntRange mesg_room_bc_ack__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor mesg_room_bc_ack__descriptor =
 {
@@ -8120,7 +8146,7 @@ const ProtobufCMessageDescriptor mesg_room_bc_ack__descriptor =
   "MesgRoomBcAck",
   "",
   sizeof(MesgRoomBcAck),
-  3,
+  4,
   mesg_room_bc_ack__field_descriptors,
   mesg_room_bc_ack__field_indices_by_name,
   1,  mesg_room_bc_ack__number_ranges,
