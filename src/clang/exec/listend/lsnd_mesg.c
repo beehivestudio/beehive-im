@@ -144,12 +144,12 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     }
     else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
         log_error(lsnd->log, "Connection status isn't establish! sid:%lu cid:%lu", ack->sid, cid);
-        lsnd_kick_insert(lsnd, extra);
+        lsnd_kick_add(lsnd, extra);
         hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
         return -1;
     }
     else if (0 == ack->sid) { /* SID分配失败 */
-        lsnd_kick_insert(lsnd, extra);
+        lsnd_kick_add(lsnd, extra);
         hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
         log_error(lsnd->log, "Alloc sid failed! kick this connection! sid:%lu cid:%lu errmsg:%s",
                 ack->sid, cid, ack->errmsg);
@@ -174,7 +174,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
         key.cid = old_cid;
         old_extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK);
         if (NULL != old_extra) {
-            lsnd_kick_insert(lsnd, old_extra);
+            lsnd_kick_add(lsnd, old_extra);
             hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
         }
     }
@@ -706,7 +706,7 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
     }
 
     cid = conn->cid;
-    lsnd_kick_insert(lsnd, conn); /* 放入被踢列表 */
+    lsnd_kick_add(lsnd, conn); /* 放入被踢列表 */
 
     /* > 转发被踢原因 */
     acc_async_send(lsnd->access, type, cid, data, len);
