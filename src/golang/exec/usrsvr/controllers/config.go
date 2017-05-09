@@ -27,6 +27,8 @@ func (this *UsrSvrConfigCtrl) Config() {
 		return
 	case "listend": // 侦听层操作
 		this.Listend(ctx)
+	case "user-statis": // 用户数据统计
+		this.UserStatis(ctx)
 		return
 	}
 
@@ -538,15 +540,14 @@ func (req *UserStatisGetReq) query(ctx *UsrSvrCntx, prec int, num int) (UserStat
 	/* > 获取统计结果 */
 	key := fmt.Sprintf(comm.IM_KEY_PREC_USR_MAX_NUM, prec)
 
-	data, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
+	data, err := redis.StringMap(rds.Do("HGETALL", key))
 	if nil != err {
 		return list, err
 	}
 
-	data_len := len(data)
-	for idx := 0; idx < data_len; idx += 2 {
-		old_tm, _ := strconv.ParseInt(data[idx], 10, 64)
-		user_num, _ := strconv.ParseInt(data[idx+1], 10, 32)
+	for tm_str, num_str := range data {
+		old_tm, _ := strconv.ParseInt(tm_str, 10, 64)
+		user_num, _ := strconv.ParseInt(num_str, 10, 32)
 
 		tm := time.Unix(old_tm, 0)
 
@@ -562,6 +563,9 @@ func (req *UserStatisGetReq) query(ctx *UsrSvrCntx, prec int, num int) (UserStat
 	sort.Sort(list) /* 排序处理 */
 
 	/* > 整理统计结果 */
+	if num > len(list) {
+		num = len(list)
+	}
 	list = list[0:num]
 
 	num = len(list)

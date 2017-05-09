@@ -4,7 +4,7 @@
 ###1.1 设备注册接口<br>
 ---
 **功能描述**: 设备注册接口<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/register?uid=${uid}&nation=${nation}&city=${city}&town=${town}<br>
 **参数描述**:<br>
@@ -27,7 +27,7 @@
 ###1.2 获取IPLIST接口<br>
 ---
 **功能描述**: 获取IPLIST接口<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/iplist?type=${type}&uid=${uid}&sid=${sid}&clientip=${clientip}<br>
 **参数描述**:<br>
@@ -90,7 +90,7 @@
 ###2.3 聊天室推送<br>
 ---
 **功能描述**: 聊天室广播消息<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: POST<br>
 **接口路径**: /im/push?dim=room&rid=${rid}&expire=${expire}<br>
 **参数描述**:<br>
@@ -162,7 +162,7 @@
 ###3.1 添加在线人数统计<br>
 ---
 **功能描述**: 添加在线人数统计<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=add&option=user-statis&prec=${prec}&num=${num}<br>
 **参数描述**:<br>
@@ -180,7 +180,7 @@
 ###3.2 删除在线人数统计<br>
 ---
 **功能描述**: 删除在线人数统计<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=del&option=user-statis&prec=${prec}<br>
 **参数描述**:<br>
@@ -197,7 +197,7 @@
 ###3.3 在线人数统计列表<br>
 ---
 **功能描述**: 在线人数统计列表<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=list&option=user-statis<br>
 **参数描述**:<br>
@@ -217,7 +217,7 @@
 ###3.4 查询在线人数统计<br>
 ---
 **功能描述**: 查询在线人数统计<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/config?action=get&option=user-statis&prec=${prec}&num=${num}<br>
 **参数描述**:<br>
