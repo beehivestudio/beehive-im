@@ -93,7 +93,7 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
     }
 
     conn->sid = head->sid;
-    head->sid = conn->cid;
+    head->cid = conn->cid;
     head->nid = conf->nid;
 
     /* > 插入SID表(SID+CID为主键) */
@@ -104,7 +104,7 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
     }
 
     log_debug(lsnd->log, "Head is valid! sid:%lu cid:%lu seq:%lu len:%d chksum:0x%08X!",
-            conn->sid, conn->cid, head->seq, len, head->chksum);
+            head->sid, head->cid, head->seq, len, head->chksum);
 
     MESG_HEAD_HTON(head, head);
 
@@ -214,7 +214,6 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
  ******************************************************************************/
 int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, void *args)
 {
-    uint64_t cid;
     MesgOnlineAck *ack;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -223,8 +222,6 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
-
-    cid = hhead.sid;
 
     MESG_HEAD_PRINT(lsnd->log, &hhead)
 
@@ -235,7 +232,7 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
         return -1;
     }
 
-    if (lsnd_mesg_online_ack_logic(lsnd, ack, cid)) {
+    if (lsnd_mesg_online_ack_logic(lsnd, ack, hhead.cid)) {
         mesg_online_ack__free_unpacked(ack, NULL);
         return -1;
     }
@@ -243,7 +240,7 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
     mesg_online_ack__free_unpacked(ack, NULL);
 
     /* 下发应答请求 */
-    return acc_async_send(lsnd->access, type, cid, data, len);
+    return acc_async_send(lsnd->access, type, hhead.cid, data, len);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,7 +258,9 @@ int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, voi
  **输出参数:
  **返    回: 0:成功 !0:失败(注: 该函数始终返回-1)
  **实现描述: 修改连接状态 + 并释放相关资源.
- **注意事项: 1.需要将协议头转换为"本机"字节序 2.无需设置消息序列号
+ **注意事项:
+ **     1.需要将协议头转换为"本机"字节序
+ **     2.无需直接转发下线请求给上游模块, 待执行CLOSE操作时在上报上游模块.
  **作    者: # Qifeng.zou # 2016.10.01 09:15:01 #
  ******************************************************************************/
 int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
@@ -285,7 +284,7 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
 
     extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK); // 加写锁
     if (NULL == extra) {
-        log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", head->sid);
+        log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu", head->sid, head->cid);
         return -1;
     }
 
@@ -293,8 +292,7 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
 
     hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
 
-    /* > 转发下线请求 */
-    rtmq_proxy_async_send(lsnd->frwder, type, data, len);
+    /* 注意: 无需直接转发下线请求给上游模块, 待执行CLOSE操作时在上报上游模块 */
 
     return -1; /* 强制下线 */
 }
@@ -697,7 +695,7 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
 
     /* > 查找对应的连接 */
     key.sid = hhead.sid;
-    key.cid = chat_get_cid_by_sid(lsnd->chat_tab, hhead.sid);
+    key.cid = (0 == hhead.cid)? chat_get_cid_by_sid(lsnd->chat_tab, hhead.sid) : hhead.cid;
 
     conn = hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
     if (NULL == conn) {

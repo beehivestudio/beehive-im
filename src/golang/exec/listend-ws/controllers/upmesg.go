@@ -173,8 +173,6 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	}
 
-	head.SetSid(ack.GetSid())
-
 	/* > 获取&更新会话状态 */
 	extra := ctx.chat.SessionGetParam(ack.GetSid(), cid)
 	if nil == extra {

@@ -57,6 +57,7 @@ func LsndMesgCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
+	head.SetCid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())
 
 	ctx.log.Debug("Recv cmd [0x%04X] request! sid:%d cid:%d",
@@ -116,7 +117,7 @@ func LsndMesgOnlineHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
 	conn.SetSid(head.GetSid())
 	ctx.chat.SessionSetParam(head.GetSid(), conn.GetCid(), conn)
 
-	head.SetSid(conn.GetCid())
+	head.SetCid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())
 
 	ctx.log.Debug("Recv online request! cmd:0x%04X sid:%d cid:%d",
@@ -197,6 +198,7 @@ func LsndMesgPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
 
+	head.SetCid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())
 
 	/* > 转发给上游模块 */
@@ -248,6 +250,7 @@ func LsndMesgUnsubHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
+	head.SetCid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())
 
 	/* > 移除订阅消息 */
@@ -301,6 +304,7 @@ func LsndMesgRoomQuitHandler(conn *LsndConnExtra, cmd uint32, data []byte, lengt
 	/* > 字节序转换(网络->主机) */
 	head := comm.MesgHeadNtoh(data)
 
+	head.SetCid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())
 
 	/* > 退出指定聊天室 */

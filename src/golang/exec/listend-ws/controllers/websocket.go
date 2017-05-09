@@ -131,7 +131,7 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client) int {
 	ctx.log.Debug("Connection was closed! cid:%d sid:%d", conn.GetCid(), conn.GetSid())
 
 	ctx.chat.SessionDel(conn.GetSid(), conn.GetCid()) /* 清理数据 */
-	ctx.closed_notify(conn.GetSid())                  /* 上报给上游模块 */
+	ctx.closed_notify(conn.GetSid(), conn.GetCid())   /* 上报给上游模块 */
 
 	return 0
 }

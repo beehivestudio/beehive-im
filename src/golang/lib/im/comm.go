@@ -67,13 +67,14 @@ func GetSidAttr(pool *redis.Pool, sid uint64) (attr *SidAttr, err error) {
  **输入参数:
  **     pool: REDIS连接池
  **     sid: 会话SID
+ **     cid: 连接CID
  **输出参数: NONE
  **返    回: 错误信息
  **实现描述:
- **注意事项:
+ **注意事项: 当cid为0时，表示不用判断cid是否一致直接清理数据.
  **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
  ******************************************************************************/
-func CleanSidData(pool *redis.Pool, sid uint64) error {
+func CleanSidData(pool *redis.Pool, sid uint64, cid uint64) error {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -87,6 +88,8 @@ func CleanSidData(pool *redis.Pool, sid uint64) error {
 	attr, err := GetSidAttr(pool, sid)
 	if nil != err {
 		return err
+	} else if 0 != cid && attr.GetCid() != cid { // 当cid为0时，表示不用判断cid直接清理数据.
+		return nil
 	}
 
 	/* > 删除SID对应的数据 */

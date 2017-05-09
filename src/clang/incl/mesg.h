@@ -20,6 +20,7 @@ typedef struct
     uint32_t chksum;                    /* 校验值 */
 
     uint64_t sid;                       /* 会话ID */
+    uint64_t cid;                       /* 连接ID */
     uint32_t nid;                       /* 结点ID */
 
     uint64_t seq;                       /* 消息序列号(注: 全局唯一流水号) */
@@ -32,6 +33,7 @@ typedef struct
     (n)->length = htonl((h)->length); \
     (n)->chksum = htonl((h)->chksum); \
     (n)->sid = hton64((h)->sid); \
+    (n)->cid = hton64((h)->cid); \
     (n)->nid = htonl((h)->nid); \
     (n)->seq = hton64((h)->seq); \
 } while(0)
@@ -41,15 +43,17 @@ typedef struct
     (h)->length = ntohl((n)->length); \
     (h)->chksum = ntohl((n)->chksum); \
     (h)->sid = ntoh64((n)->sid); \
+    (h)->cid = ntoh64((n)->cid); \
     (h)->nid = ntohl((n)->nid); \
     (h)->seq = ntoh64((n)->seq); \
 } while(0)
 
-#define MESG_HEAD_SET(head, _type, _sid, _nid, _seq, _len) do { /* 设置协议头 */\
+#define MESG_HEAD_SET(head, _type, _sid, _cid, _nid, _seq, _len) do { /* 设置协议头 */\
     (head)->type = (_type); \
     (head)->length = (_len); \
     (head)->chksum = MSG_CHKSUM_VAL; \
     (head)->sid = (_sid); \
+    (head)->cid = (_cid); \
     (head)->nid = (_nid); \
     (head)->seq = (_seq); \
 } while(0)
@@ -58,8 +62,8 @@ typedef struct
 #define MESG_CHKSUM_ISVALID(head) (MSG_CHKSUM_VAL == (head)->chksum)
 
 #define MESG_HEAD_PRINT(log, head) \
-    log_debug((log), "type:0x%04X len:%d chksum:0x%X/0x%X sid:%lu nid:%u seq:%lu", \
+    log_debug((log), "type:0x%04X len:%d chksum:0x%X/0x%X sid:%lu cid:%lu nid:%u seq:%lu", \
             (head)->type, (head)->length, (head)->chksum, MSG_CHKSUM_VAL, \
-            (head)->sid, (head)->nid, (head)->seq);
+            (head)->sid, (head)->cid, (head)->nid, (head)->seq);
 
 #endif /*__MESG_H__*/

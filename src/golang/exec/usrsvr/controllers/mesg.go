@@ -318,16 +318,17 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 	/* 获取会话属性 */
 	attr, err := im.GetSidAttr(ctx.redis, req.GetSid())
 	if nil != err {
-		ctx.send_kick(req.GetSid(), head.GetNid(), comm.ERR_SYS_SYSTEM, err.Error())
+		ctx.send_kick(req.GetSid(), head.GetCid(), head.GetNid(), comm.ERR_SYS_SYSTEM, err.Error())
 		return
 	} else if (0 != attr.GetUid() && attr.GetUid() != req.GetUid()) ||
-		(0 != attr.GetNid() && attr.GetNid() != head.GetNid()) { // 注意：当nid为0时表示会话SID之前并未登录.
+		(0 != attr.GetNid() && (attr.GetNid() != head.GetNid() || attr.GetCid() != head.GetCid())) {
+		// 注意：当nid为0时表示会话SID之前并未登录.
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
 			attr.GetUid(), req.GetSid(), attr.GetNid(), head.GetNid(), head.GetCid())
 		/* 清理会话数据 */
-		im.CleanSidData(ctx.redis, head.GetSid())
+		im.CleanSidData(ctx.redis, head.GetSid(), attr.GetCid())
 		/* 将老连接踢下线 */
-		ctx.send_kick(req.GetSid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
+		ctx.send_kick(req.GetSid(), attr.GetCid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
 
 	/* 获取消息序列号 */
@@ -452,7 +453,7 @@ func (ctx *UsrSvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2017.01.11 23:23:50 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
-	return im.CleanSidData(ctx.redis, head.GetSid())
+	return im.CleanSidData(ctx.redis, head.GetSid(), head.GetCid())
 }
 
 /******************************************************************************
@@ -536,8 +537,8 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
 func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
 	code, err := im.UpdateSidData(ctx.redis, head.GetNid(), head.GetSid())
 	if nil != err {
-		im.CleanSidData(ctx.redis, head.GetSid()) // 清理会话数据
-		ctx.send_kick(head.GetSid(), head.GetNid(), code, err.Error())
+		im.CleanSidData(ctx.redis, head.GetSid(), head.GetCid()) // 清理会话数据
+		ctx.send_kick(head.GetSid(), head.GetCid(), head.GetNid(), code, err.Error())
 	}
 }
 
@@ -582,6 +583,7 @@ func UsrSvrPingHandler(cmd uint32, nid uint32, data []byte, length uint32, param
  **功    能: 发送踢人操作
  **输入参数:
  **     sid: 会话ID
+ **     cid: 连接ID
  **     nid: 结点ID
  **     code: 错误码
  **     errmsg: 错误描述
@@ -596,7 +598,7 @@ func UsrSvrPingHandler(cmd uint32, nid uint32, data []byte, length uint32, param
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.16 20:49:02 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg string) int {
+func (ctx *UsrSvrCntx) send_kick(sid uint64, cid uint64, nid uint32, code uint32, errmsg string) int {
 	var head comm.MesgHeader
 
 	ctx.log.Debug("Send kick command! sid:%d nid:%d", sid, nid)
@@ -622,6 +624,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, nid uint32, code uint32, errmsg str
 
 	head.Cmd = comm.CMD_KICK_REQ
 	head.Sid = sid
+	head.Cid = cid
 	head.Nid = nid
 	head.Length = uint32(length)
 

@@ -157,19 +157,21 @@ func (ctx *LsndCntx) kick_add(cid uint64) {
  **功    能: 发送下线消息
  **输入参数:
  **     sid: 会话SID
+ **     cid: 连接CID
  **输出参数: NONE
  **返    回: VOID
  **实现描述: 拼接OFFLINE请求, 并转发给上游模块.
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.17 17:05:00 #
  ******************************************************************************/
-func (ctx *LsndCntx) closed_notify(sid uint64) int {
+func (ctx *LsndCntx) closed_notify(sid uint64, cid uint64) int {
 	/* > 通用协议头 */
 	head := &comm.MesgHeader{
 		Cmd:    comm.CMD_OFFLINE,
 		Length: 0,
 		ChkSum: comm.MSG_CHKSUM_VAL,
 		Sid:    sid,
+		Cid:    cid,
 		Nid:    ctx.conf.GetNid(),
 	}
 
