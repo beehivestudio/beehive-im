@@ -264,7 +264,7 @@
 ###5.1 加入群组黑名单<br>
 ---
 **功能描述**: 将某人加入群组黑名单<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=add&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -282,7 +282,7 @@
 ###5.2 移除群组黑名单<br>
 ---
 **功能描述**: 将某人移除群组黑名单<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=del&option=blacklist&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -300,7 +300,7 @@
 ###5.3 获取群组黑名单<br>
 ---
 **功能描述**: 获取群组用户黑名单<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=get&option=blacklist&gid=${gid}<br>
 **参数描述**:<br>
@@ -323,7 +323,7 @@
 ###5.4 添加群组禁言<br>
 ---
 **功能描述**: 禁止某人在群内发言<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=add&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -341,7 +341,7 @@
 ###5.5 解除群组禁言<br>
 ---
 **功能描述**: 禁止某人在群组发言<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=del&option=gag&gid=${gid}&uid=${uid}<br>
 **参数描述**:<br>
@@ -359,7 +359,7 @@
 ###5.6 获取群组禁言<br>
 ---
 **功能描述**: 获取群组禁言<br>
-**当前状态**: 待测试<br>
+**当前状态**: Ok<br>
 **接口类型**: GET<br>
 **接口路径**: /im/group/config?action=get&option=gag&gid=${gid}<br>
 **参数描述**:<br>
