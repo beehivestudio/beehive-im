@@ -464,7 +464,7 @@ func lsnd_room_send_data_cb(sid uint64, cid uint64, param interface{}) int {
 	/* > 获取会话数据 */
 	extra := ctx.chat.SessionGetParam(sid, cid)
 	if nil == extra {
-		ctx.log.Error("Didn't find conn data! sid:%d", sid)
+		ctx.log.Error("Didn't find connection! sid:%d cid:%d", sid, cid)
 		return -1
 	}
 
