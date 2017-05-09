@@ -268,7 +268,7 @@ func (ctx *ChatTab) room_del_session(rid uint64, gid uint32, sid uint64, cid uin
 	key := &ChatSessionKey{sid: sid, cid: cid}
 
 	_, ok = group.sid_list[*key]
-	if ok {
+	if !ok {
 		return 0 // 无数据
 	}
 
