@@ -314,3 +314,51 @@ void lsnd_timer_info_handler(void *_ctx)
     free(addr);
     return;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsnd_send_offline
+ **功    能: 发送下线指令
+ **输入参数:
+ **     ctx: 全局信息
+ **     sid: 会话SID
+ **     cid: 连接CID
+ **     nid: 节点ID
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2017.05.10 06:45:51 #
+ ******************************************************************************/
+void lsnd_send_offline(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t nid)
+{
+    void *addr;
+    mesg_header_t *head;
+
+    /* > 组装PB协议 */
+    addr = (void *)calloc(1, sizeof(mesg_header_t));
+    if (NULL == addr) {
+        log_error(ctx->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+        return;
+    }
+
+    head = (mesg_header_t *)addr;
+
+    head->type = CMD_OFFLINE;
+    head->length = 0;
+    head->chksum = MSG_CHKSUM_VAL;
+    head->sid = sid;
+    head->cid = cid;
+    head->nid = nid;
+
+    MESG_HEAD_HTON(head, head);
+
+    /* > 发送数据 */
+    rtmq_proxy_async_send(ctx->frwder, CMD_OFFLINE, addr, sizeof(mesg_header_t));
+
+    free(addr);
+
+    return;
+}

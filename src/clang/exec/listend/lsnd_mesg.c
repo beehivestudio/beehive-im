@@ -273,18 +273,19 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, &hhead);
 
-    head->nid = ntohl(conf->nid);
+    head->cid = hton64(conn->cid);
+    head->nid = htonl(conf->nid);
 
     log_debug(lsnd->log, "sid:%lu seq:%lu len:%d body:%s!",
             hhead.sid, hhead.seq, len, hhead.body);
 
     /* > 查找扩展数据 */
-    key.sid = head->sid;
+    key.sid = hhead.sid;
     key.cid = conn->cid;
 
     extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK); // 加写锁
     if (NULL == extra) {
-        log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu", head->sid, head->cid);
+        log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu", hhead.sid, conn->cid);
         return -1;
     }
 
@@ -292,7 +293,8 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
 
     hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
 
-    /* 注意: 无需直接转发下线请求给上游模块, 待执行CLOSE操作时在上报上游模块 */
+    /* > 发送数据 */
+    rtmq_proxy_async_send(lsnd->frwder, CMD_OFFLINE, data, len);
 
     return -1; /* 强制下线 */
 }
@@ -783,6 +785,7 @@ static int lsnd_rid_list_cmp_cb(uint64_t *rid1, uint64_t *rid2)
 static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_conn_extra_t *extra)
 {
     time_t ctm = time(NULL);
+    lsnd_conf_t *conf = &lsnd->conf;
 
     /* 初始化设置 */
     extra->ctx = lsnd;
@@ -791,6 +794,8 @@ static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_co
 
     extra->sid = 0;
     extra->cid = acc_sck_get_cid(sck);
+    extra->nid = conf->nid;
+    extra->nid = 0;
     extra->create_time = ctm;
     extra->recv_time = ctm;
     extra->send_time = ctm;
@@ -829,6 +834,9 @@ static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_
     key.sid = extra->sid;
     key.cid = extra->cid;
     hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
+
+    /* > 发送下线指令 */
+    lsnd_send_offline(lsnd, extra->sid, extra->cid, extra->nid);
 
     log_debug(lsnd->log, "Connection was closed! sid:%lu cid:%lu", extra->sid, extra->cid);
 

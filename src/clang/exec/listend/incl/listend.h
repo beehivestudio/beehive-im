@@ -47,6 +47,7 @@ typedef struct
 
 typedef struct _lsnd_cntx_t lsnd_cntx_t;
 
+/* 终端类型 */
 typedef enum
 {
     CHAT_TERM_TYPE_UNKNOWN          /* 未知类型 */
@@ -80,6 +81,7 @@ typedef struct
     uint64_t sid;                   /* 会话ID */
     uint64_t seq;                   /* 消息序列号 */
     uint64_t cid;                   /* 连接ID */
+    uint32_t nid;                   /* 节点ID */
     uint64_t uid;                   /* 用户ID */
     lsnd_conn_stat_e stat;          /* 连接状态 */
 
@@ -154,5 +156,6 @@ void lsnd_timer_kick_handler(void *_ctx);
 void lsnd_timer_info_handler(void *_ctx);
 
 void lsnd_conn_update_seq(lsnd_conn_extra_t *extra, uint64_t seq);
+void lsnd_send_offline(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t nid);
 
 #endif /*__LISTEND_H__*/
