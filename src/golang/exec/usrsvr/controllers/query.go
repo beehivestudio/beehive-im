@@ -115,5 +115,13 @@ func (this *UsrSvrQueryCtrl) SidList(ctx *UsrSvrCntx) {
 		rsp.List[idx].Idx = idx
 	}
 
+	/* 回复应答 */
+	rsp.Len = num
+	rsp.Code = 0
+	rsp.ErrMsg = "Ok"
+
+	this.Data["json"] = rsp
+	this.ServeJSON()
+
 	return
 }
