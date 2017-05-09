@@ -213,8 +213,8 @@ void lsnd_timer_kick_handler(void *_ctx)
 }
 
 /******************************************************************************
- **函数名称: lsnd_kick_insert
- **功    能: 清理踢人列表中的连接
+ **函数名称: lsnd_kick_add
+ **功    能: 将指定连接加入被踢列表
  **输入参数:
  **     ctx: 全局信息
  **     conn: 被踢连接
@@ -224,7 +224,7 @@ void lsnd_timer_kick_handler(void *_ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.03 18:05:31 #
  ******************************************************************************/
-int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
+int lsnd_kick_add(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 {
     lsnd_kick_item_t *item;
 

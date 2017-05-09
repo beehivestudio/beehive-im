@@ -148,7 +148,7 @@ int lsnd_usage(const char *exec);
 int lsnd_acc_reg_add(lsnd_cntx_t *ctx, int type, lsnd_reg_cb_t proc, void *args);
 uint64_t lsnd_gen_cid(lsnd_cntx_t *ctx);
 
-int lsnd_kick_insert(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
+int lsnd_kick_add(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
 
 void lsnd_timer_kick_handler(void *_ctx);
 void lsnd_timer_info_handler(void *_ctx);
