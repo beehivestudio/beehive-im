@@ -14,7 +14,7 @@ import (
 	"beehive-im/src/golang/lib/dbase"
 	"beehive-im/src/golang/lib/log"
 
-	"beehive-im/src/golang/exec/micro/seqsvr/controllers/conf"
+	"beehive-im/src/golang/exec/mis/seqsvr/controllers/conf"
 )
 
 const (
