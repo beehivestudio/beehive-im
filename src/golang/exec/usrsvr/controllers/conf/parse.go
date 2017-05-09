@@ -30,9 +30,9 @@ type UsrSvrRedisConf struct {
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
 
-/* MYSQL配置 */
+/* USERDB配置 */
 type UsrSvrMysqlConf struct {
-	Name   xml.Name `xml:"MYSQL"`       // 结点名
+	Name   xml.Name `xml:"USERDB"`      // 结点名
 	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
@@ -71,7 +71,7 @@ type UsrSvrConfXmlData struct {
 	Port   int16               `xml:"PORT,attr"` // HTTP侦听端口
 	Seqsvr UsrSvrSeqsvrConf    `xml:"SEQSVR"`    // Seqsvr配置
 	Redis  UsrSvrRedisConf     `xml:"REDIS"`     // Redis配置
-	Mysql  UsrSvrMysqlConf     `xml:"MYSQL"`     // Mysql配置
+	UserDb UsrSvrMysqlConf     `xml:"USERDB"`    // USERDB配置
 	Mongo  UsrSvrMongoConf     `xml:"MONGO"`     // Mongo配置
 	Cipher string              `xml:"CIPHER"`    // 私密密钥
 	Log    UsrSvrLogConf       `xml:"LOG"`       // 日志配置
@@ -145,24 +145,24 @@ func (conf *UsrSvrConf) parse() (err error) {
 		return errors.New("Get password of redis failed!")
 	}
 
-	/* MYSQL配置 */
-	conf.Mysql.Addr = node.Mysql.Addr
-	if 0 == len(conf.Mysql.Addr) {
+	/* USERDB配置 */
+	conf.UserDb.Addr = node.UserDb.Addr
+	if 0 == len(conf.UserDb.Addr) {
 		return errors.New("Get mysql addr failed!")
 	}
 
-	conf.Mysql.Usr = node.Mysql.Usr
-	if 0 == len(conf.Mysql.Usr) {
+	conf.UserDb.Usr = node.UserDb.Usr
+	if 0 == len(conf.UserDb.Usr) {
 		return errors.New("Get user name of mysql failed!")
 	}
 
-	conf.Mysql.Passwd = node.Mysql.Passwd
-	if 0 == len(conf.Mysql.Passwd) {
+	conf.UserDb.Passwd = node.UserDb.Passwd
+	if 0 == len(conf.UserDb.Passwd) {
 		return errors.New("Get password of mysql failed!")
 	}
 
-	conf.Mysql.Dbname = node.Mysql.Dbname
-	if 0 == len(conf.Mysql.Dbname) {
+	conf.UserDb.Dbname = node.UserDb.Dbname
+	if 0 == len(conf.UserDb.Dbname) {
 		return errors.New("Get database of mysql failed!")
 	}
 

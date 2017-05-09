@@ -17,7 +17,7 @@ type UsrSvrConf struct {
 	ConfPath string           // 配置路径(自动获取)
 	Seqsvr   UsrSvrSeqsvrConf // SEQSVR配置
 	Redis    UsrSvrRedisConf  // REDIS配置
-	Mysql    UsrSvrMysqlConf  // MYSQL配置
+	UserDb   UsrSvrMysqlConf  // USERDB配置(MYSQL)
 	Mongo    UsrSvrMongoConf  // MONGO配置
 	Cipher   string           // 私密密钥
 	Log      log.Conf         // 日志配置

@@ -43,7 +43,7 @@ type UsrSvrCntx struct {
 	ipdict      *comm.IpDict      /* IP字典 */
 	frwder      *rtmq.Proxy       /* 代理对象 */
 	redis       *redis.Pool       /* REDIS连接池 */
-	mysql       *sql.DB           /* MYSQL数据库 */
+	userdb      *sql.DB           /* USERDB数据库 */
 	seqsvr_pool *thrift_pool.Pool /* SEQSVR连接池 */
 	listend     UsrSvrLsndNetWork /* 侦听层类型 */
 }
@@ -101,9 +101,9 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	}
 
 	/* > MYSQL连接池 */
-	auth := dbase.MySqlAuthStr(conf.Mysql.Usr, conf.Mysql.Passwd, conf.Mysql.Addr, conf.Mysql.Dbname)
+	auth := dbase.MySqlAuthStr(conf.UserDb.Usr, conf.UserDb.Passwd, conf.UserDb.Addr, conf.UserDb.Dbname)
 
-	ctx.mysql, err = sql.Open("mysql", auth)
+	ctx.userdb, err = sql.Open("mysql", auth)
 	if nil != err {
 		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s!", auth, err.Error())
 		return nil, err
