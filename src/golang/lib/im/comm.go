@@ -62,19 +62,20 @@ func GetSidAttr(pool *redis.Pool, sid uint64) (attr *SidAttr, err error) {
 }
 
 /******************************************************************************
- **函数名称: CleanSidData
+ **函数名称: CleanSessionData
  **功    能: 清理会话数据
  **输入参数:
  **     pool: REDIS连接池
  **     sid: 会话SID
  **     cid: 连接CID
+ **     nid: 节点ID
  **输出参数: NONE
  **返    回: 错误信息
  **实现描述:
- **注意事项: 当cid为0时，表示不用判断cid是否一致直接清理数据.
- **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
+ **注意事项: 当会话属性中的cid和nid与参数不一致时, 不进行清理操作.
+ **作    者: # Qifeng.zou # 2017.05.10 06:32:05 #
  ******************************************************************************/
-func CleanSidData(pool *redis.Pool, sid uint64, cid uint64) error {
+func CleanSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) error {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -88,8 +89,55 @@ func CleanSidData(pool *redis.Pool, sid uint64, cid uint64) error {
 	attr, err := GetSidAttr(pool, sid)
 	if nil != err {
 		return err
-	} else if 0 != cid && attr.GetCid() != cid { // 当cid为0时，表示不用判断cid直接清理数据.
+	} else if attr.GetCid() != cid || attr.GetNid() != nid {
+		return nil /* 数据不一致, 不进行清理操作 */
+	}
+
+	/* > 删除SID对应的数据 */
+	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
+
+	num, err := redis.Int(rds.Do("DEL", key))
+	if nil != err {
+		return err
+	} else if 0 == num {
+		pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
 		return nil
+	}
+
+	/* > 清理相关资源 */
+	chat.RoomCleanBySid(pool, attr.uid, attr.nid, sid)
+
+	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
+
+	return nil
+}
+
+/******************************************************************************
+ **函数名称: CleanSessionDataBySid
+ **功    能: 通过SID清理会话数据
+ **输入参数:
+ **     pool: REDIS连接池
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 错误信息
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
+ ******************************************************************************/
+func CleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
+	rds := pool.Get()
+	defer rds.Close()
+
+	pl := pool.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 获取SID对应的数据 */
+	attr, err := GetSidAttr(pool, sid)
+	if nil != err {
+		return err
 	}
 
 	/* > 删除SID对应的数据 */
@@ -117,6 +165,8 @@ func CleanSidData(pool *redis.Pool, sid uint64, cid uint64) error {
  **输入参数:
  **     pool: REDIS连接池
  **     sid: 会话SID
+ **     cid: 连接CID
+ **     nid: 节点ID
  **输出参数: NONE
  **返    回:
  **     code: 错误码
@@ -125,7 +175,7 @@ func CleanSidData(pool *redis.Pool, sid uint64, cid uint64) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 23:34:31 #
  ******************************************************************************/
-func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) (code uint32, err error) {
+func UpdateSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) (code uint32, err error) {
 	pl := pool.Get()
 	defer func() {
 		pl.Do("")
@@ -139,7 +189,9 @@ func UpdateSidData(pool *redis.Pool, nid uint32, sid uint64) (code uint32, err e
 	} else if 0 == attr.uid {
 		return comm.ERR_SVR_DATA_COLLISION, errors.New("Get sid attribute failed!")
 	} else if nid != attr.nid {
-		return comm.ERR_SVR_DATA_COLLISION, errors.New("Node of session is collision!")
+		return comm.ERR_SVR_DATA_COLLISION, errors.New("Nid is collision!")
+	} else if cid != attr.cid {
+		return comm.ERR_SVR_DATA_COLLISION, errors.New("Cid is collision!")
 	}
 
 	/* 更新会话属性 */

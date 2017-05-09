@@ -326,7 +326,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
 			attr.GetUid(), req.GetSid(), attr.GetNid(), head.GetNid(), head.GetCid())
 		/* 清理会话数据 */
-		im.CleanSidData(ctx.redis, head.GetSid(), attr.GetCid())
+		im.CleanSessionData(ctx.redis, head.GetSid(), attr.GetCid(), attr, GetNid())
 		/* 将老连接踢下线 */
 		ctx.send_kick(req.GetSid(), attr.GetCid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
@@ -453,7 +453,7 @@ func (ctx *UsrSvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2017.01.11 23:23:50 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) offline_handler(head *comm.MesgHeader) error {
-	return im.CleanSidData(ctx.redis, head.GetSid(), head.GetCid())
+	return im.CleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
 }
 
 /******************************************************************************
@@ -535,9 +535,9 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) ping_handler(head *comm.MesgHeader) {
-	code, err := im.UpdateSidData(ctx.redis, head.GetNid(), head.GetSid())
+	code, err := im.UpdateSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
 	if nil != err {
-		im.CleanSidData(ctx.redis, head.GetSid(), head.GetCid()) // 清理会话数据
+		im.CleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid()) // 清理会话数据
 		ctx.send_kick(head.GetSid(), head.GetCid(), head.GetNid(), code, err.Error())
 	}
 }
