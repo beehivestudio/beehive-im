@@ -45,8 +45,8 @@ int lsnd_mesg_def_handler(lsnd_conn_extra_t *conn, unsigned int type, void *data
     /* > 转换字节序 */
     MESG_HEAD_HTON(head, &hhead);
 
-    log_debug(lsnd->log, "sid:%lu seq:%lu len:%d body:%s!",
-            hhead.sid, hhead.seq, len, hhead.body);
+    log_debug(lsnd->log, "Recv unkonwn data! type:0x%04X sid:%lu seq:%lu len:%d!",
+            hhead.type, hhead.sid, hhead.seq, len);
 
     /* > 转发数据 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -889,11 +889,18 @@ static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd,
     reg = avl_query(lsnd->reg, &key);
     if (NULL == reg) {
         if (CHAT_CONN_STAT_ONLINE != conn->stat) {
-            log_warn(lsnd->log, "Drop unknown data! type:0x%X", key.type);
+            log_warn(lsnd->log, "Drop unknown data! type:0x%04X", key.type);
             return 0;
         }
-        log_warn(lsnd->log, "Forward unknown data! type:0x%X", key.type);
-        return lsnd_mesg_def_handler(conn, key.type, in, len, (void *)lsnd);
+
+        /* > 查找默认处理回调 */
+        key.type = CMD_UNKNOWN;
+
+        reg = avl_query(lsnd->reg, &key);
+        if (NULL == reg) {
+            log_warn(lsnd->log, "Drop unknown data! type:0x%04X", key.type);
+            return 0;
+        }
     }
 
     return reg->proc(conn, reg->type, in, len, reg->args);
