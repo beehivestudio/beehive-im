@@ -326,7 +326,7 @@ func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnlin
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
 			attr.GetUid(), req.GetSid(), attr.GetNid(), head.GetNid(), head.GetCid())
 		/* 清理会话数据 */
-		im.CleanSessionData(ctx.redis, head.GetSid(), attr.GetCid(), attr, GetNid())
+		im.CleanSessionData(ctx.redis, head.GetSid(), attr.GetCid(), attr.GetNid())
 		/* 将老连接踢下线 */
 		ctx.send_kick(req.GetSid(), attr.GetCid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
