@@ -24,8 +24,9 @@ const (
  **作    者: # Qifeng.zou # 2017.03.09 15:21:36 #
  ******************************************************************************/
 func (ctx *LsndCntx) Task() {
-	go ctx.task_timer_kick()      /* 定时踢连接 */
-	go ctx.task_timer_statistic() /* 定时统计上报 */
+	go ctx.task_timer_kick()          /* 定时踢连接 */
+	go ctx.task_timer_statistic()     /* 定时统计上报 */
+	go ctx.task_timer_clean_timeout() /* 定时清理超时连接 */
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,4 +134,67 @@ func (ctx *LsndCntx) gather_base_info() {
 
 	ctx.log.Debug("Send listen report succ!")
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: task_timer_clean_timeout
+ **功    能: 清理超时连接
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.10 19:58:58 #
+ ******************************************************************************/
+func (ctx *LsndCntx) task_timer_clean_timeout() {
+	for {
+		ctx.chat.TravSession(LsndCleanTimeoutHandler, ctx)
+		time.Sleep(30)
+	}
+}
+
+/******************************************************************************
+ **函数名称: LsndCleanTimeoutHandler
+ **功    能: 判断会话是否超时, 并踢除超时连接.
+ **输入参数:
+ **     sid: 会话SID
+ **     cid: 连接CID
+ **     param: 扩展参数
+ **输出参数: NONE
+ **返    回: 0:正常 !0:异常
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.10 19:58:58 #
+ ******************************************************************************/
+func LsndCleanTimeoutHandler(sid uint64, cid uint64, param interface{}) int {
+	ctx := param.(*LsndCntx)
+	if nil == ctx {
+		return -1
+	}
+
+	ctm := time.Now().Unix()
+
+	extra := ctx.chat.SessionGetParam(sid, cid)
+	if nil == extra {
+		ctx.log.Error("Didn't find conn data! sid:%d cid:%d", sid, cid)
+		return -1
+	}
+
+	conn, ok := extra.(*LsndConnExtra)
+	if !ok {
+		ctx.log.Error("Convert conn extra failed! sid:%d cid:%d", sid, cid)
+		return -1
+	} else if CONN_STATUS_LOGIN != conn.GetStatus() {
+		if ctm-conn.GetCtm() > 5 {
+			ctx.lws.Kick(conn.GetCid())
+		}
+	}
+
+	if ctm-conn.GetCtm() > 300 {
+		ctx.lws.Kick(conn.GetCid())
+	}
+
+	return 0
 }

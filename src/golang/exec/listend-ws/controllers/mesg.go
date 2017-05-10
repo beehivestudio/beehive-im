@@ -54,6 +54,12 @@ func LsndMesgCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 		return -1
 	}
 
+	if !conn.IsStatus(CONN_STATUS_LOGIN) {
+		ctx.lws.Kick(conn.GetCid())
+		ctx.log.Error("Connection isn't online! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+		return -1
+	}
+
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
 
@@ -161,6 +167,12 @@ func LsndMesgOfflineHandler(conn *LsndConnExtra, cmd uint32, data []byte, length
 
 	ctx.log.Debug("Recv offline request! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
 
+	if !conn.IsStatus(CONN_STATUS_LOGIN) {
+		ctx.lws.Kick(conn.GetCid())
+		ctx.log.Error("Connection isn't online! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+		return -1
+	}
+
 	/* > 更新会话状态 */
 	conn.SetStatus(CONN_STATUS_LOGOUT)
 
@@ -194,6 +206,12 @@ func LsndMesgPingHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 	}
 
 	ctx.log.Debug("Recv ping! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+
+	if !conn.IsStatus(CONN_STATUS_LOGIN) {
+		ctx.lws.Kick(conn.GetCid())
+		ctx.log.Error("Connection isn't online! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+		return -1
+	}
 
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
@@ -246,6 +264,12 @@ func LsndMesgUnsubHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 	}
 
 	ctx.log.Debug("Recv unsub request! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+
+	if !conn.IsStatus(CONN_STATUS_LOGIN) {
+		ctx.lws.Kick(conn.GetCid())
+		ctx.log.Error("Connection isn't online! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+		return -1
+	}
 
 	/* > 网络->主机字节序 */
 	head := comm.MesgHeadNtoh(data)
@@ -300,6 +324,12 @@ func LsndMesgRoomQuitHandler(conn *LsndConnExtra, cmd uint32, data []byte, lengt
 	}
 
 	ctx.log.Debug("Recv room quit request! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+
+	if !conn.IsStatus(CONN_STATUS_LOGIN) {
+		ctx.lws.Kick(conn.GetCid())
+		ctx.log.Error("Connection isn't online! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+		return -1
+	}
 
 	/* > 字节序转换(网络->主机) */
 	head := comm.MesgHeadNtoh(data)

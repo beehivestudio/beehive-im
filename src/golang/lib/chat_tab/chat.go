@@ -515,7 +515,7 @@ func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
 }
 
 /******************************************************************************
- **函数名称: Trav
+ **函数名称: TravRoom
  **功    能: 遍历聊天室
  **输入参数:
  **     rid: 聊天室ID
@@ -528,7 +528,7 @@ func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.20 23:52:36 #
  ******************************************************************************/
-func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param interface{}) int {
+func (ctx *ChatTab) TravRoom(rid uint64, gid uint32, proc ChatTravProcCb, param interface{}) int {
 	rs := &ctx.rooms[rid%ROOM_MAX_LEN]
 
 	rs.RLock()
@@ -552,6 +552,26 @@ func (ctx *ChatTab) Trav(rid uint64, gid uint32, proc ChatTravProcCb, param inte
 	}
 
 	return room.group_trav(group, proc, param)
+}
+
+/******************************************************************************
+ **函数名称: TravSession
+ **功    能: 遍历所有会话
+ **输入参数:
+ **     proc: 处理回调
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.10 20:33:38 #
+ ******************************************************************************/
+func (ctx *ChatTab) TravSession(proc ChatTravProcCb, param interface{}) {
+	for idx := 0; idx < SESSION_MAX_LEN; idx += 1 {
+		sl := &ctx.sessions[idx]
+
+		sl.trav_list(proc, param)
+	}
 }
 
 /******************************************************************************

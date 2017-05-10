@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"time"
+
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/lws"
 )
@@ -21,6 +23,8 @@ func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
 		sid:    0,
 		cid:    client.GetCid(),
 		status: CONN_STATUS_READY,
+		ctm:    time.Now().Unix(),
+		utm:    time.Now().Unix(),
 	}
 
 	client.SetUserData(conn)
@@ -47,6 +51,8 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 		ctx.log.Error("Get connection extra data failed!")
 		return -1
 	}
+
+	conn.utm = time.Now().Unix()
 
 	/* > 字节序转化 */
 	head := comm.MesgHeadNtoh(data)

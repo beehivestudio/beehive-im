@@ -68,6 +68,8 @@ type LsndConnExtra struct {
 	sid          uint64 /* 会话ID */
 	seq          uint64 /* 消息序列号 */
 	status       int    /* 连接状态(CONN_STATUS_READY...) */
+	ctm          int64  /* 创建时间 */
+	utm          int64  /* 更新时间 */
 }
 
 /******************************************************************************

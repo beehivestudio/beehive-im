@@ -138,6 +138,22 @@ func (conn *LsndConnExtra) IsStatus(status int) bool {
 	return false
 }
 
+/* 获取创建时间 */
+func (conn *LsndConnExtra) GetCtm() int64 {
+	conn.RLock()
+	defer conn.RUnlock()
+
+	return conn.ctm
+}
+
+/* 获取更新时间 */
+func (conn *LsndConnExtra) GetUtm() int64 {
+	conn.RLock()
+	defer conn.RUnlock()
+
+	return conn.utm
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /* 加入被踢列表 */
