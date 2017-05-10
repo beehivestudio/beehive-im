@@ -64,7 +64,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 		return -1
 	}
 
-	ctx.log.Debug("Recv data! cmd:0x%04X sid:%d cid:%d seq:%d",
+	ctx.log.Debug("Websocket recv data! cmd:0x%04X sid:%d cid:%d seq:%d",
 		head.GetCmd(), head.GetSid(), conn.GetCid(), head.GetSeq())
 
 	/* > 查找&执行回调 */
@@ -102,6 +102,8 @@ func (ctx *LsndCntx) lsnd_conn_send(client *lws.Client, data []byte, length int)
 		return -1
 	}
 
+	ctx.log.Debug("Websocket send data! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+
 	head := comm.MesgHeadNtoh(data)
 
 	ctx.log.Debug("Send data to cid [%d]! cmd:0x%04X sid:%d chksum:0x%08X",
@@ -128,7 +130,8 @@ func (ctx *LsndCntx) lsnd_conn_destroy(client *lws.Client) int {
 		return -1
 	}
 
-	ctx.log.Debug("Connection was closed! cid:%d sid:%d", conn.GetCid(), conn.GetSid())
+	ctx.log.Debug("Connection was closed! cid:%d sid:%d status:%d",
+		conn.GetCid(), conn.GetSid(), conn.GetStatus())
 
 	ctx.chat.SessionDel(conn.GetSid(), conn.GetCid()) /* 清理数据 */
 	ctx.offline_notify(conn.GetSid(), conn.GetCid())  /* 上报给上游模块 */

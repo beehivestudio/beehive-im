@@ -73,15 +73,18 @@ func LsndUpMesgCommHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	}
 
 	/* > 获取会话数据 */
-	cid := ctx.chat.GetCidBySid(head.GetSid())
+	cid := head.GetCid()
 	if 0 == cid {
-		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
-		return -1
+		cid = ctx.chat.GetCidBySid(head.GetSid())
+		if 0 == cid {
+			ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+			return -1
+		}
 	}
 
 	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
 	if nil == extra {
-		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
+		ctx.log.Error("Didn't find conn data! sid:%d cid:%d", head.GetSid(), cid)
 		return -1
 	}
 

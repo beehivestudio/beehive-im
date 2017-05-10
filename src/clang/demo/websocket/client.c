@@ -49,7 +49,10 @@ int lws_recv_handler(struct lws_context *lws,
         case CMD_PONG:
             return lws_mesg_pong_handler(head, body);
         case CMD_ROOM_JOIN_ACK:
-            return lws_mesg_room_join_ack_handler(head, body);
+            if (!lws_mesg_room_join_ack_handler(head, body)) {
+                return lws_mesg_room_chat_send_handler(lws, wsi, ctx, session);
+            }
+            return -1;
         default:
             return 0;
     }
@@ -67,7 +70,7 @@ int lws_send_handler(struct lws_context *lws,
     time_t ctm = time(NULL);
     static int ping_times = 0;
 
-    if (ctm - ping_tm > 5) {
+    if (ctm - ping_tm > 2) {
         ping_tm = ctm;
         if (0 != ping_times) {
             lws_mesg_ping_handler(lws, wsi, ctx, session);

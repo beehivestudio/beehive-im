@@ -43,8 +43,9 @@ func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
 
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
-		ctx.log.Error("Unmarshal room-msg failed! errmsg:%s", err.Error())
-		return nil, nil, comm.ERR_SVR_BODY_INVALID, err
+		ctx.log.Error("Unmarshal room-msg failed! sid:%d cid:%d nid:%d errmsg:%s",
+			head.GetSid(), head.GetCid(), head.GetNid(), err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
 	}
 
 	return head, req, 0, nil
@@ -55,7 +56,7 @@ func (ctx *MsgSvrCntx) room_chat_parse(data []byte) (
  **功    能: 发送ROOM-CHAT应答(异常)
  **输入参数:
  **     head: 协议头
- **     req: 上线请求
+ **     req: 聊天消息
  **     code: 错误码
  **     errmsg: 错误描述
  **输出参数: NONE
@@ -81,6 +82,12 @@ func (ctx *MsgSvrCntx) room_chat_failed(head *comm.MesgHeader,
 		Errmsg: proto.String(errmsg),
 	}
 
+	if nil != req {
+		ack.Uid = proto.Uint64(req.GetUid())
+		ack.Rid = proto.Uint64(req.GetRid())
+		ack.Gid = proto.Uint32(req.GetGid())
+	}
+
 	/* 生成PB数据 */
 	body, err := proto.Marshal(ack)
 	if nil != err {
@@ -89,7 +96,7 @@ func (ctx *MsgSvrCntx) room_chat_failed(head *comm.MesgHeader,
 	}
 
 	return ctx.send_data(comm.CMD_ROOM_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
+		head.GetCid(), head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -112,6 +119,9 @@ func (ctx *MsgSvrCntx) room_chat_failed(head *comm.MesgHeader,
 func (ctx *MsgSvrCntx) room_chat_ack(head *comm.MesgHeader, req *mesg.MesgRoomChat) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomChatAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Rid:    proto.Uint64(req.GetRid()),
+		Gid:    proto.Uint32(req.GetGid()),
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -124,7 +134,7 @@ func (ctx *MsgSvrCntx) room_chat_ack(head *comm.MesgHeader, req *mesg.MesgRoomCh
 	}
 
 	return ctx.send_data(comm.CMD_ROOM_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
+		head.GetCid(), head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -146,6 +156,9 @@ func (ctx *MsgSvrCntx) room_chat_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomChat, data []byte) (err error) {
 	item := &MesgRoomItem{}
 
+	ctx.log.Debug("rid:%d gid:%d sid:%d cid:%d nid:%d",
+		req.GetRid(), req.GetGid(), head.GetSid(), head.GetCid(), head.GetNid())
+
 	/* 1. 放入存储队列 */
 	item.head = head
 	item.req = req
@@ -162,10 +175,10 @@ func (ctx *MsgSvrCntx) room_chat_handler(
 	}
 
 	/* > 遍历rid->nid列表, 并下发聊天室消息 */
-	for nid := range nid_list {
-		ctx.log.Debug("rid:%d nid:%d", req.GetRid(), nid)
+	for idx, nid := range nid_list {
+		ctx.log.Debug("idx:%d rid:%d nid:%d", idx, req.GetRid(), nid)
 
-		ctx.send_data(comm.CMD_ROOM_CHAT, req.GetRid(), uint32(nid),
+		ctx.send_data(comm.CMD_ROOM_CHAT, head.GetSid(), 0, uint32(nid),
 			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 	return err
@@ -204,6 +217,9 @@ func MsgSvrRoomChatHandler(cmd uint32, nid uint32,
 	head, req, code, err := ctx.room_chat_parse(data)
 	if nil != err {
 		ctx.log.Error("Parse room-msg failed! code:%d errmsg:%s", code, err.Error())
+		if nil != head {
+			ctx.room_chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		}
 		return -1
 	}
 

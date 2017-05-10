@@ -94,7 +94,7 @@ func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
 	/* > 发送应答数据 */
 	body, err = proto.Marshal(ack)
 	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
+		head.GetCid(), head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -130,7 +130,7 @@ func (ctx *MsgSvrCntx) chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
 
 	/* > 发送应答数据 */
 	return ctx.send_data(comm.CMD_CHAT_ACK, head.GetSid(),
-		head.GetNid(), head.GetSeq(), body, uint32(len(body)))
+		head.GetCid(), head.GetNid(), head.GetSeq(), body, uint32(len(body)))
 }
 
 /******************************************************************************
@@ -196,7 +196,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 			continue
 		}
 
-		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.GetNid()),
+		ctx.send_data(comm.CMD_CHAT, uint64(sid), 0, uint32(attr.GetNid()),
 			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -226,7 +226,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 			continue
 		}
 
-		ctx.send_data(comm.CMD_CHAT, uint64(sid), uint32(attr.GetNid()),
+		ctx.send_data(comm.CMD_CHAT, uint64(sid), 0, uint32(attr.GetNid()),
 			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 

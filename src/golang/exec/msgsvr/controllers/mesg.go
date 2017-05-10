@@ -254,7 +254,7 @@ func (ctx *MsgSvrCntx) sync_handler(
 			}
 
 			/* > 下发离线消息*/
-			ctx.send_data(comm.CMD_CHAT, head.GetSid(), head.GetNid(),
+			ctx.send_data(comm.CMD_CHAT, head.GetSid(), head.GetCid(), head.GetNid(),
 				uint64(msgid), []byte(data[comm.MESG_HEAD_SIZE:]), hhead.GetLength())
 		}
 	}

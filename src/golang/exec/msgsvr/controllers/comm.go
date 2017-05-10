@@ -9,7 +9,8 @@ import (
  **功    能: 下发消息
  **输入参数:
  **     cmd: 命令类型
- **     to: 接收方(会话ID/聊天室ID/群组ID)
+ **     sid: 会话SID
+ **     cid: 连接CID
  **     nid: 结点ID
  **     seq: 序列号
  **     data: 下发数据
@@ -21,7 +22,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.22 09:24:00 #
  ******************************************************************************/
-func (ctx *MsgSvrCntx) send_data(cmd uint32, to uint64, nid uint32, seq uint64, data []byte, length uint32) int {
+func (ctx *MsgSvrCntx) send_data(cmd uint32, sid uint64, cid uint64, nid uint32, seq uint64, data []byte, length uint32) int {
 	var head comm.MesgHeader
 
 	/* > 拼接协议包 */
@@ -29,7 +30,8 @@ func (ctx *MsgSvrCntx) send_data(cmd uint32, to uint64, nid uint32, seq uint64, 
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+int(length))
 
 	head.Cmd = cmd
-	head.Sid = to
+	head.Sid = sid
+	head.Cid = cid
 	head.Nid = nid
 	head.Length = length
 	head.ChkSum = comm.MSG_CHKSUM_VAL

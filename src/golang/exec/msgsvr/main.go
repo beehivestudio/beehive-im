@@ -48,7 +48,10 @@ func main() {
 		return
 	}
 
-	/* > 启动OLSVR服务 */
+	/* > 注册回调 */
+	ctx.Register()
+
+	/* > 启动服务 */
 	ctx.Launch()
 
 	/* > 捕捉中断信号 */
