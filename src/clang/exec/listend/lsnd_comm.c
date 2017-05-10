@@ -319,7 +319,7 @@ void lsnd_timer_info_handler(void *_ctx)
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_send_offline
+ **函数名称: lsnd_offline_notify
  **功    能: 发送下线指令
  **输入参数:
  **     ctx: 全局信息
@@ -332,7 +332,7 @@ void lsnd_timer_info_handler(void *_ctx)
  **注意事项: 
  **作    者: # Qifeng.zou # 2017.05.10 06:45:51 #
  ******************************************************************************/
-void lsnd_send_offline(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t nid)
+void lsnd_offline_notify(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t nid)
 {
     void *addr;
     mesg_header_t *head;

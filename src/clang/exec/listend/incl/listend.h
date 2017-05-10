@@ -156,6 +156,6 @@ void lsnd_timer_kick_handler(void *_ctx);
 void lsnd_timer_info_handler(void *_ctx);
 
 void lsnd_conn_update_seq(lsnd_conn_extra_t *extra, uint64_t seq);
-void lsnd_send_offline(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t nid);
+void lsnd_offline_notify(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t nid);
 
 #endif /*__LISTEND_H__*/

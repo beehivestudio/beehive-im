@@ -836,7 +836,7 @@ static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_
     hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
 
     /* > 发送下线指令 */
-    lsnd_send_offline(lsnd, extra->sid, extra->cid, extra->nid);
+    lsnd_offline_notify(lsnd, extra->sid, extra->cid, extra->nid);
 
     log_debug(lsnd->log, "Connection was closed! sid:%lu cid:%lu", extra->sid, extra->cid);
 
