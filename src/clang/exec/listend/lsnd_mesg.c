@@ -824,15 +824,16 @@ static int lsnd_callback_destroy_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_
 {
     lsnd_conn_extra_t key;
 
+    /* > 从CONN列表中删除 */
+    key.sid = extra->sid;
+    key.cid = extra->cid;
+    hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
+
+    /* > 清理相关数据 */
     pthread_rwlock_destroy(&extra->lock);
 
     extra->stat = CHAT_CONN_STAT_CLOSED;
     chat_del_session(lsnd->chat_tab, extra->sid, extra->cid);
-
-    /* > 从CONN列表中清除 */
-    key.sid = extra->sid;
-    key.cid = extra->cid;
-    hash_tab_delete(lsnd->conn_list, &key, WRLOCK);
 
     /* > 发送下线指令 */
     lsnd_offline_notify(lsnd, extra->sid, extra->cid, extra->nid);
