@@ -486,6 +486,8 @@ func UsrSvrOfflineHandler(cmd uint32, nid uint32, data []byte, length uint32, pa
 		return -1
 	}
 
+	ctx.log.Debug("Offline data! sid:%d cid:%d nid:%d", head.GetSid(), head.GetCid(), head.GetNid())
+
 	/* 2. > 清理会话数据 */
 	err := ctx.offline_handler(head)
 	if nil != err {

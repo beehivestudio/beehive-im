@@ -795,7 +795,6 @@ static int lsnd_callback_creat_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_co
     extra->sid = 0;
     extra->cid = acc_sck_get_cid(sck);
     extra->nid = conf->nid;
-    extra->nid = 0;
     extra->create_time = ctm;
     extra->recv_time = ctm;
     extra->send_time = ctm;

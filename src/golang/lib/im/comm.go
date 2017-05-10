@@ -90,7 +90,7 @@ func CleanSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) erro
 	if nil != err {
 		return err
 	} else if attr.GetCid() != cid || attr.GetNid() != nid {
-		return nil /* 数据不一致, 不进行清理操作 */
+		return errors.New("Data is collision!") /* 数据不一致, 不进行清理操作 */
 	}
 
 	/* > 删除SID对应的数据 */

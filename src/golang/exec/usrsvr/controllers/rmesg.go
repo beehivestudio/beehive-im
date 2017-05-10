@@ -572,6 +572,9 @@ GET_GID:
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, req.GetRid())
 		pl.Send("ZADD", key, ttl, head.GetNid()) // 加入RID -> NID集合
 
+		key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, head.GetSid())
+		pl.Send("ZADD", key, ttl, req.GetRid()) // 加入SID -> RID集合
+
 		return uint32(gid_int), nil
 	}
 
