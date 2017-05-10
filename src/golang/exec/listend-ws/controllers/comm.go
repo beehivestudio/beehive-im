@@ -153,7 +153,7 @@ func (ctx *LsndCntx) kick_add(cid uint64) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: closed_notify
+ **函数名称: offline_notify
  **功    能: 发送下线消息
  **输入参数:
  **     sid: 会话SID
@@ -164,7 +164,7 @@ func (ctx *LsndCntx) kick_add(cid uint64) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.17 17:05:00 #
  ******************************************************************************/
-func (ctx *LsndCntx) closed_notify(sid uint64, cid uint64) int {
+func (ctx *LsndCntx) offline_notify(sid uint64, cid uint64) int {
 	/* > 通用协议头 */
 	head := &comm.MesgHeader{
 		Cmd:    comm.CMD_OFFLINE,
