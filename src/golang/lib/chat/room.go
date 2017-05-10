@@ -116,7 +116,7 @@ func RoomGetRidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项:
+ **注意事项: 不进行各组&各侦听层的人数统计, 而以侦听层的上报数据为准进行统计.
  **作    者: # Qifeng.zou # 2017.01.10 23:00:26 #
  ******************************************************************************/
 func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error {

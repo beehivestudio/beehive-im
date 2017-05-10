@@ -552,14 +552,22 @@ GET_GID:
 	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, req.GetUid())
 	ok, err = redis.Bool(rds.Do("HEXISTS", key, req.GetRid()))
 	if nil != err {
-		ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
+		ctx.log.Error("Get rid [%d] by uid failed! errmsg:%s", req.GetRid(), err.Error())
 		return 0, err
-	} else if true == ok {
+	} else if true == ok { // 已登录过则放在同一个分组中...
+		ctx.log.Debug("Uid has been login! rid:%d uid:%d", req.GetRid(), req.GetUid())
 		gid_int, err := redis.Int(rds.Do("HGET", key, req.GetRid()))
 		if nil != err {
-			ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
+			ctx.log.Error("Get rid [%d] by uid failed! errmsg:%s", req.GetRid(), err.Error())
 			return 0, err
 		}
+
+		ctx.log.Debug("Uid has been login! rid:%d uid:%d gid:%d", req.GetRid(), req.GetUid(), gid_int)
+
+		/* > 判断SID依然在聊天室列表 */
+		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
+
+		exist, _ := redis.Uint64(rds.Do("ZSCORE", key, head.GetSid()))
 
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
 		member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
@@ -573,7 +581,16 @@ GET_GID:
 		pl.Send("ZADD", key, ttl, head.GetNid()) // 加入RID -> NID集合
 
 		key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, head.GetSid())
-		pl.Send("ZADD", key, ttl, req.GetRid()) // 加入SID -> RID集合
+		pl.Send("ZADD", key, uint32(gid_int), req.GetRid()) // 加入SID -> RID集合
+
+		/* > 更新数据库统计 */
+		if 0 == exist {
+			key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
+			pl.Send("ZINCRBY", key, 1, uint32(gid_int))
+
+			key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
+			pl.Send("ZINCRBY", key, 1, head.GetNid())
+		}
 
 		return uint32(gid_int), nil
 	}
@@ -598,6 +615,9 @@ GET_GID:
 	/* > 更新数据库统计 */
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
 	pl.Send("ZINCRBY", key, 1, gid)
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
+	pl.Send("ZINCRBY", key, 1, head.GetNid())
 
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
 	member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
