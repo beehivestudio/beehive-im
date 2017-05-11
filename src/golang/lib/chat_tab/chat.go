@@ -111,6 +111,9 @@ func Init() *ChatTab {
 		ss.sid2cid = make(map[uint64]uint64)
 	}
 
+	/* 启动定时任务 */
+	go ctx.task_clean_sid2cid()
+
 	return ctx
 }
 
@@ -259,6 +262,9 @@ func (ctx *ChatTab) SessionSetCid(sid uint64, cid uint64) int {
  **作    者: # Qifeng.zou # 2017.02.22 20:54:53 #
  ******************************************************************************/
 func (ctx *ChatTab) SessionDel(sid uint64, cid uint64) int {
+	/* > 清理映射数据 */
+	ctx.sid2cid_del(sid, cid)
+
 	/* > 清理会话数据 */
 	ssn := ctx.session_del(sid, cid)
 	if nil == ssn {
@@ -571,6 +577,26 @@ func (ctx *ChatTab) TravSession(proc ChatTravProcCb, param interface{}) {
 		sl := &ctx.sessions[idx]
 
 		sl.trav_list(proc, param)
+	}
+}
+
+/******************************************************************************
+ **函数名称: TravSid2Cid
+ **功    能: 遍历SID->CID映射
+ **输入参数:
+ **     proc: 处理回调
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.11 10:06:00 #
+ ******************************************************************************/
+func (ctx *ChatTab) TravSid2Cid(proc ChatTravProcCb, param interface{}) {
+	for idx := 0; idx < SESSION_MAX_LEN; idx += 1 {
+		sc := &ctx.sid2cids[idx]
+
+		sc.trav_list(proc, param)
 	}
 }
 
