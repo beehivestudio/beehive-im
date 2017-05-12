@@ -48,9 +48,9 @@ int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t
     }
 
     /* 设置ONLINE消息 */
-    online.uid = 18600522324;
+    online.uid = 18610485118;
     online.sid = AWS_SID;
-    online.token = "W38HaFk+WmtSNgIxBTJVNVpgAmFXPlNgBTBWNFk7AWlRdAZ0AG8PPlM3BzkKOVIzATlVNgZlBTIGMVY0VjoCI1tjB2VZYFpkUj0CbAVqVWE=";
+    online.token = "ASUDbFI1CjsGYgEyAjUFZA40BGZbOAM3V2ABYAdpUDhUcQx+VjlZaFczCjQHNFYwCTMPYVEzVGxWZlIyAGxWdwE5A2FSawo0BmkBbwJtBTE=";
     online.app = "beehive-im";
     online.version = "v.0.1";
     online.has_terminal = true;
@@ -193,7 +193,7 @@ int lws_mesg_room_join_handler(struct lws_context *lws, struct lws *wsi, lws_cnt
     }
 
     /* 设置ONLINE消息 */
-    join.uid = 18600522324;
+    join.uid = 18610485118;
     join.rid = 1000000015;
 
     len = mesg_room_join__get_packed_size(&join);
@@ -273,7 +273,7 @@ int lws_mesg_room_chat_send_handler(struct lws_context *lws, struct lws *wsi, lw
     }
 
     /* 设置ROOM-CHAT消息 */
-    chat.uid = 18600522324;
+    chat.uid = 18610485118;
     chat.rid = 1000000015;
     chat.gid = 0;
     chat.level = 0;

@@ -74,6 +74,7 @@ int lws_send_handler(struct lws_context *lws,
         ping_tm = ctm;
         if (0 != ping_times) {
             lws_mesg_ping_handler(lws, wsi, ctx, session);
+            lws_mesg_room_chat_send_handler(lws, wsi, ctx, session);
         }
         ++ping_times;
     }
