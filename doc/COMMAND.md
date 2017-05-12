@@ -108,9 +108,11 @@
 | 14 | 0x040E | 聊天室广播消息应答 | ROOM-BC-ACK | 未实现 | NONE |
 | 15 | 0x0410 | 聊天室人数 | ROOM-USR-NUM | 已实现 | NONE |
 | 16 | 0x0411 | 聊天室人数应答 | ROOM-USR-NUM-ACK | 未实现 | NONE |
-| 17 | 0x0450 | 加入聊天室通知 | ROOM-JOIN-NTC | 未实现 | NONE |
-| 18 | 0x0451 | 退出聊天室通知 | ROOM-QUIT-NTC | 未实现 | NONE |
-| 19 | 0x0452 | 踢出聊天室通知 | ROOM-KICK-NTC | 已实现 | NONE |
+| 17 | 0x0412 | 聊天室各侦听层统计 | ROOM-LSN-STAT | 未实现 | NONE |
+| 18 | 0x0413 | 聊天室各侦听层统计应答 | ROOM-LSN-STAT-ACK | 未实现 | NONE |
+| 19 | 0x0450 | 加入聊天室通知 | ROOM-JOIN-NTC | 未实现 | NONE |
+| 20 | 0x0451 | 退出聊天室通知 | ROOM-QUIT-NTC | 未实现 | NONE |
+| 21 | 0x0452 | 踢出聊天室通知 | ROOM-KICK-NTC | 已实现 | NONE |
 
 # 推送消息
 ---

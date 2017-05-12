@@ -601,7 +601,7 @@ func LsndUpMesgRoomChatHandler(cmd uint32, nid uint32, data []byte, length uint3
 	/* > 遍历下发ROOM-CHAT消息 */
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoom(req.GetRid(), req.GetGid(), lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(req.GetRid(), req.GetGid(), lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -652,7 +652,7 @@ func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 	/* > 遍历下发ROOM-CHAT消息 */
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoom(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -701,7 +701,7 @@ func LsndUpMesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uin
 	/* > 遍历下发ROOM-USR-NUM消息 */
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoom(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -750,7 +750,7 @@ func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 遍历下发ROOM-JOIN-NTC消息 */
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoom(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -799,7 +799,7 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 遍历下发ROOM-QUIT-NTC消息 */
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoom(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }
@@ -848,7 +848,7 @@ func LsndUpMesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 遍历下发ROOM-KICK-NTC消息 */
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoom(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
 
 	return 0
 }

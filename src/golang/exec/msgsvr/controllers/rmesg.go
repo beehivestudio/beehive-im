@@ -171,6 +171,7 @@ func (ctx *MsgSvrCntx) room_chat_handler(
 	defer ctx.room.node.RUnlock()
 	nid_list, ok := ctx.room.node.m[req.GetRid()]
 	if !ok {
+		ctx.log.Error("Get node list failed! rid:%d", req.GetRid())
 		return nil
 	}
 

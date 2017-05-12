@@ -888,6 +888,22 @@ message mesg_room_usr_num
    协议格式: NONE */
 
 /*
+   命令ID: 0x0412
+   命令描述: 聊天室各侦听层统计(ROOM-LSN-STAT)
+   协议格式: */
+message mesg_room_lsn_stat
+{
+    required uint64 rid = 1;        // M|聊天室ID|数字|
+    required uint32 nid = 2;        // M|侦听层ID|数字|
+    required uint32 num = 3;        // M|用户人数|数字|
+}
+
+/*
+   命令ID: 0x0413
+   命令描述: 聊天室侦听层统计应答(ROOM-LSN-STAT-ACK)
+   协议格式: NONE */
+
+/*
    命令ID: 0x0450
    命令描述: 加入聊天室通知(ROOM-JOIN-NTC)
    协议格式: */

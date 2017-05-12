@@ -91,9 +91,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 
 	ctx.log.Debug("Find callback! cmd:0x%04X", head.GetCmd())
 
-	cb(conn, head.GetCmd(), data, uint32(length), param)
-
-	return 0
+	return cb(conn, head.GetCmd(), data, uint32(length), param)
 }
 
 /******************************************************************************

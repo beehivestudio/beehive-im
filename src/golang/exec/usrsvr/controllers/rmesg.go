@@ -1263,3 +1263,121 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 func UsrSvrRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
+
+////////////////////////////////////////////////////////////////////////////////
+/* 聊天室各侦听统计 */
+
+/******************************************************************************
+ **函数名称: room_lsn_stat_parse
+ **功    能: 解析ROOM-LSN-STAT请求
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.13 06:51:41 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_lsn_stat_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgRoomLsnStat, code uint32, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !head.IsValid(0) {
+		errmsg := "Header of room-lsn-stat is invalid!"
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
+			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
+	}
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgRoomLsnStat{}
+
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal room-lsn-stat request failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
+	}
+
+	return head, req, 0, nil
+}
+
+/******************************************************************************
+ **函数名称: room_lsn_stat_handler
+ **功    能: ROOM-LSN-STAT处理
+ **输入参数:
+ **     head: 协议头
+ **     req: ROOM-LSN-STAT请求
+ **输出参数: NONE
+ **返    回:
+ **     code: 错误码
+ **     err: 错误信息
+ **实现描述:
+ **注意事项: 已验证了ROOM-LSN-STAT请求的合法性
+ **作    者: # Qifeng.zou # 2017.05.13 06:54:54 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_lsn_stat_handler(
+	head *comm.MesgHeader, req *mesg.MesgRoomLsnStat) (code uint32, err error) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	ttl := time.Now().Unix() + 30
+
+	/* > 用户加入黑名单 */
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
+	pl.Send("ZADD", key, req.GetNum(), req.GetNid())
+
+	pl.Send("ZADD", comm.CHAT_KEY_RID_ZSET, ttl, req.GetRid())
+
+	return 0, nil
+}
+
+/******************************************************************************
+ **函数名称: UsrSvrRoomKickHandler
+ **功    能: 踢出聊天室
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **请求协议:
+ **     {
+ **        required uint64 rid = 1;     // M|聊天室ID|数字|
+ **        required uint32 nid = 2;     // M|结点ID|数字|
+ **        required uint32 num = 3;     // M|在线人数|数字|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.13 07:03:24 #
+ ******************************************************************************/
+func UsrSvrRoomLsnStatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*UsrSvrCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room-lsn-stat request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
+
+	/* > 解析ROOM-LSN-STAT请求 */
+	head, req, code, err := ctx.room_lsn_stat_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse room-lsn-stat request failed!")
+		return -1
+	}
+
+	/* > 执行ROOM-LSN-STAT操作 */
+	code, err = ctx.room_lsn_stat_handler(head, req)
+	if nil != err {
+		ctx.log.Error("Room lsn stat handler failed! code:%d errmsg:%s", code, err.Error())
+		return -1
+	}
+
+	return 0
+}

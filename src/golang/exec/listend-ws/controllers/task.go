@@ -5,6 +5,7 @@ import (
 
 	"github.com/golang/protobuf/proto"
 
+	"beehive-im/src/golang/lib/chat_tab"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/mesg"
 )
@@ -80,6 +81,7 @@ func (ctx *LsndCntx) task_timer_kick() {
 func (ctx *LsndCntx) task_timer_statistic() {
 	for {
 		ctx.gather_base_info() /* 采集侦听层信息, 并上报 */
+		ctx.gather_room_stat() /* 采集聊天室信息, 并上报 */
 		time.Sleep(5 * time.Second)
 	}
 }
@@ -95,12 +97,6 @@ func (ctx *LsndCntx) task_timer_statistic() {
  **作    者: # Qifeng.zou # 2017.03.14 14:53:13 #
  ******************************************************************************/
 func (ctx *LsndCntx) gather_base_info() {
-	head := &comm.MesgHeader{
-		Cmd:    comm.CMD_LSND_INFO,  // 消息类型
-		ChkSum: comm.MSG_CHKSUM_VAL, // 校验值
-		Nid:    ctx.conf.GetNid(),   // 结点ID
-	}
-
 	req := &mesg.MesgLsndInfo{
 		Type:        proto.Uint32(comm.LSND_TYPE_WS),       // 网络类型(0:UNKNOWN 1:TCP 2:WS)
 		Nid:         proto.Uint32(ctx.conf.GetNid()),       // 结点ID
@@ -119,12 +115,16 @@ func (ctx *LsndCntx) gather_base_info() {
 	}
 
 	length := len(body)
-
 	/* > 拼接协议包 */
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Length = uint32(length)
+	head := &comm.MesgHeader{
+		Cmd:    comm.CMD_LSND_INFO,  // 消息类型
+		Nid:    ctx.conf.GetNid(),   // 结点ID
+		Length: uint32(length),      // 消息长度
+		ChkSum: comm.MSG_CHKSUM_VAL, // 校验值
+	}
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
@@ -133,7 +133,75 @@ func (ctx *LsndCntx) gather_base_info() {
 	ctx.frwder.AsyncSend(comm.CMD_LSND_INFO, p.Buff, uint32(len(p.Buff)))
 
 	ctx.log.Debug("Send listen report succ!")
+}
 
+type ChatTravRoomListProcCb func(item *chat_tab.ChatRoomItem, param interface{}) int
+
+/******************************************************************************
+ **函数名称: gather_room_stat
+ **功    能: 上报聊天室信息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 遍历聊天室列表, 取有效信息并上报.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.12 18:08:06 #
+ ******************************************************************************/
+func (ctx *LsndCntx) gather_room_stat() {
+	ctx.chat.TravRoomList(LsndUploadRoomLsnStatCb, ctx)
+}
+
+/******************************************************************************
+ **函数名称: LsndUploadRoomLsnStatCb
+ **功    能: 上报各聊天室在此侦听层的统计
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 拼接ROOM-LSN-STAT报文, 并发送给上游模块.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.12 18:08:06 #
+ ******************************************************************************/
+func LsndUploadRoomLsnStatCb(item *chat_tab.ChatRoomItem, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	req := &mesg.MesgRoomLsnStat{
+		Rid: proto.Uint64(item.GetRid()),         // 聊天室ID
+		Nid: proto.Uint32(ctx.conf.GetNid()),     // 聊天室ID
+		Num: proto.Uint32(uint32(item.GetNum())), // 聊天室人数
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(req)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head := &comm.MesgHeader{
+		Cmd:    comm.CMD_ROOM_LSN_STAT, // 消息类型
+		Nid:    ctx.conf.GetNid(),      // 结点ID
+		Length: uint32(length),         // 消息长度
+		ChkSum: comm.MSG_CHKSUM_VAL,    // 校验值
+	}
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_ROOM_LSN_STAT, p.Buff, uint32(len(p.Buff)))
+
+	ctx.log.Debug("Send room user number succ! rid:%d num:%d", item.GetRid(), item.GetNum())
+
+	return 0
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,8 +237,15 @@ func (ctx *LsndCntx) task_timer_clean_timeout() {
  **作    者: # Qifeng.zou # 2017.05.10 19:58:58 #
  ******************************************************************************/
 func LsndCleanTimeoutHandler(sid uint64, cid uint64, extra interface{}, param interface{}) int {
-	ctx := param.(*LsndCntx)
-	conn := extra.(*LsndConnExtra)
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	conn, ok := extra.(*LsndConnExtra)
+	if !ok {
+		return -1
+	}
 
 	ctm := time.Now().Unix()
 

@@ -118,6 +118,9 @@ func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
 func (client *Client) recv_routine() {
 	ctx := client.ctx
 	defer func() {
+		if err := recover(); nil != err {
+			//log.Error("Recv routine crashed! errmsg:%s", err)
+		}
 		/* 关闭连接的处理 */
 		client.conn.Close()
 		ctx.protocol.Callback(ctx, client,
@@ -160,6 +163,9 @@ func (client *Client) recv_routine() {
 func (client *Client) send_routine() {
 	ticker := time.NewTicker(LWS_PING_PERIOD_SEC)
 	defer func() {
+		if err := recover(); nil != err {
+			//log.Error("Recv routine crashed! errmsg:%s", err)
+		}
 		ticker.Stop()
 		client.conn.Close()
 	}()
