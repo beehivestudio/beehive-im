@@ -49,7 +49,7 @@ DIR += "$(GOLANG_EXEC_DIR)/msgsvr"
 DIR += "$(GOLANG_EXEC_DIR)/tasker"
 DIR += "$(GOLANG_EXEC_DIR)/monitor"
 DIR += "$(GOLANG_EXEC_DIR)/listend-ws"
-DIR += "$(GOLANG_EXEC_DIR)/mis/seqsvr"
+DIR += "$(GOLANG_EXEC_DIR)/micsvr/seqsvr"
 
 # 获取系统配置
 CPU_CORES = $(call func_cpu_cores)

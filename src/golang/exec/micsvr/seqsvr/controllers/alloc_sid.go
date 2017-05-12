@@ -1,8 +1,6 @@
 package controllers
 
-import (
-	"errors"
-)
+import ()
 
 /******************************************************************************
  **函数名称: AllocSid
@@ -49,6 +47,7 @@ func (ctx *SeqSvrCntx) alloc_sid() (sid uint64, err error) {
 
 	defer tx.Commit()
 
+AGAIN:
 	rows, err := tx.Query("SELECT sid from IM_SID_GEN_TAB WHERE type=0 FOR UPDATE")
 	if nil != err {
 		rows.Close()
@@ -68,5 +67,13 @@ func (ctx *SeqSvrCntx) alloc_sid() (sid uint64, err error) {
 	}
 
 	rows.Close()
-	return 0, errors.New("Alloc sid failed!")
+
+	/* > 新增SID生成器 */
+	_, err = tx.Exec("INSERT INTO IM_SID_GEN_TAB(type) VALUES(0)")
+	if nil != err {
+		ctx.log.Error("Add sid gen failed! errmsg:%s", err.Error())
+		return 0, err
+	}
+
+	goto AGAIN
 }
