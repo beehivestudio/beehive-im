@@ -241,7 +241,8 @@ func LsndUpMesgKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
 	if !head.IsValid(0) {
-		ctx.log.Error("Header of kick is invalid!")
+		ctx.log.Error("Kick head is invalid! sid:%d cid:%d seq:%d chksum:%d nid:%d",
+			head.GetSid(), head.GetCid(), head.GetSeq(), head.GetChkSum(), head.GetNid())
 		return -1
 	}
 

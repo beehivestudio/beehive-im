@@ -167,12 +167,12 @@ func (ctx *ChatTab) sid2cid_del(sid uint64, cid uint64) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.10 21:05:08 #
  ******************************************************************************/
-func (sl *ChatSessionList) trav_list(proc ChatTravProcCb, param interface{}) {
+func (sl *ChatSessionList) trav_list(proc ChatTravSessionProcCb, param interface{}) {
 	sl.RLock()
 	defer sl.RUnlock()
 
-	for _, key := range sl.session {
-		proc(key.sid, key.cid, param)
+	for k, v := range sl.session {
+		proc(k.sid, k.cid, v.param, param)
 	}
 }
 
@@ -195,8 +195,8 @@ func (sc *ChatSid2CidList) trav_list(proc ChatTravProcCb, param interface{}) {
 	sc.RLock()
 	defer sc.RUnlock()
 
-	for _, sid := range sc.sid2cid {
-		proc(sid, sc.sid2cid[sid], param)
+	for sid, cid := range sc.sid2cid {
+		proc(sid, cid, param)
 	}
 }
 
@@ -215,12 +215,12 @@ func (sc *ChatSid2CidList) query_dirty(ctx *ChatTab, ls map[uint64]uint64) {
 	sc.RLock()
 	defer sc.RUnlock()
 
-	for _, sid := range sc.sid2cid {
-		extra := ctx.SessionGetParam(sid, sc.sid2cid[sid])
+	for sid, cid := range sc.sid2cid {
+		extra := ctx.SessionGetParam(sid, cid)
 		if nil != extra {
 			continue
 		}
-		ls[sid] = sc.sid2cid[sid]
+		ls[sid] = cid
 	}
 }
 

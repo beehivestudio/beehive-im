@@ -46,6 +46,12 @@ func (ctx *LsndCntx) lsnd_conn_init(client *lws.Client) int {
  **作    者: # Qifeng.zou # 2017.03.04 15:21:43 #
  ******************************************************************************/
 func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int) int {
+	defer func() {
+		if err := recover(); nil != err {
+			ctx.log.Error("Recv routine crashed! errmsg:%s", err)
+		}
+	}()
+
 	conn, ok := client.GetUserData().(*LsndConnExtra)
 	if !ok {
 		ctx.log.Error("Get connection extra data failed!")
@@ -82,6 +88,8 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 			return 0
 		}
 	}
+
+	ctx.log.Debug("Find callback! cmd:0x%04X", head.GetCmd())
 
 	cb(conn, head.GetCmd(), data, uint32(length), param)
 

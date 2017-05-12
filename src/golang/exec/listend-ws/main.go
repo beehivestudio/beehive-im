@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"runtime/pprof"
 	"syscall"
 
 	"beehive-im/src/golang/exec/listend-ws/controllers"
@@ -31,6 +32,13 @@ func parse_param() *InputParam {
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	cpuf, err := os.Create("cpu_profile")
+	if nil != err {
+		return
+	}
+	pprof.StartCPUProfile(cpuf)
+	defer pprof.StopCPUProfile()
 
 	param := parse_param()
 

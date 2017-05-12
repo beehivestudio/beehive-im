@@ -629,6 +629,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, cid uint64, nid uint32, code uint32
 	head.Cid = cid
 	head.Nid = nid
 	head.Length = uint32(length)
+	head.ChkSum = comm.MSG_CHKSUM_VAL
 
 	comm.MesgHeadHton(&head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)

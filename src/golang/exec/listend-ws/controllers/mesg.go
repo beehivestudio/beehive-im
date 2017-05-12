@@ -115,8 +115,11 @@ func LsndMesgOnlineHandler(conn *LsndConnExtra, cmd uint32, data []byte, length 
 
 	/* > "网络->主机"字节序 */
 	head := comm.MesgHeadNtoh(data)
+
 	extra := ctx.chat.SessionGetParam(head.GetSid(), conn.GetCid())
 	if nil != extra {
+		ctx.log.Error("Recv online at before! cid:%d sid:%d status:%d",
+			conn.GetCid(), conn.GetSid(), conn.GetStatus())
 		return 0 // 已收到ONLINE请求
 	}
 

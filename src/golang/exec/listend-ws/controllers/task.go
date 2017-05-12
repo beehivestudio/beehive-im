@@ -168,25 +168,13 @@ func (ctx *LsndCntx) task_timer_clean_timeout() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.10 19:58:58 #
  ******************************************************************************/
-func LsndCleanTimeoutHandler(sid uint64, cid uint64, param interface{}) int {
+func LsndCleanTimeoutHandler(sid uint64, cid uint64, extra interface{}, param interface{}) int {
 	ctx := param.(*LsndCntx)
-	if nil == ctx {
-		return -1
-	}
+	conn := extra.(*LsndConnExtra)
 
 	ctm := time.Now().Unix()
 
-	extra := ctx.chat.SessionGetParam(sid, cid)
-	if nil == extra {
-		ctx.log.Error("Didn't find conn data! sid:%d cid:%d", sid, cid)
-		return -1
-	}
-
-	conn, ok := extra.(*LsndConnExtra)
-	if !ok {
-		ctx.log.Error("Convert conn extra failed! sid:%d cid:%d", sid, cid)
-		return -1
-	} else if CONN_STATUS_LOGIN != conn.GetStatus() {
+	if CONN_STATUS_LOGIN != conn.GetStatus() {
 		if ctm-conn.GetCtm() > 5 {
 			ctx.lws.Kick(conn.GetCid())
 		}

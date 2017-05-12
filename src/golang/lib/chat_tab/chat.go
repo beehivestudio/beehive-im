@@ -14,6 +14,7 @@ const (
 
 /* 遍历回调 */
 type ChatTravProcCb func(sid uint64, cid uint64, param interface{}) int
+type ChatTravSessionProcCb func(sid uint64, cid uint64, extra interface{}, param interface{}) int
 
 /* 会话信息 */
 type ChatSessionItem struct {
@@ -572,7 +573,7 @@ func (ctx *ChatTab) TravRoom(rid uint64, gid uint32, proc ChatTravProcCb, param 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.10 20:33:38 #
  ******************************************************************************/
-func (ctx *ChatTab) TravSession(proc ChatTravProcCb, param interface{}) {
+func (ctx *ChatTab) TravSession(proc ChatTravSessionProcCb, param interface{}) {
 	for idx := 0; idx < SESSION_MAX_LEN; idx += 1 {
 		sl := &ctx.sessions[idx]
 
