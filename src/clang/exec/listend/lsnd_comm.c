@@ -6,6 +6,7 @@
 #include "mesg.pb-c.h"
 
 static void lsnd_timer_send_user_num(lsnd_cntx_t *ctx);
+static void lsnd_upload_room_stat_handler(chat_room_t *room, void *_ctx);
 
 /******************************************************************************
  **函数名称: lsnd_getopt 
@@ -310,6 +311,89 @@ void lsnd_timer_info_handler(void *_ctx)
 
     /* > 发送数据 */
     rtmq_proxy_async_send(ctx->frwder, CMD_LSND_INFO, addr, sizeof(mesg_header_t) + len);
+
+    free(addr);
+    return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsnd_timer_room_stat_handler
+ **功    能: 侦听层信息定时上报聊天室统计信息
+ **输入参数:
+ **     _ctx: 全局信息
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 调用chat_room_trav_list()遍历所有聊天室.
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2017.05.13 11:10:48 #
+ ******************************************************************************/
+void lsnd_timer_room_stat_handler(void *_ctx)
+{
+    lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
+
+    chat_room_trav_list(ctx->chat_tab, (trav_cb_t)lsnd_upload_room_stat_handler, (void *)ctx);
+
+    return;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_upload_room_stat_handler
+ **功    能: 侦听层信息上报聊天室统计信息
+ **输入参数:
+ **     _ctx: 全局信息
+ **输出参数:
+ **返    回: VOID
+ **实现描述: 使用PB协议组装接入层上报数据
+ **     {
+ **         required uint64 rid = 1;     // M|聊天室ID|数字|<br>
+ **         required uint32 nid = 2;     // M|结点ID|数字|<br>
+ **         required uint32 num = 3;     // M|人数|数字|<br>
+ **     }
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2017.05.13 11:10:48 #
+ ******************************************************************************/
+static void lsnd_upload_room_stat_handler(chat_room_t *room, void *_ctx)
+{
+    void *addr;
+    unsigned int len;
+    mesg_header_t *head;
+    lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
+    lsnd_conf_t *conf = &ctx->conf;
+    MesgRoomLsnStat stat = MESG_ROOM_LSN_STAT__INIT;
+
+    /* > 设置上报数据 */
+    stat.rid = room->rid;
+    stat.nid = conf->nid;
+    stat.num = room->sid_num;
+
+    log_debug(ctx->log, "Room lsn statistic! rid:%d nid:%d num:%d",
+            stat.rid, stat.nid, stat.num);
+
+    /* > 组装PB协议 */
+    len = mesg_room_lsn_stat__get_packed_size(&stat);
+
+    addr = (void *)calloc(1, sizeof(mesg_header_t) + len);
+    if (NULL == addr) {
+        log_error(ctx->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
+        return;
+    }
+
+    head = (mesg_header_t *)addr;
+
+    head->type = CMD_ROOM_LSN_STAT;
+    head->length = len;
+    head->chksum = MSG_CHKSUM_VAL;
+    head->nid = conf->nid;
+
+    MESG_HEAD_HTON(head, head);
+
+    mesg_room_lsn_stat__pack(&stat, addr + sizeof(mesg_header_t)); /* 组装PB协议 */
+
+    /* > 发送数据 */
+    rtmq_proxy_async_send(ctx->frwder, CMD_ROOM_LSN_STAT, addr, sizeof(mesg_header_t) + len);
 
     free(addr);
     return;

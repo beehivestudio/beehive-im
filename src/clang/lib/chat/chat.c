@@ -348,7 +348,7 @@ int chat_del_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 }
 
 /******************************************************************************
- **函数名称: chat_room_trav
+ **函数名称: chat_room_trav_session
  **功    能: 遍历处理聊天室
  **输入参数: 
  **     chat: CHAT对象
@@ -364,7 +364,7 @@ int chat_del_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
  **     > 当gid不为0时, 表示遍历聊天室GID分组所有成员
  **作    者: # Qifeng.zou # 2016.09.20 23:19:08 #
  ******************************************************************************/
-int chat_room_trav(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc, void *args)
+int chat_room_trav_session(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc, void *args)
 {
     chat_room_t *room, key;
 
@@ -380,6 +380,24 @@ int chat_room_trav(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc,
     hash_tab_unlock(chat->rooms, (void *)&key, RDLOCK);
 
     return 0;
+}
+
+/******************************************************************************
+ **函数名称: chat_room_trav_list
+ **功    能: 遍历聊天室列表
+ **输入参数: 
+ **     chat: CHAT对象
+ **     proc: 遍历处理回调
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.13 13:29:24 #
+ ******************************************************************************/
+int chat_room_trav_list(chat_tab_t *chat, trav_cb_t proc, void *args)
+{
+    return hash_tab_trav(chat->rooms, proc, args, RDLOCK);
 }
 
 /******************************************************************************

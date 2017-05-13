@@ -593,7 +593,7 @@ int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void
     param.length = len;
     param.hhead = &hhead;
 
-    chat_room_trav(lsnd->chat_tab, mesg->rid, gid,
+    chat_room_trav_session(lsnd->chat_tab, mesg->rid, gid,
             (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
@@ -644,7 +644,7 @@ int lsnd_mesg_room_bc_handler(int type, int orig, void *data, size_t len, void *
     param.length = len;
     param.hhead = &hhead;
 
-    chat_room_trav(lsnd->chat_tab, mesg->rid, 0,
+    chat_room_trav_session(lsnd->chat_tab, mesg->rid, 0,
             (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
