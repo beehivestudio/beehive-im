@@ -409,7 +409,7 @@ func (ctx *MsgSvrCntx) room_mesg_queue_clean() {
 			comm.CHAT_KEY_RID_ZSET, 0, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
 			ctx.log.Error("Get rid list failed! errmsg:%s", err.Error())
-			continue
+			break
 		}
 
 		num := len(rid_list)
@@ -420,5 +420,10 @@ func (ctx *MsgSvrCntx) room_mesg_queue_clean() {
 
 			rds.Do("LTRIM", key, 0, 99)
 		}
+
+		if num < comm.CHAT_BAT_NUM {
+			break
+		}
+		off += num
 	}
 }

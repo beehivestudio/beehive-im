@@ -347,5 +347,10 @@ func (ctx *MsgSvrCntx) group_mesg_queue_clean() {
 
 			rds.Do("LTRIM", key, 0, 99)
 		}
+
+		if num < comm.CHAT_BAT_NUM {
+			break
+		}
+		off += num
 	}
 }
