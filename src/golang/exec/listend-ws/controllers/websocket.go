@@ -58,7 +58,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 		return -1
 	}
 
-	conn.utm = time.Now().Unix()
+	conn.SetUtm(time.Now().Unix())
 
 	/* > 字节序转化 */
 	head := comm.MesgHeadNtoh(data)
@@ -70,7 +70,7 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 	}
 
 	/* > 更新消息序列号 */
-	if 0 != conn.UpdateSeq(head.GetSeq()) {
+	if !conn.SetSeq(head.GetSeq()) {
 		ctx.log.Error("Update conn req failed! cmd:0x%04X sid:%d cid:%d",
 			head.GetCmd(), head.GetSid(), conn.GetCid())
 		return -1

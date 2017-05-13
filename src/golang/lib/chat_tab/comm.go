@@ -248,7 +248,7 @@ func (ctx *ChatTab) task_clean_sid2cid() {
 			ctx.sid2cid_del(sid, list[sid])
 		}
 
-		time.Sleep(15)
+		time.Sleep(15 * time.Second)
 	}
 }
 

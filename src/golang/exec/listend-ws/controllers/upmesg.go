@@ -187,7 +187,7 @@ func LsndUpMesgOnlineAckHandler(cmd uint32, nid uint32, data []byte, length uint
 	if !ok {
 		ctx.log.Error("Convert conn extra failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
-	} else if 0 != conn.UpdateSeq(ack.GetSeq()) {
+	} else if !conn.SetSeq(ack.GetSeq()) {
 		ctx.log.Error("Update conn req failed! cid:%d sid:%d", head.GetCid(), ack.GetSid())
 		return ctx.lsnd_error_online_ack_handler(cid, head, data)
 	}

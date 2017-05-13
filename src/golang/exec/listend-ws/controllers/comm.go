@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"sync/atomic"
 	"time"
 
 	"beehive-im/src/golang/lib/comm"
@@ -68,90 +69,81 @@ func (tab *MesgCallBackTab) Query(cmd uint32) (cb MesgCallBack, param interface{
 
 /* 设置会话SID */
 func (conn *LsndConnExtra) SetSid(sid uint64) {
-	conn.Lock()
-	defer conn.Unlock()
-
-	conn.sid = sid
+	atomic.StoreUint64(&conn.sid, sid)
 }
 
 /* 获取会话SID */
 func (conn *LsndConnExtra) GetSid() uint64 {
-	conn.RLock()
-	defer conn.RUnlock()
-
-	return conn.sid
+	return atomic.LoadUint64(&conn.sid)
 }
 
 /* 获取连接CID */
 func (conn *LsndConnExtra) SetCid(cid uint64) {
-	conn.Lock()
-	defer conn.Unlock()
-
-	conn.cid = cid
+	atomic.StoreUint64(&conn.cid, cid)
 }
 
 /* 获取连接CID */
 func (conn *LsndConnExtra) GetCid() uint64 {
-	conn.RLock()
-	defer conn.RUnlock()
-
-	return conn.cid
+	return atomic.LoadUint64(&conn.cid)
 }
 
 /* 更新消息序列号
  * 注意: 参数seq必须比原有消息序列号大 */
-func (conn *LsndConnExtra) UpdateSeq(seq uint64) int {
-	conn.Lock()
-	defer conn.Unlock()
-
-	if conn.seq < seq {
-		conn.seq = seq
-		return 0
-	}
-	return -1
-}
-
-/* 设置连接状态 */
-func (conn *LsndConnExtra) SetStatus(status int) {
-	conn.Lock()
-	defer conn.Unlock()
-
-	conn.status = status
-}
-
-/* 获取连接状态 */
-func (conn *LsndConnExtra) GetStatus() int {
-	conn.RLock()
-	defer conn.RUnlock()
-
-	return conn.status
-}
-
-/* 判断连接状态 */
-func (conn *LsndConnExtra) IsStatus(status int) bool {
-	conn.RLock()
-	defer conn.RUnlock()
-
-	if conn.status == status {
+func (conn *LsndConnExtra) SetSeq(seq uint64) bool {
+AGAIN:
+	_seq := atomic.LoadUint64(&conn.seq)
+	if _seq < seq {
+		ok := atomic.CompareAndSwapUint64(&conn.seq, _seq, seq)
+		if !ok {
+			goto AGAIN
+		}
 		return true
 	}
 	return false
 }
 
+/* 获取消息序列号 */
+func (conn *LsndConnExtra) GetSeq() uint64 {
+	return atomic.LoadUint64(&conn.seq)
+}
+
+/* 设置连接状态 */
+func (conn *LsndConnExtra) SetStatus(status uint32) {
+	atomic.StoreUint32(&conn.status, status)
+}
+
+/* 获取连接状态 */
+func (conn *LsndConnExtra) GetStatus() uint32 {
+	return atomic.LoadUint32(&conn.status)
+}
+
+/* 判断连接状态 */
+func (conn *LsndConnExtra) IsStatus(status uint32) bool {
+	st := atomic.LoadUint32(&conn.status)
+	if st == status {
+		return true
+	}
+	return false
+}
+
+/* 设置创建时间 */
+func (conn *LsndConnExtra) SetCtm(ctm int64) {
+	atomic.StoreInt64(&conn.ctm, ctm)
+}
+
 /* 获取创建时间 */
 func (conn *LsndConnExtra) GetCtm() int64 {
-	conn.RLock()
-	defer conn.RUnlock()
-
 	return conn.ctm
+}
+
+/* 设置更新时间 */
+func (conn *LsndConnExtra) SetUtm(utm int64) {
+	atomic.StoreInt64(&conn.utm, utm)
 }
 
 /* 获取更新时间 */
 func (conn *LsndConnExtra) GetUtm() int64 {
-	conn.RLock()
-	defer conn.RUnlock()
-
-	return conn.utm
+	return atomic.LoadInt64(&conn.utm)
 }
 
 ////////////////////////////////////////////////////////////////////////////////

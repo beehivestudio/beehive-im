@@ -219,7 +219,7 @@ func LsndUploadRoomLsnStatCb(item *chat_tab.ChatRoomItem, param interface{}) int
 func (ctx *LsndCntx) task_timer_clean_timeout() {
 	for {
 		ctx.chat.TravSession(LsndCleanTimeoutHandler, ctx)
-		time.Sleep(30)
+		time.Sleep(30 * time.Second)
 	}
 }
 
@@ -250,12 +250,12 @@ func LsndCleanTimeoutHandler(sid uint64, cid uint64, extra interface{}, param in
 	ctm := time.Now().Unix()
 
 	if CONN_STATUS_LOGIN != conn.GetStatus() {
-		if ctm-conn.GetCtm() > 5 {
+		if (ctm > conn.GetCtm()) && (ctm-conn.GetCtm() > 5) {
 			ctx.lws.Kick(conn.GetCid())
 		}
 	}
 
-	if ctm-conn.GetCtm() > 300 {
+	if ctm > conn.GetCtm() && ctm-conn.GetCtm() > 300 {
 		ctx.lws.Kick(conn.GetCid())
 	}
 
