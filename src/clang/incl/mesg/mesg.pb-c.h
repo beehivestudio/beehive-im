@@ -93,6 +93,7 @@ typedef struct _MesgRoomChatAck MesgRoomChatAck;
 typedef struct _MesgRoomBc MesgRoomBc;
 typedef struct _MesgRoomBcAck MesgRoomBcAck;
 typedef struct _MesgRoomUsrNum MesgRoomUsrNum;
+typedef struct _MesgRoomLsnStat MesgRoomLsnStat;
 typedef struct _MesgRoomJoinNtc MesgRoomJoinNtc;
 typedef struct _MesgRoomQuitNtc MesgRoomQuitNtc;
 typedef struct _MesgRoomKickNtc MesgRoomKickNtc;
@@ -1017,6 +1018,18 @@ struct  _MesgRoomUsrNum
 #define MESG_ROOM_USR_NUM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_usr_num__descriptor) \
     , 0, 0 }
+
+
+struct  _MesgRoomLsnStat
+{
+  ProtobufCMessage base;
+  uint64_t rid;
+  uint32_t nid;
+  uint32_t num;
+};
+#define MESG_ROOM_LSN_STAT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_room_lsn_stat__descriptor) \
+    , 0, 0, 0 }
 
 
 struct  _MesgRoomJoinNtc
@@ -2560,6 +2573,25 @@ MesgRoomUsrNum *
 void   mesg_room_usr_num__free_unpacked
                      (MesgRoomUsrNum *message,
                       ProtobufCAllocator *allocator);
+/* MesgRoomLsnStat methods */
+void   mesg_room_lsn_stat__init
+                     (MesgRoomLsnStat         *message);
+size_t mesg_room_lsn_stat__get_packed_size
+                     (const MesgRoomLsnStat   *message);
+size_t mesg_room_lsn_stat__pack
+                     (const MesgRoomLsnStat   *message,
+                      uint8_t             *out);
+size_t mesg_room_lsn_stat__pack_to_buffer
+                     (const MesgRoomLsnStat   *message,
+                      ProtobufCBuffer     *buffer);
+MesgRoomLsnStat *
+       mesg_room_lsn_stat__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_room_lsn_stat__free_unpacked
+                     (MesgRoomLsnStat *message,
+                      ProtobufCAllocator *allocator);
 /* MesgRoomJoinNtc methods */
 void   mesg_room_join_ntc__init
                      (MesgRoomJoinNtc         *message);
@@ -2891,6 +2923,9 @@ typedef void (*MesgRoomBcAck_Closure)
 typedef void (*MesgRoomUsrNum_Closure)
                  (const MesgRoomUsrNum *message,
                   void *closure_data);
+typedef void (*MesgRoomLsnStat_Closure)
+                 (const MesgRoomLsnStat *message,
+                  void *closure_data);
 typedef void (*MesgRoomJoinNtc_Closure)
                  (const MesgRoomJoinNtc *message,
                   void *closure_data);
@@ -2990,6 +3025,7 @@ extern const ProtobufCMessageDescriptor mesg_room_chat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_bc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_bc_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_usr_num__descriptor;
+extern const ProtobufCMessageDescriptor mesg_room_lsn_stat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_join_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_quit_ntc__descriptor;
 extern const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor;
