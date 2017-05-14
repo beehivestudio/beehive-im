@@ -40,13 +40,20 @@ static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd, socket_t *sck, lsnd_con
 int lsnd_mesg_def_handler(lsnd_conn_extra_t *conn, unsigned int type, void *data, int len, void *args)
 {
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
-    mesg_header_t hhead, *head = (mesg_header_t *)data; /* 消息头 */
+    mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
 
     /* > 转换字节序 */
-    MESG_HEAD_HTON(head, &hhead);
+    MESG_HEAD_HTON(head, head);
+
+    head->sid = conn->sid;
+    head->cid = conn->cid;
+    head->nid = conn->nid;
+
 
     log_debug(lsnd->log, "Recv unkonwn data! type:0x%04X sid:%lu seq:%lu len:%d!",
-            hhead.type, hhead.sid, hhead.seq, len);
+            head->type, head->sid, head->seq, len);
+
+    MESG_HEAD_NTOH(head, head);
 
     /* > 转发数据 */
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
@@ -909,5 +916,5 @@ static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd,
         }
     }
 
-    return reg->proc(conn, reg->type, in, len, reg->args);
+    return reg->proc(conn, hhead.type, in, len, reg->args);
 }
