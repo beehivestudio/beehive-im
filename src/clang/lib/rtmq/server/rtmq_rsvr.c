@@ -357,7 +357,8 @@ static int rtmq_rsvr_trav_recv(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
 
             /* 进行接收处理 */
             if (rtmq_rsvr_recv_proc(ctx, rsvr, curr)) {
-                log_error(rsvr->log, "Recv proc failed! fd:%d ip:%s", curr->fd, curr->ipaddr);
+                log_error(rsvr->log, "Recv proc failed! fd:%d ip:%s nid:%d", 
+                        curr->fd, curr->ipaddr, curr->nid);
                 if (node == tail) {
                     rtmq_rsvr_del_conn_hdl(ctx, rsvr, node);
                     break;
@@ -550,8 +551,8 @@ static int rtmq_rsvr_recv_proc(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t *
             continue;
         }
         else if (0 == n) {
-            log_info(rsvr->log, "Client disconnected. nid:%u n:%d/%d",
-                    sck->nid, n, left);
+            log_error(rsvr->log, "Client disconnected. errmsg:[%d] %s! nid:%u n:%d/%d",
+                    errno, strerror(errno), sck->nid, n, left);
             return RTMQ_SCK_DISCONN;
         }
         else if ((n < 0) && (EAGAIN == errno)) {
