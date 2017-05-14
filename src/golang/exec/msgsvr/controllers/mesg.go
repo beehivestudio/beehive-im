@@ -155,6 +155,8 @@ func MsgSvrP2pAckHandler(cmd uint32, nid uint32,
  ******************************************************************************/
 func (ctx *MsgSvrCntx) sync_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgSync, code uint32, err error) {
+	req = &mesg.MesgSync{}
+
 	/* 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
@@ -162,6 +164,9 @@ func (ctx *MsgSvrCntx) sync_parse(data []byte) (
 			head.GetCmd(), head.GetNid(), head.GetChkSum())
 		return nil, nil, comm.ERR_SVR_PARSE_PARAM, errors.New("Header of sync-req invalid!")
 	}
+
+	ctx.log.Debug("Recv sync request! sid:%d cid:%d nid:%d len:%d",
+		head.GetSid(), head.GetCid(), head.GetNid(), head.GetLength())
 
 	/* 解析协议体 */
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
@@ -190,7 +195,7 @@ func (ctx *MsgSvrCntx) sync_parse(data []byte) (
 func (ctx *MsgSvrCntx) sync_handler(
 	head *comm.MesgHeader, req *mesg.MesgSync) (code uint32, err error) {
 	rds := ctx.redis.Get()
-	rds.Close()
+	defer rds.Close()
 
 	pl := ctx.redis.Get()
 	defer func() {
@@ -212,7 +217,8 @@ func (ctx *MsgSvrCntx) sync_handler(
 	for idx := 0; idx < num; idx += 1 {
 		vals := strings.Split(mesg_list[idx], ":")
 		uid, err := strconv.ParseInt(vals[0], 10, 64)   // 消息发送者的UID
-		msgid, err := strconv.ParseInt(vals[1], 10, 64) // 消息发送者的消息ID
+		sid, err := strconv.ParseInt(vals[1], 10, 64)   // 消息发送者的SID
+		msgid, err := strconv.ParseInt(vals[2], 10, 64) // 消息发送者的消息ID
 		if 0 == msgid || 0 == uid {
 			ctx.log.Error("Parse offline message failed! mesg:%s", mesg_list[idx])
 			pl.Send("ZREM", mesg_list[idx])
@@ -221,8 +227,9 @@ func (ctx *MsgSvrCntx) sync_handler(
 
 		/* > 获取离线消息*/
 		mesg_key := fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, uid)
+		data_key := fmt.Sprintf("%d:%d", sid, msgid)
 
-		data, err := redis.String(rds.Do("HGET", mesg_key, msgid))
+		data, err := redis.String(rds.Do("HGET", mesg_key, data_key))
 		if nil != err {
 			ctx.log.Error("Get offline message failed! mesg:%s", mesg_list[idx])
 			pl.Send("ZREM", key, mesg_list[idx])
@@ -395,7 +402,7 @@ func MsgSvrSyncHandler(cmd uint32, nid uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Recv sync-req message!")
+	ctx.log.Debug("Recv sync request!")
 
 	/* > 解析消息同步请求 */
 	head, req, code, err := ctx.sync_parse(data)
@@ -421,7 +428,7 @@ func MsgSvrSyncHandler(cmd uint32, nid uint32,
 	/* > 处理消息同步请求 */
 	code, err = ctx.sync_handler(head, req)
 	if nil != err {
-		ctx.log.Error("Handle sync message failed! errmsg:%s", err.Error())
+		ctx.log.Error("Handle sync request failed! errmsg:%s", err.Error())
 		ctx.sync_failed(head, req, code, err.Error())
 		return -1
 	}
