@@ -650,6 +650,8 @@ static int rtmq_rsvr_data_proc(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t *
         /* 2.3 进行数据处理 */
         if (RTMQ_SYS_MESG == head->flag) {
             if (rtmq_rsvr_sys_mesg_proc(ctx, rsvr, sck, curr->optr)) {
+                log_error(rsvr->log, "Proc system message failed! ype:%d len:%d flag:%d",
+                        head->type, head->length, head->flag);
                 return RTMQ_ERR;
             }
         }

@@ -453,7 +453,7 @@ static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
             continue;
         }
         else if (0 == n) {
-            log_info(ssvr->log, "Server disconnected. fd:%d n:%d/%d", sck->fd, n, left);
+            log_error(ssvr->log, "Server disconnected. fd:%d n:%d/%d", sck->fd, n, left);
             CLOSE(sck->fd);
             rtmq_snap_reset(recv);
             return RTMQ_SCK_DISCONN;
