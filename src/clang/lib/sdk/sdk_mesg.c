@@ -157,12 +157,17 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
 int sdk_mesg_send_sync_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
 {
     void *addr;
-    size_t size;
+    size_t size, len;
     mesg_header_t *head;
+    sdk_conf_t *conf = &ctx->conf;
     sdk_conn_info_t *info = &ssvr->conn_info;
+    MesgSync sync = MESG_SYNC__INIT;
+
+    sync.uid = conf->uid;
 
     /* > 申请内存空间 */
-    size = sizeof(mesg_header_t);
+    len = mesg_sync__get_packed_size(&sync);
+    size = len + sizeof(mesg_header_t);
 
     addr = (void *)calloc(1, size);
     if (NULL == addr) {
@@ -174,10 +179,12 @@ int sdk_mesg_send_sync_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
     head = (mesg_header_t *)addr;
 
     head->type = CMD_SYNC;
-    head->length = 0;
+    head->length = len;
     head->sid = info->sid;
     head->seq = sdk_gen_seq(ctx);
     head->chksum = MSG_CHKSUM_VAL;
+
+    mesg_sync__pack(&sync, addr+sizeof(mesg_header_t));
 
     /* 3. 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
