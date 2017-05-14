@@ -153,9 +153,6 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error 
 		/* 更新统计计数 */
 		key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, rid)
 		pl.Send("ZINCRBY", key, -1, gid)
-
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, rid)
-		pl.Send("ZINCRBY", key, -1, nid)
 	}
 
 	/* 清理各种数据 */

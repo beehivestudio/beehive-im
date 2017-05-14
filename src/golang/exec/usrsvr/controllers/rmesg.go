@@ -587,9 +587,6 @@ GET_GID:
 		if 0 == exist {
 			key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
 			pl.Send("ZINCRBY", key, 1, uint32(gid_int))
-
-			key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
-			pl.Send("ZINCRBY", key, 1, head.GetNid())
 		}
 
 		return uint32(gid_int), nil
@@ -615,9 +612,6 @@ GET_GID:
 	/* > 更新数据库统计 */
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
 	pl.Send("ZINCRBY", key, 1, gid)
-
-	key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
-	pl.Send("ZINCRBY", key, 1, head.GetNid())
 
 	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
 	member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
@@ -1327,7 +1321,7 @@ func (ctx *UsrSvrCntx) room_lsn_stat_handler(
 
 	ttl := time.Now().Unix() + 30
 
-	/* > 用户加入黑名单 */
+	/* > 更新统计数据 */
 	key := fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
 	pl.Send("ZADD", key, req.GetNum(), req.GetNid())
 
