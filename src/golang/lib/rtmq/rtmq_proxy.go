@@ -533,8 +533,8 @@ func (c *ProxyConn) Start(num uint32) {
 		return
 	}
 
-	c.auth()
-	c.subscribe()
+	c.auth()      // 鉴权
+	c.subscribe() // 订阅
 
 	if 0 == num {
 		num = 1
@@ -544,7 +544,7 @@ func (c *ProxyConn) Start(num uint32) {
 		go c.handle_routine()
 	}
 	go c.recv_routine()
-	go c.send_routine()
+	c.send_routine()
 }
 
 /******************************************************************************
@@ -583,6 +583,7 @@ func (c *ProxyConn) recv_routine() {
 		p.head = make([]byte, RTMQ_HEAD_SIZE)
 
 		if _, err := io.ReadFull(c.conn, p.head); nil != err {
+			log.Error("Recv head failed! errmsg:%s", err)
 			return
 		}
 
@@ -593,6 +594,7 @@ func (c *ProxyConn) recv_routine() {
 		p.body = make([]byte, header.length)
 
 		if _, err := io.ReadFull(c.conn, p.body[:]); nil != err {
+			log.Error("Recv body failed! errmsg:%s", err)
 			return
 		}
 
