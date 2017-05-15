@@ -383,7 +383,7 @@ int chat_room_trav_session(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb
 }
 
 /******************************************************************************
- **函数名称: chat_room_trav_list
+ **函数名称: chat_room_trav
  **功    能: 遍历聊天室列表
  **输入参数: 
  **     chat: CHAT对象
@@ -395,7 +395,7 @@ int chat_room_trav_session(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.13 13:29:24 #
  ******************************************************************************/
-int chat_room_trav_list(chat_tab_t *chat, trav_cb_t proc, void *args)
+int chat_room_trav(chat_tab_t *chat, trav_cb_t proc, void *args)
 {
     return hash_tab_trav(chat->rooms, proc, args, RDLOCK);
 }

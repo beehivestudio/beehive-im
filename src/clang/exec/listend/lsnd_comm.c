@@ -326,7 +326,7 @@ void lsnd_timer_info_handler(void *_ctx)
  **     _ctx: 全局信息
  **输出参数: NONE
  **返    回: VOID
- **实现描述: 调用chat_room_trav_list()遍历所有聊天室.
+ **实现描述: 调用chat_room_trav()遍历所有聊天室.
  **注意事项: 
  **作    者: # Qifeng.zou # 2017.05.13 11:10:48 #
  ******************************************************************************/
@@ -334,7 +334,7 @@ void lsnd_timer_room_stat_handler(void *_ctx)
 {
     lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
 
-    chat_room_trav_list(ctx->chat_tab, (trav_cb_t)lsnd_upload_room_stat_handler, (void *)ctx);
+    chat_room_trav(ctx->chat_tab, (trav_cb_t)lsnd_upload_room_stat_handler, (void *)ctx);
 
     return;
 }

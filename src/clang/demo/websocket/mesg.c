@@ -240,6 +240,65 @@ int lws_mesg_room_join_ack_handler(mesg_header_t *head, void *body)
     return 0;
 }
 
+/* 发送ROOM-QUIT请求 */
+int lws_mesg_room_quit_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session)
+{
+    size_t len;
+    list_opt_t lo;
+    uint8_t *body;
+    mesg_header_t *head;
+    lws_send_item_t *item;
+    MesgRoomQuit quit = MESG_ROOM_QUIT__INIT;
+
+    /* 创建发送队列 */
+    memset(&lo, 0, sizeof(lo));
+
+    lo.pool = NULL;
+    lo.alloc = mem_alloc;
+    lo.dealloc = mem_dealloc;
+
+    session->send_list = list_creat(&lo);
+    if (NULL == session->send_list) {
+        fprintf(stderr, "Create list failed!\n");
+        return -1;
+    }
+
+    fprintf(stderr, "Call %s()\n", __func__);
+
+    /* 创建发送单元 */
+    item = (lws_send_item_t *)calloc(1, sizeof(lws_send_item_t));
+    if (NULL == item) {
+        fprintf(stderr, "errmsg:[%d] %s!\n", errno, strerror(errno));
+        return -1;
+    }
+
+    /* 设置ONLINE消息 */
+    quit.uid = 18610485118;
+    quit.rid = 1000000015;
+
+    len = mesg_room_quit__get_packed_size(&quit);
+    item->len = sizeof(mesg_header_t) + (uint32_t)len;
+
+    head = (mesg_header_t *)(item->addr + LWS_SEND_BUFFER_PRE_PADDING);
+    body = (uint8_t *)(void *)(head + 1);
+
+    mesg_room_quit__pack(&quit, body);
+
+    /* 设置通用头部 */
+    head->type = htonl(CMD_ROOM_QUIT);
+    head->length = htonl(len);
+    head->sid = hton64(AWS_SID);
+    ++ctx->seq;
+    head->seq = hton64(ctx->seq);
+    head->chksum = htonl(MSG_CHKSUM_VAL);
+
+    list_rpush(session->send_list, item);
+
+    lws_callback_on_writable(lws, wsi);
+
+    return 0;
+}
+
 /* 发送ROOM消息 */
 int lws_mesg_room_chat_send_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session)
 {

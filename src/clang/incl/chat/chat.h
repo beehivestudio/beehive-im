@@ -76,6 +76,7 @@ typedef struct
 chat_tab_t *chat_tab_init(int len, log_cycle_t *log); // OK
 
 uint32_t chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid); // OK
+uint32_t chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid);
 int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid); // OK
 
 uint64_t chat_get_cid_by_sid(chat_tab_t *chat, uint64_t sid); // OK
@@ -87,7 +88,7 @@ int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 
 int chat_room_trav_session(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc, void *args); // OK
-int chat_room_trav_list(chat_tab_t *chat, trav_cb_t proc, void *args);
+int chat_room_trav(chat_tab_t *chat, trav_cb_t proc, void *args);
 int chat_clean_hdl(chat_tab_t *chat);
 
 #endif /*__CHAT_H__*/
