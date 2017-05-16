@@ -4,7 +4,7 @@
 #include "atomic.h"
 #include "chat_priv.h"
 
-static bool _chat_has_sub(chat_session_t *ssn, uint16_t cmd);
+static bool _chat_has_sub(chat_session_t *session, uint16_t cmd);
 
 /* 聊天室ID哈希回调 */
 static uint64_t chat_room_hash_cb(chat_room_t *r)
@@ -133,21 +133,48 @@ chat_tab_t *chat_tab_init(int len, log_cycle_t *log)
 uint32_t chat_room_add_session(chat_tab_t *chat,
         uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid)
 {
-    chat_session_t *ssn, key;
+    int ret;
+    chat_session_t *session, key;
+    chat_room_item_t *room, rkey;
 
     /* > 判断该SID是否已经存在 */
     key.sid = sid;
     key.cid = cid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->sessions, (void *)&key, RDLOCK);
-    if (NULL != ssn) {
-        if (ssn->rid == rid) {
-            gid = ssn->gid;
+    session = (chat_session_t *)hash_tab_query(chat->sessions, (void *)&key, RDLOCK);
+    if (NULL != session) {
+    QUERY:
+        rkey.rid = rid;
+        room = (chat_room_item_t *)hash_tab_query(session->room, (void *)&rkey, RDLOCK);
+        if (NULL != room) {
+            gid = room->gid;
+            hash_tab_unlock(session->room, (void *)&rkey, RDLOCK);
             hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
             return gid; /* 已存在 */
         }
+
+        room = (chat_room_item_t *)calloc(1, sizeof(chat_room_item_t));
+        if (NULL == room) {
+            hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
+            return -1;
+        }
+
+        room->rid = rid;
+        room->gid = gid;
+
+        ret = hash_tab_insert(session->room, (void *)room, WRLOCK);
+        if (RBT_NODE_EXIST == ret) {
+            hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
+            FREE(room);
+            goto QUERY;
+        }
+        else if (0 != ret) {
+            hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
+            return -1; /* 失败: 插入聊天室表失败 */
+        }
+
         hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
-        return -1; /* 失败: SID所在聊天室与申请的聊天室冲突 */
+        return gid; 
     }
 
     /* > 将会话加入聊天室 */
@@ -169,8 +196,58 @@ uint32_t chat_room_add_session(chat_tab_t *chat,
 }
 
 /******************************************************************************
+ **函数名称: chat_room_del_session
+ **功    能: 给聊天室删除一个用户
+ **输入参数: 
+ **     chat: CHAT对象
+ **     rid: 聊天室ID
+ **     sid: 会话ID
+ **     cid: 连接ID
+ **输出参数: NONE
+ **返    回: 分组ID
+ **实现描述:
+ **     1. 如果此SID存在, 则验证数据合法性
+ **     2. 如果此SID不存在, 加入聊天室
+ **注意事项: 
+ **     1. 在此处不删除人数为0的聊天室和其下的分组, 删除操作由定时任务统一处理.
+ **        理由: 降低程序的复杂度.
+ **     2. 尽量进少使用写锁的次数, 尽量降低写锁的粒度.
+ **     3. 防止锁出现交错的情况, 从而造成死锁的情况.
+ **作    者: # Qifeng.zou # 2017.05.16 09:40:25 #
+ ******************************************************************************/
+uint32_t chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint64_t sid, uint64_t cid)
+{
+    chat_session_t *session, key;
+    chat_room_item_t *room, rkey;
+
+    /* > 获取会话对象 */
+    key.sid = sid;
+    key.cid = cid;
+
+    session = (chat_session_t *)hash_tab_query(chat->sessions, (void *)&key, RDLOCK);
+    if (NULL == session) {
+        return 0; /* 无该会话信息 */
+    }
+
+    /* > 清理聊天室信息 */
+    rkey.rid = rid;
+
+    room = (chat_room_item_t *)hash_tab_delete(session->room, (void *)&rkey, WRLOCK);
+    if (NULL == room) {
+        return 0; /* 未加入该聊天室 */
+    }
+
+    _chat_room_del_session(chat, room->rid, room->gid, sid, cid);
+    FREE(room);
+
+    return 0;
+}
+
+
+
+/******************************************************************************
  **函数名称: chat_del_session
- **功    能: 给聊天室添加一个用户
+ **功    能: 清理会话所有数据
  **输入参数: 
  **     chat: CHAT对象
  **     sid: 会话ID
@@ -184,7 +261,8 @@ uint32_t chat_room_add_session(chat_tab_t *chat,
  ******************************************************************************/
 int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid)
 {
-    chat_session_t *ssn, key;
+    chat_session_t *session, key;
+    chat_session_trav_room_t param;
 
     /* > 删除SID->CID映射 */
     chat_del_sid_to_cid(chat, sid, cid);
@@ -193,18 +271,22 @@ int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid)
     key.sid = sid;
     key.cid = cid;
 
-    ssn = hash_tab_delete(chat->sessions, (void *)&key, WRLOCK);
-    if (NULL == ssn) {
-        log_error(chat->log, "Didn't find sid[%u]. ptr:%p", sid, ssn);
+    session = hash_tab_delete(chat->sessions, (void *)&key, WRLOCK);
+    if (NULL == session) {
+        log_error(chat->log, "Didn't find sid[%u]. ptr:%p", sid, session);
         return 0; /* Didn't find */
     }
 
     /* > 从聊天室剔除 */
-    _chat_room_del_session(chat, ssn->rid, ssn->gid, sid, cid);
+    param.chat = chat;
+    param.session = session;
+
+    hash_tab_trav(session->room, (trav_cb_t)_chat_room_trav_del_session, &param, RDLOCK);
 
     /* > 释放会话对象 */
-    hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
-    FREE(ssn);
+    hash_tab_destroy(session->room, (mem_dealloc_cb_t)mem_dealloc, NULL);
+    hash_tab_destroy(session->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
+    FREE(session);
     return 0;
 }
 
@@ -418,7 +500,7 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
     int ret;
     uint64_t cid;
     chat_sub_item_t *item;
-    chat_session_t *ssn, key;
+    chat_session_t *session, key;
 
     /* 准备数据 */
     item = (chat_sub_item_t *)calloc(1, sizeof(chat_sub_item_t));
@@ -438,15 +520,15 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
     key.sid = sid;
     key.cid = cid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
-    if (NULL == ssn) {
+    session = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
+    if (NULL == session) {
         free(item);
         return -1;
     }
 
-    ret = hash_tab_insert(ssn->sub, (void *)item, WRLOCK);
+    ret = hash_tab_insert(session->sub, (void *)item, WRLOCK);
     if (AVL_OK != ret) {
-        hash_tab_unlock(chat->sessions, ssn, RDLOCK);
+        hash_tab_unlock(chat->sessions, session, RDLOCK);
         free(item);
         return (AVL_NODE_EXIST == ret)? 0 : -1;
     }
@@ -472,7 +554,7 @@ int chat_add_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 {
     uint64_t cid;
-    chat_session_t *ssn, key;
+    chat_session_t *session, key;
     chat_sub_item_t sub_key, *item;
 
     /* 查找SID->CID映射 */
@@ -485,15 +567,15 @@ int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
     key.sid = sid;
     key.cid = cid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
-    if (NULL == ssn) {
+    session = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
+    if (NULL == session) {
         return -1;
     }
 
     /* > 删除订阅信息 */
     sub_key.cmd = cmd;
 
-    item = hash_tab_delete(ssn->sub, &sub_key, WRLOCK);
+    item = hash_tab_delete(session->sub, &sub_key, WRLOCK);
     if (NULL == item) {
         hash_tab_unlock(chat->sessions, &key, RDLOCK);
         return  0;
@@ -522,16 +604,16 @@ int chat_del_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
 {
     bool has_sub = false;
-    chat_session_t *ssn, key;
+    chat_session_t *session, key;
 
     key.sid = sid;
 
-    ssn = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
-    if (NULL == ssn) {
+    session = (chat_session_t *)hash_tab_query(chat->sessions, &key, RDLOCK);
+    if (NULL == session) {
         return false;
     }
 
-    has_sub = _chat_has_sub(ssn, cmd);
+    has_sub = _chat_has_sub(session, cmd);
 
     hash_tab_unlock(chat->sessions, &key, RDLOCK);
 
@@ -542,7 +624,7 @@ bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
  **函数名称: _chat_has_sub
  **功    能: 是否订阅消息
  **输入参数:
- **     ssn: 会话对象
+ **     session: 会话对象
  **     cmd: 命令类型
  **输出参数: NONE
  **返    回: true:订阅 false:未订阅
@@ -550,18 +632,18 @@ bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.20 15:48:28 #
  ******************************************************************************/
-static bool _chat_has_sub(chat_session_t *ssn, uint16_t cmd)
+static bool _chat_has_sub(chat_session_t *session, uint16_t cmd)
 {
     chat_sub_item_t *item, key;
 
     key.cmd = cmd;
 
-    item = hash_tab_query(ssn->sub, (void *)&key, RDLOCK);
+    item = hash_tab_query(session->sub, (void *)&key, RDLOCK);
     if (NULL == item) {
-        hash_tab_unlock(ssn->sub, (void *)&key, RDLOCK);
+        hash_tab_unlock(session->sub, (void *)&key, RDLOCK);
         return false;
     }
-    hash_tab_unlock(ssn->sub, (void *)&key, RDLOCK);
+    hash_tab_unlock(session->sub, (void *)&key, RDLOCK);
 
     return true;
 }

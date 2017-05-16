@@ -274,6 +274,18 @@ static int chat_group_add_by_gid(chat_tab_t *chat, chat_room_t *room, uint32_t g
     return 0;
 }
 
+/* 聊天室ID哈希回调 */
+static uint64_t chat_room_hash_cb(chat_sub_item_t *item)
+{
+    return item->cmd;
+}
+
+/* 聊天室比较函数回调 */
+static int chat_room_cmp_cb(chat_room_item_t *item1, chat_room_item_t *item2)
+{
+    return item1->rid - item2->rid;
+}
+
 /* 订阅ID哈希回调 */
 static uint64_t chat_sub_hash_cb(chat_sub_item_t *item)
 {
@@ -381,31 +393,52 @@ static int _chat_group_del_session(chat_tab_t *chat,
  ******************************************************************************/
 int chat_session_tab_add(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid)
 {
-    chat_session_t *ssn;
+    chat_session_t *session;
+    chat_room_item_t *room;
 
-    ssn = (chat_session_t *)calloc(1, sizeof(chat_session_t));
-    if (NULL == ssn) {
+    /* > 新建会话对象 */
+    session = (chat_session_t *)calloc(1, sizeof(chat_session_t));
+    if (NULL == session) {
         return -1;
     }
 
-    /* > 初始化设置 */
-    ssn->sid = sid;
-    ssn->cid = cid;
-    ssn->gid = gid;
-    ssn->rid = rid;
+    session->sid = sid;
+    session->cid = cid;
 
-    ssn->sub = hash_tab_creat(5,
-            (hash_cb_t)chat_sub_hash_cb,
-            (cmp_cb_t)chat_sub_cmp_cb, NULL);
-    if (NULL == ssn->sub) {
-        FREE(ssn);
+    /* > 新建ROOM对象 */
+    room = (chat_room_item_t *)calloc(1, sizeof(chat_room_item_t));
+    if (NULL == session) {
+        FREE(session);
+        return -1;
+    }
+
+    room->rid = rid;
+    room->gid = gid;
+
+    /* > 新建ROOM对象 */
+    session->room = hash_tab_creat(5, (hash_cb_t)chat_room_hash_cb, (cmp_cb_t)chat_room_cmp_cb, NULL);
+    if (NULL == session->room) {
+        FREE(session);
+        return -1;
+    }
+
+    if (hash_tab_insert(session->room, room, WRLOCK)) {
+        FREE(room);
+    }
+
+    /* > 新建SUB对象 */
+    session->sub = hash_tab_creat(5, (hash_cb_t)chat_sub_hash_cb, (cmp_cb_t)chat_sub_cmp_cb, NULL);
+    if (NULL == session->sub) {
+        hash_tab_destroy(session->room, (mem_dealloc_cb_t)mem_dealloc, NULL);
+        FREE(session);
         return -1;
     }
 
     /* > 插入会话表 */
-    if (hash_tab_insert(chat->sessions, (void *)ssn, WRLOCK)) {
-        hash_tab_destroy(ssn->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
-        FREE(ssn);
+    if (hash_tab_insert(chat->sessions, (void *)session, WRLOCK)) {
+        hash_tab_destroy(session->room, (mem_dealloc_cb_t)mem_dealloc, NULL);
+        hash_tab_destroy(session->sub, (mem_dealloc_cb_t)mem_dealloc, NULL);
+        FREE(session);
         return -1;
     }
 
@@ -580,6 +613,31 @@ int _chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_
     chat_group_del_session(chat, room, gid, sid, cid);
 
     hash_tab_unlock(chat->rooms, (void *)&key, RDLOCK);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: _chat_room_trav_del_session
+ **功    能: 从聊天室中删除某会话
+ **输入参数: 
+ **     room: 聊天室信息
+ **     param: 遍历参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.15 22:23:40 #
+ ******************************************************************************/
+int _chat_room_trav_del_session(chat_room_item_t *room, chat_session_trav_room_t *param)
+{
+    chat_tab_t *chat;
+    chat_session_t *session;
+
+    chat = param->chat;
+    session = param->session;
+
+    _chat_room_del_session(chat, room->rid, room->gid, session->sid, session->cid);
 
     return 0;
 }

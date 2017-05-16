@@ -452,6 +452,7 @@ int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, 
  ******************************************************************************/
 int lsnd_mesg_room_quit_handler(lsnd_conn_extra_t *conn, int type, void *data, int len, void *args)
 {
+    MesgRoomQuit *quit;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     lsnd_conf_t *conf = &lsnd->conf;
     mesg_header_t *head = (mesg_header_t *)data; /* 消息头 */
@@ -464,16 +465,31 @@ int lsnd_mesg_room_quit_handler(lsnd_conn_extra_t *conn, int type, void *data, i
         return -1;
     }
 
+    head->cid = conn->cid;
     head->nid = conf->nid;
 
-    log_debug(lsnd->log, "Head is valid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
-            head->sid, head->seq, len, head->chksum);
+    log_debug(lsnd->log, "Head is valid! sid:%lu cid:%lu seq:%lu len:%d chksum:0x%08X!",
+            head->sid, head->cid, head->seq, len, head->chksum);
 
-    MESG_HEAD_HTON(head, head);
+    /* > 解析退出请求 */
+    quit = mesg_room_quit__unpack(NULL, head->length, (void *)(head + 1));
+    if (NULL == quit) {
+        log_error(lsnd->log, "Quit room is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
+                head->sid, head->seq, len, head->chksum);
+        return -1;
+    }
+
+    log_debug(lsnd->log, "Quit room! uid:%lu rid:%lu sid:%lu cid:%lu!",
+            quit->uid, quit->rid, head->sid, head->cid);
 
     /* > 从聊天室删除此会话 */
+    chat_room_del_session(lsnd->chat_tab, quit->rid, conn->sid, conn->cid);
+
+    mesg_room_quit__free_unpacked(quit, NULL);
 
     /* > 转发UNJOIN请求 */
+    MESG_HEAD_HTON(head, head);
+
     return rtmq_proxy_async_send(lsnd->frwder, type, data, len);
 }
 

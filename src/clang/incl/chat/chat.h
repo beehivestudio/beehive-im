@@ -18,7 +18,7 @@ typedef struct
 {
     uint64_t rid;               /* 聊天室ID */
     uint32_t gid;               /* 分组ID */
-} chat_session_room_info_t;
+} chat_room_item_t;
 
 /* 聊天室会话信息 */
 typedef struct
@@ -26,9 +26,7 @@ typedef struct
     uint64_t sid;               /* 会话SID(SID+CID主键) */
     uint64_t cid;               /* 连接CID(SID+CID主键) */
 
-    uint64_t rid;               /* 聊天室ID */
-    uint32_t gid;               /* 分组ID */
-
+    hash_tab_t *room;           /* 聊天室列表 */
     hash_tab_t *sub;            /* 订阅消息列表 */
 } chat_session_t;
 
@@ -73,10 +71,17 @@ typedef struct
     hash_tab_t *sid2cids;       /* SID->CID信息 */
 } chat_tab_t;
 
+/* 遍历会话中聊天室列表的参数 */
+typedef struct
+{
+    chat_tab_t *chat;
+    chat_session_t *session;
+} chat_session_trav_room_t;
+
 chat_tab_t *chat_tab_init(int len, log_cycle_t *log); // OK
 
 uint32_t chat_room_add_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid); // OK
-uint32_t chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid);
+uint32_t chat_room_del_session(chat_tab_t *chat, uint64_t rid, uint64_t sid, uint64_t cid);
 int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid); // OK
 
 uint64_t chat_get_cid_by_sid(chat_tab_t *chat, uint64_t sid); // OK
