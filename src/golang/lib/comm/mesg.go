@@ -13,24 +13,22 @@ const (
 	CMD_UNKNOWN = 0 /* 未知消息 */
 
 	/* 通用消息 */
-	CMD_ONLINE         = 0x0101 /* 上线请求(服务端) */
-	CMD_ONLINE_ACK     = 0x0102 /* 上线请求应答(客户端) */
-	CMD_OFFLINE        = 0x0103 /* 下线请求(服务端) */
-	CMD_OFFLINE_ACK    = 0x0104 /* 下线请求应答(客户端) */
-	CMD_PING           = 0x0105 /* 客户端心跳(服务端) */
-	CMD_PONG           = 0x0106 /* 客户端心跳应答(客户端) */
-	CMD_SUB            = 0x0107 /* 订阅请求(服务端) */
-	CMD_SUB_ACK        = 0x0108 /* 订阅应答(客户端) */
-	CMD_UNSUB          = 0x0109 /* 取消订阅(服务端) */
-	CMD_UNSUB_ACK      = 0x010A /* 取消订阅应答(客户端) */
-	CMD_EXCEPT_MSG     = 0x010B /* 通用异常消息 */
-	CMD_EXCEPT_MSG_ACK = 0x010C /* 通用异常消息应答 */
-	CMD_SYNC           = 0x010D /* 同步消息 */
-	CMD_SYNC_ACK       = 0x010E /* 同步消息应答(客户端) */
-	//CMD_ALLOC_SEQ      = 0x0110 /* 申请序列号 */
-	//CMD_ALLOC_SEQ_ACK  = 0x0111 /* 申请序列号应答 */
-	CMD_KICK_REQ    = 0x0112 /* 踢人请求 */
-	CMD_KICK_ACK    = 0x0113 /* 踢人应答 */
+	CMD_ONLINE      = 0x0101 /* 上线请求(服务端) */
+	CMD_ONLINE_ACK  = 0x0102 /* 上线请求应答(客户端) */
+	CMD_OFFLINE     = 0x0103 /* 下线请求(服务端) */
+	CMD_OFFLINE_ACK = 0x0104 /* 下线请求应答(客户端) */
+	CMD_PING        = 0x0105 /* 客户端心跳(服务端) */
+	CMD_PONG        = 0x0106 /* 客户端心跳应答(客户端) */
+	CMD_SUB         = 0x0107 /* 订阅请求(服务端) */
+	CMD_SUB_ACK     = 0x0108 /* 订阅应答(客户端) */
+	CMD_UNSUB       = 0x0109 /* 取消订阅(服务端) */
+	CMD_UNSUB_ACK   = 0x010A /* 取消订阅应答(客户端) */
+	CMD_ERROR       = 0x010B /* 通用错误消息 */
+	CMD_ERROR_ACK   = 0x010C /* 通用错误消息应答 */
+	CMD_SYNC        = 0x010D /* 同步消息 */
+	CMD_SYNC_ACK    = 0x010E /* 同步消息应答(客户端) */
+	CMD_KICK        = 0x0110 /* 踢人请求 */
+	CMD_KICK_ACK    = 0x0111 /* 踢人应答 */
 	CMD_ONLINE_NTC  = 0x0151 /* 上线通知 */
 	CMD_OFFLINE_NTC = 0x0152 /* 下线通知 */
 

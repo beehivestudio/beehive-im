@@ -357,7 +357,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     }
 
     LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_mesg_online_ack_handler, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_KICK_REQ, lsnd_mesg_kick_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_KICK, lsnd_mesg_kick_handler, ctx);
 
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_JOIN_ACK, lsnd_mesg_room_join_ack_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_mesg_room_chat_handler, ctx);

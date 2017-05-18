@@ -23,7 +23,7 @@ func (ctx *LsndCntx) UpMesgRegister() {
 
 	/* > 通用消息 */
 	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndUpMesgOnlineAckHandler, ctx)
-	ctx.frwder.Register(comm.CMD_KICK_REQ, LsndUpMesgKickHandler, ctx)
+	ctx.frwder.Register(comm.CMD_KICK, LsndUpMesgKickHandler, ctx)
 	ctx.frwder.Register(comm.CMD_SUB_ACK, LsndUpMesgSubAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpMesgUnsubAckHandler, ctx)
 

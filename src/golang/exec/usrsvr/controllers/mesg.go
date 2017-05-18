@@ -624,7 +624,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, cid uint64, nid uint32, code uint32
 	p := &comm.MesgPacket{}
 	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-	head.Cmd = comm.CMD_KICK_REQ
+	head.Cmd = comm.CMD_KICK
 	head.Sid = sid
 	head.Cid = cid
 	head.Nid = nid
@@ -635,7 +635,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, cid uint64, nid uint32, code uint32
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 	/* > 发送协议包 */
-	ctx.frwder.AsyncSend(comm.CMD_KICK_REQ, p.Buff, uint32(len(p.Buff)))
+	ctx.frwder.AsyncSend(comm.CMD_KICK, p.Buff, uint32(len(p.Buff)))
 
 	return 0
 }
