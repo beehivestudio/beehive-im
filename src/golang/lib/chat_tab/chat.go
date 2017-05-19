@@ -2,6 +2,7 @@ package chat_tab
 
 import (
 	"sync"
+	"sync/atomic"
 
 	"beehive-im/src/golang/lib/comm"
 )
@@ -176,6 +177,8 @@ GROUP:
 	_, ok := group.sid_list[*key]
 	if !ok {
 		group.sid_list[*key] = true
+		atomic.AddInt64(&room.sid_num, 1)  // 人数+1
+		atomic.AddInt64(&group.sid_num, 1) // 人数+1
 		return 0
 	}
 
@@ -196,7 +199,7 @@ GROUP:
  ******************************************************************************/
 func (ctx *ChatTab) RoomQuit(rid uint64, sid uint64, cid uint64) int {
 	/* > 移除指定聊天室数据 */
-	gid, ok := ctx.session_quit_room(rid, sid)
+	gid, ok := ctx.session_quit_room(rid, sid, cid)
 	if !ok {
 		return 0 // 无数据
 	}

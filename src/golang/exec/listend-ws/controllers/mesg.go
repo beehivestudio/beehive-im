@@ -336,6 +336,11 @@ func LsndMesgRoomQuitHandler(conn *LsndConnExtra, cmd uint32, data []byte, lengt
 
 	/* > 字节序转换(网络->主机) */
 	head := comm.MesgHeadNtoh(data)
+	if 0 == head.GetSid() {
+		ctx.lws.Kick(conn.GetCid())
+		ctx.log.Error("Get sid from head failed! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
+		return -1
+	}
 
 	head.SetCid(conn.GetCid())
 	head.SetNid(ctx.conf.GetNid())
@@ -348,6 +353,8 @@ func LsndMesgRoomQuitHandler(conn *LsndConnExtra, cmd uint32, data []byte, lengt
 		ctx.log.Error("Unmarshal room quit request failed! errmsg:%s", err.Error())
 		return -1
 	}
+
+	ctx.log.Debug("Quit room! sid:%d cid:%d rid:%d", conn.GetSid(), conn.GetCid(), req.GetRid())
 
 	ctx.chat.RoomQuit(req.GetRid(), conn.GetSid(), conn.GetCid())
 

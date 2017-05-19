@@ -63,21 +63,19 @@ func (ctx *ChatTab) session_join_room(rid uint64, gid uint32, sid uint64, cid ui
  **功    能: 会话QUIT聊天室
  **输入参数:
  **     rid: ROOM ID
- **     gid: 分组GID
  **     sid: 会话SID
+ **     cid: 连接CID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 清理会话SID信息中的聊天室RID数据.
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 22:36:01 #
  ******************************************************************************/
-func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bool) {
+func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64, cid uint64) (gid uint32, ok bool) {
 	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
 
 	ss.Lock()
 	defer ss.Unlock()
-
-	cid := ctx.GetCidBySid(sid)
 
 	key := &ChatSessionKey{sid: sid, cid: cid}
 
@@ -86,10 +84,10 @@ func (ctx *ChatTab) session_quit_room(rid uint64, sid uint64) (gid uint32, ok bo
 	if ok {
 		gid, ok := ssn.room[rid]
 		if !ok {
-			delete(ssn.room, rid)
-			return gid, true
+			return 0, false // 数据不一致
 		}
-		return 0, false // 数据不一致
+		delete(ssn.room, rid)
+		return gid, true
 	}
 	return 0, false
 }
@@ -285,7 +283,6 @@ func (ctx *ChatTab) room_add(rid uint64) int {
 			room.groups[idx].group = make(map[uint32]*ChatGroupItem)
 		}
 
-		atomic.AddInt64(&room.sid_num, 1)
 		rs.room[rid] = room
 		return 0
 	}
@@ -457,8 +454,6 @@ func (room *ChatRoomItem) group_add(gid uint32) int {
 			create_tm: time.Now().Unix(),             // 创建时间
 			sid_list:  make(map[ChatSessionKey]bool), // 会话列表
 		}
-
-		atomic.AddInt64(&group.sid_num, 1)
 
 		gs.group[gid] = group
 	}
