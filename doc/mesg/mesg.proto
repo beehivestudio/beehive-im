@@ -93,9 +93,9 @@ message mesg_unsub_ack
 
 /*
    命令ID: 0x010B
-   命令描述: 通用异常消息(UNUSUAL)
+   命令描述: 通用错误消息(ERROR)
    协议格式: */
-message mesg_unusualb
+message mesg_error
 {
     required uint32 code = 1;       // M|错误码|数字|
     required string errmsg = 2;     // M|错误描述|字串|
@@ -103,7 +103,7 @@ message mesg_unusualb
 
 /*
    命令ID: 0x010C
-   命令描述: 通用异常消息应答(UNUSUAL-ACK)
+   命令描述: 通用错误消息应答(ERROR-ACK)
    协议格式: NONE */
 
 /*
@@ -127,7 +127,7 @@ message mesg_sync_ack
 }
 
 /*
-   命令ID: 0x0112
+   命令ID: 0x0110
    命令描述: 踢连接下线(KICK)
    协议格式: */
 message mesg_kick
@@ -137,7 +137,7 @@ message mesg_kick
 }
 
 /*
-   命令ID: 0x0113
+   命令ID: 0x0111
    命令描述: 踢连接下线应答(KICK-ACK)
    协议格式: NONE */
 

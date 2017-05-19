@@ -58,7 +58,7 @@ do
         PRIMARY KEY(uid),
         UNIQUE(tel),
         UNIQUE(email),
-        UNIQUE KEY(identify)
+        UNIQUE(identify)
         );
 
     # 创建ROOM信息表
