@@ -1039,6 +1039,87 @@ func (ctx *UsrSvrCntx) room_kick_failed(head *comm.MesgHeader,
 }
 
 /******************************************************************************
+ **函数名称: room_kick_by_uid
+ **功    能: 通过UID下发KICK指令
+ **输入参数:
+ **     head: 协议头
+ **     req: ROOM-KICK请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ **     {
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.19 23:06:38 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_kick_by_uid(head *comm.MesgHeader, req *mesg.MesgRoomKick) (code uint32, err error) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	/* > 获取会话列表 */
+	key := fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetUid())
+
+	sid_list, err := redis.Strings(rds.Do("SCARD", key))
+	if nil != err {
+		ctx.log.Error("Get sid list by uid failed! errmsg:%s", err.Error())
+		return comm.ERR_SYS_SYSTEM, err
+	}
+
+	num := len(sid_list)
+	if 0 == num {
+		return 0, nil
+	}
+
+	/* > 生成PB数据 */
+	body, err := proto.Marshal(req)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return comm.ERR_SVR_BODY_INVALID, err
+	}
+
+	length := len(body)
+
+	/* > 遍历会话列表 */
+	for idx := 0; idx < num; idx += 1 {
+		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
+
+		/* > 获取会话属性 */
+		attr, err := im.GetSidAttr(ctx.redis, uint64(sid))
+		if nil != err {
+			ctx.log.Error("Get sid attr failed! rid:%d uid:%d errmsg:%s",
+				req.GetRid(), req.GetUid(), err.Error())
+			return comm.ERR_SYS_SYSTEM, err
+		}
+
+		/* > 下发踢除指令 */
+		p := &comm.MesgPacket{}
+		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+		head2 := &comm.MesgHeader{
+			Cmd:    head.Cmd,
+			Sid:    attr.GetSid(),
+			Cid:    attr.GetCid(),
+			Nid:    attr.GetNid(),
+			Length: head.Length,
+			Seq:    head.GetSeq(),
+			ChkSum: comm.MSG_CHKSUM_VAL,
+		}
+
+		comm.MesgHeadHton(head2, p)
+		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+		/* > 发送协议包 */
+		ctx.frwder.AsyncSend(comm.CMD_ROOM_KICK, p.Buff, uint32(len(p.Buff)))
+	}
+	return 0, nil
+}
+
+/******************************************************************************
  **函数名称: room_kick_ack
  **功    能: 发送ROOM-KICK应答
  **输入参数:
@@ -1170,9 +1251,6 @@ func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoo
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_kick_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomKick) (code uint32, err error) {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
@@ -1194,6 +1272,9 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
 
 	pl.Send("ZADD", key, req.GetUid())
+
+	/* > 遍历下发踢除指令 */
+	ctx.room_kick_by_uid(head, req)
 
 	return 0, nil
 }
@@ -1231,7 +1312,7 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	/* > 解析ROOM-KICK请求 */
 	head, req, code, err := ctx.room_kick_parse(data)
 	if nil != err {
-		ctx.log.Error("Parse room-kick request failed!")
+		ctx.log.Error("Parse room-kick failed!")
 		ctx.room_kick_failed(head, req, code, err.Error())
 		return -1
 	}
@@ -1239,7 +1320,7 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	/* > 执行ROOM-KICK操作 */
 	code, err = ctx.room_kick_handler(head, req)
 	if nil != err {
-		ctx.log.Error("Room kick handler failed!")
+		ctx.log.Error("Room-kick handler failed!")
 		ctx.room_kick_failed(head, req, code, err.Error())
 		return -1
 	}
