@@ -31,6 +31,7 @@ func (ctx *LsndCntx) UpMesgRegister() {
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndUpMesgRoomJoinAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndUpMesgRoomChatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndUpMesgRoomBcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_KICK, LsndUpMesgRoomKickHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, LsndUpMesgRoomUsrNumHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN_NTC, LsndUpMesgRoomJoinNtcHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_QUIT_NTC, LsndUpMesgRoomQuitNtcHandler, ctx)
@@ -634,7 +635,7 @@ func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
-		ctx.log.Error("Header of room-chat is invalid!")
+		ctx.log.Error("Room-broadcast head is invalid!")
 		return -1
 	}
 
@@ -653,6 +654,80 @@ func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 	dp := &LsndRoomDataParam{ctx: ctx, data: data}
 
 	ctx.chat.TravRoomSession(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: LsndUpMesgRoomKickHandler
+ **功    能: ROOM-KICK消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.19 22:18:04 #
+ ******************************************************************************/
+func LsndUpMesgRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*LsndCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room kick!")
+
+	/* > 字节序转换(网络 -> 主机) */
+	head := comm.MesgHeadNtoh(data)
+	if !head.IsValid(1) {
+		ctx.log.Error("Room-kick head is invalid!")
+		return -1
+	}
+
+	/* > 解析ROOM-KICK消息 */
+	req := &mesg.MesgRoomKick{}
+
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	if nil != err {
+		ctx.log.Error("Unmarshal room-kick failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	ctx.log.Debug("Room-kick command. uid:%d rid:%d", req.GetUid(), req.GetRid())
+
+	/* > 获取会话数据 */
+	cid := ctx.chat.GetCidBySid(head.GetSid())
+	if 0 == cid {
+		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
+	if nil == extra {
+		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
+		return -1
+	}
+
+	conn, ok := extra.(*LsndConnExtra)
+	if !ok {
+		ctx.log.Error("Convert conn extra failed! sid:%d", head.GetSid())
+		return -1
+	}
+
+	ctx.log.Debug("Session extra data. sid:%d cid:%d status:%d",
+		conn.GetSid(), conn.GetCid(), conn.GetStatus())
+
+	/* > 执行ROOM-KICK操作 */
+	ctx.chat.RoomQuit(req.GetRid(), conn.GetSid(), conn.GetCid())
+
+	/* > 下发ROOM-KICK消息 */
+	ctx.lws.AsyncSend(conn.GetCid(), data)
 
 	return 0
 }
