@@ -126,14 +126,14 @@ func (ctx *UsrSvrCntx) online_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of online is invalid!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
-	ctx.log.Debug("Online request header! cmd:0x%04X length:%d chksum:0x%08X cid:%d nid:%d seq:%d head:%d",
+	ctx.log.Debug("Online request header! cmd:0x%04X length:%d cid:%d nid:%d seq:%d head:%d",
 		head.GetCmd(), head.GetLength(),
-		head.GetChkSum(), head.GetSid(), head.GetNid(),
+		head.GetSid(), head.GetNid(),
 		head.GetSeq(), comm.MESG_HEAD_SIZE)
 
 	/* > 解析PB协议 */
@@ -433,8 +433,8 @@ func (ctx *UsrSvrCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil
 	}
 
@@ -516,8 +516,8 @@ func (ctx *UsrSvrCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil
 	}
 
@@ -629,7 +629,6 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, cid uint64, nid uint32, code uint32
 	head.Cid = cid
 	head.Nid = nid
 	head.Length = uint32(length)
-	head.ChkSum = comm.MSG_CHKSUM_VAL
 
 	comm.MesgHeadHton(&head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
@@ -678,8 +677,8 @@ func (ctx *UsrSvrCntx) blacklist_add_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of blacklist-add is invalid!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
@@ -914,8 +913,8 @@ func (ctx *UsrSvrCntx) blacklist_del_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of blacklist-del is invalid!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
@@ -1148,8 +1147,8 @@ func (ctx *UsrSvrCntx) gag_add_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of gag-add is invalid!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
@@ -1384,8 +1383,8 @@ func (ctx *UsrSvrCntx) gag_del_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of gag-del is invalid!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 

@@ -39,8 +39,8 @@ func (ctx *UsrSvrCntx) group_creat_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of group-create failed!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 

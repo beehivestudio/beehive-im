@@ -34,7 +34,6 @@ func (ctx *MsgSvrCntx) send_data(cmd uint32, sid uint64, cid uint64, nid uint32,
 	head.Cid = cid
 	head.Nid = nid
 	head.Length = length
-	head.ChkSum = comm.MSG_CHKSUM_VAL
 	head.Seq = seq
 
 	comm.MesgHeadHton(&head, p)

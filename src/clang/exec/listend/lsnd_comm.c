@@ -302,7 +302,6 @@ void lsnd_timer_info_handler(void *_ctx)
 
     head->type = CMD_LSND_INFO;
     head->length = len;
-    head->chksum = MSG_CHKSUM_VAL;
     head->nid = conf->nid;
 
     MESG_HEAD_HTON(head, head);
@@ -385,7 +384,6 @@ static void lsnd_upload_room_stat_handler(chat_room_t *room, void *_ctx)
 
     head->type = CMD_ROOM_LSN_STAT;
     head->length = len;
-    head->chksum = MSG_CHKSUM_VAL;
     head->nid = conf->nid;
 
     MESG_HEAD_HTON(head, head);
@@ -432,7 +430,6 @@ void lsnd_offline_notify(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t 
 
     head->type = CMD_OFFLINE;
     head->length = 0;
-    head->chksum = MSG_CHKSUM_VAL;
     head->sid = sid;
     head->cid = cid;
     head->nid = nid;

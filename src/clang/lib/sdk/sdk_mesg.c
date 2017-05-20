@@ -55,7 +55,6 @@ int sdk_mesg_send_ping_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head->length = 0;
     head->sid = ctx->sid;
     head->seq = sdk_gen_seq(ctx);
-    head->chksum = MSG_CHKSUM_VAL;
 
     /* 3. 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
@@ -119,7 +118,6 @@ int sdk_mesg_send_online_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
     head->length = size - sizeof(mesg_header_t);
     head->sid = info->sid;
     head->seq = sdk_gen_seq(ctx);
-    head->chksum = MSG_CHKSUM_VAL;
 
     mesg_online__pack(&online, addr+sizeof(mesg_header_t));
 
@@ -182,7 +180,6 @@ int sdk_mesg_send_sync_req(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
     head->length = len;
     head->sid = info->sid;
     head->seq = sdk_gen_seq(ctx);
-    head->chksum = MSG_CHKSUM_VAL;
 
     mesg_sync__pack(&sync, addr+sizeof(mesg_header_t));
 

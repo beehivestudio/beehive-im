@@ -594,14 +594,6 @@ static int sdk_ssvr_data_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
         log_trace(ssvr->log, "cmd:0x%04X seq:%lu len:%d",
                 head->type, head->seq, head->length);
 
-        /* 2.2 校验合法性 */
-        if (!MESG_CHKSUM_ISVALID(head)) {
-            ++ssvr->err_total;
-            log_error(ssvr->log, "Header is invalid! cmd:0x%04X seq:%lu len:%d chksum:0x%08X",
-                  head->type, head->seq, head->length, head->chksum);
-            return SDK_ERR;
-        }
-
         /* > 收到应答处理 */
         if (sdk_ack_succ_hdl(ctx, head->seq, recv->optr)) {
             recv->optr += mesg_len;

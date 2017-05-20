@@ -31,8 +31,8 @@ int lws_recv_handler(struct lws_context *lws,
 
     MESG_HEAD_NTOH(head, head);
 
-    fprintf(stderr, "Recv data. cmd:0x%04X len:%d chksum:0x%08X body:%p\n",
-            head->type, head->length, head->chksum, body);
+    fprintf(stderr, "Recv data. cmd:0x%04X sid:%lu cid:%lu nid:%d len:%d\n",
+            head->type, head->sid, head->cid, head->nid, head->length);
 
     ctm = time(NULL);
     localtime_r(&ctm, &lctm);

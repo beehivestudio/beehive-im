@@ -36,8 +36,8 @@ func (ctx *MsgSvrCntx) group_chat_parse(data []byte) (
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil
 	}
 

@@ -41,8 +41,8 @@ func (ctx *UsrSvrCntx) room_creat_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of room-creat failed!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
@@ -332,8 +332,8 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of room-join failed!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
@@ -781,8 +781,8 @@ func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of room-quit failed!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
@@ -959,8 +959,8 @@ func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
 		errmsg := "Header of room-kick is invalid!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
@@ -1057,12 +1057,12 @@ func (ctx *UsrSvrCntx) room_kick_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.19 23:06:38 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_kick_by_uid(head *comm.MesgHeader, req *mesg.MesgRoomKick) (code uint32, err error) {
+func (ctx *UsrSvrCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
 	/* > 获取会话列表 */
-	key := fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetUid())
+	key := fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, uid)
 
 	sid_list, err := redis.Strings(rds.Do("SCARD", key))
 	if nil != err {
@@ -1076,6 +1076,11 @@ func (ctx *UsrSvrCntx) room_kick_by_uid(head *comm.MesgHeader, req *mesg.MesgRoo
 	}
 
 	/* > 生成PB数据 */
+	req := &mesg.MesgRoomKick{
+		Uid: proto.Uint64(uid),
+		Rid: proto.Uint64(rid),
+	}
+
 	body, err := proto.Marshal(req)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
@@ -1092,7 +1097,7 @@ func (ctx *UsrSvrCntx) room_kick_by_uid(head *comm.MesgHeader, req *mesg.MesgRoo
 		attr, err := im.GetSidAttr(ctx.redis, uint64(sid))
 		if nil != err {
 			ctx.log.Error("Get sid attr failed! rid:%d uid:%d errmsg:%s",
-				req.GetRid(), req.GetUid(), err.Error())
+				rid, uid, err.Error())
 			return comm.ERR_SYS_SYSTEM, err
 		}
 
@@ -1100,17 +1105,16 @@ func (ctx *UsrSvrCntx) room_kick_by_uid(head *comm.MesgHeader, req *mesg.MesgRoo
 		p := &comm.MesgPacket{}
 		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-		head2 := &comm.MesgHeader{
-			Cmd:    head.Cmd,
+		head := &comm.MesgHeader{
+			Cmd:    comm.CMD_ROOM_KICK,
 			Sid:    attr.GetSid(),
 			Cid:    attr.GetCid(),
 			Nid:    attr.GetNid(),
-			Length: head.Length,
-			Seq:    head.GetSeq(),
-			ChkSum: comm.MSG_CHKSUM_VAL,
+			Length: uint32(length),
+			Seq:    0,
 		}
 
-		comm.MesgHeadHton(head2, p)
+		comm.MesgHeadHton(head, p)
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 		/* > 发送协议包 */
@@ -1223,7 +1227,6 @@ func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 		head.Length = uint32(length)
 		head.Sid = req.GetRid() // 会话ID改为聊天室ID
 		head.Nid = uint32(nid_list[idx])
-		head.ChkSum = comm.MSG_CHKSUM_VAL
 
 		comm.MesgHeadHton(head, p)
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
@@ -1274,7 +1277,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 	pl.Send("ZADD", key, req.GetUid())
 
 	/* > 遍历下发踢除指令 */
-	ctx.room_kick_by_uid(head, req)
+	ctx.room_kick_by_uid(req.GetRid(), req.GetUid())
 
 	return 0, nil
 }
@@ -1361,8 +1364,8 @@ func (ctx *UsrSvrCntx) room_lsn_stat_parse(data []byte) (
 	head = comm.MesgHeadNtoh(data)
 	if !head.IsValid(0) {
 		errmsg := "Header of room-lsn-stat is invalid!"
-		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d chksum:0x%08X",
-			head.GetCmd(), head.GetNid(), head.GetChkSum())
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 

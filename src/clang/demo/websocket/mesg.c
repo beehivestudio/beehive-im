@@ -70,7 +70,6 @@ int lws_mesg_online_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t
     head->sid = hton64(AWS_SID);
     ++ctx->seq;
     head->seq = hton64(ctx->seq);
-    head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);
 
@@ -142,7 +141,6 @@ int lws_mesg_ping_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *
     head->sid = hton64(AWS_SID);
     ++ctx->seq;
     head->seq = hton64(ctx->seq);
-    head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);
 
@@ -210,7 +208,6 @@ int lws_mesg_room_join_handler(struct lws_context *lws, struct lws *wsi, lws_cnt
     head->sid = hton64(AWS_SID);
     ++ctx->seq;
     head->seq = hton64(ctx->seq);
-    head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);
 
@@ -290,7 +287,6 @@ int lws_mesg_room_quit_handler(struct lws_context *lws, struct lws *wsi, lws_cnt
     head->sid = hton64(AWS_SID);
     ++ctx->seq;
     head->seq = hton64(ctx->seq);
-    head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);
 
@@ -353,7 +349,6 @@ int lws_mesg_room_chat_send_handler(struct lws_context *lws, struct lws *wsi, lw
     head->sid = hton64(AWS_SID);
     ++ctx->seq;
     head->seq = hton64(ctx->seq);
-    head->chksum = htonl(MSG_CHKSUM_VAL);
 
     list_rpush(session->send_list, item);
 

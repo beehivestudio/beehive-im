@@ -348,7 +348,6 @@ func (req *RoomPushReq) push_handler(
 		head.Sid = param.rid // 会话ID改为聊天室ID
 		head.Length = uint32(length)
 		head.Nid = uint32(nid_list[idx])
-		head.ChkSum = comm.MSG_CHKSUM_VAL
 
 		comm.MesgHeadHton(head, p)
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)

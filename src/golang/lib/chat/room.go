@@ -381,7 +381,6 @@ func send_room_usr_num(frwder *rtmq.Proxy,
 	head.Sid = rid // 会话ID改为聊天室ID
 	head.Nid = uint32(nid)
 	head.Length = uint32(length)
-	head.ChkSum = comm.MSG_CHKSUM_VAL
 
 	comm.MesgHeadHton(head, p)
 	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)

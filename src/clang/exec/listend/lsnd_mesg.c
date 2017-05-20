@@ -93,11 +93,6 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
 
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
-    if (!MESG_CHKSUM_ISVALID(head)) {
-        log_error(lsnd->log, "Head is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
-                head->sid, head->seq, len, head->chksum);
-        return -1;
-    }
 
     conn->sid = head->sid;
     head->cid = conn->cid;
@@ -105,13 +100,13 @@ int lsnd_mesg_online_handler(lsnd_conn_extra_t *conn, int type, void *data, int 
 
     /* > 插入SID表(SID+CID为主键) */
     if (hash_tab_insert(lsnd->conn_list, conn, WRLOCK)) {
-        log_error(lsnd->log, "Insert into sid table failed! sid:%lu cid:%lu seq:%lu len:%d chksum:0x%08X!",
-                conn->sid, conn->cid, head->seq, len, head->chksum);
+        log_error(lsnd->log, "Insert into sid table failed! sid:%lu cid:%lu seq:%lu len:%d!",
+                conn->sid, conn->cid, head->seq, len);
         return -1;
     }
 
-    log_debug(lsnd->log, "Head is valid! sid:%lu cid:%lu seq:%lu len:%d chksum:0x%08X!",
-            head->sid, head->cid, head->seq, len, head->chksum);
+    log_debug(lsnd->log, "Head is valid! sid:%lu cid:%lu seq:%lu len:%d!",
+            head->sid, head->cid, head->seq, len);
 
     MESG_HEAD_HTON(head, head);
 
@@ -332,16 +327,11 @@ int lsnd_mesg_room_join_handler(lsnd_conn_extra_t *conn, int type, void *data, i
 
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
-    if (!MESG_CHKSUM_ISVALID(head)) {
-        log_error(lsnd->log, "Head is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
-                head->sid, head->seq, len, head->chksum);
-        return -1;
-    }
 
     head->nid = conf->nid;
 
-    log_debug(lsnd->log, "Head is valid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
-            head->sid, head->seq, len, head->chksum);
+    log_debug(lsnd->log, "Head is valid! sid:%lu seq:%lu len:%d.",
+            head->sid, head->seq, len);
 
     MESG_HEAD_HTON(head, head);
 
@@ -459,23 +449,18 @@ int lsnd_mesg_room_quit_handler(lsnd_conn_extra_t *conn, int type, void *data, i
 
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
-    if (!MESG_CHKSUM_ISVALID(head)) {
-        log_error(lsnd->log, "Head is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
-                head->sid, head->seq, len, head->chksum);
-        return -1;
-    }
 
     head->cid = conn->cid;
     head->nid = conf->nid;
 
-    log_debug(lsnd->log, "Head is valid! sid:%lu cid:%lu seq:%lu len:%d chksum:0x%08X!",
-            head->sid, head->cid, head->seq, len, head->chksum);
+    log_debug(lsnd->log, "Head is valid! sid:%lu cid:%lu seq:%lu len:%d.",
+            head->sid, head->cid, head->seq, len);
 
     /* > 解析退出请求 */
     quit = mesg_room_quit__unpack(NULL, head->length, (void *)(head + 1));
     if (NULL == quit) {
-        log_error(lsnd->log, "Quit room is invalid! sid:%lu seq:%lu len:%d chksum:0x%08X!",
-                head->sid, head->seq, len, head->chksum);
+        log_error(lsnd->log, "Quit room is invalid! sid:%lu seq:%lu len:%d.",
+                head->sid, head->seq, len);
         return -1;
     }
 
@@ -524,8 +509,8 @@ int lsnd_mesg_ping_handler(lsnd_conn_extra_t *conn, int type, void *data, int le
     /* > 转换字节序 */
     MESG_HEAD_NTOH(head, head);
 
-    log_debug(lsnd->log, "cid:%lu sid:%lu seq:%lu len:%d chksum:0x%08X!",
-            conn->cid, head->sid, head->seq, len, head->chksum);
+    log_debug(lsnd->log, "cid:%lu sid:%lu seq:%lu len:%d.",
+            conn->cid, head->sid, head->seq, len);
 
     head->nid = conf->nid;
     head->type = CMD_PONG;

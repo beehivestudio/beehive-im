@@ -177,7 +177,6 @@ func (ctx *LsndCntx) offline_notify(sid uint64, cid uint64) int {
 	head := &comm.MesgHeader{
 		Cmd:    comm.CMD_OFFLINE,
 		Length: 0,
-		ChkSum: comm.MSG_CHKSUM_VAL,
 		Sid:    sid,
 		Cid:    cid,
 		Nid:    ctx.conf.GetNid(),
