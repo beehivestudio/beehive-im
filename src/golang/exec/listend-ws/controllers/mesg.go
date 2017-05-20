@@ -282,15 +282,15 @@ func LsndMesgUnsubHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 	head.SetNid(ctx.conf.GetNid())
 
 	/* > 移除订阅消息 */
-	req := &mesg.MesgUnsub{}
+	unsub := &mesg.MesgUnsub{}
 
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
+	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], unsub) /* 解析报体 */
 	if nil != err {
 		ctx.log.Error("Unmarshal unsub request failed! errmsg:%s", err.Error())
 		return -1
 	}
 
-	ctx.chat.SubDel(head.GetSid(), conn.GetCid(), req.GetSub()) /* 移除订阅消息 */
+	ctx.chat.SubDel(head.GetSid(), conn.GetCid(), unsub.GetCmd()) /* 移除订阅消息 */
 
 	/* > 转发给上游模块 */
 	p := &comm.MesgPacket{Buff: data}

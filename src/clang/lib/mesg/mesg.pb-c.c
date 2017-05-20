@@ -265,47 +265,47 @@ void   mesg_unsub_ack__free_unpacked
   assert(message->base.descriptor == &mesg_unsub_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_unusualb__init
-                     (MesgUnusualb         *message)
+void   mesg_error__init
+                     (MesgError         *message)
 {
-  static MesgUnusualb init_value = MESG_UNUSUALB__INIT;
+  static MesgError init_value = MESG_ERROR__INIT;
   *message = init_value;
 }
-size_t mesg_unusualb__get_packed_size
-                     (const MesgUnusualb *message)
+size_t mesg_error__get_packed_size
+                     (const MesgError *message)
 {
-  assert(message->base.descriptor == &mesg_unusualb__descriptor);
+  assert(message->base.descriptor == &mesg_error__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_unusualb__pack
-                     (const MesgUnusualb *message,
+size_t mesg_error__pack
+                     (const MesgError *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_unusualb__descriptor);
+  assert(message->base.descriptor == &mesg_error__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_unusualb__pack_to_buffer
-                     (const MesgUnusualb *message,
+size_t mesg_error__pack_to_buffer
+                     (const MesgError *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_unusualb__descriptor);
+  assert(message->base.descriptor == &mesg_error__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgUnusualb *
-       mesg_unusualb__unpack
+MesgError *
+       mesg_error__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgUnusualb *)
-     protobuf_c_message_unpack (&mesg_unusualb__descriptor,
+  return (MesgError *)
+     protobuf_c_message_unpack (&mesg_error__descriptor,
                                 allocator, len, data);
 }
-void   mesg_unusualb__free_unpacked
-                     (MesgUnusualb *message,
+void   mesg_error__free_unpacked
+                     (MesgError *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_unusualb__descriptor);
+  assert(message->base.descriptor == &mesg_error__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   mesg_sync__init
@@ -3854,12 +3854,12 @@ const ProtobufCMessageDescriptor mesg_online_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_sub__field_descriptors[1] =
 {
   {
-    "sub",
+    "cmd",
     1,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_UINT32,
-    offsetof(MesgSub, has_sub),
-    offsetof(MesgSub, sub),
+    offsetof(MesgSub, has_cmd),
+    offsetof(MesgSub, cmd),
     NULL,
     NULL,
     0,             /* flags */
@@ -3867,7 +3867,7 @@ static const ProtobufCFieldDescriptor mesg_sub__field_descriptors[1] =
   },
 };
 static const unsigned mesg_sub__field_indices_by_name[] = {
-  0,   /* field[0] = sub */
+  0,   /* field[0] = cmd */
 };
 static const ProtobufCIntRange mesg_sub__number_ranges[1 + 1] =
 {
@@ -3892,12 +3892,12 @@ const ProtobufCMessageDescriptor mesg_sub__descriptor =
 static const ProtobufCFieldDescriptor mesg_sub_ack__field_descriptors[3] =
 {
   {
-    "sub",
+    "cmd",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgSubAck, sub),
+    offsetof(MesgSubAck, cmd),
     NULL,
     NULL,
     0,             /* flags */
@@ -3929,9 +3929,9 @@ static const ProtobufCFieldDescriptor mesg_sub_ack__field_descriptors[3] =
   },
 };
 static const unsigned mesg_sub_ack__field_indices_by_name[] = {
+  0,   /* field[0] = cmd */
   1,   /* field[1] = code */
   2,   /* field[2] = errmsg */
-  0,   /* field[0] = sub */
 };
 static const ProtobufCIntRange mesg_sub_ack__number_ranges[1 + 1] =
 {
@@ -3956,12 +3956,12 @@ const ProtobufCMessageDescriptor mesg_sub_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_unsub__field_descriptors[1] =
 {
   {
-    "sub",
+    "cmd",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgUnsub, sub),
+    offsetof(MesgUnsub, cmd),
     NULL,
     NULL,
     0,             /* flags */
@@ -3969,7 +3969,7 @@ static const ProtobufCFieldDescriptor mesg_unsub__field_descriptors[1] =
   },
 };
 static const unsigned mesg_unsub__field_indices_by_name[] = {
-  0,   /* field[0] = sub */
+  0,   /* field[0] = cmd */
 };
 static const ProtobufCIntRange mesg_unsub__number_ranges[1 + 1] =
 {
@@ -3994,12 +3994,12 @@ const ProtobufCMessageDescriptor mesg_unsub__descriptor =
 static const ProtobufCFieldDescriptor mesg_unsub_ack__field_descriptors[3] =
 {
   {
-    "sub",
+    "cmd",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgUnsubAck, sub),
+    offsetof(MesgUnsubAck, cmd),
     NULL,
     NULL,
     0,             /* flags */
@@ -4031,9 +4031,9 @@ static const ProtobufCFieldDescriptor mesg_unsub_ack__field_descriptors[3] =
   },
 };
 static const unsigned mesg_unsub_ack__field_indices_by_name[] = {
+  0,   /* field[0] = cmd */
   1,   /* field[1] = code */
   2,   /* field[2] = errmsg */
-  0,   /* field[0] = sub */
 };
 static const ProtobufCIntRange mesg_unsub_ack__number_ranges[1 + 1] =
 {
@@ -4055,7 +4055,7 @@ const ProtobufCMessageDescriptor mesg_unsub_ack__descriptor =
   (ProtobufCMessageInit) mesg_unsub_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_unusualb__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_error__field_descriptors[2] =
 {
   {
     "code",
@@ -4063,7 +4063,7 @@ static const ProtobufCFieldDescriptor mesg_unusualb__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT32,
     0,   /* quantifier_offset */
-    offsetof(MesgUnusualb, code),
+    offsetof(MesgError, code),
     NULL,
     NULL,
     0,             /* flags */
@@ -4075,35 +4075,35 @@ static const ProtobufCFieldDescriptor mesg_unusualb__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(MesgUnusualb, errmsg),
+    offsetof(MesgError, errmsg),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_unusualb__field_indices_by_name[] = {
+static const unsigned mesg_error__field_indices_by_name[] = {
   0,   /* field[0] = code */
   1,   /* field[1] = errmsg */
 };
-static const ProtobufCIntRange mesg_unusualb__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_error__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_unusualb__descriptor =
+const ProtobufCMessageDescriptor mesg_error__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_unusualb",
-  "MesgUnusualb",
-  "MesgUnusualb",
+  "mesg_error",
+  "MesgError",
+  "MesgError",
   "",
-  sizeof(MesgUnusualb),
+  sizeof(MesgError),
   2,
-  mesg_unusualb__field_descriptors,
-  mesg_unusualb__field_indices_by_name,
-  1,  mesg_unusualb__number_ranges,
-  (ProtobufCMessageInit) mesg_unusualb__init,
+  mesg_error__field_descriptors,
+  mesg_error__field_indices_by_name,
+  1,  mesg_error__number_ranges,
+  (ProtobufCMessageInit) mesg_error__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_sync__field_descriptors[1] =

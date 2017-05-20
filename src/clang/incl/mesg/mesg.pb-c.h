@@ -21,7 +21,7 @@ typedef struct _MesgSub MesgSub;
 typedef struct _MesgSubAck MesgSubAck;
 typedef struct _MesgUnsub MesgUnsub;
 typedef struct _MesgUnsubAck MesgUnsubAck;
-typedef struct _MesgUnusualb MesgUnusualb;
+typedef struct _MesgError MesgError;
 typedef struct _MesgSync MesgSync;
 typedef struct _MesgSyncAck MesgSyncAck;
 typedef struct _MesgKick MesgKick;
@@ -143,8 +143,8 @@ struct  _MesgOnlineAck
 struct  _MesgSub
 {
   ProtobufCMessage base;
-  protobuf_c_boolean has_sub;
-  uint32_t sub;
+  protobuf_c_boolean has_cmd;
+  uint32_t cmd;
 };
 #define MESG_SUB__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_sub__descriptor) \
@@ -154,7 +154,7 @@ struct  _MesgSub
 struct  _MesgSubAck
 {
   ProtobufCMessage base;
-  uint32_t sub;
+  uint32_t cmd;
   uint32_t code;
   char *errmsg;
 };
@@ -166,7 +166,7 @@ struct  _MesgSubAck
 struct  _MesgUnsub
 {
   ProtobufCMessage base;
-  uint32_t sub;
+  uint32_t cmd;
 };
 #define MESG_UNSUB__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_unsub__descriptor) \
@@ -176,7 +176,7 @@ struct  _MesgUnsub
 struct  _MesgUnsubAck
 {
   ProtobufCMessage base;
-  uint32_t sub;
+  uint32_t cmd;
   uint32_t code;
   char *errmsg;
 };
@@ -185,14 +185,14 @@ struct  _MesgUnsubAck
     , 0, 0, NULL }
 
 
-struct  _MesgUnusualb
+struct  _MesgError
 {
   ProtobufCMessage base;
   uint32_t code;
   char *errmsg;
 };
-#define MESG_UNUSUALB__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&mesg_unusualb__descriptor) \
+#define MESG_ERROR__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_error__descriptor) \
     , 0, NULL }
 
 
@@ -1205,24 +1205,24 @@ MesgUnsubAck *
 void   mesg_unsub_ack__free_unpacked
                      (MesgUnsubAck *message,
                       ProtobufCAllocator *allocator);
-/* MesgUnusualb methods */
-void   mesg_unusualb__init
-                     (MesgUnusualb         *message);
-size_t mesg_unusualb__get_packed_size
-                     (const MesgUnusualb   *message);
-size_t mesg_unusualb__pack
-                     (const MesgUnusualb   *message,
+/* MesgError methods */
+void   mesg_error__init
+                     (MesgError         *message);
+size_t mesg_error__get_packed_size
+                     (const MesgError   *message);
+size_t mesg_error__pack
+                     (const MesgError   *message,
                       uint8_t             *out);
-size_t mesg_unusualb__pack_to_buffer
-                     (const MesgUnusualb   *message,
+size_t mesg_error__pack_to_buffer
+                     (const MesgError   *message,
                       ProtobufCBuffer     *buffer);
-MesgUnusualb *
-       mesg_unusualb__unpack
+MesgError *
+       mesg_error__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data);
-void   mesg_unusualb__free_unpacked
-                     (MesgUnusualb *message,
+void   mesg_error__free_unpacked
+                     (MesgError *message,
                       ProtobufCAllocator *allocator);
 /* MesgSync methods */
 void   mesg_sync__init
@@ -2707,8 +2707,8 @@ typedef void (*MesgUnsub_Closure)
 typedef void (*MesgUnsubAck_Closure)
                  (const MesgUnsubAck *message,
                   void *closure_data);
-typedef void (*MesgUnusualb_Closure)
-                 (const MesgUnusualb *message,
+typedef void (*MesgError_Closure)
+                 (const MesgError *message,
                   void *closure_data);
 typedef void (*MesgSync_Closure)
                  (const MesgSync *message,
@@ -2953,7 +2953,7 @@ extern const ProtobufCMessageDescriptor mesg_sub__descriptor;
 extern const ProtobufCMessageDescriptor mesg_sub_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unsub__descriptor;
 extern const ProtobufCMessageDescriptor mesg_unsub_ack__descriptor;
-extern const ProtobufCMessageDescriptor mesg_unusualb__descriptor;
+extern const ProtobufCMessageDescriptor mesg_error__descriptor;
 extern const ProtobufCMessageDescriptor mesg_sync__descriptor;
 extern const ProtobufCMessageDescriptor mesg_sync_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_kick__descriptor;

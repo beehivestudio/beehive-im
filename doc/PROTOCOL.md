@@ -75,7 +75,7 @@ message mesg_online_ack
 ```
 message mesg_sub_req
 {
-    optional uint32 sub = 1;        // M|订阅的数据|数字| 
+    optional uint32 cmd = 1;        // M|订阅的数据|数字| 
 }
 ```
 
@@ -86,7 +86,7 @@ message mesg_sub_req
 ```
 message mesg_sub_ack
 {
-    required uint32 sub = 1;        // M|订阅的数据|数字|
+    required uint32 cmd = 1;        // M|订阅的数据|数字|
     required uint32 code = 2;       // M|错误码|数字|
     required string errmsg = 3;     // M|错误描述|字串|
 }

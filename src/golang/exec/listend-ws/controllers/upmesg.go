@@ -326,7 +326,7 @@ func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 		return -1
 	} else if 0 != ack.GetCode() {
 		ctx.log.Error("Sub command [0x%04X] failed! sid:%d code:%d errmsg:%s",
-			ack.GetSub(), head.GetSid(), ack.GetCode(), ack.GetErrmsg())
+			ack.GetCmd(), head.GetSid(), ack.GetCode(), ack.GetErrmsg())
 		return 0
 	}
 
@@ -343,7 +343,7 @@ func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 	}
 
 	/* > 更新订阅列表 */
-	ctx.chat.SubAdd(head.GetSid(), head.GetCid(), ack.GetSub())
+	ctx.chat.SubAdd(head.GetSid(), head.GetCid(), ack.GetCmd())
 
 	/* > 下发SUB-ACK消息 */
 	ctx.lws.AsyncSend(conn.GetCid(), data)
