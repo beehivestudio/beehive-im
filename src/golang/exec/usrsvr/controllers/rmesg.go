@@ -1337,11 +1337,6 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 	return 0
 }
 
-/* 获取聊天室人数 */
-func UsrSvrRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
-	return 0
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 /* 聊天室各侦听统计 */
 

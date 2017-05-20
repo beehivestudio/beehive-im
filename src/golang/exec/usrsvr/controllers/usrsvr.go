@@ -172,7 +172,6 @@ func (ctx *UsrSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN, UsrSvrRoomJoinHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_QUIT, UsrSvrRoomQuitHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_KICK, UsrSvrRoomKickHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, UsrSvrRoomUsrNumHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_LSN_STAT, UsrSvrRoomLsnStatHandler, ctx)
 }
 
