@@ -23,8 +23,8 @@ import (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) start_task() {
 	for {
-		ctx.listend_update()                       // 更新侦听层列表
-		chat.RoomSendUsrNum(ctx.frwder, ctx.redis) // 下发聊天室人数
+		ctx.listend_update()                                // 更新侦听层列表
+		chat.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
 
 		time.Sleep(time.Second)
 	}

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
@@ -282,7 +283,7 @@ func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 11:02:22 #
  ******************************************************************************/
-func RoomSendUsrNum(frwder *rtmq.Proxy, pool *redis.Pool) error {
+func RoomSendUsrNum(log *logs.BeeLogger, frwder *rtmq.Proxy, pool *redis.Pool) error {
 	rds := pool.Get()
 	defer rds.Close()
 
@@ -292,6 +293,7 @@ func RoomSendUsrNum(frwder *rtmq.Proxy, pool *redis.Pool) error {
 	lsn_nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
 		comm.IM_KEY_LSND_NID_ZSET, ctm, "+inf"))
 	if nil != err {
+		log.Error("Get listend list failed! errmsg:%s", err.Error())
 		return err
 	}
 
@@ -301,8 +303,9 @@ func RoomSendUsrNum(frwder *rtmq.Proxy, pool *redis.Pool) error {
 	for {
 		/* 获取聊天室列表 */
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			comm.CHAT_KEY_RID_ZSET, ctm, "+inf", off, comm.CHAT_BAT_NUM))
+			comm.CHAT_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
+			log.Error("Get room list failed! errmsg:%s", err.Error())
 			return err
 		}
 
@@ -316,6 +319,7 @@ func RoomSendUsrNum(frwder *rtmq.Proxy, pool *redis.Pool) error {
 			key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, uint64(rid))
 			usr_num, err := redis.Int(rds.Do("ZCARD", key))
 			if nil != err {
+				log.Error("Get user num of room failed! errmsg:%s", err.Error())
 				continue
 			}
 
@@ -326,7 +330,7 @@ func RoomSendUsrNum(frwder *rtmq.Proxy, pool *redis.Pool) error {
 			}
 		}
 
-		if off < comm.CHAT_BAT_NUM {
+		if rid_num < comm.CHAT_BAT_NUM {
 			break
 		}
 
