@@ -25,7 +25,7 @@ func (ctx *LsndCntx) UpMesgRegister() {
 	ctx.frwder.Register(comm.CMD_ONLINE_ACK, LsndUpMesgOnlineAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_KICK, LsndUpMesgKickHandler, ctx)
 	ctx.frwder.Register(comm.CMD_SUB_ACK, LsndUpMesgSubAckHandler, ctx)
-	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpMesgUnsubAckHandler, ctx)
+	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpMesgCommHandler, ctx)
 
 	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndUpMesgRoomJoinAckHandler, ctx)
@@ -330,17 +330,7 @@ func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 		return 0
 	}
 
-	/* > 更新订阅列表 */
-	ctx.chat.SubAdd(head.GetSid(), ack.GetSub())
-
-	/* > 下发SUB-ACK消息 */
-	cid := ctx.chat.GetCidBySid(head.GetSid())
-	if 0 == cid {
-		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
-		return -1
-	}
-
-	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
+	extra := ctx.chat.SessionGetParam(head.GetSid(), head.GetCid())
 	if nil == extra {
 		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
 		return -1
@@ -352,79 +342,8 @@ func LsndUpMesgSubAckHandler(cmd uint32, nid uint32, data []byte, length uint32,
 		return -1
 	}
 
-	ctx.lws.AsyncSend(conn.GetCid(), data)
-
-	return 0
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-/******************************************************************************
- **函数名称: LsndUpMesgUnsubAckHandler
- **功    能: UNSUB-ACK消息的处理
- **输入参数:
- **     cmd: 消息类型
- **     nid: 结点ID
- **     data: 收到数据
- **     length: 数据长度
- **     param: 附加参数
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **     1. 取消指定消息的订阅
- **     2. 转发UNSUB-ACK给对应客户端
- **注意事项:
- **作    者: # Qifeng.zou # 2017.03.08 10:33:30 #
- ******************************************************************************/
-func LsndUpMesgUnsubAckHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*LsndCntx)
-	if !ok {
-		return -1
-	}
-
-	ctx.log.Debug("Recv unsub ack!")
-
-	/* > 字节序转换(网络 -> 主机) */
-	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid(1) {
-		ctx.log.Error("Header of unsub-ack is invalid!")
-		return -1
-	}
-
-	/* > 消息UNSUB-ACK的处理 */
-	ack := &mesg.MesgUnsubAck{}
-
-	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], ack) /* 解析报体 */
-	if nil != err {
-		ctx.log.Error("Unmarshal unsub-ack failed! errmsg:%s", err.Error())
-		return -1
-	} else if 0 != ack.GetCode() {
-		ctx.log.Error("Unsub command [0x%04X] failed! sid:%d code:%d errmsg:%s",
-			ack.GetSub(), head.GetSid(), ack.GetCode(), ack.GetErrmsg())
-		return 0
-	}
-
 	/* > 更新订阅列表 */
-	ctx.chat.SubDel(head.GetSid(), ack.GetSub())
-
-	/* > 获取会话数据 */
-	cid := ctx.chat.GetCidBySid(head.GetSid())
-	if 0 == cid {
-		ctx.log.Error("Get cid by sid failed! sid:%d", head.GetSid())
-		return -1
-	}
-
-	extra := ctx.chat.SessionGetParam(head.GetSid(), cid)
-	if nil == extra {
-		ctx.log.Error("Didn't find conn data! sid:%d", head.GetSid())
-		return -1
-	}
-
-	conn, ok := extra.(*LsndConnExtra)
-	if !ok {
-		ctx.log.Error("Convert conn extra failed! sid:%d", head.GetSid())
-		return -1
-	}
+	ctx.chat.SubAdd(head.GetSid(), head.GetCid(), ack.GetSub())
 
 	/* > 下发SUB-ACK消息 */
 	ctx.lws.AsyncSend(conn.GetCid(), data)
@@ -443,42 +362,68 @@ type LsndRoomDataParam struct {
 }
 
 /******************************************************************************
- **函数名称: lsnd_room_send_data_cb
+ **函数名称: LsndRoomSendDataCb
  **功    能: 将聊天室各种消息下发给指定客户端
  **输入参数:
  **     sid: 会话SID
  **     cid: 连接CID
- **     param: 附加参数
+ **     _param: 附加参数
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 10:38:39 #
  ******************************************************************************/
-func lsnd_room_send_data_cb(sid uint64, cid uint64, param interface{}) int {
-	dp, ok := param.(*LsndRoomDataParam)
+func LsndRoomSendDataCb(sid uint64, cid uint64, _param interface{}) int {
+	p, ok := _param.(*LsndRoomDataParam)
 	if !ok {
 		return -1
 	}
 
-	ctx := dp.ctx
+	ctx := p.ctx
+	data := p.data
+
 	ctx.log.Debug("Send room data! sid:%d cid:%d", sid, cid)
 
-	/* > 获取会话数据 */
-	extra := ctx.chat.SessionGetParam(sid, cid)
-	if nil == extra {
-		ctx.log.Error("Didn't find connection! sid:%d cid:%d", sid, cid)
-		return -1
-	}
-
-	conn, ok := extra.(*LsndConnExtra)
-	if !ok {
-		ctx.log.Error("Convert conn extra failed! sid:%d", sid)
-		return -1
-	}
-
 	/* > 下发ROOM各种消息 */
-	ctx.lws.AsyncSend(conn.GetCid(), dp.data)
+	ctx.lws.AsyncSend(cid, data)
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: LsndRoomSendSubDataCb
+ **功    能: 发送消息各客户端(注: 须订阅)
+ **输入参数:
+ **     sid: 会话SID
+ **     cid: 连接CID
+ **     _param: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.20 13:35:23 #
+ ******************************************************************************/
+func LsndRoomSendSubDataCb(sid uint64, cid uint64, _param interface{}) int {
+	p, ok := _param.(*LsndRoomDataParam)
+	if !ok {
+		return -1
+	}
+
+	ctx := p.ctx
+	data := p.data
+
+	head := comm.MesgHeadNtoh(data)
+
+	ctx.log.Debug("Send room data! sid:%d cid:%d cmd:%d", sid, cid, head.GetCmd())
+
+	/* > 是否订阅 */
+	if !ctx.chat.IsSub(sid, cid, head.GetCmd()) {
+		return 0
+	}
+
+	/* > 下发消息 */
+	ctx.lws.AsyncSend(cid, data)
 
 	return 0
 }
@@ -600,9 +545,9 @@ func LsndUpMesgRoomChatHandler(cmd uint32, nid uint32, data []byte, length uint3
 	}
 
 	/* > 遍历下发ROOM-CHAT消息 */
-	dp := &LsndRoomDataParam{ctx: ctx, data: data}
+	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(req.GetRid(), req.GetGid(), lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(req.GetRid(), req.GetGid(), LsndRoomSendDataCb, p)
 
 	return 0
 }
@@ -651,9 +596,9 @@ func LsndUpMesgRoomBcHandler(cmd uint32, nid uint32, data []byte, length uint32,
 	ctx.log.Debug("Recv room broadcast! rid:%d", req.GetRid())
 
 	/* > 遍历下发ROOM-CHAT消息 */
-	dp := &LsndRoomDataParam{ctx: ctx, data: data}
+	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(req.GetRid(), 0, LsndRoomSendDataCb, p)
 
 	return 0
 }
@@ -774,9 +719,9 @@ func LsndUpMesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uin
 	}
 
 	/* > 遍历下发ROOM-USR-NUM消息 */
-	dp := &LsndRoomDataParam{ctx: ctx, data: data}
+	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(req.GetRid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(req.GetRid(), 0, LsndRoomSendSubDataCb, p)
 
 	return 0
 }
@@ -823,9 +768,9 @@ func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	}
 
 	/* > 遍历下发ROOM-JOIN-NTC消息 */
-	dp := &LsndRoomDataParam{ctx: ctx, data: data}
+	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(head.GetSid(), 0, LsndRoomSendDataCb, p)
 
 	return 0
 }
@@ -872,9 +817,9 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	}
 
 	/* > 遍历下发ROOM-QUIT-NTC消息 */
-	dp := &LsndRoomDataParam{ctx: ctx, data: data}
+	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(head.GetSid(), 0, LsndRoomSendDataCb, p)
 
 	return 0
 }
@@ -921,9 +866,9 @@ func LsndUpMesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	}
 
 	/* > 遍历下发ROOM-KICK-NTC消息 */
-	dp := &LsndRoomDataParam{ctx: ctx, data: data}
+	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(head.GetSid(), 0, lsnd_room_send_data_cb, dp)
+	ctx.chat.TravRoomSession(head.GetSid(), 0, LsndRoomSendDataCb, p)
 
 	return 0
 }

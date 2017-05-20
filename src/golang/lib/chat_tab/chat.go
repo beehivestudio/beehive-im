@@ -418,7 +418,8 @@ func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid uint32, ok bool) 
  **函数名称: SubAdd
  **功    能: 订阅添加
  **输入参数:
- **     sid: 会话ID
+ **     sid: 会话SID
+ **     cid: 连接CID
  **     cmd: 订阅消息
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
@@ -426,13 +427,8 @@ func (ctx *ChatTab) SessionInRoom(sid uint64, rid uint64) (gid uint32, ok bool) 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.02 10:31:44 #
  ******************************************************************************/
-func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
+func (ctx *ChatTab) SubAdd(sid uint64, cid uint64, cmd uint32) int {
 	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
-
-	cid := ctx.GetCidBySid(sid)
-	if 0 == cid {
-		return 0 // 不存在
-	}
 
 	ss.RLock()
 	defer ss.RUnlock()
@@ -457,6 +453,7 @@ func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
  **功    能: 订阅删除
  **输入参数:
  **     sid: 会话ID
+ **     cid: 连接ID
  **     cmd: 订阅消息
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
@@ -464,13 +461,8 @@ func (ctx *ChatTab) SubAdd(sid uint64, cmd uint32) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.22 21:23:25 #
  ******************************************************************************/
-func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
+func (ctx *ChatTab) SubDel(sid uint64, cid uint64, cmd uint32) int {
 	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
-
-	cid := ctx.GetCidBySid(sid)
-	if 0 == cid {
-		return 0 // 不存在
-	}
 
 	ss.RLock()
 	defer ss.RUnlock()
@@ -495,6 +487,7 @@ func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
  **功    能: 是否订阅
  **输入参数:
  **     sid: 会话ID
+ **     cid: 连接ID
  **     cmd: 订阅消息
  **输出参数: NONE
  **返    回: true:订阅 false:未订阅
@@ -502,13 +495,8 @@ func (ctx *ChatTab) SubDel(sid uint64, cmd uint32) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.02.22 21:31:37 #
  ******************************************************************************/
-func (ctx *ChatTab) IsSub(sid uint64, cmd uint32) bool {
+func (ctx *ChatTab) IsSub(sid uint64, cid uint64, cmd uint32) bool {
 	ss := &ctx.sessions[sid%SESSION_MAX_LEN]
-
-	cid := ctx.GetCidBySid(sid)
-	if 0 == cid {
-		return false // 不存在
-	}
 
 	ss.RLock()
 	defer ss.RUnlock()

@@ -25,6 +25,7 @@ func (ctx *LsndCntx) MesgRegister() {
 	ctx.callback.Register(comm.CMD_ONLINE, LsndMesgOnlineHandler, ctx)   /* 上线消息 */
 	ctx.callback.Register(comm.CMD_OFFLINE, LsndMesgOfflineHandler, ctx) /* 下线消息 */
 	ctx.callback.Register(comm.CMD_PING, LsndMesgPingHandler, ctx)       /* 心跳请求 */
+	ctx.callback.Register(comm.CMD_SUB, LsndMesgCommHandler, ctx)        /* 订阅请求 */
 	ctx.callback.Register(comm.CMD_UNSUB, LsndMesgUnsubHandler, ctx)     /* 取消订阅 */
 
 	/* 聊天室消息 */
@@ -289,7 +290,7 @@ func LsndMesgUnsubHandler(conn *LsndConnExtra, cmd uint32, data []byte, length u
 		return -1
 	}
 
-	ctx.chat.SubDel(head.GetSid(), req.GetSub()) /* 移除订阅消息 */
+	ctx.chat.SubDel(head.GetSid(), conn.GetCid(), req.GetSub()) /* 移除订阅消息 */
 
 	/* > 转发给上游模块 */
 	p := &comm.MesgPacket{Buff: data}
