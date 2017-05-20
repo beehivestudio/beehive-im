@@ -639,8 +639,192 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, cid uint64, nid uint32, code uint32
 	return 0
 }
 
+////////////////////////////////////////////////////////////////////////////////
 /* 订阅请求 */
+
+/******************************************************************************
+ **函数名称: sub_parse
+ **功    能: 解析SUB请求
+ **输入参数:
+ **     data: 原始数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 协议头
+ **     req: 请求内容
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.19 22:09:12 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) sub_parse(data []byte) (
+	head *comm.MesgHeader, sub *mesg.MesgSub, code uint32, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !head.IsValid(1) {
+		errmsg := "Sub header is invalid!"
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
+	}
+
+	/* > 解析PB协议 */
+	sub = &mesg.MesgSub{}
+
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], sub)
+	if nil != err {
+		ctx.log.Error("Unmarshal body of sub failed! errmsg:%s", err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
+	}
+
+	return head, sub, 0, nil
+}
+
+/******************************************************************************
+ **函数名称: sub_failed
+ **功    能: 发送SUB-ACK应答(异常)
+ **输入参数:
+ **     head: 协议头
+ **     sub: SUB请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 cmd = 1;        // M|订阅消息|数字|
+ **     required uint32 code = 2;       // M|错误码|数字|
+ **     required string errmsg = 3;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.20 22:18:16 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) sub_failed(head *comm.MesgHeader,
+	sub *mesg.MesgSub, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
+	/* > 设置协议体 */
+	ack := &mesg.MesgSubAck{
+		Cmd:    proto.Uint32(sub.GetCmd()),
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(errmsg),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_SUB_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_SUB_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: sub_ack
+ **功    能: 发送SUB-ACK应答
+ **输入参数:
+ **     head: 协议头
+ **     sub: SUB请求
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ ** {
+ **     required uint32 cmd = 1;        // M|订阅消息|数字|
+ **     required uint32 code = 2;       // M|错误码|数字|
+ **     required string errmsg = 3;     // M|错误描述|字串|
+ ** }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.01.19 10:40:03 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) sub_ack(head *comm.MesgHeader, sub *mesg.MesgSub) int {
+	/* > 设置协议体 */
+	ack := &mesg.MesgSubAck{
+		Cmd:    proto.Uint32(sub.GetCmd()),
+		Code:   proto.Uint32(0),
+		Errmsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 拼接协议包 */
+	p := &comm.MesgPacket{}
+	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+	head.Cmd = comm.CMD_SUB_ACK
+	head.Length = uint32(length)
+
+	comm.MesgHeadHton(head, p)
+	copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+	/* > 发送协议包 */
+	ctx.frwder.AsyncSend(comm.CMD_SUB_ACK, p.Buff, uint32(len(p.Buff)))
+
+	return 0
+}
+
+/******************************************************************************
+ **函数名称: UsrSvrSubHandler
+ **功    能: SUB请求的处理
+ **输入参数:
+ **     data: 原始数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 协议头
+ **     req: 请求内容
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.19 22:09:12 #
+ ******************************************************************************/
 func UsrSvrSubHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*UsrSvrCntx)
+	if !ok {
+		return -1
+	}
+
+	/* > 解析SUB请求 */
+	head, sub, code, err := ctx.sub_parse(data)
+	if nil != err {
+		ctx.sub_failed(head, sub, code, err.Error())
+		ctx.log.Error("Sub parse failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	/* > 发送SUB应答 */
+	ctx.sub_ack(head, sub)
+
+	ctx.log.Debug("Send sub ack!")
+
 	return 0
 }
 
