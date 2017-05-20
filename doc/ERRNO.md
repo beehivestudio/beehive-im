@@ -1,10 +1,12 @@
 # 错误码说明
 
 ## 错误返回值格式
->{<br>
->  "errno" : 10001,<br>
->  "errmsg" : "System error"<br>
->}
+```
+{
+   "errno" : 10001,
+   "errmsg" : "System error"
+}
+```
 
 ## 错误码说明
 
