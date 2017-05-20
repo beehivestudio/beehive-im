@@ -15,9 +15,9 @@
 # 通用消息
 
 ---
-命令ID: 0x0101:
-命令描述: 上线请求(ONLINE)
-协议格式:
+命令ID: 0x0101<br>
+命令描述: 上线请求(ONLINE)<br>
+协议格式:<br>
 ```
 message mesg_online_req
 {
@@ -31,9 +31,9 @@ message mesg_online_req
 ```
 
 ---
-命令ID: 0x0102
-命令描述: 上线请求应答(ONLINE-ACK)
-协议格式:
+命令ID: 0x0102<br>
+命令描述: 上线请求应答(ONLINE-ACK)<br>
+协议格式:<br>
 ```
 message mesg_online_ack
 {
@@ -49,29 +49,29 @@ message mesg_online_ack
 ```
 
 ---
-命令ID: 0x0103
-命令描述: 下线请求(OFFLINE)
-协议格式: NONE
+命令ID: 0x0103<br>
+命令描述: 下线请求(OFFLINE)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0104
-命令描述: 下线请求应答(OFFLINE-ACK)
-协议格式: NONE
+命令ID: 0x0104<br>
+命令描述: 下线请求应答(OFFLINE-ACK)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0105
-命令描述: 客户端心跳(PING)
-协议格式: NONE
+命令ID: 0x0105<br>
+命令描述: 客户端心跳(PING)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0106
-命令描述: 客户端心跳应答(PONG)
-协议格式: NONE
+命令ID: 0x0106<br>
+命令描述: 客户端心跳应答(PONG)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0107
-命令描述: 订阅请求(SUB)
-协议格式:
+命令ID: 0x0107<br>
+命令描述: 订阅请求(SUB)<br>
+协议格式:<br>
 ```
 message mesg_sub_req
 {
@@ -80,9 +80,9 @@ message mesg_sub_req
 ```
 
 ---
-命令ID: 0x0108
-命令描述: 订阅应答(SUB-ACK)
-协议格式:
+命令ID: 0x0108<br>
+命令描述: 订阅应答(SUB-ACK)<br>
+协议格式:<br>
 ```
 message mesg_sub_ack
 {
@@ -93,9 +93,9 @@ message mesg_sub_ack
 ```
 
 ---
-命令ID: 0x0109
-命令描述: 取消订阅(UNSUB)
-协议格式:
+命令ID: 0x0109<br>
+命令描述: 取消订阅(UNSUB)<br>
+协议格式:<br>
 ```
 message mesg_unsub_req
 {
@@ -104,9 +104,9 @@ message mesg_unsub_req
 ```
 
 ---
-命令ID: 0x010A
-命令描述: 取消订阅应答(UNSUB-ACK)
-协议格式:
+命令ID: 0x010A<br>
+命令描述: 取消订阅应答(UNSUB-ACK)<br>
+协议格式:<br>
 ```
 message mesg_unsub_ack
 {
@@ -117,9 +117,9 @@ message mesg_unsub_ack
 ```
 
 ---
-命令ID: 0x010B
-命令描述: 通用错误消息(ERROR)
-协议格式:
+命令ID: 0x010B<br>
+命令描述: 通用错误消息(ERROR)<br>
+协议格式:<br>
 ```
 message mesg_error
 {
@@ -129,14 +129,14 @@ message mesg_error
 ```
 
 ---
-命令ID: 0x010C
-命令描述: 通用错误消息应答(ERROR-ACK)
-协议格式: NONE
+命令ID: 0x010C<br>
+命令描述: 通用错误消息应答(ERROR-ACK)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x010D
-命令描述: 同步消息(SYNC)
-协议格式: NONE
+命令ID: 0x010D<br>
+命令描述: 同步消息(SYNC)<br>
+协议格式:<br>
 ```
 message mesg_sync
 {
@@ -145,9 +145,9 @@ message mesg_sync
 ```
 
 ---
-命令ID: 0x010E
-命令描述: 同步消息应答(SYNC-ACK)
-协议格式: NONE
+命令ID: 0x010E<br>
+命令描述: 同步消息应答(SYNC-ACK)<br>
+协议格式:<br>
 ```
 message mesg_sync_ack
 {
@@ -158,9 +158,9 @@ message mesg_sync_ack
 ```
 
 ---
-命令ID: 0x0110
-命令描述: 踢连接下线(KICK)
-协议格式: 
+命令ID: 0x0110<br>
+命令描述: 踢连接下线(KICK)<br>
+协议格式: <br>
 ```
 message mesg_kick_req
 {
@@ -170,17 +170,16 @@ message mesg_kick_req
 ```
 
 ---
-命令ID: 0x0111
-命令描述: 踢连接下线应答(KICK-ACK)
-协议格式: NONE
+命令ID: 0x0111<br>
+命令描述: 踢连接下线应答(KICK-ACK)<br>
+协议格式: NONE<br>
 
-////////////////////////////////////////////////////////////////////////////////
 # 私聊消息
 
 ---
-命令ID: 0x0201
-命令描述: 私聊消息(CHAT)
-协议格式: 透传
+命令ID: 0x0201<br>
+命令描述: 私聊消息(CHAT)<br>
+协议格式:<br>
 ```
 message mesg_chat
 {
@@ -194,9 +193,9 @@ message mesg_chat
 ```
 
 ---
-命令ID: 0x0202
-命令描述: 私聊消息应答(CHAT-ACK)
-协议格式:
+命令ID: 0x0202<br>
+命令描述: 私聊消息应答(CHAT-ACK)<br>
+协议格式:<br>
 ```
 message mesg_chat_ack
 {
@@ -207,9 +206,9 @@ message mesg_chat_ack
 ```
 
 ---
-命令ID: 0x0203
-命令描述: 添加好友(FRIEND-ADD)
-协议格式:
+命令ID: 0x0203<br>
+命令描述: 添加好友(FRIEND-ADD)<br>
+协议格式:<br>
 ```
 message mesg_friend_add
 {
@@ -220,14 +219,14 @@ message mesg_friend_add
 ```
 
 ---
-命令ID: 0x0204
-命令描述: 添加好友应答(FRIEND-ADD-ACK)
-协议格式: NONE
+命令ID: 0x0204<br>
+命令描述: 添加好友应答(FRIEND-ADD-ACK)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0205
-命令描述: 删除好友(FRIEND-DEL)
-协议格式:
+命令ID: 0x0205<br>
+命令描述: 删除好友(FRIEND-DEL)<br>
+协议格式:<br>
 ```
 message mesg_friend_del
 {
@@ -237,14 +236,14 @@ message mesg_friend_del
 ```
 
 ---
-命令ID: 0x0206
-命令描述: 删除好友应答(FRIEND-DEL-ACK)
-协议格式: NONE
+命令ID: 0x0206<br>
+命令描述: 删除好友应答(FRIEND-DEL-ACK)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0207
-命令描述: 加入黑名单(BLACKLIST-ADD)
-协议格式: 
+命令ID: 0x0207<br>
+命令描述: 加入黑名单(BLACKLIST-ADD)<br>
+协议格式: <br>
 ```
 message mesg_blacklist_add
 {
@@ -254,9 +253,9 @@ message mesg_blacklist_add
 ```
 
 ---
-命令ID: 0x0208
-命令描述: 加入黑名单应答(BLACKLIST-ADD-ACK)
-协议格式: 
+命令ID: 0x0208<br>
+命令描述: 加入黑名单应答(BLACKLIST-ADD-ACK)<br>
+协议格式: <br>
 ```
 message mesg_blacklist_add_ack
 {
@@ -266,9 +265,9 @@ message mesg_blacklist_add_ack
 ```
 
 ---
-命令ID: 0x0209
-命令描述: 移除黑名单(BLACKLIST-DEL)
-协议格式:
+命令ID: 0x0209<br>
+命令描述: 移除黑名单(BLACKLIST-DEL)<br>
+协议格式:<br>
 ```
 message mesg_blacklist_del
 {
@@ -278,9 +277,9 @@ message mesg_blacklist_del
 ```
 
 ---
-命令ID: 0x020A
-命令描述: 移除黑名单应答(BLACKLIST-DEL-ACK)
-协议格式: 
+命令ID: 0x020A<br>
+命令描述: 移除黑名单应答(BLACKLIST-DEL-ACK)<br>
+协议格式: <br>
 ```
 message mesg_blacklist_del_ack
 {
@@ -290,9 +289,9 @@ message mesg_blacklist_del_ack
 ```
 
 ---
-命令ID: 0x020B
-命令描述: 屏蔽此人(GAG-ADD)
-协议格式:
+命令ID: 0x020B<br>
+命令描述: 屏蔽此人(GAG-ADD)<br>
+协议格式:<br>
 ```
 message mesg_gag_add
 {
@@ -302,9 +301,9 @@ message mesg_gag_add
 ```
 
 ---
-命令ID: 0x020C
-命令描述: 屏蔽此人应答(GAG-ADD-ACK)
-协议格式: 
+命令ID: 0x020C<br>
+命令描述: 屏蔽此人应答(GAG-ADD-ACK)<br>
+协议格式: <br>
 ```
 message mesg_gag_add_ack
 {
@@ -314,9 +313,9 @@ message mesg_gag_add_ack
 ```
 
 ---
-命令ID: 0x020D
-命令描述: 取消屏蔽此人(GAG-DEL)
-协议格式:
+命令ID: 0x020D<br>
+命令描述: 取消屏蔽此人(GAG-DEL)<br>
+协议格式:<br>
 ```
 message mesg_gag_del
 {
@@ -326,9 +325,9 @@ message mesg_gag_del
 ```
 
 ---
-命令ID: 0x020E
-命令描述: 取消屏蔽此人应答(GAG-DEL-ACK)
-协议格式: 
+命令ID: 0x020E<br>
+命令描述: 取消屏蔽此人应答(GAG-DEL-ACK)<br>
+协议格式: <br>
 ```
 message mesg_gag_del_ack
 {
@@ -338,9 +337,9 @@ message mesg_gag_del_ack
 ```
 
 ---
-命令ID: 0x0210
-命令描述: 添加备注此人(MARK-ADD)
-协议格式:
+命令ID: 0x0210<br>
+命令描述: 添加备注此人(MARK-ADD)<br>
+协议格式:<br>
 ```
 message mesg_mark_add
 {
@@ -351,9 +350,9 @@ message mesg_mark_add
 ```
 
 ---
-命令ID: 0x0211
-命令描述: 添加备注此人应答(MARK-ADD-ACK)
-协议格式: NONE
+命令ID: 0x0211<br>
+命令描述: 添加备注此人应答(MARK-ADD-ACK)<br>
+协议格式:<br>
 ```
 message mesg_mark_add_ack
 {
@@ -363,9 +362,9 @@ message mesg_mark_add_ack
 ```
 
 ---
-命令ID: 0x0212
-命令描述: 添加备注此人(MARK-DEL)
-协议格式:
+命令ID: 0x0212<br>
+命令描述: 添加备注此人(MARK-DEL)<br>
+协议格式:<br>
 ```
 message mesg_mark_del
 {
@@ -375,9 +374,9 @@ message mesg_mark_del
 ```
 
 ---
-命令ID: 0x0213
-命令描述: 取消备注此人应答(MARK-DEL-ACK)
-协议格式: NONE
+命令ID: 0x0213<br>
+命令描述: 取消备注此人应答(MARK-DEL-ACK)<br>
+协议格式:<br>
 ```
 message mesg_mark_del_ack
 {
@@ -386,13 +385,12 @@ message mesg_mark_del_ack
 }
 ```
 
-////////////////////////////////////////////////////////////////////////////////
 # 群聊消息
 
 ---
-命令ID: 0x0301
-命令描述: 创建群组(GROUP-CREAT)
-协议格式: 
+命令ID: 0x0301<br>
+命令描述: 创建群组(GROUP-CREAT)<br>
+协议格式: <br>
 ```
 message mesg_group_creat
 {
@@ -402,9 +400,9 @@ message mesg_group_creat
 ```
 
 ---
-命令ID: 0x0302
-命令描述: 创建群组应答(GROUP-JOIN-ACK)
-协议格式: 
+命令ID: 0x0302<br>
+命令描述: 创建群组应答(GROUP-JOIN-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_creat_ack
 {
@@ -414,9 +412,9 @@ message mesg_group_creat_ack
 ```
 
 ---
-命令ID: 0x0303
-命令描述: 解散群组(GROUP-DISMISS)
-协议格式: 
+命令ID: 0x0303<br>
+命令描述: 解散群组(GROUP-DISMISS)<br>
+协议格式: <br>
 ```
 message mesg_group_dismiss
 {
@@ -426,9 +424,9 @@ message mesg_group_dismiss
 ```
 
 ---
-命令ID: 0x0304
-命令描述: 解散群组应答(GROUP-DISMISS-ACK)
-协议格式: 
+命令ID: 0x0304<br>
+命令描述: 解散群组应答(GROUP-DISMISS-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_dismiss_ack
 {
@@ -438,9 +436,9 @@ message mesg_group_dismiss_ack
 ```
 
 ---
-命令ID: 0x0305
-命令描述: 申请入群(GROUP-JOIN)
-协议格式: 
+命令ID: 0x0305<br>
+命令描述: 申请入群(GROUP-JOIN)<br>
+协议格式: <br>
 ```
 message mesg_group_join
 {
@@ -450,9 +448,9 @@ message mesg_group_join
 ```
 
 ---
-命令ID: 0x0306
-命令描述: 申请入群应答(GROUP-JOIN-ACK)
-协议格式: 
+命令ID: 0x0306<br>
+命令描述: 申请入群应答(GROUP-JOIN-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_join_ack
 {
@@ -462,9 +460,9 @@ message mesg_group_join_ack
 ```
 
 ---
-命令ID: 0x0307
-命令描述: 退群(GROUP-QUIT)
-协议格式: 
+命令ID: 0x0307<br>
+命令描述: 退群(GROUP-QUIT)<br>
+协议格式: <br>
 ```
 message mesg_group_quit
 {
@@ -474,9 +472,9 @@ message mesg_group_quit
 ```
 
 ---
-命令ID: 0x0308
-命令描述: 退群应答(GROUP-QUIT-ACK)
-协议格式: 
+命令ID: 0x0308<br>
+命令描述: 退群应答(GROUP-QUIT-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_quit_ack
 {
@@ -486,9 +484,9 @@ message mesg_group_quit_ack
 ```
 
 ---
-命令ID: 0x0309
-命令描述: 邀请入群(GROUP-INVITE)
-协议格式: 
+命令ID: 0x0309<br>
+命令描述: 邀请入群(GROUP-INVITE)<br>
+协议格式: <br>
 ```
 message mesg_group_invite
 {
@@ -499,9 +497,9 @@ message mesg_group_invite
 ```
 
 ---
-命令ID: 0x030A
-命令描述: 邀请入群应答(GROUP-INVITE-ACK)
-协议格式: 
+命令ID: 0x030A<br>
+命令描述: 邀请入群应答(GROUP-INVITE-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_invite_ack
 {
@@ -511,9 +509,9 @@ message mesg_group_invite_ack
 ```
 
 ---
-命令ID: 0x030B
-命令描述: 群聊消息(GROUP-CHAT)
-协议格式: 
+命令ID: 0x030B<br>
+命令描述: 群聊消息(GROUP-CHAT)<br>
+协议格式: <br>
 TODO: 协议头中的to为群ID(GID)
 ```
 message mesg_group_chat
@@ -528,9 +526,9 @@ message mesg_group_chat
 ```
 
 ---
-命令ID: 0x030C
-命令描述: 群聊消息应答(GROUP-CHAT-ACK)
-协议格式: 
+命令ID: 0x030C<br>
+命令描述: 群聊消息应答(GROUP-CHAT-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_chat_ack
 {
@@ -541,9 +539,9 @@ message mesg_group_chat_ack
 ```
 
 ---
-命令ID: 0x030D
-命令描述: 群组踢人(GROUP-KICK)
-协议格式: 
+命令ID: 0x030D<br>
+命令描述: 群组踢人(GROUP-KICK)<br>
+协议格式: <br>
 ```
 message mesg_group_kick
 {
@@ -553,9 +551,9 @@ message mesg_group_kick
 ```
 
 ---
-命令ID: 0x030E
-命令描述: 群组踢人应答(GROUP-KICK-ACK)
-协议格式: 
+命令ID: 0x030E<br>
+命令描述: 群组踢人应答(GROUP-KICK-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_kick_ack
 {
@@ -565,9 +563,9 @@ message mesg_group_kick_ack
 ```
 
 ---
-命令ID: 0x0310
-命令描述: 群组禁言(GROUP-GAG-ADD)
-协议格式: 
+命令ID: 0x0310<br>
+命令描述: 群组禁言(GROUP-GAG-ADD)<br>
+协议格式: <br>
 ```
 message mesg_group_gag_add
 {
@@ -577,9 +575,9 @@ message mesg_group_gag_add
 ```
 
 ---
-命令ID: 0x0311
-命令描述: 群组禁言应答(GROUP-GAG-ADD-ACK)
-协议格式: 
+命令ID: 0x0311<br>
+命令描述: 群组禁言应答(GROUP-GAG-ADD-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_gag_add_ack
 {
@@ -589,9 +587,9 @@ message mesg_group_gag_add_ack
 ```
 
 ---
-命令ID: 0x0312
-命令描述: 解除群组禁言(GROUP-GAG-DEL)
-协议格式: 
+命令ID: 0x0312<br>
+命令描述: 解除群组禁言(GROUP-GAG-DEL)<br>
+协议格式: <br>
 ```
 message mesg_group_gag_del
 {
@@ -601,9 +599,9 @@ message mesg_group_gag_del
 ```
 
 ---
-命令ID: 0x0313
-命令描述: 解除群组禁言应答(GROUP-GAG-DEL-ACK)
-协议格式: 
+命令ID: 0x0313<br>
+命令描述: 解除群组禁言应答(GROUP-GAG-DEL-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_gag_del_ack
 {
@@ -613,9 +611,9 @@ message mesg_group_gag_del_ack
 ```
 
 ---
-命令ID: 0x0314
-命令描述: 加入群组黑名单(GROUP-BL-ADD)
-协议格式: 
+命令ID: 0x0314<br>
+命令描述: 加入群组黑名单(GROUP-BL-ADD)<br>
+协议格式: <br>
 ```
 message mesg_group_bl_add
 {
@@ -625,9 +623,9 @@ message mesg_group_bl_add
 ```
 
 ---
-命令ID: 0x0315
-命令描述: 加入群组黑名单应答(GROUP-BL-ADD-ACK)
-协议格式: 
+命令ID: 0x0315<br>
+命令描述: 加入群组黑名单应答(GROUP-BL-ADD-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_bl_add_ack
 {
@@ -637,9 +635,9 @@ message mesg_group_bl_add_ack
 ```
 
 ---
-命令ID: 0x0316
-命令描述: 移除群组黑名单(GROUP-BL-DEL)
-协议格式: 
+命令ID: 0x0316<br>
+命令描述: 移除群组黑名单(GROUP-BL-DEL)<br>
+协议格式: <br>
 ```
 message mesg_group_bl_del
 {
@@ -649,9 +647,9 @@ message mesg_group_bl_del
 ```
 
 ---
-命令ID: 0x0317
-命令描述: 移除群组黑名单应答(GROUP-BL-DEL-ACK)
-协议格式: 
+命令ID: 0x0317<br>
+命令描述: 移除群组黑名单应答(GROUP-BL-DEL-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_bl_del_ack
 {
@@ -661,9 +659,9 @@ message mesg_group_bl_del_ack
 ```
 
 ---
-命令ID: 0x0318
-命令描述: 添加群组管理员(GROUP-MGR-ADD)
-协议格式: 
+命令ID: 0x0318<br>
+命令描述: 添加群组管理员(GROUP-MGR-ADD)<br>
+协议格式: <br>
 ```
 message mesg_group_mgr_add
 {
@@ -673,9 +671,9 @@ message mesg_group_mgr_add
 ```
 
 ---
-命令ID: 0x0319
-命令描述: 添加群组管理员应答(GROUP-MGR-ADD-ACK)
-协议格式: 
+命令ID: 0x0319<br>
+命令描述: 添加群组管理员应答(GROUP-MGR-ADD-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_mgr_add_ack
 {
@@ -685,9 +683,9 @@ message mesg_group_mgr_add_ack
 ```
 
 ---
-命令ID: 0x031A
-命令描述: 解除群组管理员(GROUP-MGR-DEL)
-协议格式: 
+命令ID: 0x031A<br>
+命令描述: 解除群组管理员(GROUP-MGR-DEL)<br>
+协议格式: <br>
 ```
 message mesg_group_mgr_del
 {
@@ -697,9 +695,9 @@ message mesg_group_mgr_del
 ```
 
 ---
-命令ID: 0x031B
-命令描述: 解除群组管理员应答(GROUP-MGR-DEL-ACK)
-协议格式: 
+命令ID: 0x031B<br>
+命令描述: 解除群组管理员应答(GROUP-MGR-DEL-ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_mgr_del_ack
 {
@@ -709,9 +707,9 @@ message mesg_group_mgr_del_ack
 ```
 
 ---
-命令ID: 0x031C
-命令描述: 群组成员列表请求(GROUP-USR_LIST_REQ)
-协议格式: 
+命令ID: 0x031C<br>
+命令描述: 群组成员列表请求(GROUP-USR_LIST_REQ)<br>
+协议格式: <br>
 ```
 message mesg_group_usr_list_req
 {
@@ -721,9 +719,9 @@ message mesg_group_usr_list_req
 ```
 
 ---
-命令ID: 0x031B
-命令描述: 群组成员列表应答(GROUP-USR_LIST_ACK)
-协议格式: 
+命令ID: 0x031B<br>
+命令描述: 群组成员列表应答(GROUP-USR_LIST_ACK)<br>
+协议格式: <br>
 ```
 message mesg_group_usr_list_ack
 {
@@ -733,9 +731,9 @@ message mesg_group_usr_list_ack
 ```
 
 ---
-命令ID: 0x0350
-命令描述: 入群通知(GROUP-JOIN-NTC)
-协议格式: 
+命令ID: 0x0350<br>
+命令描述: 入群通知(GROUP-JOIN-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_join_ntc
 {
@@ -745,9 +743,9 @@ message mesg_group_join_ntc
 ```
 
 ---
-命令ID: 0x0351
-命令描述: 退群通知(GROUP-QUIT-NTC)
-协议格式: 
+命令ID: 0x0351<br>
+命令描述: 退群通知(GROUP-QUIT-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_quit_ntc
 {
@@ -757,9 +755,9 @@ message mesg_group_quit_ntc
 ```
 
 ---
-命令ID: 0x0352
-命令描述: 踢人通知(GROUP-KICK-NTC)
-协议格式: 
+命令ID: 0x0352<br>
+命令描述: 踢人通知(GROUP-KICK-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_kick_ntc
 {
@@ -769,9 +767,9 @@ message mesg_group_kick_ntc
 ```
 
 ---
-命令ID: 0x0353
-命令描述: 禁言通知(GROUP-GAG-ADD-NTC)
-协议格式: 
+命令ID: 0x0353<br>
+命令描述: 禁言通知(GROUP-GAG-ADD-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_gag_add_ntc
 {
@@ -781,9 +779,9 @@ message mesg_group_gag_add_ntc
 ```
 
 ---
-命令ID: 0x0354
-命令描述: 解除禁言通知(GROUP-GAG-DEL-NTC)
-协议格式: 
+命令ID: 0x0354<br>
+命令描述: 解除禁言通知(GROUP-GAG-DEL-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_gag_del_ntc
 {
@@ -793,9 +791,9 @@ message mesg_group_gag_del_ntc
 ```
 
 ---
-命令ID: 0x0355
-命令描述: 加入黑名单通知(GROUP-BL-ADD-NTC)
-协议格式: 
+命令ID: 0x0355<br>
+命令描述: 加入黑名单通知(GROUP-BL-ADD-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_bl_add_ntc
 {
@@ -805,9 +803,9 @@ message mesg_group_bl_add_ntc
 ```
 
 ---
-命令ID: 0x0356
-命令描述: 移除黑名单通知(GROUP-BL-DEL-NTC)
-协议格式: 
+命令ID: 0x0356<br>
+命令描述: 移除黑名单通知(GROUP-BL-DEL-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_bl_del_ntc
 {
@@ -817,9 +815,9 @@ message mesg_group_bl_del_ntc
 ```
 
 ---
-命令ID: 0x0357
-命令描述: 添加管理员通知(GROUP-MGR-ADD-NTC)
-协议格式: 
+命令ID: 0x0357<br>
+命令描述: 添加管理员通知(GROUP-MGR-ADD-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_mgr_add_ntc
 {
@@ -829,9 +827,9 @@ message mesg_group_mgr_add_ntc
 ```
 
 ---
-命令ID: 0x0358
-命令描述: 移除管理员通知(GROUP-MGR-DEL-NTC)
-协议格式: 
+命令ID: 0x0358<br>
+命令描述: 移除管理员通知(GROUP-MGR-DEL-NTC)<br>
+协议格式: <br>
 ```
 message mesg_group_mgr_del_ntc
 {
@@ -840,13 +838,12 @@ message mesg_group_mgr_del_ntc
 }
 ```
 
-////////////////////////////////////////////////////////////////////////////////
 # 聊天室消息
 
 ---
-命令ID: 0x0401
-命令描述: 创建聊天室(ROOM-CREAT)
-协议格式:
+命令ID: 0x0401<br>
+命令描述: 创建聊天室(ROOM-CREAT)<br>
+协议格式:<br>
 ```
 message mesg_room_creat
 {
@@ -857,9 +854,9 @@ message mesg_room_creat
 ```
 
 ---
-命令ID: 0x0402
-命令描述: 创建聊天室应答(ROOM-CREAT-ACK)
-协议格式:
+命令ID: 0x0402<br>
+命令描述: 创建聊天室应答(ROOM-CREAT-ACK)<br>
+协议格式:<br>
 ```
 message mesg_room_creat_ack
 {
@@ -871,9 +868,9 @@ message mesg_room_creat_ack
 ```
 
 ---
-命令ID: 0x0403
-命令描述: 解散聊天室(ROOM-DISMISS)
-协议格式:
+命令ID: 0x0403<br>
+命令描述: 解散聊天室(ROOM-DISMISS)<br>
+协议格式:<br>
 ```
 message mesg_room_dismiss
 {
@@ -883,9 +880,9 @@ message mesg_room_dismiss
 ```
 
 ---
-命令ID: 0x0404
-命令描述: 解散聊天室应答(ROOM-DISMISS-ACK)
-协议格式:
+命令ID: 0x0404<br>
+命令描述: 解散聊天室应答(ROOM-DISMISS-ACK)<br>
+协议格式:<br>
 ```
 message mesg_room_dismiss_ack
 {
@@ -895,9 +892,9 @@ message mesg_room_dismiss_ack
 ```
 
 ---
-命令ID: 0x0405
-命令描述: 加入聊天室(ROOM-JOIN)
-协议格式:
+命令ID: 0x0405<br>
+命令描述: 加入聊天室(ROOM-JOIN)<br>
+协议格式:<br>
 ```
 message mesg_room_join
 {
@@ -907,9 +904,9 @@ message mesg_room_join
 ```
 
 ---
-命令ID: 0x0406
-命令描述: 加入聊天室应答(ROOM-JOIN-ACK)
-协议格式:
+命令ID: 0x0406<br>
+命令描述: 加入聊天室应答(ROOM-JOIN-ACK)<br>
+协议格式:<br>
 ```
 message mesg_room_join_ack
 {
@@ -922,9 +919,9 @@ message mesg_room_join_ack
 ```
 
 ---
-命令ID: 0x0407
-命令描述: 退出聊天室(ROOM-QUIT)
-协议格式: NONE
+命令ID: 0x0407<br>
+命令描述: 退出聊天室(ROOM-QUIT)<br>
+协议格式: <br>
 ```
 message mesg_room_quit
 {
@@ -934,9 +931,9 @@ message mesg_room_quit
 ```
 
 ---
-命令ID: 0x0408
-命令描述: 退出聊天室应答(ROOM-QUIT-ACK)
-协议格式: NONE
+命令ID: 0x0408<br>
+命令描述: 退出聊天室应答(ROOM-QUIT-ACK)<br>
+协议格式: <br>
 ```
 message mesg_room_quit_ack
 {
@@ -948,9 +945,9 @@ message mesg_room_quit_ack
 ```
 
 ---
-命令ID: 0x0409
-命令描述: 踢出聊天室(ROOM-KICK)
-协议格式: NONE
+命令ID: 0x0409<br>
+命令描述: 踢出聊天室(ROOM-KICK)<br>
+协议格式: <br>
 ```
 message mesg_room_kick
 {
@@ -962,9 +959,9 @@ message mesg_room_kick
 ```
 
 ---
-命令ID: 0x040A
-命令描述: 踢出聊天室应答(ROOM-KICK-ACK)
-协议格式: NONE
+命令ID: 0x040A<br>
+命令描述: 踢出聊天室应答(ROOM-KICK-ACK)<br>
+协议格式: <br>
 ```
 message mesg_room_kick_ack
 {
@@ -976,9 +973,9 @@ message mesg_room_kick_ack
 ```
 
 ---
-命令ID: 0x040B
-命令描述: 聊天室消息(ROOM-CHAT)
-协议格式: 
+命令ID: 0x040B<br>
+命令描述: 聊天室消息(ROOM-CHAT)<br>
+协议格式: <br>
 ```
 message mesg_room
 {
@@ -993,9 +990,9 @@ message mesg_room
 ```
 
 ---
-命令ID: 0x040C
-命令描述: 聊天室消息应答(ROOM-ACK)
-协议格式: NONE
+命令ID: 0x040C<br>
+命令描述: 聊天室消息应答(ROOM-ACK)<br>
+协议格式: <br>
 ```
 message mesg_room_ack
 {
@@ -1005,9 +1002,9 @@ message mesg_room_ack
 ```
 
 ---
-命令ID: 0x040D
-命令描述: 聊天室广播消息(ROOM-BC)
-协议格式: 
+命令ID: 0x040D<br>
+命令描述: 聊天室广播消息(ROOM-BC)<br>
+协议格式: <br>
 ```
 message mesg_room_bc
 {
@@ -1020,9 +1017,9 @@ message mesg_room_bc
 ```
 
 ---
-命令ID: 0x040E
-命令描述: 聊天室广播消息应答(ROOM-BC-ACK)
-协议格式: NONE
+命令ID: 0x040E<br>
+命令描述: 聊天室广播消息应答(ROOM-BC-ACK)<br>
+协议格式: <br>
 ```
 message mesg_room_bc_ack
 {
@@ -1032,9 +1029,9 @@ message mesg_room_bc_ack
 ```
 
 ---
-命令ID: 0x0410
-命令描述: 聊天室人数(ROOM-USR-NUM)
-协议格式:
+命令ID: 0x0410<br>
+命令描述: 聊天室人数(ROOM-USR-NUM)<br>
+协议格式:<br>
 message mesg_room_usr_num
 {
     required uint64 rid = 1;        // M|聊天室ID|数字|
@@ -1042,14 +1039,14 @@ message mesg_room_usr_num
 }
 
 ---
-命令ID: 0x0411
-命令描述: 聊天室人数应答(ROOM-USR-NUM-ACK)
-协议格式: NONE
+命令ID: 0x0411<br>
+命令描述: 聊天室人数应答(ROOM-USR-NUM-ACK)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0450
-命令描述: 加入聊天室通知(ROOM-JOIN-NTC)
-协议格式: 
+命令ID: 0x0450<br>
+命令描述: 加入聊天室通知(ROOM-JOIN-NTC)<br>
+协议格式: <br>
 ```
 message mesg_room_join_ntc
 {
@@ -1058,9 +1055,9 @@ message mesg_room_join_ntc
 ```
 
 ---
-命令ID: 0x0451
-命令描述: 退出聊天室通知(ROOM-QUIT-NTC)
-协议格式: 
+命令ID: 0x0451<br>
+命令描述: 退出聊天室通知(ROOM-QUIT-NTC)<br>
+协议格式: <br>
 ```
 message mesg_room_quit_ntc
 {
@@ -1069,9 +1066,9 @@ message mesg_room_quit_ntc
 ```
 
 ---
-命令ID: 0x0452
-命令描述: 踢出聊天室通知(ROOM-KICK-NTC)
-协议格式: 
+命令ID: 0x0452<br>
+命令描述: 踢出聊天室通知(ROOM-KICK-NTC)<br>
+协议格式: <br>
 ```
 message mesg_room_kick_ntc
 {
@@ -1079,38 +1076,36 @@ message mesg_room_kick_ntc
 }
 ```
 
-////////////////////////////////////////////////////////////////////////////////
 # 推送消息
 
 ---
-命令ID: 0x0501
-命令描述: 广播消息(BC)
-功能描述: 用于给所有人员发送广播消息
-协议格式: 透传
+命令ID: 0x0501<br>
+命令描述: 广播消息(BC)<br>
+功能描述: 用于给所有人员发送广播消息<br>
+协议格式: 透传<br>
 
 ---
-命令ID: 0x0502
-命令描述: 广播消息应答(BC-ACK)
-协议格式: NONE
+命令ID: 0x0502<br>
+命令描述: 广播消息应答(BC-ACK)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0503
-命令描述: 点到点消息(P2P)
-功能描述: 可用于发送私聊消息、添加/删除好友等点到点的消息
-协议格式: 自定义
+命令ID: 0x0503<br>
+命令描述: 点到点消息(P2P)<br>
+功能描述: 可用于发送私聊消息、添加/删除好友等点到点的消息<br>
+协议格式: 自定义<br>
 
 ---
-命令ID: 0x0504
-命令描述: 点到点消息应答(P2P-ACK)
-协议格式: NONE
+命令ID: 0x0504<br>
+命令描述: 点到点消息应答(P2P-ACK)<br>
+协议格式: NONE<br>
 
-////////////////////////////////////////////////////////////////////////////////
 # 系统内部命令
 
 ---
-命令ID: 0x0601
-命令描述: 帧听层信息上报(LSN-INFO)
-协议格式: 
+命令ID: 0x0601<br>
+命令描述: 帧听层信息上报(LSN-INFO)<br>
+协议格式: <br>
 ```
 message mesg_lsn_info
 {
@@ -1125,14 +1120,14 @@ message mesg_lsn_info
 ```
 
 ---
-命令ID: 0x0602
-命令描述: 帧听层上报应答(LSN-INFO-ACK)
-协议格式: NONE
+命令ID: 0x0602<br>
+命令描述: 帧听层上报应答(LSN-INFO-ACK)<br>
+协议格式: NONE<br>
 
 ---
-命令ID: 0x0603
-命令描述: 转发层上报 (FRWD-INFO)
-协议格式: 
+命令ID: 0x0603<br>
+命令描述: 转发层上报 (FRWD-INFO)<br>
+协议格式: <br>
 ```
 message mesg_frwd_info
 {
@@ -1144,6 +1139,6 @@ message mesg_frwd_info
 ```
 
 ---
-命令ID: 0x0604
-命令描述: 转发层上报应答(FRWD-INFO-ACK)
-协议格式: NONE
+命令ID: 0x0604<br>
+命令描述: 转发层上报应答(FRWD-INFO-ACK)<br>
+协议格式: NONE<br>
