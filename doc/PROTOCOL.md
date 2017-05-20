@@ -18,15 +18,17 @@
 命令ID: 0x0101:<br>
 命令描述: 上线请求(ONLINE)<br>
 协议格式:<br>
->message mesg_online_req<br>
->{<br>
->   required uint64 uid = 1;        // M|用户ID|数字|<br>
->   required uint64 sid = 2;        // M|会话ID|数字|<br>
->   required string token = 3;      // M|鉴权TOKEN|字串|<br>
->   required string app = 4;        // M|APP名|字串|<br>
->   required string version = 5;    // M|APP版本|字串|<br>
->   optional uint32 terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
->}
+```
+message mesg_online_req<br>
+{<br>
+   required uint64 uid = 1;        // M|用户ID|数字|<br>
+   required uint64 sid = 2;        // M|会话ID|数字|<br>
+   required string token = 3;      // M|鉴权TOKEN|字串|<br>
+   required string app = 4;        // M|APP名|字串|<br>
+   required string version = 5;    // M|APP版本|字串|<br>
+   optional uint32 terminal = 6;   // O|终端类型|数字|(0:未知 1:PC 2:TV 3:手机)|<br>
+}
+```
 
 ---
 命令ID: 0x0102<br>
