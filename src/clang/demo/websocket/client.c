@@ -50,6 +50,7 @@ int lws_recv_handler(struct lws_context *lws,
             return lws_mesg_pong_handler(head, body);
         case CMD_ROOM_JOIN_ACK:
             if (!lws_mesg_room_join_ack_handler(head, body)) {
+                lws_mesg_sub(lws, wsi, ctx, session, CMD_ROOM_USR_NUM);
                 return lws_mesg_room_chat_send_handler(lws, wsi, ctx, session);
             }
             return -1;
@@ -74,8 +75,9 @@ int lws_send_handler(struct lws_context *lws,
         ping_tm = ctm;
         if (0 != ping_times) {
             lws_mesg_ping_handler(lws, wsi, ctx, session);
+            lws_mesg_sub(lws, wsi, ctx, session, CMD_ROOM_USR_NUM);
             lws_mesg_room_chat_send_handler(lws, wsi, ctx, session);
-            lws_mesg_room_quit_handler(lws, wsi, ctx, session);
+            //lws_mesg_room_quit_handler(lws, wsi, ctx, session);
         }
         ++ping_times;
     }

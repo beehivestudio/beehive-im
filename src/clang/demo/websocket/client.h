@@ -60,6 +60,8 @@ int lws_mesg_online_ack_handler(lws_cntx_t *ctx, mesg_header_t *head, void *body
 int lws_mesg_ping_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session);
 int lws_mesg_pong_handler(mesg_header_t *head, void *body);
 
+int lws_mesg_sub(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session, uint32_t cmd);
+
 int lws_mesg_room_join_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session);
 int lws_mesg_room_join_ack_handler(mesg_header_t *head, void *body);
 

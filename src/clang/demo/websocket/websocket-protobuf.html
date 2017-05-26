@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <script src="https://jstatic.letvcdn.com/lib/jquery-1.12.4.min.js"></script>
+    <script src="https://js.letvcdn.com/lc05_fe/201705/23/10/49/protobuf.js"></script>
+    <script type="text/javascript">
+        var Root = protobuf.Root,
+            Type = protobuf.Type,
+            Field = protobuf.Field;
+
+        var onlineRequestMsg = new Type("mesg_online")
+            .add(new Field("sid", 1, "uint32"))
+            .add(new Field("token", 2, "string"))
+            .add(new Field("app", 3, "string"))
+            .add(new Field("version", 4, "string"));
+
+        var onlineResponseMsg = new Type("mesg_online_ack")
+            .add(new Field("sid", 1, "uint32"))
+            .add(new Field("app", 2, "string"))
+            .add(new Field("version", 3, "string"))
+            .add(new Field("code", 4, "uint32"))
+            .add(new Field("errmsg", 5, "string"));
+
+        function decodeUtf8(arrayBuffer) {
+            var result = "";
+            var i = 0;
+            var c = 0;
+            var c1 = 0;
+            var c2 = 0;
+
+            var data = new Uint8Array(arrayBuffer);
+
+            // If we have a BOM skip it
+            if (data.length >= 3 && data[0] === 0xef && data[1] === 0xbb && data[2] === 0xbf) {
+                i = 3;
+            }
+
+            while (i < data.length) {
+                c = data[i];
+
+                if (c < 128) {
+                    result += String.fromCharCode(c);
+                    i++;
+                } else if (c > 191 && c < 224) {
+                    if (i + 1 >= data.length) {
+                        throw "UTF-8 Decode failed. Two byte character was truncated.";
+                    }
+                    c2 = data[i + 1];
+                    result += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+                    i += 2;
+                } else {
+                    if (i + 2 >= data.length) {
+                        throw "UTF-8 Decode failed. Multi byte character was truncated.";
+                    }
+                    c2 = data[i + 1];
+                    c3 = data[i + 2];
+                    result += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+                    i += 3;
+                }
+            }
+            return result;
+        }
+
+        $(function() {
+            window.WebSocket = window.WebSocket || window.MozWebSocket;
+
+            $.ajax({
+                url: 'http://10.127.220.161:8000/im/iplist',
+                method: '',
+                data: {
+                    clientip: '211.144.19.198',
+                    type: '2'
+                },
+                success: function(res) {
+                    console.log(res);
+                    var websocket = new WebSocket('ws://' + res.list[0] + '/upload');
+                    websocket.binaryType = 'arraybuffer';
+
+                    var message = onlineRequestMsg.create({
+                        sid: res.sid,
+                        token: res.token,
+                        app: 'le',
+                        version: '1.0'
+                    });
+
+                    var onlineRequestProtobuf = onlineRequestMsg.encode(message).finish();
+
+                    websocket.onopen = function() {
+                        $('h1').css('color', 'green');
+
+                        var onlineRequestBuff = new ArrayBuffer(24 + onlineRequestProtobuf.length);
+
+                        // set Header
+                        var header = new DataView(onlineRequestBuff);
+                        header.setUint32(0, 0x0101, false); //cmd
+                        header.setUint32(4, onlineRequestProtobuf.length, false);
+                        header.setUint32(8, res.sid, false);
+                        header.setUint32(20, 1, false);
+
+                        // set Body
+                        var bufView = new Uint8Array(onlineRequestBuff, 24);
+                        bufView.set(onlineRequestProtobuf);
+
+                        websocket.send(onlineRequestBuff);
+                    };
+
+                    // function ping() {
+                    //     var buff = new ArrayBuffer(24);
+                    //     var header = new DataView(buff);
+                    //     header.setUint16(0, 0x0001, false); //cmd
+                    //     header.setUint32(4, 0, false);
+                    //     websocket.send(buff);
+                    //     console.log("PING");
+                    // };
+                    // setInterval(ping, 120000); //私有心跳
+
+                    websocket.onerror = function(err) {
+                        console.log('======err=====');
+                        console.log(err);
+                        $('h1').css('color', 'red');
+                    };
+                    websocket.onclose = function() {
+                        $('h1').css('color', 'red');
+                        // TODO:断线重连
+                    };
+
+                    websocket.onmessage = function(message) {
+                        console.log('===========message===========');
+                        console.log(message);
+                        var dv = new DataView(message.data);
+                        var cmd = dv.getUint32(0);
+                        var len = dv.getUint32(4);
+                        var sid = dv.getUint32(8);
+                        var seq = dv.getUint32(20);
+                        console.log('===========type===========');
+                        console.log('0x0' + cmd.toString(16));
+                        console.log('===========len===========');
+                        console.log(len);
+                        console.log('===========sid===========');
+                        console.log(sid);
+                        console.log('===========seq===========');
+                        console.log(seq);
+
+                        console.log('===========resp protobuffer msg===========');
+                        console.log(message.data.slice(24));
+                        var bufView = new Uint8Array(message.data.slice(24));
+                        console.log(onlineResponseMsg.decode(bufView));
+                        switch (cmd) {
+                            case 0x0401:
+                                var body = decodeUtf8(message.data.slice(24));
+                                $('div').prepend($('<p>', {
+                                    text: body
+                                }));
+                                break;
+                            case 0x0002:
+                                //心跳应答PONG
+                                console.log("PONG")
+                                break;
+                            case 0x0106:
+                                var body = decodeUtf8(message.data.slice(24));
+                                $('div').append($('<p>', {
+                                    text: "JOIN-ack: " + body
+                                }));
+                                break;
+                        }
+                    };
+                }
+            });
+
+
+
+            $('button').click(function(e) {
+                e.preventDefault();
+                //var msgUrl = 'http://10.58.89.236:48080/engine/room/msg?roomid=1000000015'
+                var msgUrl = 'http://10.154.252.32:48080/engine/room/msg?roomid=1000000015'
+                //var msgUrl = 'http://10.180.153.133:48080/engine/room/msg?roomid=1000000015'
+                var body = $('input').val()
+
+                $.post(msgUrl, body)
+                $('input').val('');
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <h1>WebSockets test</h1>
+    <form>
+        <input type="text" />
+        <button>Send</button>
+    </form>
+    <div></div>
+</body>
+
+</html>
