@@ -277,7 +277,7 @@ int chat_del_session(chat_tab_t *chat, uint64_t sid, uint64_t cid)
         return 0; /* Didn't find */
     }
 
-    /* > 从聊天室剔除 */
+    /* > 清理会话的ROOM信息 */
     param.chat = chat;
     param.session = session;
 
