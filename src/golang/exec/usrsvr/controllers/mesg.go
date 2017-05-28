@@ -650,7 +650,7 @@ func (ctx *UsrSvrCntx) send_kick(sid uint64, cid uint64, nid uint32, code uint32
  **输出参数: NONE
  **返    回:
  **     head: 协议头
- **     req: 请求内容
+ **     sub: SUB请求
  **     code: 错误码
  **     err: 错误描述
  **实现描述:
@@ -756,7 +756,7 @@ func (ctx *UsrSvrCntx) sub_failed(head *comm.MesgHeader,
  **     required string errmsg = 3;     // M|错误描述|字串|
  ** }
  **注意事项:
- **作    者: # Qifeng.zou # 2017.01.19 10:40:03 #
+ **作    者: # Qifeng.zou # 2017.05.20 23:33:56 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) sub_ack(head *comm.MesgHeader, sub *mesg.MesgSub) int {
 	/* > 设置协议体 */

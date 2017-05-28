@@ -419,6 +419,7 @@ func LsndRoomSendSubDataCb(sid uint64, cid uint64, _param interface{}) int {
 
 	/* > 是否订阅 */
 	if !ctx.chat.IsSub(sid, cid, head.GetCmd()) {
+		ctx.log.Debug("Didn't sub! sid:%d cid:%d cmd:0x%04X", sid, cid, head.GetCmd())
 		return 0
 	}
 

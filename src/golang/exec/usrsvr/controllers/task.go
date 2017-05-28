@@ -109,7 +109,7 @@ func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 
 	nation_num := len(nations)
 	for m := 0; m < nation_num; m += 1 {
-		ctx.log.Debug("Nation:%s", nations[m])
+		//ctx.log.Debug("Nation:%s", nations[m])
 		/* > 获取"国家/地区"对应的"运营商"列表 */
 		key := fmt.Sprintf(comm.IM_KEY_LSND_OP_ZSET, typ, nations[m])
 
@@ -125,7 +125,7 @@ func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 		for n := 0; n < operator_num; n += 1 {
 			opid, _ := strconv.ParseInt(operators[n], 10, 32)
 
-			ctx.log.Debug("    Operator:%d", uint32(opid))
+			//ctx.log.Debug("    Operator:%d", uint32(opid))
 			/* > 获取"运营商"对应的"IP+PORT"列表 */
 			key := fmt.Sprintf(comm.IM_KEY_LSND_IP_ZSET, typ, nations[m], uint32(opid))
 
@@ -137,7 +137,7 @@ func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 
 			iplist_num := len(iplist)
 			for k := 0; k < iplist_num; k += 1 {
-				ctx.log.Debug("    iplist:%s", iplist[k])
+				//ctx.log.Debug("    iplist:%s", iplist[k])
 				operator_set[uint32(opid)] = append(operator_set[uint32(opid)], iplist[k])
 			}
 		}

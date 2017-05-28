@@ -55,6 +55,8 @@ func LsndMesgCommHandler(conn *LsndConnExtra, cmd uint32, data []byte, length ui
 		return -1
 	}
 
+	ctx.log.Debug("Recv cmd [0x%04X] request!", cmd)
+
 	if !conn.IsStatus(CONN_STATUS_LOGIN) {
 		ctx.lws.Kick(conn.GetCid())
 		ctx.log.Error("Connection isn't online! sid:%d cid:%d", conn.GetSid(), conn.GetCid())
