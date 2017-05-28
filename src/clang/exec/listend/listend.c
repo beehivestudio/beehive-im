@@ -347,6 +347,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_ACC_REG_CB(ctx, CMD_PING, lsnd_mesg_ping_handler, ctx);
 
     LSND_ACC_REG_CB(ctx, CMD_ROOM_JOIN, lsnd_mesg_room_join_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_mesg_def_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_ROOM_QUIT, lsnd_mesg_room_quit_handler, ctx);
 
     /* 注册队列数据回调 */
@@ -356,12 +357,13 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
-    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_mesg_online_ack_handler, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_KICK, lsnd_mesg_kick_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_upmesg_online_ack_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_KICK, lsnd_upmesg_kick_handler, ctx);
 
-    LSND_RTQ_REG_CB(ctx, CMD_ROOM_JOIN_ACK, lsnd_mesg_room_join_ack_handler, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_mesg_room_chat_handler, ctx);
-    LSND_RTQ_REG_CB(ctx, CMD_ROOM_BC, lsnd_mesg_room_bc_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_JOIN_ACK, lsnd_upmesg_room_join_ack_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_upmesg_room_chat_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_BC, lsnd_upmesg_room_bc_handler, ctx);
 
     /* 注册定时任务回调 */
     lsnd_set_timer(ctx);

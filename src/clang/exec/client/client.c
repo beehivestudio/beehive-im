@@ -146,8 +146,10 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    /* > 设置应答命令 */
     sdk_cmd_add(ctx, CMD_PING, CMD_PONG);
     sdk_cmd_add(ctx, CMD_ROOM_JOIN, CMD_ROOM_JOIN_ACK);
+    sdk_cmd_add(ctx, CMD_ROOM_CHAT, CMD_ROOM_CHAT_ACK);
 
     sdk_register(ctx, CMD_PONG, (sdk_reg_cb_t)sdk_cmd_pong_handler, NULL);
 

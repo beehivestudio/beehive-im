@@ -190,7 +190,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_online_ack_handler
+ **函数名称: lsnd_upmesg_online_ack_handler
  **功    能: ONLINE应答处理
  **输入参数:
  **     type: 数据类型
@@ -214,7 +214,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
  **注意事项: 此时head.sid为cid.
  **作    者: # Qifeng.zou # 2016.09.20 23:38:38 #
  ******************************************************************************/
-int lsnd_mesg_online_ack_handler(int type, int orig, char *data, size_t len, void *args)
+int lsnd_upmesg_online_ack_handler(int type, int orig, char *data, size_t len, void *args)
 {
     MesgOnlineAck *ack;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
@@ -343,7 +343,7 @@ int lsnd_mesg_room_join_handler(lsnd_conn_extra_t *conn, int type, void *data, i
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_room_join_ack_handler
+ **函数名称: lsnd_upmesg_room_join_ack_handler
  **功    能: JOIN应答处理
  **输入参数:
  **     type: 数据类型
@@ -357,7 +357,7 @@ int lsnd_mesg_room_join_handler(lsnd_conn_extra_t *conn, int type, void *data, i
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.20 23:40:12 #
  ******************************************************************************/
-int lsnd_mesg_room_join_ack_handler(int type, int orig, char *data, size_t len, void *args)
+int lsnd_upmesg_room_join_ack_handler(int type, int orig, char *data, size_t len, void *args)
 {
     uint32_t gid;
     uint64_t cid;
@@ -558,7 +558,7 @@ static int lsnd_room_mesg_trav_send_handler(chat_sid2cid_item_t *item, lsnd_room
 }
 
 /******************************************************************************
- **函数名称: lsnd_mesg_room_chat_handler
+ **函数名称: lsnd_upmesg_room_chat_handler
  **功    能: 下发聊天室消息(下行)
  **输入参数:
  **     type: 数据类型
@@ -572,7 +572,7 @@ static int lsnd_room_mesg_trav_send_handler(chat_sid2cid_item_t *item, lsnd_room
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.09.25 01:24:45 #
  ******************************************************************************/
-int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void *args)
+int lsnd_upmesg_room_chat_handler(int type, int orig, void *data, size_t len, void *args)
 {
     uint32_t gid;
     MesgRoomChat *mesg;
@@ -611,7 +611,7 @@ int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void
 }
 
 /******************************************************************************
- **函数名称: lsnd_mesg_room_bc_handler
+ **函数名称: lsnd_upmesg_room_bc_handler
  **功    能: 下发聊天室广播消息(下行)
  **输入参数:
  **     type: 数据类型
@@ -625,7 +625,7 @@ int lsnd_mesg_room_chat_handler(int type, int orig, void *data, size_t len, void
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2017.05.08 22:29:58 #
  ******************************************************************************/
-int lsnd_mesg_room_bc_handler(int type, int orig, void *data, size_t len, void *args)
+int lsnd_upmesg_room_bc_handler(int type, int orig, void *data, size_t len, void *args)
 {
     MesgRoomBc *mesg;
     lsnd_room_mesg_param_t param;
@@ -665,7 +665,7 @@ int lsnd_mesg_room_bc_handler(int type, int orig, void *data, size_t len, void *
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: lsnd_mesg_kick_handler
+ **函数名称: lsnd_upmesg_kick_handler
  **功    能: 将某连接KICK下线(下行)
  **输入参数:
  **     type: 数据类型
@@ -679,7 +679,7 @@ int lsnd_mesg_room_bc_handler(int type, int orig, void *data, size_t len, void *
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2016.12.17 06:27:21 #
  ******************************************************************************/
-int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *args)
+int lsnd_upmesg_kick_handler(int type, int orig, void *data, size_t len, void *args)
 {
     uint64_t cid;
     MesgKick *kick;
@@ -715,6 +715,44 @@ int lsnd_mesg_kick_handler(int type, int orig, void *data, size_t len, void *arg
 
     cid = conn->cid;
     lsnd_kick_add(lsnd, conn); /* 放入被踢列表 */
+
+    /* > 转发被踢原因 */
+    acc_async_send(lsnd->access, type, cid, data, len);
+
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsnd_upmesg_def_handler
+ **功    能: 默认消息处理(下行)
+ **输入参数:
+ **     type: 数据类型
+ **     orig: 源结点ID
+ **     data: 需要转发的数据
+ **     len: 数据长度
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
+ **作    者: # Qifeng.zou # 2017.05.28 14:12:43 #
+ ******************************************************************************/
+int lsnd_upmesg_def_handler(int type, int orig, void *data, size_t len, void *args)
+{
+    uint64_t cid;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
+
+    /* > 转化字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+
+    /* > 查找对应的连接 */
+    cid = (0 == hhead.cid)? chat_get_cid_by_sid(lsnd->chat_tab, hhead.sid) : hhead.cid;
 
     /* > 转发被踢原因 */
     acc_async_send(lsnd->access, type, cid, data, len);
