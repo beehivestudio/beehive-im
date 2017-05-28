@@ -582,7 +582,7 @@ int sdk_send_mgr_trav(sdk_cntx_t *ctx)
             break;
         }
 
-        log_debug(ctx->log, "Clean timeout item! cmd:%d seq:%d", item->cmd, item->seq);
+        log_debug(ctx->log, "Clean timeout item! cmd:0x%04X seq:%d", item->cmd, item->seq);
 
         sdk_send_item_clean_timeout_hdl(ctx, item);
     }
@@ -741,7 +741,7 @@ int sdk_send_fail_hdl(sdk_cntx_t *ctx, void *addr, size_t len)
 
     MESG_HEAD_NTOH(head, &hhead);
 
-    log_debug(ctx->log, "Send fail! cmd:%d seq:%d", hhead.type, hhead.seq);
+    log_debug(ctx->log, "Send fail! cmd:0x%04X seq:%d", hhead.type, hhead.seq);
 
     /* > 更新发送状态 */
     item = sdk_send_mgr_query(ctx, hhead.seq, WRLOCK);

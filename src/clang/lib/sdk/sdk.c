@@ -159,7 +159,7 @@ int sdk_cmd_add(sdk_cntx_t *ctx, uint32_t req, uint32_t ack)
     item->req = req;
 
     if (avl_insert(ctx->cmd, item)) {
-        log_error(ctx->log, "Register maybe repeat! cmd:%d ack:%d!", req, ack);
+        log_error(ctx->log, "Register maybe repeat! req:0x%04X ack:0x%04X!", req, ack);
         free(item);
         return SDK_ERR_REPEAT_REG;
     }
@@ -198,7 +198,7 @@ int sdk_register(sdk_cntx_t *ctx, uint32_t cmd, sdk_reg_cb_t proc, void *param)
     item->param = param;
 
     if (avl_insert(ctx->reg, item)) {
-        log_error(ctx->log, "Register maybe repeat! cmd:%d!", cmd);
+        log_error(ctx->log, "Register maybe repeat! cmd:0x%04X!", cmd);
         free(item);
         return SDK_ERR_REPEAT_REG;
     }
