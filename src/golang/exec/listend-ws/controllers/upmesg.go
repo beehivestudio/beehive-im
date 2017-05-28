@@ -30,6 +30,7 @@ func (ctx *LsndCntx) UpMesgRegister() {
 	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndUpMesgRoomJoinAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndUpMesgRoomChatHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_CHAT_ACK, LsndUpMesgCommHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndUpMesgRoomBcHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_KICK, LsndUpMesgRoomKickHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, LsndUpMesgRoomUsrNumHandler, ctx)

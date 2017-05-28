@@ -157,15 +157,13 @@ int main(int argc, char *argv[])
 
     Sleep(1);
 
-    room_join(ctx, 1000000015);
-
-    Sleep(1);
-
     while (1) {
+        room_join(ctx, 1000000015);
         Sleep(1);
         room_chat(ctx, 1000000015);
         Sleep(1);
         sdk_async_send(ctx, CMD_PING, NULL, 0, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
+        Sleep(1);
     }
 
     return 0;
