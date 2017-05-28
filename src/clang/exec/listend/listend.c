@@ -357,6 +357,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
         return LSND_ERR; \
     }
 
+    LSND_RTQ_REG_CB(ctx, CMD_UNKNOWN, lsnd_upmesg_def_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_upmesg_online_ack_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_KICK, lsnd_upmesg_kick_handler, ctx);
 
@@ -364,6 +365,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_upmesg_room_chat_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT_ACK, lsnd_upmesg_def_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_BC, lsnd_upmesg_room_bc_handler, ctx);
+    LSND_RTQ_REG_CB(ctx, CMD_ROOM_USR_NUM, lsnd_upmesg_room_usr_num_handler, ctx);
 
     /* 注册定时任务回调 */
     lsnd_set_timer(ctx);
