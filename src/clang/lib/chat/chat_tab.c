@@ -218,15 +218,22 @@ static int chat_room_destroy(chat_tab_t *chat, chat_room_t *room)
 }
 
 /* 会话ID哈希回调 */
-static uint64_t chat_sid_hash_cb(uint64_t *sid)
+static uint64_t chat_sid_hash_cb(chat_sid2cid_item_t *item)
 {
-    return (uint64_t)sid;
+    return (uint64_t)item->sid;
 }
 
 /* 会话ID比较回调 */
-static int chat_sid_cmp_cb(uint64_t *s1, uint64_t *s2)
+static int chat_sid_cmp_cb(chat_sid2cid_item_t *item1, chat_sid2cid_item_t *item2)
 {
-    return (int)((uint64_t)s1 - (uint64_t)s2);
+    int diff;
+
+    diff = (int)(item1->sid - item2->sid);
+    if (0 != diff) {
+        return diff;
+    }
+
+    return (int)(item1->cid - item2->cid);
 }
 
 /******************************************************************************
