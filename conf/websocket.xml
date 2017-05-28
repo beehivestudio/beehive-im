@@ -29,9 +29,9 @@
 
     <!-- 转发层配置 -->
     <FRWDER ADDR="127.0.0.1:28888"> <!-- RTMQ代理 -->
-      <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->
-      <WORKER-NUM>10</WORKER-NUM>                 <!-- 工作协程数 -->
-      <SEND-CHAN-LEN>20000</SEND-CHAN-LEN>        <!-- 发送队列长度 -->
-      <RECV-CHAN-LEN>20000</RECV-CHAN-LEN>        <!-- 接收队列长度 -->
+        <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->
+        <WORKER-NUM>10</WORKER-NUM>                 <!-- 工作协程数 -->
+        <SEND-CHAN-LEN>20000</SEND-CHAN-LEN>        <!-- 发送队列长度 -->
+        <RECV-CHAN-LEN>20000</RECV-CHAN-LEN>        <!-- 接收队列长度 -->
     </FRWDER>
 </LISTEND>
