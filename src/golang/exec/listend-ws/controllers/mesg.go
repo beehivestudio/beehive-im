@@ -29,6 +29,11 @@ func (ctx *LsndCntx) MesgRegister() {
 	ctx.callback.Register(comm.CMD_UNSUB, LsndMesgUnsubHandler, ctx)     /* 取消订阅 */
 
 	/* 聊天室消息 */
+	ctx.callback.Register(comm.CMD_ROOM_CREAT, LsndMesgCommHandler, ctx)    /* 创建聊天室 */
+	ctx.callback.Register(comm.CMD_ROOM_DISMISS, LsndMesgCommHandler, ctx)  /* 解散聊天室 */
+	ctx.callback.Register(comm.CMD_ROOM_KICK, LsndMesgCommHandler, ctx)     /* 踢出聊天室 */
+	ctx.callback.Register(comm.CMD_ROOM_CHAT, LsndMesgCommHandler, ctx)     /* 聊天室消息 */
+	ctx.callback.Register(comm.CMD_ROOM_BC, LsndMesgCommHandler, ctx)       /* 聊天室广播 */
 	ctx.callback.Register(comm.CMD_ROOM_QUIT, LsndMesgRoomQuitHandler, ctx) /* 退出聊天室 */
 }
 

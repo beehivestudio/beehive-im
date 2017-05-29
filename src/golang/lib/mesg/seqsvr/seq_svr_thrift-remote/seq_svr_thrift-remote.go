@@ -22,6 +22,7 @@ func Usage() {
 	fmt.Fprintln(os.Stderr, "\nFunctions:")
 	fmt.Fprintln(os.Stderr, "  i64 AllocSid()")
 	fmt.Fprintln(os.Stderr, "  i64 QuerySeqBySid(i64 sid)")
+	fmt.Fprintln(os.Stderr, "  i64 AllocRoomId()")
 	fmt.Fprintln(os.Stderr)
 	os.Exit(0)
 }
@@ -129,13 +130,21 @@ func main() {
 			fmt.Fprintln(os.Stderr, "QuerySeqBySid requires 1 args")
 			flag.Usage()
 		}
-		argvalue0, err10 := (strconv.ParseInt(flag.Arg(1), 10, 64))
-		if err10 != nil {
+		argvalue0, err14 := (strconv.ParseInt(flag.Arg(1), 10, 64))
+		if err14 != nil {
 			Usage()
 			return
 		}
 		value0 := argvalue0
 		fmt.Print(client.QuerySeqBySid(value0))
+		fmt.Print("\n")
+		break
+	case "AllocRoomId":
+		if flag.NArg()-1 != 0 {
+			fmt.Fprintln(os.Stderr, "AllocRoomId requires 0 args")
+			flag.Usage()
+		}
+		fmt.Print(client.AllocRoomId())
 		fmt.Print("\n")
 		break
 	case "":

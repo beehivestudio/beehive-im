@@ -7157,7 +7157,7 @@ const ProtobufCMessageDescriptor mesg_group_mgr_del_ntc__descriptor =
   (ProtobufCMessageInit) mesg_group_mgr_del_ntc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_creat__field_descriptors[4] =
+static const ProtobufCFieldDescriptor mesg_room_creat__field_descriptors[3] =
 {
   {
     "uid",
@@ -7172,20 +7172,8 @@ static const ProtobufCFieldDescriptor mesg_room_creat__field_descriptors[4] =
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "rid",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_UINT64,
-    0,   /* quantifier_offset */
-    offsetof(MesgRoomCreat, rid),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
     "name",
-    3,
+    2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -7197,7 +7185,7 @@ static const ProtobufCFieldDescriptor mesg_room_creat__field_descriptors[4] =
   },
   {
     "desc",
-    4,
+    3,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -7209,15 +7197,14 @@ static const ProtobufCFieldDescriptor mesg_room_creat__field_descriptors[4] =
   },
 };
 static const unsigned mesg_room_creat__field_indices_by_name[] = {
-  3,   /* field[3] = desc */
-  2,   /* field[2] = name */
-  1,   /* field[1] = rid */
+  2,   /* field[2] = desc */
+  1,   /* field[1] = name */
   0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_room_creat__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 4 }
+  { 0, 3 }
 };
 const ProtobufCMessageDescriptor mesg_room_creat__descriptor =
 {
@@ -7227,7 +7214,7 @@ const ProtobufCMessageDescriptor mesg_room_creat__descriptor =
   "MesgRoomCreat",
   "",
   sizeof(MesgRoomCreat),
-  4,
+  3,
   mesg_room_creat__field_descriptors,
   mesg_room_creat__field_indices_by_name,
   1,  mesg_room_creat__number_ranges,

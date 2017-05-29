@@ -3,6 +3,8 @@
 #include "cmd_list.h"
 #include "mesg.pb-c.h"
 
+int room_creat(sdk_cntx_t *ctx);
+
 /* > 设置配置信息 */
 void client_set_conf(sdk_conf_t *conf)
 {
@@ -66,6 +68,37 @@ int sdk_send_cb(uint16_t cmd, const void *orig, size_t size,
             fprintf(stderr, "Call %s() cmd:0x%04X is unknown.\n", __func__, cmd);
             break;
     }
+    return 0;
+}
+
+/* 创建聊天室 */
+int room_creat(sdk_cntx_t *ctx)
+{
+    void *addr;
+    size_t size;
+    sdk_conf_t *conf = &ctx->conf;
+    MesgRoomCreat creat = MESG_ROOM_CREAT__INIT;
+
+    /* > 设置ONLINE字段 */
+    creat.uid = conf->uid;
+    creat.name = "Qifeng";
+    creat.desc = "Friend";
+
+    /* > 申请内存空间 */
+    size = mesg_room_creat__get_packed_size(&creat);
+
+    addr = (void *)calloc(1, size);
+    if (NULL == addr) {
+        return SDK_ERR;
+    }
+
+    mesg_room_creat__pack(&creat, addr);
+
+    /* > 发起CREAT请求 */
+    sdk_async_send(ctx, CMD_ROOM_CREAT, addr, size, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
+
+    free(addr);
+
     return 0;
 }
 
@@ -148,6 +181,7 @@ int main(int argc, char *argv[])
 
     /* > 设置应答命令 */
     sdk_cmd_add(ctx, CMD_PING, CMD_PONG);
+    sdk_cmd_add(ctx, CMD_ROOM_CREAT, CMD_ROOM_CREAT_ACK);
     sdk_cmd_add(ctx, CMD_ROOM_JOIN, CMD_ROOM_JOIN_ACK);
     sdk_cmd_add(ctx, CMD_ROOM_CHAT, CMD_ROOM_CHAT_ACK);
 
@@ -158,6 +192,8 @@ int main(int argc, char *argv[])
     Sleep(1);
 
     while (1) {
+        room_creat(ctx);
+        Sleep(1);
         room_join(ctx, 1000000015);
         Sleep(1);
         room_chat(ctx, 1000000015);

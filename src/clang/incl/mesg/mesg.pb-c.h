@@ -833,13 +833,12 @@ struct  _MesgRoomCreat
 {
   ProtobufCMessage base;
   uint64_t uid;
-  uint64_t rid;
   char *name;
   char *desc;
 };
 #define MESG_ROOM_CREAT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_creat__descriptor) \
-    , 0, 0, NULL, NULL }
+    , 0, NULL, NULL }
 
 
 struct  _MesgRoomCreatAck

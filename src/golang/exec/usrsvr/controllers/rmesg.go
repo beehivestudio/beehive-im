@@ -13,6 +13,7 @@ import (
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/im"
 	"beehive-im/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/mesg/seqsvr"
 )
 
 // 聊天室
@@ -169,6 +170,9 @@ func (ctx *UsrSvrCntx) room_creat_ack(
 	/* > 发送协议包 */
 	ctx.frwder.AsyncSend(comm.CMD_ROOM_CREAT_ACK, p.Buff, uint32(len(p.Buff)))
 
+	ctx.log.Debug("Create room success! rid:%d uid:%d name:%s desc:%s",
+		rid, req.GetUid(), req.GetName(), req.GetDesc())
+
 	return 0
 }
 
@@ -182,21 +186,29 @@ func (ctx *UsrSvrCntx) room_creat_ack(
  **     err: 错误描述
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2017.01.19 22:24:23 #
+ **作    者: # Qifeng.zou # 2017.05.29 08:48:19 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) alloc_rid() (rid uint64, err error) {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	/* > 申请聊天室ID */
-	rid_str, err := redis.String(rds.Do("INCR", comm.CHAT_KEY_RID_INCR))
+	/* > 获取连接对象 */
+	conn, err := ctx.seqsvr_pool.Get()
 	if nil != err {
+		ctx.log.Error("Get seqsvr connection pool failed! errmsg:%s", err.Error())
 		return 0, err
 	}
 
-	rid_int, _ := strconv.ParseInt(rid_str, 10, 64)
+	client := conn.(*seqsvr.SeqSvrThriftClient)
+	defer ctx.seqsvr_pool.Put(client, false)
 
-	return uint64(rid_int), nil
+	/* > 申请聊天室ID */
+	_rid, err := client.AllocRoomId()
+	if nil != err {
+		ctx.log.Error("Alloc rid failed! errmsg:%s", err.Error())
+		return 0, err
+	}
+
+	ctx.log.Debug("Alloc rid success! rid:%d", rid)
+
+	return uint64(_rid), nil
 }
 
 /******************************************************************************
@@ -279,7 +291,7 @@ func UsrSvrRoomCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, 
 		return -1
 	}
 
-	ctx.log.Debug("Recv join request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
+	ctx.log.Debug("Recv room-creat request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
 
 	/* > 解析创建请求 */
 	head, req, code, err := ctx.room_creat_parse(data)

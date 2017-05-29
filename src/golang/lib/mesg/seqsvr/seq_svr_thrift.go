@@ -19,6 +19,7 @@ type SeqSvrThrift interface {
 	// Parameters:
 	//  - Sid
 	QuerySeqBySid(sid int64) (r int64, err error)
+	AllocRoomId() (r int64, err error)
 }
 
 type SeqSvrThriftClient struct {
@@ -162,6 +163,62 @@ func (p *SeqSvrThriftClient) recvQuerySeqBySid() (value int64, err error) {
 	return
 }
 
+func (p *SeqSvrThriftClient) AllocRoomId() (r int64, err error) {
+	if err = p.sendAllocRoomId(); err != nil {
+		return
+	}
+	return p.recvAllocRoomId()
+}
+
+func (p *SeqSvrThriftClient) sendAllocRoomId() (err error) {
+	oprot := p.OutputProtocol
+	if oprot == nil {
+		oprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.OutputProtocol = oprot
+	}
+	p.SeqId++
+	oprot.WriteMessageBegin("AllocRoomId", thrift.CALL, p.SeqId)
+	args8 := NewAllocRoomIdArgs()
+	err = args8.Write(oprot)
+	oprot.WriteMessageEnd()
+	oprot.Flush()
+	return
+}
+
+func (p *SeqSvrThriftClient) recvAllocRoomId() (value int64, err error) {
+	iprot := p.InputProtocol
+	if iprot == nil {
+		iprot = p.ProtocolFactory.GetProtocol(p.Transport)
+		p.InputProtocol = iprot
+	}
+	_, mTypeId, seqId, err := iprot.ReadMessageBegin()
+	if err != nil {
+		return
+	}
+	if mTypeId == thrift.EXCEPTION {
+		error10 := thrift.NewTApplicationException(thrift.UNKNOWN_APPLICATION_EXCEPTION, "Unknown Exception")
+		var error11 error
+		error11, err = error10.Read(iprot)
+		if err != nil {
+			return
+		}
+		if err = iprot.ReadMessageEnd(); err != nil {
+			return
+		}
+		err = error11
+		return
+	}
+	if p.SeqId != seqId {
+		err = thrift.NewTApplicationException(thrift.BAD_SEQUENCE_ID, "ping failed: out of sequence response")
+		return
+	}
+	result9 := NewAllocRoomIdResult()
+	err = result9.Read(iprot)
+	iprot.ReadMessageEnd()
+	value = result9.Success
+	return
+}
+
 type SeqSvrThriftProcessor struct {
 	processorMap map[string]thrift.TProcessorFunction
 	handler      SeqSvrThrift
@@ -182,10 +239,11 @@ func (p *SeqSvrThriftProcessor) ProcessorMap() map[string]thrift.TProcessorFunct
 
 func NewSeqSvrThriftProcessor(handler SeqSvrThrift) *SeqSvrThriftProcessor {
 
-	self8 := &SeqSvrThriftProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
-	self8.processorMap["AllocSid"] = &seqSvrThriftProcessorAllocSid{handler: handler}
-	self8.processorMap["QuerySeqBySid"] = &seqSvrThriftProcessorQuerySeqBySid{handler: handler}
-	return self8
+	self12 := &SeqSvrThriftProcessor{handler: handler, processorMap: make(map[string]thrift.TProcessorFunction)}
+	self12.processorMap["AllocSid"] = &seqSvrThriftProcessorAllocSid{handler: handler}
+	self12.processorMap["QuerySeqBySid"] = &seqSvrThriftProcessorQuerySeqBySid{handler: handler}
+	self12.processorMap["AllocRoomId"] = &seqSvrThriftProcessorAllocRoomId{handler: handler}
+	return self12
 }
 
 func (p *SeqSvrThriftProcessor) Process(iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
@@ -198,12 +256,12 @@ func (p *SeqSvrThriftProcessor) Process(iprot, oprot thrift.TProtocol) (success 
 	}
 	iprot.Skip(thrift.STRUCT)
 	iprot.ReadMessageEnd()
-	x9 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
+	x13 := thrift.NewTApplicationException(thrift.UNKNOWN_METHOD, "Unknown function "+name)
 	oprot.WriteMessageBegin(name, thrift.EXCEPTION, seqId)
-	x9.Write(oprot)
+	x13.Write(oprot)
 	oprot.WriteMessageEnd()
 	oprot.Flush()
-	return false, x9
+	return false, x13
 
 }
 
@@ -276,6 +334,49 @@ func (p *seqSvrThriftProcessorQuerySeqBySid) Process(seqId int32, iprot, oprot t
 		return
 	}
 	if err2 := oprot.WriteMessageBegin("QuerySeqBySid", thrift.REPLY, seqId); err2 != nil {
+		err = err2
+	}
+	if err2 := result.Write(oprot); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 := oprot.WriteMessageEnd(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err2 := oprot.Flush(); err == nil && err2 != nil {
+		err = err2
+	}
+	if err != nil {
+		return
+	}
+	return true, err
+}
+
+type seqSvrThriftProcessorAllocRoomId struct {
+	handler SeqSvrThrift
+}
+
+func (p *seqSvrThriftProcessorAllocRoomId) Process(seqId int32, iprot, oprot thrift.TProtocol) (success bool, err thrift.TException) {
+	args := NewAllocRoomIdArgs()
+	if err = args.Read(iprot); err != nil {
+		iprot.ReadMessageEnd()
+		x := thrift.NewTApplicationException(thrift.PROTOCOL_ERROR, err.Error())
+		oprot.WriteMessageBegin("AllocRoomId", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return
+	}
+	iprot.ReadMessageEnd()
+	result := NewAllocRoomIdResult()
+	if result.Success, err = p.handler.AllocRoomId(); err != nil {
+		x := thrift.NewTApplicationException(thrift.INTERNAL_ERROR, "Internal error processing AllocRoomId: "+err.Error())
+		oprot.WriteMessageBegin("AllocRoomId", thrift.EXCEPTION, seqId)
+		x.Write(oprot)
+		oprot.WriteMessageEnd()
+		oprot.Flush()
+		return
+	}
+	if err2 := oprot.WriteMessageBegin("AllocRoomId", thrift.REPLY, seqId); err2 != nil {
 		err = err2
 	}
 	if err2 := result.Write(oprot); err == nil && err2 != nil {
@@ -603,4 +704,141 @@ func (p *QuerySeqBySidResult) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("QuerySeqBySidResult(%+v)", *p)
+}
+
+type AllocRoomIdArgs struct {
+}
+
+func NewAllocRoomIdArgs() *AllocRoomIdArgs {
+	return &AllocRoomIdArgs{}
+}
+
+func (p *AllocRoomIdArgs) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error", p)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *AllocRoomIdArgs) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("AllocRoomId_args"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("%T write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("%T write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *AllocRoomIdArgs) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AllocRoomIdArgs(%+v)", *p)
+}
+
+type AllocRoomIdResult struct {
+	Success int64 `thrift:"success,0"`
+}
+
+func NewAllocRoomIdResult() *AllocRoomIdResult {
+	return &AllocRoomIdResult{}
+}
+
+func (p *AllocRoomIdResult) Read(iprot thrift.TProtocol) error {
+	if _, err := iprot.ReadStructBegin(); err != nil {
+		return fmt.Errorf("%T read error", p)
+	}
+	for {
+		_, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
+		if err != nil {
+			return fmt.Errorf("%T field %d read error: %s", p, fieldId, err)
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		switch fieldId {
+		case 0:
+			if err := p.readField0(iprot); err != nil {
+				return err
+			}
+		default:
+			if err := iprot.Skip(fieldTypeId); err != nil {
+				return err
+			}
+		}
+		if err := iprot.ReadFieldEnd(); err != nil {
+			return err
+		}
+	}
+	if err := iprot.ReadStructEnd(); err != nil {
+		return fmt.Errorf("%T read struct end error: %s", p, err)
+	}
+	return nil
+}
+
+func (p *AllocRoomIdResult) readField0(iprot thrift.TProtocol) error {
+	if v, err := iprot.ReadI64(); err != nil {
+		return fmt.Errorf("error reading field 0: %s")
+	} else {
+		p.Success = v
+	}
+	return nil
+}
+
+func (p *AllocRoomIdResult) Write(oprot thrift.TProtocol) error {
+	if err := oprot.WriteStructBegin("AllocRoomId_result"); err != nil {
+		return fmt.Errorf("%T write struct begin error: %s", p, err)
+	}
+	switch {
+	default:
+		if err := p.writeField0(oprot); err != nil {
+			return err
+		}
+	}
+	if err := oprot.WriteFieldStop(); err != nil {
+		return fmt.Errorf("%T write field stop error: %s", err)
+	}
+	if err := oprot.WriteStructEnd(); err != nil {
+		return fmt.Errorf("%T write struct stop error: %s", err)
+	}
+	return nil
+}
+
+func (p *AllocRoomIdResult) writeField0(oprot thrift.TProtocol) (err error) {
+	if err := oprot.WriteFieldBegin("success", thrift.I64, 0); err != nil {
+		return fmt.Errorf("%T write field begin error 0:success: %s", p, err)
+	}
+	if err := oprot.WriteI64(int64(p.Success)); err != nil {
+		return fmt.Errorf("%T.success (0) field write error: %s", p)
+	}
+	if err := oprot.WriteFieldEnd(); err != nil {
+		return fmt.Errorf("%T write field end error 0:success: %s", p, err)
+	}
+	return err
+}
+
+func (p *AllocRoomIdResult) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AllocRoomIdResult(%+v)", *p)
 }

@@ -24,6 +24,16 @@ CREATE TABLE IF NOT EXISTS IM_SEQ_GEN_TAB(
 
     PRIMARY KEY(id)
     );
+
+# 创建聊天室RID生成表
+CREATE TABLE IF NOT EXISTS IM_RID_GEN_TAB(
+    id tinyint NOT NULL default 0 COMMENT '编号 -- 无实际意义',
+    rid bigint NOT NULL default 1 COMMENT '聊天室ID',
+
+    PRIMARY KEY(id)
+    );
+
+
 quit"
 
 idx=0
