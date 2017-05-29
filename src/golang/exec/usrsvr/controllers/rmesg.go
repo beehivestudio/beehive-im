@@ -206,7 +206,7 @@ func (ctx *UsrSvrCntx) alloc_rid() (rid uint64, err error) {
 		return 0, err
 	}
 
-	ctx.log.Debug("Alloc rid success! rid:%d", rid)
+	ctx.log.Debug("Alloc rid success! rid:%d", _rid)
 
 	return uint64(_rid), nil
 }
