@@ -212,6 +212,42 @@ func (ctx *UsrSvrCntx) alloc_rid() (rid uint64, err error) {
 }
 
 /******************************************************************************
+ **函数名称: room_add
+ **功    能: 添加聊天室
+ **输入参数:
+ **     rid: 聊天室ID
+ **     req: 创建请求
+ **输出参数: NONE
+ **返    回: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.05.29 20:37:40 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
+	/* > 准备SQL语句 */
+	sql := fmt.Sprintf("INSERT INTO CHAT_ROOM_INFO_%d(rid, name, status, description, create_time, update_time, owner) VALUES(?, ?, ?, ?, ?, ?, ?)",
+		rid%256)
+
+	stmt, err := ctx.userdb.Prepare(sql)
+	if nil != err {
+		ctx.log.Error("Prepare sql failed! sql:%s errmsg:%s", sql, err.Error())
+		return err
+	}
+
+	defer stmt.Close()
+
+	/* > 执行SQL语句 */
+	_, err = stmt.Exec(rid, req.GetName(), chat.ROOM_STAT_OPEN,
+		req.GetDesc(), time.Now().Unix(), time.Now().Unix(), req.GetUid())
+	if nil != err {
+		ctx.log.Error("Add rid failed! errmsg:%s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+/******************************************************************************
  **函数名称: room_creat_handler
  **功    能: ROOM-CREAT处理
  **输入参数:
@@ -240,6 +276,12 @@ func (ctx *UsrSvrCntx) room_creat_handler(
 	rid, err = ctx.alloc_rid()
 	if nil != err {
 		ctx.log.Error("Alloc rid failed! errmsg:%s", err.Error())
+		return 0, err
+	}
+
+	err = ctx.room_add(rid, req)
+	if nil != err {
+		ctx.log.Error("Room add failed! errmsg:%s", err.Error())
 		return 0, err
 	}
 
