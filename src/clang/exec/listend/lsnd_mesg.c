@@ -584,7 +584,6 @@ int lsnd_upmesg_room_chat_handler(int type, int orig, void *data, size_t len, vo
     MESG_HEAD_NTOH(head, &hhead);
 
     MESG_HEAD_PRINT(lsnd->log, &hhead)
-    log_debug(lsnd->log, "body:%s", head->body);
 
     /* > 解压PROTO-BUF */
     mesg = mesg_room_chat__unpack(NULL, hhead.length, (void *)(head + 1));

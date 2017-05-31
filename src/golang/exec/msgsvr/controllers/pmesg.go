@@ -117,6 +117,8 @@ func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
 func (ctx *MsgSvrCntx) chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgChatAck{
+		Orig:   proto.Uint64(req.GetOrig()),
+		Dest:   proto.Uint64(req.GetDest()),
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -196,7 +198,11 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 			continue
 		}
 
-		ctx.send_data(comm.CMD_CHAT, uint64(sid), 0, uint32(attr.GetNid()),
+		ctx.log.Debug("uid:%d sid:%d cid:%d nid:%d!",
+			req.GetOrig(), sid, attr.GetCid(), attr.GetNid())
+
+		ctx.send_data(comm.CMD_CHAT, uint64(sid),
+			uint64(attr.GetCid()), uint32(attr.GetNid()),
 			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -219,12 +225,17 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 		if nil == attr {
 			continue
 		} else if 0 == attr.GetNid() {
-			continue
-		} else if uint64(attr.GetUid()) != req.GetOrig() {
+			ctx.log.Error("uid:%d sid:%d cid:%d nid:%d!",
+				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
 			continue
 		} else if uint64(attr.GetUid()) != req.GetDest() {
+			ctx.log.Error("uid:%d sid:%d cid:%d nid:%d!",
+				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
 			continue
 		}
+
+		ctx.log.Debug("uid:%d sid:%d cid:%d nid:%d!",
+			req.GetDest(), sid, attr.GetCid(), attr.GetNid())
 
 		ctx.send_data(comm.CMD_CHAT, uint64(sid), 0, uint32(attr.GetNid()),
 			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
