@@ -463,7 +463,7 @@ int rtmq_proxy_async_send(rtmq_proxy_t *pxy, int type, const void *data, size_t 
 
     memcpy(head+1, data, size);
 
-    log_debug(pxy->log, "rq:%p Head type:%d nid:%d length:%d flag:%d chksum:%d!",
+    log_debug(pxy->log, "rq:%p Head type:0x%04X nid:%d length:%d flag:%d chksum:%d!",
             pxy->sendq[idx]->ring, head->type, head->nid, head->length, head->flag, head->chksum);
 
     /* > 放入发送队列 */
