@@ -54,6 +54,8 @@ int lws_recv_handler(struct lws_context *lws,
                 return lws_mesg_room_chat_send_handler(lws, wsi, ctx, session);
             }
             return -1;
+        case CMD_CHAT:
+            return lws_mesg_chat_send_handler(lws, wsi, ctx, session);
         default:
             return 0;
     }
@@ -66,6 +68,7 @@ int lws_send_handler(struct lws_context *lws,
         struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session, void *in)
 {
     int n;
+    mesg_header_t head;
     lws_send_item_t *item;
     static time_t ping_tm;
     time_t ctm = time(NULL);
@@ -76,6 +79,7 @@ int lws_send_handler(struct lws_context *lws,
         if (0 != ping_times) {
             lws_mesg_ping_handler(lws, wsi, ctx, session);
             lws_mesg_sub(lws, wsi, ctx, session, CMD_ROOM_USR_NUM);
+            lws_mesg_chat_send_handler(lws, wsi, ctx, session);
             lws_mesg_room_chat_send_handler(lws, wsi, ctx, session);
             //lws_mesg_room_quit_handler(lws, wsi, ctx, session);
         }
@@ -90,9 +94,14 @@ int lws_send_handler(struct lws_context *lws,
             break;
         }
 
+        MESG_HEAD_NTOH((mesg_header_t *)(item->addr + LWS_SEND_BUFFER_PRE_PADDING), &head);
+        fprintf(stderr, "Send data! cmd:0x%04X\n", head.type);
+
+
         n = lws_write(wsi, (unsigned char *)item->addr+LWS_SEND_BUFFER_PRE_PADDING,
                 item->len, LWS_WRITE_BINARY);
         if (n < 0) {
+            fprintf(stderr, "Send data failed!\n");
             return -1;
         }
         else if (n < (int)item->len) {

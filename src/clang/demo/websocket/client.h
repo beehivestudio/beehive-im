@@ -2,6 +2,7 @@
 #define __CLIENT_H__
 
 #define AWS_SID             (5) // 会话ID
+#define AWS_UID             (18610485118) // 会话ID
 #define AWS_SEND_BUF_LEN    (2048)  // 发送缓存的长度
 
 
@@ -67,6 +68,7 @@ int lws_mesg_room_join_ack_handler(mesg_header_t *head, void *body);
 
 int lws_mesg_room_quit_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session);
 
+int lws_mesg_chat_send_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session);
 int lws_mesg_room_chat_send_handler(struct lws_context *lws, struct lws *wsi, lws_cntx_t *ctx, lws_session_data_t *session);
 
 #endif /*__CLIENT_H__*/
