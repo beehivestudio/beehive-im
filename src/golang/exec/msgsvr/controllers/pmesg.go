@@ -225,7 +225,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 		if nil == attr {
 			continue
 		} else if 0 == attr.GetNid() {
-			ctx.log.Error("uid:%d sid:%d cid:%d nid:%d!",
+			ctx.log.Error("Nid is invalid! uid:%d sid:%d cid:%d nid:%d!",
 				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
 			continue
 		} else if uint64(attr.GetUid()) != req.GetDest() {
@@ -237,7 +237,7 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 		ctx.log.Debug("uid:%d sid:%d cid:%d nid:%d!",
 			req.GetDest(), sid, attr.GetCid(), attr.GetNid())
 
-		ctx.send_data(comm.CMD_CHAT, uint64(sid), 0, uint32(attr.GetNid()),
+		ctx.send_data(comm.CMD_CHAT, uint64(sid), attr.GetCid(), uint32(attr.GetNid()),
 			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
 	}
 
@@ -282,6 +282,8 @@ func MsgSvrChatHandler(cmd uint32, orig uint32,
 		ctx.chat_failed(head, req, code, err.Error())
 		return -1
 	}
+
+	ctx.log.Debug("Uid [%d] send chat to uid [%d]!", req.GetOrig(), req.GetDest())
 
 	/* > 进行业务处理 */
 	code, err = ctx.chat_handler(head, req, data)
