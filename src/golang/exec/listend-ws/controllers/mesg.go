@@ -28,6 +28,9 @@ func (ctx *LsndCntx) MesgRegister() {
 	ctx.callback.Register(comm.CMD_SUB, LsndMesgCommHandler, ctx)        /* 订阅请求 */
 	ctx.callback.Register(comm.CMD_UNSUB, LsndMesgUnsubHandler, ctx)     /* 取消订阅 */
 
+	/* 私聊消息 */
+	ctx.callback.Register(comm.CMD_CHAT, LsndMesgCommHandler, ctx) /* 私聊消息 */
+
 	/* 聊天室消息 */
 	ctx.callback.Register(comm.CMD_ROOM_CREAT, LsndMesgCommHandler, ctx)    /* 创建聊天室 */
 	ctx.callback.Register(comm.CMD_ROOM_DISMISS, LsndMesgCommHandler, ctx)  /* 解散聊天室 */

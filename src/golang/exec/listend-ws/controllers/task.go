@@ -257,7 +257,7 @@ func LsndCleanTimeoutHandler(sid uint64, cid uint64, extra interface{}, param in
 		}
 	}
 
-	if ctm > conn.GetCtm() && ctm-conn.GetCtm() > 300 {
+	if ctm > conn.GetUtm() && ctm-conn.GetUtm() > 300 {
 		ctx.lws.Kick(conn.GetCid())
 	}
 

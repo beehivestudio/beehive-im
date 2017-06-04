@@ -71,8 +71,8 @@ func (ctx *LsndCntx) lsnd_conn_recv(client *lws.Client, data []byte, length int)
 
 	/* > 更新消息序列号 */
 	if !conn.SetSeq(head.GetSeq()) {
-		ctx.log.Error("Update conn req failed! cmd:0x%04X sid:%d cid:%d",
-			head.GetCmd(), head.GetSid(), conn.GetCid())
+		ctx.log.Error("Update conn req failed! cmd:0x%04X sid:%d cid:%d seq:%d/%d",
+			head.GetCmd(), head.GetSid(), conn.GetCid(), head.GetSeq(), conn.GetSeq())
 		return -1
 	}
 

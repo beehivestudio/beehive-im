@@ -27,6 +27,9 @@ func (ctx *LsndCntx) UpMesgRegister() {
 	ctx.frwder.Register(comm.CMD_SUB_ACK, LsndUpMesgSubAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpMesgCommHandler, ctx)
 
+	/* > 私聊消息 */
+	ctx.frwder.Register(comm.CMD_CHAT_ACK, LsndUpMesgCommHandler, ctx) /* 私聊消息 */
+
 	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndUpMesgRoomJoinAckHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_CHAT, LsndUpMesgRoomChatHandler, ctx)
