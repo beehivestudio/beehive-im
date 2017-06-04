@@ -50,8 +50,8 @@ int lsnd_mesg_def_handler(lsnd_conn_extra_t *conn, unsigned int type, void *data
     head->nid = conn->nid;
 
 
-    log_debug(lsnd->log, "Recv unkonwn data! type:0x%04X sid:%lu seq:%lu len:%d!",
-            head->type, head->sid, head->seq, len);
+    log_debug(lsnd->log, "Recv unkonwn data! type:0x%04X sid:%lu cid:%d nid:%d seq:%lu len:%d!",
+            head->type, head->sid, head->cid, head->nid, head->seq, len);
 
     MESG_HEAD_NTOH(head, head);
 
