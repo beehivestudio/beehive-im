@@ -225,8 +225,7 @@ func (ctx *UsrSvrCntx) alloc_rid() (rid uint64, err error) {
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
 	/* > 准备SQL语句 */
-	sql := fmt.Sprintf("INSERT INTO CHAT_ROOM_INFO_%d(rid, name, status, description, create_time, update_time, owner) VALUES(?, ?, ?, ?, ?, ?, ?)",
-		rid%256)
+	sql := fmt.Sprintf("INSERT INTO CHAT_ROOM_INFO_%d(rid, name, status, description, create_time, update_time, owner) VALUES(?, ?, ?, ?, ?, ?, ?)", rid%256)
 
 	stmt, err := ctx.userdb.Prepare(sql)
 	if nil != err {
@@ -243,6 +242,8 @@ func (ctx *UsrSvrCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
 		ctx.log.Error("Add rid failed! errmsg:%s", err.Error())
 		return err
 	}
+
+	ctx.log.Debug("Add rid success!")
 
 	return nil
 }
@@ -272,6 +273,12 @@ func (ctx *UsrSvrCntx) room_creat_handler(
 		pl.Close()
 	}()
 
+	defer func() {
+		if err := recover(); nil != err {
+			ctx.log.Error("Routine crashed! errmsg:%s", err)
+		}
+	}()
+
 	/* > 分配聊天室ID */
 	rid, err = ctx.alloc_rid()
 	if nil != err {
@@ -288,14 +295,14 @@ func (ctx *UsrSvrCntx) room_creat_handler(
 	/* > 设置聊天室所有者 */
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_ROLE_TAB, rid)
 
-	ok, err := redis.Int(rds.Do("HSETNX", key, req.GetUid(), chat.ROOM_ROLE_OWNER))
+	ok, err := redis.Bool(rds.Do("HSETNX", key, req.GetUid(), chat.ROOM_ROLE_OWNER))
 	if nil != err {
-		ctx.log.Error("Set room owner failed! uid:%d errmsg:%s",
-			req.GetUid(), err.Error())
+		ctx.log.Error("Set room owner failed! uid:%d rid:%d errmsg:%s",
+			req.GetUid(), rid, err.Error())
 		return 0, err
-	} else if 0 == ok {
-		ctx.log.Error("Set room owner failed! errmsg:%s", err.Error())
-		return 0, err
+	} else if !ok {
+		ctx.log.Debug("Set room owner failed! uid:%d rid:%d", req.GetUid(), rid)
+		return 0, errors.New("Set room owner failed!")
 	}
 
 	/* > 设置聊天室信息 */
