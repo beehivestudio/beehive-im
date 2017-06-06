@@ -29,7 +29,15 @@ func (ctx *LsndCntx) MesgRegister() {
 	ctx.callback.Register(comm.CMD_UNSUB, LsndMesgUnsubHandler, ctx)     /* 取消订阅 */
 
 	/* 私聊消息 */
-	ctx.callback.Register(comm.CMD_CHAT, LsndMesgCommHandler, ctx) /* 私聊消息 */
+	ctx.callback.Register(comm.CMD_CHAT, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_FRIEND_ADD, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_FRIEND_DEL, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_BLACKLIST_ADD, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_BLACKLIST_DEL, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_GAG_ADD, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_GAG_DEL, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_MARK_ADD, LsndMesgCommHandler, ctx)
+	ctx.callback.Register(comm.CMD_MARK_DEL, LsndMesgCommHandler, ctx)
 
 	/* 聊天室消息 */
 	ctx.callback.Register(comm.CMD_ROOM_CREAT, LsndMesgCommHandler, ctx)    /* 创建聊天室 */

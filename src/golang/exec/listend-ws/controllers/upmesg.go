@@ -28,7 +28,15 @@ func (ctx *LsndCntx) UpMesgRegister() {
 	ctx.frwder.Register(comm.CMD_UNSUB_ACK, LsndUpMesgCommHandler, ctx)
 
 	/* > 私聊消息 */
-	ctx.frwder.Register(comm.CMD_CHAT_ACK, LsndUpMesgCommHandler, ctx) /* 私聊消息 */
+	ctx.frwder.Register(comm.CMD_CHAT_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRIEND_ADD_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRIEND_DEL_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BLACKLIST_ADD_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_BLACKLIST_DEL_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GAG_ADD_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_GAG_DEL_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_MARK_ADD_ACK, LsndUpMesgCommHandler, ctx)
+	ctx.frwder.Register(comm.CMD_MARK_DEL_ACK, LsndUpMesgCommHandler, ctx)
 
 	/* > 聊天室消息 */
 	ctx.frwder.Register(comm.CMD_ROOM_JOIN_ACK, LsndUpMesgRoomJoinAckHandler, ctx)

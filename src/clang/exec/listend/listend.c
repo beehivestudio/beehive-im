@@ -342,12 +342,23 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     }
 
     LSND_ACC_REG_CB(ctx, CMD_UNKNOWN, lsnd_mesg_def_handler, ctx); /* 默认处理 */
+    // 通用消息
     LSND_ACC_REG_CB(ctx, CMD_ONLINE, lsnd_mesg_online_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_OFFLINE, lsnd_mesg_offline_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_PING, lsnd_mesg_ping_handler, ctx);
 
-    LSND_ACC_REG_CB(ctx, CMD_CHAT, lsnd_mesg_def_handler, ctx); /* 默认处理 */
+    // 私聊消息
+    LSND_ACC_REG_CB(ctx, CMD_CHAT, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_FRIEND_ADD, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_FRIEND_DEL, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_BLACKLIST_ADD, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_BLACKLIST_DEL, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_GAG_ADD, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_GAG_DEL, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_MARK_ADD, lsnd_mesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_MARK_DEL, lsnd_mesg_def_handler, ctx);
 
+    // 聊天室消息
     LSND_ACC_REG_CB(ctx, CMD_ROOM_JOIN, lsnd_mesg_room_join_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_mesg_def_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_ROOM_QUIT, lsnd_mesg_room_quit_handler, ctx);
@@ -360,11 +371,23 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     }
 
     LSND_RTQ_REG_CB(ctx, CMD_UNKNOWN, lsnd_upmesg_def_handler, ctx);
+
+    // 通用消息 
     LSND_RTQ_REG_CB(ctx, CMD_ONLINE_ACK, lsnd_upmesg_online_ack_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_KICK, lsnd_upmesg_kick_handler, ctx);
 
+    // 私聊消息 
     LSND_RTQ_REG_CB(ctx, CMD_CHAT_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_FRIEND_ADD_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_FRIEND_DEL_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_BLACKLIST_ADD_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_BLACKLIST_DEL_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_GAG_ADD_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_GAG_DEL_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_MARK_ADD_ACK, lsnd_upmesg_def_handler, ctx);
+    LSND_ACC_REG_CB(ctx, CMD_MARK_DEL_ACK, lsnd_upmesg_def_handler, ctx);
 
+    // 聊天室消息 
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_JOIN_ACK, lsnd_upmesg_room_join_ack_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT, lsnd_upmesg_room_chat_handler, ctx);
     LSND_RTQ_REG_CB(ctx, CMD_ROOM_CHAT_ACK, lsnd_upmesg_def_handler, ctx);
