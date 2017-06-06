@@ -1011,7 +1011,7 @@ static int rtmq_add_sub_req(rtmq_reg_t *item, rtmq_proxy_ssvr_t *ssvr)
         return RTMQ_ERR;
     }
 
-    log_debug(ssvr->log, "Add sub request. type:%d", item->type);
+    log_debug(ssvr->log, "Add sub request. type:0x%04X", item->type);
 
     return RTMQ_OK;
 }
