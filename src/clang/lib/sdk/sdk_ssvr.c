@@ -669,20 +669,20 @@ static int sdk_ssvr_proc_cmd(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, const sdk_cmd_t 
     switch (cmd->type) {
         case SDK_CMD_SEND:
         case SDK_CMD_SEND_ALL:
-            log_debug(ssvr->log, "Recv command! type:[%d]", cmd->type);
+            log_debug(ssvr->log, "Recv command! type:[0x%04X]", cmd->type);
             if (fd_is_writable(sck->fd)) {
                 return sdk_ssvr_send_data(ctx, ssvr);
             }
             return SDK_OK;
         case SDK_CMD_NETWORK_CONN:
-            log_debug(ssvr->log, "Network connected! type:[%d]", cmd->type);
+            log_debug(ssvr->log, "Network connected! type:[0x%04X]", cmd->type);
             CLOSE(sck->fd);
             wiov_clean(send);
             ssvr->next_conn_tm = time(NULL);
             SDK_SSVR_SET_ONLINE(ssvr, false);
             return SDK_OK;
         case SDK_CMD_NETWORK_DISCONN:
-            log_debug(ssvr->log, "Network disconnect! type:[%d]", cmd->type);
+            log_debug(ssvr->log, "Network disconnect! type:[0x%04X]", cmd->type);
             CLOSE(sck->fd);
             CLOSE(sck->fd);
             wiov_clean(send);
@@ -690,7 +690,7 @@ static int sdk_ssvr_proc_cmd(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, const sdk_cmd_t 
             SDK_SSVR_SET_ONLINE(ssvr, false);
             return SDK_OK;
         default:
-            log_error(ssvr->log, "Unknown command! type:[%d]", cmd->type);
+            log_error(ssvr->log, "Unknown command! type:[0x%04X]", cmd->type);
             return SDK_OK;
     }
     return SDK_OK;
