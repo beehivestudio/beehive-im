@@ -199,9 +199,10 @@ message mesg_chat
 ```
 message mesg_chat_ack
 {
-    required uint64 uid = 1;        // M|用户ID|数字|
-    required uint32 code = 2;       // M|错误码|数字|
-    required string errmsg = 3;     // M|错误描述|字串|
+    required uint64 orig = 1;       // M|发送方UID
+    required uint64 dest = 2;       // M|接收方UID
+    required uint32 code = 3;       // M|错误码|数字|
+    required string errmsg = 4;     // M|错误描述|字串|
 }
 ```
 
@@ -221,7 +222,14 @@ message mesg_friend_add
 ---
 命令ID: 0x0204<br>
 命令描述: 添加好友应答(FRIEND-ADD-ACK)<br>
-协议格式: NONE<br>
+协议格式:<br>
+```
+message mesg_friend_add_ack
+{
+    required uint32 code = 1;       // M|返回码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+```
 
 ---
 命令ID: 0x0205<br>
@@ -238,7 +246,14 @@ message mesg_friend_del
 ---
 命令ID: 0x0206<br>
 命令描述: 删除好友应答(FRIEND-DEL-ACK)<br>
-协议格式: NONE<br>
+协议格式:<br>
+```
+message mesg_friend_del_ack
+{
+    required uint32 code = 1;       // M|返回码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
+```
 
 ---
 命令ID: 0x0207<br>

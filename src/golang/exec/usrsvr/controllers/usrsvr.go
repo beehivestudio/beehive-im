@@ -146,6 +146,8 @@ func (ctx *UsrSvrCntx) Register() {
 	ctx.frwder.Register(comm.CMD_UNSUB, UsrSvrUnsubHandler, ctx)
 
 	/* > 私聊消息 */
+	ctx.frwder.Register(comm.CMD_FRIEND_ADD, UsrSvrFriendAddHandler, ctx)
+	ctx.frwder.Register(comm.CMD_FRIEND_DEL, UsrSvrFriendDelHandler, ctx)
 	ctx.frwder.Register(comm.CMD_BLACKLIST_ADD, UsrSvrBlacklistAddHandler, ctx)
 	ctx.frwder.Register(comm.CMD_BLACKLIST_DEL, UsrSvrBlacklistDelHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GAG_ADD, UsrSvrGagAddHandler, ctx)

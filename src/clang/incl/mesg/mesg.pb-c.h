@@ -28,7 +28,9 @@ typedef struct _MesgKick MesgKick;
 typedef struct _MesgChat MesgChat;
 typedef struct _MesgChatAck MesgChatAck;
 typedef struct _MesgFriendAdd MesgFriendAdd;
+typedef struct _MesgFriendAddAck MesgFriendAddAck;
 typedef struct _MesgFriendDel MesgFriendDel;
+typedef struct _MesgFriendDelAck MesgFriendDelAck;
 typedef struct _MesgBlacklistAdd MesgBlacklistAdd;
 typedef struct _MesgBlacklistAddAck MesgBlacklistAddAck;
 typedef struct _MesgBlacklistDel MesgBlacklistDel;
@@ -270,6 +272,17 @@ struct  _MesgFriendAdd
     , 0, 0, NULL }
 
 
+struct  _MesgFriendAddAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_FRIEND_ADD_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_friend_add_ack__descriptor) \
+    , 0, NULL }
+
+
 struct  _MesgFriendDel
 {
   ProtobufCMessage base;
@@ -279,6 +292,17 @@ struct  _MesgFriendDel
 #define MESG_FRIEND_DEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_friend_del__descriptor) \
     , 0, 0 }
+
+
+struct  _MesgFriendDelAck
+{
+  ProtobufCMessage base;
+  uint32_t code;
+  char *errmsg;
+};
+#define MESG_FRIEND_DEL_ACK__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&mesg_friend_del_ack__descriptor) \
+    , 0, NULL }
 
 
 struct  _MesgBlacklistAdd
@@ -1337,6 +1361,25 @@ MesgFriendAdd *
 void   mesg_friend_add__free_unpacked
                      (MesgFriendAdd *message,
                       ProtobufCAllocator *allocator);
+/* MesgFriendAddAck methods */
+void   mesg_friend_add_ack__init
+                     (MesgFriendAddAck         *message);
+size_t mesg_friend_add_ack__get_packed_size
+                     (const MesgFriendAddAck   *message);
+size_t mesg_friend_add_ack__pack
+                     (const MesgFriendAddAck   *message,
+                      uint8_t             *out);
+size_t mesg_friend_add_ack__pack_to_buffer
+                     (const MesgFriendAddAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgFriendAddAck *
+       mesg_friend_add_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_friend_add_ack__free_unpacked
+                     (MesgFriendAddAck *message,
+                      ProtobufCAllocator *allocator);
 /* MesgFriendDel methods */
 void   mesg_friend_del__init
                      (MesgFriendDel         *message);
@@ -1355,6 +1398,25 @@ MesgFriendDel *
                       const uint8_t       *data);
 void   mesg_friend_del__free_unpacked
                      (MesgFriendDel *message,
+                      ProtobufCAllocator *allocator);
+/* MesgFriendDelAck methods */
+void   mesg_friend_del_ack__init
+                     (MesgFriendDelAck         *message);
+size_t mesg_friend_del_ack__get_packed_size
+                     (const MesgFriendDelAck   *message);
+size_t mesg_friend_del_ack__pack
+                     (const MesgFriendDelAck   *message,
+                      uint8_t             *out);
+size_t mesg_friend_del_ack__pack_to_buffer
+                     (const MesgFriendDelAck   *message,
+                      ProtobufCBuffer     *buffer);
+MesgFriendDelAck *
+       mesg_friend_del_ack__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   mesg_friend_del_ack__free_unpacked
+                     (MesgFriendDelAck *message,
                       ProtobufCAllocator *allocator);
 /* MesgBlacklistAdd methods */
 void   mesg_blacklist_add__init
@@ -2727,8 +2789,14 @@ typedef void (*MesgChatAck_Closure)
 typedef void (*MesgFriendAdd_Closure)
                  (const MesgFriendAdd *message,
                   void *closure_data);
+typedef void (*MesgFriendAddAck_Closure)
+                 (const MesgFriendAddAck *message,
+                  void *closure_data);
 typedef void (*MesgFriendDel_Closure)
                  (const MesgFriendDel *message,
+                  void *closure_data);
+typedef void (*MesgFriendDelAck_Closure)
+                 (const MesgFriendDelAck *message,
                   void *closure_data);
 typedef void (*MesgBlacklistAdd_Closure)
                  (const MesgBlacklistAdd *message,
@@ -2959,7 +3027,9 @@ extern const ProtobufCMessageDescriptor mesg_kick__descriptor;
 extern const ProtobufCMessageDescriptor mesg_chat__descriptor;
 extern const ProtobufCMessageDescriptor mesg_chat_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_friend_add__descriptor;
+extern const ProtobufCMessageDescriptor mesg_friend_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_friend_del__descriptor;
+extern const ProtobufCMessageDescriptor mesg_friend_del_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_blacklist_add__descriptor;
 extern const ProtobufCMessageDescriptor mesg_blacklist_add_ack__descriptor;
 extern const ProtobufCMessageDescriptor mesg_blacklist_del__descriptor;

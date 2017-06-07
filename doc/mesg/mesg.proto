@@ -184,7 +184,12 @@ message mesg_friend_add
 /*
    命令ID: 0x0204
    命令描述: 添加好友应答(FRIEND-ADD-ACK)
-   协议格式: NONE */
+   协议格式: */
+message mesg_friend_add_ack
+{
+   required uint32 code = 1;       // M|返回码|数字|
+   required string errmsg = 2;     // M|错误描述|字串|
+}
 
 /*
    命令ID: 0x0205
@@ -199,7 +204,12 @@ message mesg_friend_del
 /*
    命令ID: 0x0206
    命令描述: 删除好友应答(FRIEND-DEL-ACK)
-   协议格式: NONE */
+   协议格式: */
+message mesg_friend_del_ack
+{
+    required uint32 code = 1;       // M|返回码|数字|
+    required string errmsg = 2;     // M|错误描述|字串|
+}
 
 /*
    命令ID: 0x0207
