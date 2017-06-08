@@ -183,8 +183,8 @@ message mesg_kick_req
 ```
 message mesg_chat
 {
-    required uint64 orig = 1;       // M|发送方UID
-    required uint64 dest = 2;       // M|接收方UID
+    required uint64 suid = 1;       // M|发送方UID
+    required uint64 duid = 2;       // M|接收方UID
     required uint32 level = 3;      // M|消息级别
     required uint64 time = 4;       // M|发送时间
     required string text = 5;       // M|聊天内容
@@ -199,8 +199,8 @@ message mesg_chat
 ```
 message mesg_chat_ack
 {
-    required uint64 orig = 1;       // M|发送方UID
-    required uint64 dest = 2;       // M|接收方UID
+    required uint64 suid = 1;       // M|发送方UID
+    required uint64 duid = 2;       // M|接收方UID
     required uint32 code = 3;       // M|错误码|数字|
     required string errmsg = 4;     // M|错误描述|字串|
 }
@@ -213,8 +213,8 @@ message mesg_chat_ack
 ```
 message mesg_friend_add
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
     required string mark = 3;       // M|备注信息|字串|
 }
 ```
@@ -238,8 +238,8 @@ message mesg_friend_add_ack
 ```
 message mesg_friend_del
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
 }
 ```
 
@@ -262,8 +262,8 @@ message mesg_friend_del_ack
 ```
 message mesg_blacklist_add
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
 }
 ```
 
@@ -286,8 +286,8 @@ message mesg_blacklist_add_ack
 ```
 message mesg_blacklist_del
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
 }
 ```
 
@@ -310,8 +310,8 @@ message mesg_blacklist_del_ack
 ```
 message mesg_gag_add
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
 }
 ```
 
@@ -334,8 +334,8 @@ message mesg_gag_add_ack
 ```
 message mesg_gag_del
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
 }
 ```
 
@@ -358,8 +358,8 @@ message mesg_gag_del_ack
 ```
 message mesg_mark_add
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
     required uint64 mark = 3;       // M|备注名|字串|
 }
 ```
@@ -383,8 +383,8 @@ message mesg_mark_add_ack
 ```
 message mesg_mark_del
 {
-    required uint64 orig = 1;       // M|源用户ID|数字|
-    required uint64 dest = 2;       // M|目标用户ID|数字|
+    required uint64 suid = 1;       // M|源用户ID|数字|
+    required uint64 duid = 2;       // M|目标用户ID|数字|
 }
 ```
 

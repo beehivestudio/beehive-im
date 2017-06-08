@@ -4348,24 +4348,24 @@ const ProtobufCMessageDescriptor mesg_kick__descriptor =
 static const ProtobufCFieldDescriptor mesg_chat__field_descriptors[6] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgChat, orig),
+    offsetof(MesgChat, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgChat, dest),
+    offsetof(MesgChat, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -4422,9 +4422,9 @@ static const ProtobufCFieldDescriptor mesg_chat__field_descriptors[6] =
 };
 static const unsigned mesg_chat__field_indices_by_name[] = {
   5,   /* field[5] = data */
-  1,   /* field[1] = dest */
+  1,   /* field[1] = duid */
   2,   /* field[2] = level */
-  0,   /* field[0] = orig */
+  0,   /* field[0] = suid */
   4,   /* field[4] = text */
   3,   /* field[3] = time */
 };
@@ -4451,24 +4451,24 @@ const ProtobufCMessageDescriptor mesg_chat__descriptor =
 static const ProtobufCFieldDescriptor mesg_chat_ack__field_descriptors[4] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgChatAck, orig),
+    offsetof(MesgChatAck, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgChatAck, dest),
+    offsetof(MesgChatAck, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -4501,9 +4501,9 @@ static const ProtobufCFieldDescriptor mesg_chat_ack__field_descriptors[4] =
 };
 static const unsigned mesg_chat_ack__field_indices_by_name[] = {
   2,   /* field[2] = code */
-  1,   /* field[1] = dest */
+  1,   /* field[1] = duid */
   3,   /* field[3] = errmsg */
-  0,   /* field[0] = orig */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_chat_ack__number_ranges[1 + 1] =
 {
@@ -4528,24 +4528,24 @@ const ProtobufCMessageDescriptor mesg_chat_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_friend_add__field_descriptors[3] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgFriendAdd, orig),
+    offsetof(MesgFriendAdd, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgFriendAdd, dest),
+    offsetof(MesgFriendAdd, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -4565,9 +4565,9 @@ static const ProtobufCFieldDescriptor mesg_friend_add__field_descriptors[3] =
   },
 };
 static const unsigned mesg_friend_add__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
+  1,   /* field[1] = duid */
   2,   /* field[2] = mark */
-  0,   /* field[0] = orig */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_friend_add__number_ranges[1 + 1] =
 {
@@ -4643,24 +4643,24 @@ const ProtobufCMessageDescriptor mesg_friend_add_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_friend_del__field_descriptors[2] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgFriendDel, orig),
+    offsetof(MesgFriendDel, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgFriendDel, dest),
+    offsetof(MesgFriendDel, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -4668,8 +4668,8 @@ static const ProtobufCFieldDescriptor mesg_friend_del__field_descriptors[2] =
   },
 };
 static const unsigned mesg_friend_del__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
-  0,   /* field[0] = orig */
+  1,   /* field[1] = duid */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_friend_del__number_ranges[1 + 1] =
 {
@@ -4745,24 +4745,24 @@ const ProtobufCMessageDescriptor mesg_friend_del_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_blacklist_add__field_descriptors[2] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlacklistAdd, orig),
+    offsetof(MesgBlacklistAdd, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlacklistAdd, dest),
+    offsetof(MesgBlacklistAdd, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -4770,8 +4770,8 @@ static const ProtobufCFieldDescriptor mesg_blacklist_add__field_descriptors[2] =
   },
 };
 static const unsigned mesg_blacklist_add__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
-  0,   /* field[0] = orig */
+  1,   /* field[1] = duid */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_blacklist_add__number_ranges[1 + 1] =
 {
@@ -4847,24 +4847,24 @@ const ProtobufCMessageDescriptor mesg_blacklist_add_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_blacklist_del__field_descriptors[2] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlacklistDel, orig),
+    offsetof(MesgBlacklistDel, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgBlacklistDel, dest),
+    offsetof(MesgBlacklistDel, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -4872,8 +4872,8 @@ static const ProtobufCFieldDescriptor mesg_blacklist_del__field_descriptors[2] =
   },
 };
 static const unsigned mesg_blacklist_del__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
-  0,   /* field[0] = orig */
+  1,   /* field[1] = duid */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_blacklist_del__number_ranges[1 + 1] =
 {
@@ -4949,24 +4949,24 @@ const ProtobufCMessageDescriptor mesg_blacklist_del_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_gag_add__field_descriptors[2] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGagAdd, orig),
+    offsetof(MesgGagAdd, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGagAdd, dest),
+    offsetof(MesgGagAdd, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -4974,8 +4974,8 @@ static const ProtobufCFieldDescriptor mesg_gag_add__field_descriptors[2] =
   },
 };
 static const unsigned mesg_gag_add__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
-  0,   /* field[0] = orig */
+  1,   /* field[1] = duid */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_gag_add__number_ranges[1 + 1] =
 {
@@ -5051,24 +5051,24 @@ const ProtobufCMessageDescriptor mesg_gag_add_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_gag_del__field_descriptors[2] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGagDel, orig),
+    offsetof(MesgGagDel, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGagDel, dest),
+    offsetof(MesgGagDel, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -5076,8 +5076,8 @@ static const ProtobufCFieldDescriptor mesg_gag_del__field_descriptors[2] =
   },
 };
 static const unsigned mesg_gag_del__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
-  0,   /* field[0] = orig */
+  1,   /* field[1] = duid */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_gag_del__number_ranges[1 + 1] =
 {
@@ -5153,24 +5153,24 @@ const ProtobufCMessageDescriptor mesg_gag_del_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_mark_add__field_descriptors[3] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgMarkAdd, orig),
+    offsetof(MesgMarkAdd, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgMarkAdd, dest),
+    offsetof(MesgMarkAdd, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -5190,9 +5190,9 @@ static const ProtobufCFieldDescriptor mesg_mark_add__field_descriptors[3] =
   },
 };
 static const unsigned mesg_mark_add__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
+  1,   /* field[1] = duid */
   2,   /* field[2] = mark */
-  0,   /* field[0] = orig */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_mark_add__number_ranges[1 + 1] =
 {
@@ -5268,24 +5268,24 @@ const ProtobufCMessageDescriptor mesg_mark_add_ack__descriptor =
 static const ProtobufCFieldDescriptor mesg_mark_del__field_descriptors[2] =
 {
   {
-    "orig",
+    "suid",
     1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgMarkDel, orig),
+    offsetof(MesgMarkDel, suid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "dest",
+    "duid",
     2,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgMarkDel, dest),
+    offsetof(MesgMarkDel, duid),
     NULL,
     NULL,
     0,             /* flags */
@@ -5293,8 +5293,8 @@ static const ProtobufCFieldDescriptor mesg_mark_del__field_descriptors[2] =
   },
 };
 static const unsigned mesg_mark_del__field_indices_by_name[] = {
-  1,   /* field[1] = dest */
-  0,   /* field[0] = orig */
+  1,   /* field[1] = duid */
+  0,   /* field[0] = suid */
 };
 static const ProtobufCIntRange mesg_mark_del__number_ranges[1 + 1] =
 {

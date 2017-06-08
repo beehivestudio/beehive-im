@@ -362,8 +362,8 @@ int lws_mesg_chat_send_handler(struct lws_context *lws, struct lws *wsi, lws_cnt
     }
 
     /* 设置CHAT消息 */
-    chat.orig = AWS_UID;
-    chat.dest = 18600522324;
+    chat.suid = AWS_UID;
+    chat.duid = 18600522324;
     chat.level = 0;
     chat.time = (uint64_t)time(NULL);
     chat.text = "This is just a test!";

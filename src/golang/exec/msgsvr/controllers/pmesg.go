@@ -45,8 +45,8 @@ func (ctx *MsgSvrCntx) chat_parse(data []byte) (
 	if nil != err {
 		ctx.log.Error("Unmarshal body failed! errmsg:%s", err.Error())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, err
-	} else if 0 == req.GetOrig() || 0 == req.GetDest() {
-		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetOrig(), req.GetDest())
+	} else if 0 == req.GetSuid() || 0 == req.GetDuid() {
+		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetSuid(), req.GetDuid())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Paramter isn't right!")
 	}
 
@@ -84,6 +84,14 @@ func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
 		Errmsg: proto.String(errmsg),
 	}
 
+	if nil != req {
+		ack.Suid = proto.Uint64(req.GetSuid())
+		ack.Duid = proto.Uint64(req.GetDuid())
+	} else {
+		ack.Suid = proto.Uint64(0)
+		ack.Duid = proto.Uint64(0)
+	}
+
 	/* > 生成PB数据 */
 	body, err := proto.Marshal(ack)
 	if nil != err {
@@ -117,8 +125,8 @@ func (ctx *MsgSvrCntx) chat_failed(head *comm.MesgHeader,
 func (ctx *MsgSvrCntx) chat_ack(head *comm.MesgHeader, req *mesg.MesgChat) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgChatAck{
-		Orig:   proto.Uint64(req.GetOrig()),
-		Dest:   proto.Uint64(req.GetDest()),
+		Suid:   proto.Uint64(req.GetSuid()),
+		Duid:   proto.Uint64(req.GetDuid()),
 		Code:   proto.Uint32(0),
 		Errmsg: proto.String("Ok"),
 	}
@@ -174,11 +182,11 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 	/* > 发送给"发送方"的其他终端.
 	   1.如果在线, 则直接下发消息
 	   2.如果不在线, 则无需下发消息 */
-	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetOrig())
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetSuid())
 
 	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
-		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetOrig())
+		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetSuid())
 		return comm.ERR_SYS_DB, err
 	}
 
@@ -194,12 +202,12 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 			continue
 		} else if 0 == attr.GetNid() {
 			continue
-		} else if uint64(attr.GetUid()) != req.GetOrig() {
+		} else if uint64(attr.GetUid()) != req.GetSuid() {
 			continue
 		}
 
 		ctx.log.Debug("uid:%d sid:%d cid:%d nid:%d!",
-			req.GetOrig(), sid, attr.GetCid(), attr.GetNid())
+			req.GetSuid(), sid, attr.GetCid(), attr.GetNid())
 
 		ctx.send_data(comm.CMD_CHAT, uint64(sid),
 			uint64(attr.GetCid()), uint32(attr.GetNid()),
@@ -209,11 +217,11 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 	/* > 发送给"接收方"所有终端.
 		   1.如果在线, 则直接下发消息
 	       2.如果不在线, 则无需下发消息 */
-	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDest())
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDuid())
 
 	sid_list, err = redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
-		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDest())
+		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDuid())
 		return comm.ERR_SYS_DB, err
 	}
 
@@ -226,16 +234,16 @@ func (ctx *MsgSvrCntx) chat_handler(head *comm.MesgHeader,
 			continue
 		} else if 0 == attr.GetNid() {
 			ctx.log.Error("Nid is invalid! uid:%d sid:%d cid:%d nid:%d!",
-				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+				req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 			continue
-		} else if uint64(attr.GetUid()) != req.GetDest() {
+		} else if uint64(attr.GetUid()) != req.GetDuid() {
 			ctx.log.Error("uid:%d sid:%d cid:%d nid:%d!",
-				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+				req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 			continue
 		}
 
 		ctx.log.Debug("uid:%d sid:%d cid:%d nid:%d!",
-			req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+			req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 
 		ctx.send_data(comm.CMD_CHAT, uint64(sid), attr.GetCid(), uint32(attr.GetNid()),
 			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
@@ -283,7 +291,7 @@ func MsgSvrChatHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Uid [%d] send chat to uid [%d]!", req.GetOrig(), req.GetDest())
+	ctx.log.Debug("Uid [%d] send chat to uid [%d]!", req.GetSuid(), req.GetDuid())
 
 	/* > 进行业务处理 */
 	code, err = ctx.chat_handler(head, req, data)
@@ -327,6 +335,7 @@ func (ctx *MsgSvrCntx) chat_ack_parse(data []byte) (
 
 	/* > 解析PB协议 */
 	req = &mesg.MesgChatAck{}
+
 	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
 	if nil != err {
 		ctx.log.Error("Unmarshal chat-ack failed! errmsg:%s", err.Error())
@@ -363,11 +372,11 @@ func (ctx *MsgSvrCntx) chat_ack_handler(
 	}
 
 	/* 清理离线消息 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDest())
-	field := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, req.GetOrig(), head.GetSeq())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, req.GetDuid())
+	field := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, req.GetSuid(), head.GetSeq())
 	rds.Send("ZREM", key, field)
 
-	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetOrig())
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, req.GetSuid())
 	rds.Send("HDEL", key, head.GetSeq())
 
 	return 0, nil
@@ -455,12 +464,12 @@ func (item *MesgChatItem) storage(ctx *MsgSvrCntx) {
 	ctm := time.Now().Unix()
 
 	/* > 加入接收者离线列表 */
-	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, item.req.GetDest())
-	member := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, item.req.GetOrig(), item.head.GetSeq())
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_OFFLINE_ZSET, item.req.GetDuid())
+	member := fmt.Sprintf(comm.CHAT_FMT_UID_MSGID_STR, item.req.GetSuid(), item.head.GetSeq())
 	pl.Send("ZADD", key, member, ctm)
 
 	/* > 存储发送者离线消息 */
-	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, item.req.GetOrig())
+	key = fmt.Sprintf(comm.CHAT_KEY_USR_SEND_MESG_HTAB, item.req.GetSuid())
 	pl.Send("HSETNX", key, item.raw)
 }
 

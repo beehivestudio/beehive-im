@@ -49,8 +49,8 @@ func (ctx *UsrSvrCntx) friend_add_parse(data []byte) (
 	if nil != err {
 		ctx.log.Error("Unmarshal body failed! errmsg:%s", err.Error())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, err
-	} else if 0 == req.GetOrig() || 0 == req.GetDest() {
-		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetOrig(), req.GetDest())
+	} else if 0 == req.GetSuid() || 0 == req.GetDuid() {
+		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetSuid(), req.GetDuid())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Paramter isn't right!")
 	}
 
@@ -165,11 +165,11 @@ func (ctx *UsrSvrCntx) friend_add_handler(head *comm.MesgHeader,
 	/* > 发送给"接收方"所有终端.
 	        1.如果在线, 则直接下发消息
 		    2.如果不在线, 则无需下发消息 */
-	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDest())
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDuid())
 
 	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
-		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDest())
+		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDuid())
 		return comm.ERR_SYS_DB, err
 	}
 
@@ -182,16 +182,16 @@ func (ctx *UsrSvrCntx) friend_add_handler(head *comm.MesgHeader,
 			continue
 		} else if 0 == attr.GetNid() {
 			ctx.log.Error("Nid is invalid! uid:%d sid:%d cid:%d nid:%d!",
-				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+				req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 			continue
-		} else if uint64(attr.GetUid()) != req.GetDest() {
+		} else if uint64(attr.GetUid()) != req.GetDuid() {
 			ctx.log.Error("uid:%d sid:%d cid:%d nid:%d!",
-				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+				req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 			continue
 		}
 
 		ctx.log.Debug("uid:%d sid:%d cid:%d nid:%d!",
-			req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+			req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 
 		ctx.send_data(comm.CMD_FRIEND_ADD,
 			uint64(sid), attr.GetCid(), uint32(attr.GetNid()),
@@ -240,7 +240,7 @@ func UsrSvrFriendAddHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Uid [%d] send friend-add to uid [%d]!", req.GetOrig(), req.GetDest())
+	ctx.log.Debug("Uid [%d] send friend-add to uid [%d]!", req.GetSuid(), req.GetDuid())
 
 	/* > 进行业务处理 */
 	code, err = ctx.friend_add_handler(head, req, data)
@@ -290,8 +290,8 @@ func (ctx *UsrSvrCntx) friend_del_parse(data []byte) (
 	if nil != err {
 		ctx.log.Error("Unmarshal body failed! errmsg:%s", err.Error())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, err
-	} else if 0 == req.GetOrig() || 0 == req.GetDest() {
-		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetOrig(), req.GetDest())
+	} else if 0 == req.GetSuid() || 0 == req.GetDuid() {
+		ctx.log.Error("Paramter isn't right! orig:%d dest:%d", req.GetSuid(), req.GetDuid())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, errors.New("Paramter isn't right!")
 	}
 
@@ -406,11 +406,11 @@ func (ctx *UsrSvrCntx) friend_del_handler(head *comm.MesgHeader,
 	/* > 发送给"接收方"所有终端.
 	        1.如果在线, 则直接下发消息
 		    2.如果不在线, 则无需下发消息 */
-	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDest())
+	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetDuid())
 
 	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
-		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDest())
+		ctx.log.Error("Get sid set by uid [%d] failed!", req.GetDuid())
 		return comm.ERR_SYS_DB, err
 	}
 
@@ -423,16 +423,16 @@ func (ctx *UsrSvrCntx) friend_del_handler(head *comm.MesgHeader,
 			continue
 		} else if 0 == attr.GetNid() {
 			ctx.log.Error("Nid is invalid! uid:%d sid:%d cid:%d nid:%d!",
-				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+				req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 			continue
-		} else if uint64(attr.GetUid()) != req.GetDest() {
+		} else if uint64(attr.GetUid()) != req.GetDuid() {
 			ctx.log.Error("uid:%d sid:%d cid:%d nid:%d!",
-				req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+				req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 			continue
 		}
 
 		ctx.log.Debug("uid:%d sid:%d cid:%d nid:%d!",
-			req.GetDest(), sid, attr.GetCid(), attr.GetNid())
+			req.GetDuid(), sid, attr.GetCid(), attr.GetNid())
 
 		ctx.send_data(comm.CMD_FRIEND_DEL,
 			uint64(sid), attr.GetCid(), uint32(attr.GetNid()),
@@ -481,7 +481,7 @@ func UsrSvrFriendDelHandler(cmd uint32, orig uint32,
 		return -1
 	}
 
-	ctx.log.Debug("Uid [%d] send friend-del to uid [%d]!", req.GetOrig(), req.GetDest())
+	ctx.log.Debug("Uid [%d] send friend-del to uid [%d]!", req.GetSuid(), req.GetDuid())
 
 	/* > 进行业务处理 */
 	code, err = ctx.friend_del_handler(head, req, data)
@@ -557,9 +557,9 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
 	ctm := time.Now().Unix()
 
 	/* > 加入用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetOrig())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetSuid())
 
-	_, err = rds.Do("ZADD", key, ctm, req.GetDest())
+	_, err = rds.Do("ZADD", key, ctm, req.GetDuid())
 	if nil != err {
 		ctx.log.Error("Add into blacklist failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
@@ -711,7 +711,7 @@ func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint3
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.blacklist_add_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetSuid() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.blacklist_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
@@ -791,9 +791,9 @@ func (ctx *UsrSvrCntx) blacklist_del_handler(
 	defer rds.Close()
 
 	/* > 移除用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetOrig())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetSuid())
 
-	_, err = rds.Do("ZREM", key, req.GetDest())
+	_, err = rds.Do("ZREM", key, req.GetDuid())
 	if nil != err {
 		ctx.log.Error("Remove blacklist failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
@@ -945,7 +945,7 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.blacklist_del_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetSuid() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.blacklist_del_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
@@ -1027,9 +1027,9 @@ func (ctx *UsrSvrCntx) gag_add_handler(
 	ctm := time.Now().Unix()
 
 	/* > 移除用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_GAG_ZSET, req.GetOrig())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_GAG_ZSET, req.GetSuid())
 
-	_, err = rds.Do("ZADD", key, ctm, req.GetDest())
+	_, err = rds.Do("ZADD", key, ctm, req.GetDuid())
 	if nil != err {
 		ctx.log.Error("Add into gag-list failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
@@ -1181,7 +1181,7 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.gag_add_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetSuid() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.gag_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
@@ -1261,9 +1261,9 @@ func (ctx *UsrSvrCntx) gag_del_handler(
 	defer rds.Close()
 
 	/* > 移除用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_GAG_ZSET, req.GetOrig())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_GAG_ZSET, req.GetSuid())
 
-	_, err = rds.Do("ZREM", key, req.GetDest())
+	_, err = rds.Do("ZREM", key, req.GetDuid())
 	if nil != err {
 		ctx.log.Error("Remove gag failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
@@ -1415,7 +1415,7 @@ func UsrSvrGagDelHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
 		ctx.gag_del_failed(head, req, code, err.Error())
 		return -1
-	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetOrig() {
+	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetSuid() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
 		ctx.gag_del_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)

@@ -234,8 +234,8 @@ struct  _MesgKick
 struct  _MesgChat
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
   uint32_t level;
   uint64_t time;
   char *text;
@@ -250,8 +250,8 @@ struct  _MesgChat
 struct  _MesgChatAck
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
   uint32_t code;
   char *errmsg;
 };
@@ -263,8 +263,8 @@ struct  _MesgChatAck
 struct  _MesgFriendAdd
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
   char *mark;
 };
 #define MESG_FRIEND_ADD__INIT \
@@ -286,8 +286,8 @@ struct  _MesgFriendAddAck
 struct  _MesgFriendDel
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
 };
 #define MESG_FRIEND_DEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_friend_del__descriptor) \
@@ -308,8 +308,8 @@ struct  _MesgFriendDelAck
 struct  _MesgBlacklistAdd
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
 };
 #define MESG_BLACKLIST_ADD__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_blacklist_add__descriptor) \
@@ -330,8 +330,8 @@ struct  _MesgBlacklistAddAck
 struct  _MesgBlacklistDel
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
 };
 #define MESG_BLACKLIST_DEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_blacklist_del__descriptor) \
@@ -352,8 +352,8 @@ struct  _MesgBlacklistDelAck
 struct  _MesgGagAdd
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
 };
 #define MESG_GAG_ADD__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_gag_add__descriptor) \
@@ -374,8 +374,8 @@ struct  _MesgGagAddAck
 struct  _MesgGagDel
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
 };
 #define MESG_GAG_DEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_gag_del__descriptor) \
@@ -396,8 +396,8 @@ struct  _MesgGagDelAck
 struct  _MesgMarkAdd
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
   uint64_t mark;
 };
 #define MESG_MARK_ADD__INIT \
@@ -419,8 +419,8 @@ struct  _MesgMarkAddAck
 struct  _MesgMarkDel
 {
   ProtobufCMessage base;
-  uint64_t orig;
-  uint64_t dest;
+  uint64_t suid;
+  uint64_t duid;
 };
 #define MESG_MARK_DEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_mark_del__descriptor) \

@@ -80,8 +80,8 @@ int chat_send(sdk_cntx_t *ctx)
     MesgChat chat = MESG_CHAT__INIT;
 
     /* > 设置ONLINE字段 */
-    chat.orig = conf->uid;
-    chat.dest = 18610485118;
+    chat.suid = conf->uid;
+    chat.duid = 18610485118;
     chat.level = 0;
     chat.time = (uint64_t)time(NULL);
     chat.text = "This is just a test!";
