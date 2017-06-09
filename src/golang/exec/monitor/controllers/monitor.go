@@ -6,9 +6,9 @@ import (
 	"github.com/astaxie/beego/logs"
 	"github.com/garyburd/redigo/redis"
 
-	"beehive-im/src/golang/lib/cache"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/log"
+	"beehive-im/src/golang/lib/rdb"
 	"beehive-im/src/golang/lib/rtmq"
 
 	"beehive-im/src/golang/exec/monitor/controllers/conf"
@@ -47,7 +47,7 @@ func MonInit(conf *conf.MonConf) (ctx *MonSvrCntx, err error) {
 	}
 
 	/* > REDIS连接池 */
-	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 512)
+	ctx.redis = rdb.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 512)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s passwd:%s",
 			conf.Redis.Addr, conf.Redis.Passwd)

@@ -10,11 +10,11 @@ import (
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 
-	"beehive-im/src/golang/lib/cache"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/dbase"
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/mesg/seqsvr"
+	"beehive-im/src/golang/lib/rdb"
 	"beehive-im/src/golang/lib/rtmq"
 	"beehive-im/src/golang/lib/thrift_pool"
 
@@ -90,11 +90,11 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 		return nil, err
 	}
 
-	///* > 创建侦听层列表 */
+	/* > 创建侦听层列表 */
 	ctx.listend.types = make(map[int]*UsrSvrLsndList)
 
 	/* > REDIS连接池 */
-	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 2048)
+	ctx.redis = rdb.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 2048)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s", conf.Redis.Addr)
 		return nil, errors.New("Create redis pool failed!")

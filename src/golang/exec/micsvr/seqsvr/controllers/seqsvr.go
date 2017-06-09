@@ -10,9 +10,9 @@ import (
 	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 
-	"beehive-im/src/golang/lib/cache"
 	"beehive-im/src/golang/lib/dbase"
 	"beehive-im/src/golang/lib/log"
+	"beehive-im/src/golang/lib/rdb"
 
 	"beehive-im/src/golang/exec/micsvr/seqsvr/controllers/conf"
 )
@@ -96,7 +96,7 @@ func SeqSvrInit(conf *conf.SeqSvrConf) (ctx *SeqSvrCntx, err error) {
 	}
 
 	/* > REDIS连接池 */
-	ctx.redis = cache.CreateRedisPool(conf.Redis.Addr, conf.Redis.Passwd, 512)
+	ctx.redis = rdb.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 512)
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s passwd:%s",
 			conf.Redis.Addr, conf.Redis.Passwd)
