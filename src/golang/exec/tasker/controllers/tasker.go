@@ -56,6 +56,7 @@ func TaskerInit(conf *conf.TaskerConf) (ctx *TaskerCntx, err error) {
 	/* > 初始化RTMQ-PROXY */
 	ctx.frwder = rtmq.ProxyInit(&conf.Frwder, ctx.log)
 	if nil == ctx.frwder {
+		ctx.log.Error("Init rtmq proxy failed! addr:%s", conf.Frwder.RemoteAddr)
 		return nil, err
 	}
 

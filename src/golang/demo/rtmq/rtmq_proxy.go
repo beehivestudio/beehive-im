@@ -91,7 +91,7 @@ func main() {
 	/* > 初始化RTMQ-PROXY对象 */
 	pxy := rtmq.ProxyInit(conf, log)
 	if nil == pxy {
-		log.Error("Rtmq proxy init failed!")
+		ctx.log.Error("Init rtmq proxy failed! addr:%s", conf.RemoteAddr)
 		return
 	}
 

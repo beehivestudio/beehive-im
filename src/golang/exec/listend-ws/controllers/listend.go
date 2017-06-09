@@ -98,7 +98,7 @@ func LsndInit(conf *conf.LsndConf) (ctx *LsndCntx, err error) {
 	/* > 初始化RTMQ-PROXY */
 	ctx.frwder = rtmq.ProxyInit(&conf.Frwder, ctx.log)
 	if nil == ctx.frwder {
-		ctx.log.Error("Initialize rtmq proxy failed!")
+		ctx.log.Error("Init rtmq proxy failed! addr:%s", conf.Frwder.RemoteAddr)
 		return nil, errors.New("Initialize rtmq proxy failed!")
 	}
 
