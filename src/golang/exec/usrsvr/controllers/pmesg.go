@@ -1026,7 +1026,7 @@ func (ctx *UsrSvrCntx) gag_add_handler(
 
 	ctm := time.Now().Unix()
 
-	/* > 移除用户黑名单 */
+	/* > 加入禁言列表 */
 	key := fmt.Sprintf(comm.CHAT_KEY_USR_GAG_ZSET, req.GetSuid())
 
 	_, err = rds.Do("ZADD", key, ctm, req.GetDuid())
