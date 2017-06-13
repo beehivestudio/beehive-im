@@ -10,6 +10,7 @@ import (
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/mongo"
 	"beehive-im/src/golang/lib/rdb"
 	"beehive-im/src/golang/lib/rtmq"
 
@@ -65,6 +66,7 @@ type MsgSvrCntx struct {
 	log             *logs.BeeLogger     /* 日志对象 */
 	frwder          *rtmq.Proxy         /* 代理对象 */
 	redis           *redis.Pool         /* REDIS连接池 */
+	mongo           *mongo.Pool         /* MONGO连接池 */
 	room            RoomMap             /* 聊天室映射 */
 	group           GroupMap            /* 群组映射 */
 	room_mesg_chan  chan *MesgRoomItem  /* 聊天室消息存储队列 */
@@ -102,6 +104,14 @@ func MsgSvrInit(conf *conf.MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 		ctx.log.Error("Create redis pool failed! addr:%s passwd:%s",
 			conf.Redis.Addr, conf.Redis.Passwd)
 		return nil, errors.New("Create redis pool failed!")
+	}
+
+	/* > MONGO连接池 */
+	ctx.mongo, err = mongo.CreatePool(conf.Mongo.Addr, conf.Mongo.Passwd)
+	if nil == err {
+		ctx.log.Error("Connect to mongo failed! addr:%s errmsg:%s",
+			conf.Mongo.Addr, err.Error())
+		return nil, errors.New("Connect to mongo failed!")
 	}
 
 	/* > 初始化RTMQ-PROXY */
