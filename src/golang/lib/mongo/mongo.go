@@ -45,11 +45,11 @@ func (pool *Pool) Get() *mgo.Session {
 }
 
 /******************************************************************************
- **函数名称: Collection
- **功    能: 回收连接
+ **函数名称: Exec
+ **功    能: 执行MONGO操作
  **输入参数:
  **     db: 数据库名
- **     c: collection名
+ **     cn: collection名
  **     cb: 处理回调
  **输出参数: NONE
  **返    回: 错误信息
@@ -57,11 +57,11 @@ func (pool *Pool) Get() *mgo.Session {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.12 23:28:27 #
  ******************************************************************************/
-func (pool *Pool) Exec(db string, c string, cb func(*mgo.Collection) error) error {
+func (pool *Pool) Exec(db string, cn string, cb func(*mgo.Collection) error) error {
 	session := pool.Get()
 	defer session.Close()
 
-	coll := session.DB(db).C(c)
+	c := session.DB(db).C(cn)
 
-	return cb(coll)
+	return cb(c)
 }
