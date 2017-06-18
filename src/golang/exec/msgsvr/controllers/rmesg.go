@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"labix.org/v2/mgo"
+
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
@@ -349,6 +351,13 @@ func (ctx *MsgSvrCntx) task_room_mesg_chan_pop() {
 	}
 }
 
+type ChatRoomData struct {
+	Rid  uint64 "rid"  // 聊天室ID
+	Uid  uint64 "uid"  // 用户UID
+	Ctm  int64  "ctm"  // 发送时间
+	Data []byte "data" // 原始数据包
+}
+
 /******************************************************************************
  **函数名称: storage
  **功    能: 聊天室消息的存储处理
@@ -367,8 +376,33 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
 		pl.Close()
 	}()
 
+	/* > 解析PB协议 */
+	chat := &mesg.MesgRoomChat{}
+
+	err := proto.Unmarshal(item.raw[comm.MESG_HEAD_SIZE:], chat)
+	if nil != err {
+		ctx.log.Error("Unmarshal room-chat-mesg failed!")
+		return
+	}
+
+	/* > 提交REDIS缓存 */
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_MESG_QUEUE, item.req.GetRid())
 	pl.Send("LPUSH", key, item.raw[comm.MESG_HEAD_SIZE:])
+
+	/* > 提交MONGO存储 */
+	data := &ChatRoomData{
+		Rid:  chat.GetRid(),
+		Uid:  chat.GetUid(),
+		Ctm:  time.Now().Unix(),
+		Data: item.raw,
+	}
+
+	cb := func(c *mgo.Collection) (err error) {
+		c.Insert(data)
+		return err
+	}
+
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, "chatroom", cb)
 }
 
 /******************************************************************************

@@ -108,7 +108,7 @@ func MsgSvrInit(conf *conf.MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 
 	/* > MONGO连接池 */
 	ctx.mongo, err = mongo.CreatePool(conf.Mongo.Addr, conf.Mongo.Passwd)
-	if nil == err {
+	if nil != err {
 		ctx.log.Error("Connect to mongo failed! addr:%s errmsg:%s",
 			conf.Mongo.Addr, err.Error())
 		return nil, errors.New("Connect to mongo failed!")
