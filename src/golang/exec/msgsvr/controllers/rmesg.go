@@ -351,7 +351,7 @@ func (ctx *MsgSvrCntx) task_room_mesg_chan_pop() {
 	}
 }
 
-type ChatRoomData struct {
+type RoomChatRow struct {
 	Rid  uint64 "rid"  // 聊天室ID
 	Uid  uint64 "uid"  // 用户UID
 	Ctm  int64  "ctm"  // 发送时间
@@ -390,7 +390,7 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
 	pl.Send("LPUSH", key, item.raw[comm.MESG_HEAD_SIZE:])
 
 	/* > 提交MONGO存储 */
-	data := &ChatRoomData{
+	data := &RoomChatRow{
 		Rid:  chat.GetRid(),
 		Uid:  chat.GetUid(),
 		Ctm:  time.Now().Unix(),
@@ -402,7 +402,7 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
 		return err
 	}
 
-	ctx.mongo.Exec(ctx.conf.Mongo.DbName, "chatroom", cb)
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, "room-mesg", cb)
 }
 
 /******************************************************************************
