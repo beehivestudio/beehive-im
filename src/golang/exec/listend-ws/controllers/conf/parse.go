@@ -75,6 +75,7 @@ type LsndConfRtmqProxyXmlData struct {
 type LsndConfXmlData struct {
 	Name      xml.Name                 `xml:"LISTEND"`   // 根结点名
 	Id        uint32                   `xml:"ID,attr"`   // 结点ID
+	Gid       uint32                   `xml:"GID,attr"`  // 分组ID
 	Log       LsndConfLogXmlData       `xml:"LOG"`       // 日志配置
 	Operator  LsndConfOperatorXmlData  `xml:"OPERATOR"`  // 运营商信息
 	WebSocket LsndConfWebsocketXmlData `xml:"WEBSOCKET"` // WEBSOCKET配置
@@ -115,9 +116,15 @@ func (conf *LsndConf) parse() (err error) {
 
 	/* > 解析配置文件 */
 	/* 结点ID */
-	conf.NodeId = node.Id
-	if 0 == conf.NodeId {
+	conf.Id = node.Id
+	if 0 == conf.Id {
 		return errors.New("Get node id failed!")
+	}
+
+	/* 分组ID */
+	conf.Gid = node.Gid
+	if 0 == conf.Gid {
+		return errors.New("Get gid failed!")
 	}
 
 	/* > 日志配置 */
@@ -142,7 +149,8 @@ func (conf *LsndConf) parse() (err error) {
 	conf.WebSocket.SendqMax = node.WebSocket.Sendq.Max          // 发送队列长度
 
 	/* > FRWDER配置 */
-	conf.Frwder.NodeId = conf.NodeId
+	conf.Frwder.Id = conf.Id
+	conf.Frwder.Gid = conf.Gid
 
 	/* 鉴权信息 */
 	conf.Frwder.Usr = node.Frwder.Auth.Usr

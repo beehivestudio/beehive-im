@@ -11,7 +11,8 @@ import (
 
 /* 侦听层配置 */
 type LsndConf struct {
-	NodeId    uint32                  // 结点ID
+	Id        uint32                  // 结点ID
+	Gid       uint32                  // 分组ID
 	WorkPath  string                  // 工作路径(自动获取)
 	AppPath   string                  // 程序路径(自动获取)
 	ConfPath  string                  // 配置路径(自动获取)
@@ -50,7 +51,12 @@ func Load(path string) (conf *LsndConf, err error) {
 
 /* 获取结点ID */
 func (conf *LsndConf) GetNid() uint32 {
-	return conf.NodeId
+	return conf.Id
+}
+
+/* 获取分组ID */
+func (conf *LsndConf) GetGid() uint32 {
+	return conf.Gid
 }
 
 /* 获取运营商ID */

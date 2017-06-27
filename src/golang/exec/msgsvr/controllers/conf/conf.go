@@ -10,7 +10,8 @@ import (
 
 /* 在线中心配置 */
 type MsgSvrConf struct {
-	NodeId   uint32          // 结点ID
+	Id       uint32          // 结点ID
+	Gid      uint32          // 分组ID
 	WorkPath string          // 工作路径(自动获取)
 	AppPath  string          // 程序路径(自动获取)
 	ConfPath string          // 配置路径(自动获取)
@@ -52,5 +53,10 @@ func Load(path string) (conf *MsgSvrConf, err error) {
 
 /* 获取结点ID */
 func (conf *MsgSvrConf) GetNid() uint32 {
-	return conf.NodeId
+	return conf.Id
+}
+
+/* 获取分组ID */
+func (conf *MsgSvrConf) GetGid() uint32 {
+	return conf.Gid
 }

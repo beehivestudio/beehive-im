@@ -68,6 +68,7 @@ type UsrSvrRtmqProxyConf struct {
 type UsrSvrConfXmlData struct {
 	Name   xml.Name            `xml:"USRSVR"`    // 根结点名
 	Id     uint32              `xml:"ID,attr"`   // 结点ID
+	Gid    uint32              `xml:"GID,attr"`  // 分组ID
 	Port   int16               `xml:"PORT,attr"` // HTTP侦听端口
 	Seqsvr UsrSvrSeqsvrConf    `xml:"SEQSVR"`    // Seqsvr配置
 	Redis  UsrSvrRedisConf     `xml:"REDIS"`     // Redis配置
@@ -112,9 +113,15 @@ func (conf *UsrSvrConf) parse() (err error) {
 
 	/* > 解析配置文件 */
 	/* 结点ID */
-	conf.NodeId = node.Id
-	if 0 == conf.NodeId {
+	conf.Id = node.Id
+	if 0 == conf.Id {
 		return errors.New("Get node id failed!")
+	}
+
+	/* 分组ID */
+	conf.Gid = node.Gid
+	if 0 == conf.Gid {
+		return errors.New("Get gid failed!")
 	}
 
 	/* HTTP侦听端口(PORT) */
@@ -197,7 +204,8 @@ func (conf *UsrSvrConf) parse() (err error) {
 	}
 
 	/* FRWDER配置 */
-	conf.Frwder.NodeId = conf.NodeId
+	conf.Frwder.Id = conf.Id
+	conf.Frwder.Gid = conf.Gid
 
 	/* 鉴权信息 */
 	conf.Frwder.Usr = node.Frwder.Auth.Usr
