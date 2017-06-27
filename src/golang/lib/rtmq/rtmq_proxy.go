@@ -45,14 +45,12 @@ const (
 /* 命令类型 */
 const (
 	RTMQ_CMD_UNKNOWN             = 0      /* 未知命令 */
-	RTMQ_CMD_LINK_AUTH_REQ       = 0x0001 /* 链路鉴权请求 */
-	RTMQ_CMD_LINK_AUTH_ACK       = 0x0002 /* 链路鉴权应答 */
+	RTMQ_CMD_AUTH_REQ            = 0x0001 /* 链路鉴权请求 */
+	RTMQ_CMD_AUTH_ACK            = 0x0002 /* 链路鉴权应答 */
 	RTMQ_CMD_KPALIVE_REQ         = 0x0003 /* 链路保活请求 */
 	RTMQ_CMD_KPALIVE_ACK         = 0x0004 /* 链路保活应答 */
-	RTMQ_CMD_SUB_ONE_REQ         = 0x0005 /* 订阅请求: 将消息只发送给一个用户 */
-	RTMQ_CMD_SUB_ONE_ACK         = 0x0006 /* 订阅应答 */
-	RTMQ_CMD_SUB_ALL_REQ         = 0x0007 /* 订阅请求: 将消息发送给所有用户 */
-	RTMQ_CMD_SUB_ALL_ACK         = 0x0008 /* 订阅应答 */
+	RTMQ_CMD_SUB_REQ             = 0x0005 /* 订阅请求: 将消息只发送给一个用户 */
+	RTMQ_CMD_SUB_ACK             = 0x0006 /* 订阅应答 */
 	RTMQ_CMD_ADD_SCK             = 0x0009 /* 接收客户端数据-请求 */
 	RTMQ_CMD_DIST_REQ            = 0x000A /* 分发任务请求 */
 	RTMQ_CMD_PROC_REQ            = 0x000B /* 处理客户端数据-请求 */
@@ -68,7 +66,8 @@ const (
 
 /* 配置信息 */
 type ProxyConf struct {
-	NodeId      uint32 /* 结点ID */
+	Id          uint32 /* 结点ID */
+	Gid         uint32 /* 分组ID */
 	Usr         string /* 用户名 */
 	Passwd      string /* 登录密码 */
 	RemoteAddr  string /* 对端IP地址 */
@@ -334,7 +333,7 @@ func (ctx *Proxy) AsyncSend(cmd uint32, data []byte, length uint32) int {
 	head := &RtmqHeader{}
 
 	head.cmd = cmd
-	head.nid = ctx.conf.NodeId
+	head.nid = ctx.conf.Id
 	head.length = length
 	head.flag = RTMQ_USR_DATA
 	head.chksum = RTMQ_CHKSUM_VAL
@@ -712,7 +711,7 @@ func (c *ProxyConn) keepalive() {
 	head := &RtmqHeader{}
 
 	head.cmd = RTMQ_CMD_KPALIVE_REQ
-	head.nid = conf.NodeId
+	head.nid = conf.Id
 	head.flag = RTMQ_SYS_DATA
 	head.length = 0
 	head.chksum = RTMQ_CHKSUM_VAL
@@ -743,8 +742,13 @@ type RtmqAuthRsp struct {
 /* 设置鉴权请求 */
 func rtmq_set_auth_req(conf *ProxyConf, p *RtmqPacket) {
 	off := 0
-	copy(p.body[:RTMQ_USR_MAX_LEN], []byte(conf.Usr))
+
+	binary.BigEndian.PutUint32(p.body[0:4], conf.Gid)
+	off += 4
+
+	copy(p.body[off:off+RTMQ_USR_MAX_LEN], []byte(conf.Usr))
 	off += RTMQ_USR_MAX_LEN
+
 	copy(p.body[off:off+RTMQ_PWD_MAX_LEN], []byte(conf.Passwd))
 }
 
@@ -765,8 +769,8 @@ func (c *ProxyConn) auth() {
 	/* > 设置头部数据 */
 	head := &RtmqHeader{}
 
-	head.cmd = RTMQ_CMD_LINK_AUTH_REQ
-	head.nid = conf.NodeId
+	head.cmd = RTMQ_CMD_AUTH_REQ
+	head.nid = conf.Id
 	head.flag = RTMQ_SYS_DATA
 	head.length = uint32(binary.Size(RtmqAuthReq{}))
 	head.chksum = RTMQ_CHKSUM_VAL
@@ -811,8 +815,8 @@ func (c *ProxyConn) subscribe() {
 		/* > 设置头部数据 */
 		head := &RtmqHeader{}
 
-		head.cmd = RTMQ_CMD_SUB_ONE_REQ
-		head.nid = conf.NodeId
+		head.cmd = RTMQ_CMD_SUB_REQ
+		head.nid = conf.Id
 		head.flag = RTMQ_SYS_DATA
 		head.length = uint32(binary.Size(RtmqSubReq{}))
 		head.chksum = RTMQ_CHKSUM_VAL
@@ -847,7 +851,7 @@ func (c *ProxyConn) subscribe() {
  ******************************************************************************/
 func (c *ProxyConn) mesg_handler(cmd uint32, p *RtmqRecvPacket) bool {
 	switch cmd {
-	case RTMQ_CMD_LINK_AUTH_ACK:
+	case RTMQ_CMD_AUTH_ACK:
 		return c.auth_ack_handler(p)
 	case RTMQ_CMD_KPALIVE_ACK:
 		return c.keepalive_ack_handler(p)

@@ -73,7 +73,8 @@ func main() {
 	/* > 加载配置 */
 	conf := &rtmq.ProxyConf{}
 
-	conf.NodeId = 1
+	conf.Id = 1
+	conf.Gid = 10
 	conf.Usr = "qifeng"
 	conf.Passwd = "111111"
 	conf.RemoteAddr = "127.0.0.1:10000"
