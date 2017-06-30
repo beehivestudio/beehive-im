@@ -120,6 +120,38 @@ void *vector_find(vector_t *vec, find_cb_t find, void *args)
 }
 
 /******************************************************************************
+ **函数名称: vector_find_and_del
+ **功    能: 查找并删除数据
+ **输入参数:
+ **     vec: VEC对象
+ **     find: 查找回调
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 查找到的数据地址
+ **实现描述: 查找到数据后, 将最后一个数据填补被删除的空缺.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.01 00:54:02 #
+ ******************************************************************************/
+void *vector_find_and_del(vector_t *vec, find_cb_t find, void *args)
+{
+    int idx;
+    void *addr;
+
+    for (idx=0; idx<vec->len; ++idx) {
+        if (find(vec->arr[idx], args)) {
+            addr = vec->arr[idx];
+            if (idx != (vec->len-1)) {
+                vec->arr[idx] = vec->arr[vec->len - 1];
+            }
+            vec->arr[vec->len - 1] = NULL;
+            --vec->len;
+            return addr;
+        }
+    }
+    return NULL;
+}
+
+/******************************************************************************
  **函数名称: vector_del_by_idx
  **功    能: 通过idx删除数据
  **输入参数:

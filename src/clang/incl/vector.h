@@ -20,6 +20,7 @@ typedef struct
 vector_t *vector_creat(int cap, int incr);
 int vector_append(vector_t *vec, void *addr);
 void *vector_find(vector_t *vec, find_cb_t find, void *args);
+void *vector_find_and_del(vector_t *vec, find_cb_t find, void *args);
 void *vector_get(vector_t *vec, int idx);
 int vector_index(vector_t *vec, void *addr);
 void *vector_del_by_idx(vector_t *vec, int idx);

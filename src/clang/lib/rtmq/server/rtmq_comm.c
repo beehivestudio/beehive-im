@@ -69,18 +69,17 @@ int rtmq_cmd_to_rsvr(rtmq_cntx_t *ctx, int cmd_sck_id, const rtmq_cmd_t *cmd, in
  **功    能: 链路鉴权检测
  **输入参数:
  **     ctx: 全局对象
- **     link_auth_req: 鉴权请求
+ **     auth: 鉴权请求
  **输出参数: NONE
  **返    回: succ:成功 fail:失败
  **实现描述: 检测用户名和密码是否正确
  **注意事项:
  **作    者: # Qifeng.zou # 2015.05.22 #
  ******************************************************************************/
-int rtmq_link_auth_check(rtmq_cntx_t *ctx, rtmq_link_auth_req_t *link_auth_req)
+int rtmq_link_auth_check(rtmq_cntx_t *ctx, rtmq_link_auth_req_t *auth)
 {
-    return rtmq_auth_check(ctx,
-            link_auth_req->usr,
-            link_auth_req->passwd)?  RTMQ_LINK_AUTH_SUCC : RTMQ_LINK_AUTH_FAIL;
+    return rtmq_auth_check(ctx, auth->usr, auth->passwd)?
+        RTMQ_LINK_AUTH_SUCC : RTMQ_LINK_AUTH_FAIL;
 }
 
 /******************************************************************************
@@ -255,6 +254,9 @@ int rtmq_node_to_svr_map_rand(rtmq_cntx_t *ctx, int nid)
     return rsvr_id;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// 订阅表的操作
+
 /* 订阅哈希回调 */
 static uint64_t rtmq_sub_tab_hash_cb(const rtmq_sub_list_t *list)
 {
@@ -267,69 +269,313 @@ static int rtmq_sub_tab_cmp_cb(const rtmq_sub_list_t *list1, const rtmq_sub_list
     return (list1->type - list2->type);
 }
 
-int rtmq_sub_mgr_init(rtmq_sub_mgr_t *sub)
+/******************************************************************************
+ **函数名称: rtmq_sub_init
+ **功    能: 初始化订阅表
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 使用hash表管理订阅列表
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.06.28 22:11:53 #
+ ******************************************************************************/
+int rtmq_sub_init(rtmq_cntx_t *ctx)
 {
-    /* > 创建ONE订阅表 */
-    sub->sub_one_tab = hash_tab_creat(100,
+    /* > 创建订阅表 */
+    ctx->sub = hash_tab_creat(100,
             (hash_cb_t)rtmq_sub_tab_hash_cb,
             (cmp_cb_t)rtmq_sub_tab_cmp_cb, NULL);
-    if (NULL == sub->sub_one_tab) {
-        return RTMQ_ERR;
-    }
-
-    /* > 创建ALL订阅表 */
-    sub->sub_all_tab = hash_tab_creat(100,
-            (hash_cb_t)rtmq_sub_tab_hash_cb,
-            (cmp_cb_t)rtmq_sub_tab_cmp_cb, NULL);
-    if (NULL == sub->sub_all_tab) {
+    if (NULL == ctx->sub) {
         return RTMQ_ERR;
     }
 
     return RTMQ_OK;
 }
 
+/* 订阅分组比较 */
+static int rtmq_sub_group_cmp_cb(rtmq_sub_group_t *g1, rtmq_sub_group_t *g2)
+{
+    return (int)(g1->gid - g2->gid);
+}
+
 /******************************************************************************
- **函数名称: rtmq_sub_query
- **功    能: 获取订阅type的结点ID
+ **函数名称: rtmq_sub_list_alloc
+ **功    能: 申请订阅列表
  **输入参数:
- **     type: Message type
+ **     type: 消息类型
  **输出参数: NONE
- **返    回: 结点ID(-1:无订阅结点)
+ **返    回: 订阅列表
  **实现描述: 
  **注意事项:
- **作    者: # Qifeng.zou # 2016.04.23 13:29:24 #
+ **作    者: # Qifeng.zou # 2016.04.09 07:07:26 #
  ******************************************************************************/
-int rtmq_sub_query(rtmq_cntx_t *ctx, uint32_t type)
+static rtmq_sub_list_t *rtmq_sub_list_alloc(uint32_t type)
 {
-    int nid;
+    rtmq_sub_list_t *list;
+
+    list = (rtmq_sub_list_t *)calloc(1, sizeof(rtmq_sub_list_t));
+    if (NULL == list) {
+        return NULL;
+    }
+
+    list->groups = avl_creat(NULL, (cmp_cb_t)rtmq_sub_group_cmp_cb);
+    if (NULL == list->groups) {
+        free(list);
+        return NULL;
+    }
+
+    list->type = type;
+
+    return list;
+}
+
+/* 释放订阅列表空间 */
+static int rtmq_sub_group_trav_dealloc_cb(void *data, void *args)
+{
+    rtmq_sub_group_t *group = (rtmq_sub_group_t *)data;
+
+    vector_destroy(group->nodes, mem_dealloc, NULL);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_sub_list_dealloc
+ **功    能: 释放订阅列表
+ **输入参数:
+ **     list: 订阅列表
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 回收订阅列表的所有空间
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.04.09 07:07:26 #
+ ******************************************************************************/
+static void rtmq_sub_list_dealloc(rtmq_sub_list_t *list)
+{
+    avl_trav(list->groups, rtmq_sub_group_trav_dealloc_cb, NULL);
+    avl_destroy(list->groups, mem_dealloc, NULL);
+    free(list);
+}
+
+/******************************************************************************
+ **函数名称: rtmq_sub_group_alloc
+ **功    能: 申请订阅组
+ **输入参数:
+ **     type: 消息类型
+ **输出参数: NONE
+ **返    回: 订阅列表
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.01 00:20:41 #
+ ******************************************************************************/
+static rtmq_sub_group_t *rtmq_sub_group_alloc(uint32_t gid)
+{
+    rtmq_sub_group_t *group;
+
+    /* 1. 创建group对象 */
+    group = (rtmq_sub_group_t *)calloc(1, sizeof(rtmq_sub_group_t));
+    if (NULL == group) {
+        return NULL;
+    }
+
+    group->gid = gid;
+
+    /* 2. 创建结点列表 */
+    group->nodes = vector_creat(512, 128);
+    if (NULL == group->nodes) {
+        free(group);
+        return NULL;
+    }
+
+    return group;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_sub_group_dealloc
+ **功    能: 释放订阅组
+ **输入参数:
+ **     group: 订阅分组
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 回收订阅分组对象的空间
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.01 00:20:41 #
+ ******************************************************************************/
+static void rtmq_sub_group_dealloc(rtmq_sub_group_t *group)
+{
+    vector_destroy(group->nodes, mem_dealloc, NULL);
+    free(group);
+}
+
+/******************************************************************************
+ **函数名称: rtmq_sub_node_alloc
+ **功    能: 申请订阅结点
+ **输入参数:
+ **     type: 消息类型
+ **输出参数: NONE
+ **返    回: 订阅结点
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.01 00:40:15 #
+ ******************************************************************************/
+static rtmq_sub_node_t *rtmq_sub_node_alloc(uint32_t nid, uint64_t sid)
+{
+    rtmq_sub_node_t *node;
+
+    node = (rtmq_sub_node_t *)calloc(1, sizeof(rtmq_sub_node_t));
+    if (NULL == node) {
+        return NULL;
+    }
+
+    node->sid = sid;
+    node->nid = nid;
+
+    return node;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_sub_add
+ **功    能: 添加订阅列表
+ **输入参数:
+ **     ctx: 全局对象
+ **     sck: 连接对象
+ **     type: 订阅消息
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.04.09 07:07:26 #
+ ******************************************************************************/
+int rtmq_sub_add(rtmq_cntx_t *ctx, rtmq_sck_t *sck, int type)
+{
     rtmq_sub_node_t *node;
     rtmq_sub_list_t *list, key;
-    rtmq_sub_mgr_t *sub = &ctx->sub_mgr;
+    rtmq_sub_group_t *group, gkey;
 
+    /* 1. 根据type查找/添加订阅列表 */
+QUERY_SUB_TAB:
     key.type = type;
 
-    list = hash_tab_query(sub->sub_one_tab, &key, RDLOCK);
+    list = (rtmq_sub_list_t *)hash_tab_query(ctx->sub, (void *)&key, WRLOCK);
     if (NULL == list) {
-        log_debug(ctx->log, "No module sub this type! type:%d", type);
-        return -1;
-    }
-    else if (0 == list2_len(list->nodes)) {
-        hash_tab_unlock(sub->sub_one_tab, &key, RDLOCK);
-        log_debug(ctx->log, "No module sub this type! type:%d", type);
-        return -1;
+        list = (rtmq_sub_list_t *)rtmq_sub_list_alloc(type);
+        if (NULL == list) {
+            log_error(ctx->log, "Alloc sub list failed! type:0x%04X", type);
+            return RTMQ_ERR;
+        }
+
+        if (hash_tab_insert(ctx->sub, (void *)list, WRLOCK)) {
+            rtmq_sub_list_dealloc(list);
+            log_error(ctx->log, "Insert sub table failed! type:0x%04X", type);
+            return RTMQ_ERR;
+        }
+        goto QUERY_SUB_TAB;
     }
 
-    node = (rtmq_sub_node_t *)list2_roll(list->nodes);
+    /* 2. 根据gid查找/添加订阅列表中的分组 */
+QUERY_SUB_GROUP:
+    gkey.gid = sck->gid;
+
+    group = avl_query(list->groups, &gkey);
+    if (NULL == group) {
+        group = rtmq_sub_group_alloc(sck->gid);
+        if (NULL == group) {
+            hash_tab_unlock(ctx->sub, &key, WRLOCK);
+            log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
+            return RTMQ_ERR;
+        }
+
+        if (avl_insert(list->groups, (void *)group)) {
+            rtmq_sub_group_dealloc(group);
+            goto QUERY_SUB_GROUP;
+        }
+        goto QUERY_SUB_GROUP;
+    }
+
+    /* 3. 根据sid确定是否连接已经订阅此消息 */
+    node = vector_find(group->nodes,
+            (find_cb_t)rtmq_sub_group_find_sid_cb, (void *)&sck->sid);
+    if (NULL != node) {
+        hash_tab_unlock(ctx->sub, &key, WRLOCK);
+        return RTMQ_OK; /* 已订阅 */
+    }
+
+    /* 4. 将连接加入订阅列表的分组中... */
+    node = rtmq_sub_node_alloc(sck->nid, sck->sid);
     if (NULL == node) {
-        hash_tab_unlock(sub->sub_one_tab, &key, RDLOCK);
-        log_debug(ctx->log, "Get sub node failed! type:%d", type);
-        return -1;
+        hash_tab_unlock(ctx->sub, &key, WRLOCK);
+        log_error(ctx->log, "Alloc sub node failed! nid:%d sid:%d", sck->nid, sck->sid);
+        return RTMQ_ERR;
     }
 
-    nid = node->nid;
-    hash_tab_unlock(sub->sub_one_tab, &key, RDLOCK);
+    if (vector_append(group->nodes, (void *)node)) {
+        hash_tab_unlock(ctx->sub, &key, WRLOCK);
+        rtmq_sub_node_dealloc(node);
+        log_error(ctx->log, "Add sub node failed! nid:%d sid:%d", sck->nid, sck->sid);
+        return RTMQ_ERR;
+    }
 
-    log_debug(ctx->log, "Node [%d] has sub type [%d]!", nid, type);
+    hash_tab_unlock(ctx->sub, &key, WRLOCK);
 
-    return nid;
+    log_debug(ctx->log, "Add sub success! type:0x%04X gid:%u nid:%u",
+            type, sck->gid, sck->nid);
+    return RTMQ_OK;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_sub_del
+ **功    能: 删除订阅数据
+ **输入参数:
+ **     ctx: 全局对象
+ **     sck: 连接对象
+ **     type: 订阅消息
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.04.09 07:07:26 #
+ ******************************************************************************/
+int rtmq_sub_del(rtmq_cntx_t *ctx, rtmq_sck_t *sck, int type)
+{
+    rtmq_sub_node_t *node;
+    rtmq_sub_list_t *list, key;
+    rtmq_sub_group_t *group, gkey;
+
+    /* 1. 查询订阅列表 */
+    key.type = type;
+    list = (rtmq_sub_list_t *)hash_tab_query(ctx->sub, &key, WRLOCK);
+    if (NULL == list) {
+        return 0; /* 无数据 */
+    }
+
+    /* 2. 查询订阅列表group分组 */
+    gkey.gid = sck->gid;
+    group = avl_query(list->groups, &gkey); 
+    if (NULL == group) {
+        return 0; /* 无数据 */
+    }
+
+    /* 3. 从订阅列表group分组中删除指定连接 */
+    node = vector_find_and_del(group->nodes,
+            (find_cb_t)rtmq_sub_group_find_sid_cb, (void *)&sck->sid);
+    if (NULL == node) {
+        hash_tab_unlock(ctx->sub, &key, WRLOCK);
+        return 0; /* 未订阅 */
+    }
+
+    /* 4. 回收内存空间 */
+    rtmq_sub_node_dealloc(node);
+
+    if (0 == vector_len(group->nodes)) {
+        avl_delete(list->groups, &gkey, (void **)&group);
+        rtmq_sub_group_dealloc(group);
+        if (0 == avl_num(list->groups)) {
+            hash_tab_delete(ctx->sub, &key, NONLOCK);
+            rtmq_sub_list_dealloc(list);
+        }
+    }
+    hash_tab_unlock(ctx->sub, &key, WRLOCK);
+
+    return 0;
 }

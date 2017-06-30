@@ -81,6 +81,7 @@ typedef struct _rtrd_sck_t
 {
     int fd;                             /* 套接字ID */
     uint32_t nid;                       /* 结点ID */
+    uint32_t gid;                       /* 分组ID */
     uint64_t sid;                       /* 会话ID */
 
     time_t ctm;                         /* 创建时间 */
@@ -163,7 +164,7 @@ typedef struct
     pthread_rwlock_t node_to_svr_map_lock;  /* 读写锁: NODE->SVR映射表 */
     avl_tree_t *node_to_svr_map;        /* NODE->SVR的映射表(以nid为主键 rtmq_node_to_svr_map_t) */
 
-    rtmq_sub_mgr_t sub_mgr;             /* 订阅管理 */
+    hash_tab_t *sub;                   /* 订阅表(注:以type为主键, 存储rtmq_sub_list_t类型) */
 } rtmq_cntx_t;
 
 /* 外部接口 */
@@ -171,7 +172,7 @@ rtmq_cntx_t *rtmq_init(const rtmq_conf_t *conf, log_cycle_t *log);
 int rtmq_register(rtmq_cntx_t *ctx, int type, rtmq_reg_cb_t proc, void *args);
 int rtmq_launch(rtmq_cntx_t *ctx);
 
-int rtmq_sub_query(rtmq_cntx_t *ctx, uint32_t type);
+int rtmq_publish(rtmq_cntx_t *ctx, int type, void *data, size_t len);
 int rtmq_async_send(rtmq_cntx_t *ctx, int type, int dest, void *data, size_t len);
 
 /* 内部接口 */
@@ -202,7 +203,9 @@ int rtmq_node_to_svr_map_add(rtmq_cntx_t *ctx, int nid, int rsvr_idx);
 int rtmq_node_to_svr_map_rand(rtmq_cntx_t *ctx, int nid);
 int rtmq_node_to_svr_map_del(rtmq_cntx_t *ctx, int nid, int rsvr_idx);
 
-int rtmq_sub_mgr_init(rtmq_sub_mgr_t *sub);
+int rtmq_sub_init(rtmq_cntx_t *ctx);
+int rtmq_sub_add(rtmq_cntx_t *ctx, rtmq_sck_t *sck, int type);
+int rtmq_sub_del(rtmq_cntx_t *ctx, rtmq_sck_t *sck, int type);
 
 int rtmq_auth_add(rtmq_cntx_t *ctx, char *usr, char *passwd);
 bool rtmq_auth_check(rtmq_cntx_t *ctx, char *usr, char *passwd);

@@ -6,7 +6,8 @@
 /* 配置信息 */
 typedef struct
 {
-    int nid;                            /* 设备ID: 唯一值 */
+    int nid;                            /* 结点ID: 唯一值 */
+    int gid;                            /* 分组ID */
     char path[FILE_LINE_MAX_LEN];       /* 工作路径 */
 
     struct {

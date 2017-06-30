@@ -1,5 +1,5 @@
 <!-- 代理服务配置信息 -->
-<LISTEND ID="20001">
+<LISTEND GID="20" ID="20001">
     <!-- 日志配置 -->
     <LOG LEVEL="debug" PATH="../log/" />
 

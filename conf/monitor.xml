@@ -1,4 +1,4 @@
-<MONITOR ID="33000"> <!-- ID: 结点ID -->
+<MONITOR GID="33" ID="33000"> <!-- ID: 结点ID -->
     <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
     <REDIS ADDR="127.0.0.1:6379" USR="beehive" PASSWD="111111" /> <!-- REDIS配置 -->
     <MYSQL ADDR="127.0.0.1:7379" USR="beehive" PASSWD="111111" DBNAME="testdb" /> <!-- MYSQL配置 -->

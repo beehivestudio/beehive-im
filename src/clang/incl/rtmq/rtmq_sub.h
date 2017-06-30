@@ -13,18 +13,35 @@ typedef struct
     int nid;                    /* 订阅结点ID */
 } rtmq_sub_node_t;
 
+/* 订阅分组信息 */
+typedef struct
+{
+    uint32_t gid;               /* 分组ID */
+    vector_t *nodes;             /* 订阅结点列表(按组管理rtmq_sub_node_t) */
+} rtmq_sub_group_t;
+
 /* 订阅列表 */
 typedef struct
 {
     uint32_t type;              /* 订阅类型 */
-    list2_t *nodes;             /* 订阅结点列表(数组管理) */
+    avl_tree_t *groups;         /* 订阅结点列表(按组管理rtmq_sub_group_t) */
 } rtmq_sub_list_t;
 
 /* 订阅管理 */
 typedef struct
 {
-    hash_tab_t *sub_one_tab;        /* 订阅表(注:以type为主键, 存储rtmq_sub_list_t类型) */
-    hash_tab_t *sub_all_tab;        /* 订阅表(注:以type为主键, 存储rtmq_sub_list_t类型) */
 } rtmq_sub_mgr_t;
+
+/* 查找订阅列表group中是否存在指定连接 */
+static bool rtmq_sub_group_find_sid_cb(rtmq_sub_node_t *node, uint64_t *sid)
+{
+    return (node->sid == *sid)? true : false;
+}
+
+/* 释放订阅结点 */
+static void rtmq_sub_node_dealloc(rtmq_sub_node_t *node)
+{
+    free(node);
+}
 
 #endif /*__RTMQ_SUB_H__*/

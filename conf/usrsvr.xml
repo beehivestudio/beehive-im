@@ -1,4 +1,4 @@
-<USRSVR ID="30000" PORT="8000"> <!-- ID: 结点ID PORT:HTTP端口 -->
+<USRSVR GID="30" ID="30000" PORT="8000"> <!-- ID: 结点ID PORT:HTTP端口 -->
     <LOG LEVEL="debug" PATH="../log" /> <!-- 日志配置 -->
     <SEQSVR ADDR="127.0.0.1:50000" /> <!-- SEQSVR配置 -->
     <REDIS ADDR="127.0.0.1:6379" USR="beehive" PASSWD="111111" /> <!-- REDIS配置 -->

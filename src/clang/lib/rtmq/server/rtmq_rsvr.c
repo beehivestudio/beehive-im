@@ -686,9 +686,9 @@ static int rtmq_rsvr_sys_mesg_proc(rtmq_cntx_t *ctx,
             head->type, head->nid, head->chksum);
 
     switch (head->type) {
-        case RTMQ_CMD_LINK_AUTH_REQ:
+        case RTMQ_CMD_AUTH_REQ:
             return rtmq_rsvr_link_auth_req_hdl(ctx, rsvr, sck, addr);
-        case RTMQ_CMD_SUB_ONE_REQ:
+        case RTMQ_CMD_SUB_REQ:
             return rtmq_rsvr_sub_req_hdl(ctx, rsvr, sck, addr);
         case RTMQ_CMD_KPALIVE_REQ:
             return rtmq_rsvr_keepalive_req_hdl(ctx, rsvr, sck, addr);
@@ -943,7 +943,7 @@ static int rtmq_rsvr_link_auth_rsp(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck
     head = (rtmq_header_t *)addr;
     link_auth_rsp = (rtmq_link_auth_ack_t *)(head + 1);
 
-    head->type = RTMQ_CMD_LINK_AUTH_ACK;
+    head->type = RTMQ_CMD_AUTH_ACK;
     head->nid = ctx->conf.nid;
     head->length = sizeof(rtmq_link_auth_ack_t);
     head->flag = RTMQ_SYS_MESG;
@@ -981,165 +981,37 @@ static int rtmq_rsvr_link_auth_req_hdl(rtmq_cntx_t *ctx,
         rtmq_rsvr_t *rsvr, rtmq_sck_t *sck, void *addr)
 {
     rtmq_header_t *head;
-    rtmq_link_auth_req_t *link_auth_req;
+    rtmq_link_auth_req_t *auth;
 
     head = (rtmq_header_t *)addr;
-    link_auth_req = (rtmq_link_auth_req_t *)(head + 1);
+    auth = (rtmq_link_auth_req_t *)(head + 1);
+    if (0 == auth->gid) {
+        log_error(rsvr->log, "Auth gid is invalid! nid:%d", head->nid);
+        return RTMQ_ERR;
+    }
+
+    sck->gid = auth->gid;
 
     /* > 验证鉴权合法性 */
-    sck->auth_succ = rtmq_link_auth_check(ctx, link_auth_req);
+    sck->auth_succ = rtmq_link_auth_check(ctx, auth);
     if (sck->auth_succ) {
         sck->nid = head->nid;
-        /* > 插入DEV与SCK的映射 */
+        /* > 插入NID与SCK的映射 */
         if (rtmq_node_to_svr_map_add(ctx, head->nid, rsvr->id)) {
             log_error(rsvr->log, "Insert into sck2dev table failed! fd:%d serial:%ld nid:%d",
                     sck->fd, sck->sid, head->nid);
             return RTMQ_ERR;
         }
         log_debug(rsvr->log, "Auth success! nid:%d usr:%s passwd:%s",
-                head->nid, link_auth_req->usr, link_auth_req->passwd);
+                head->nid, auth->usr, auth->passwd);
     }
     else {
         log_error(rsvr->log, "Auth failed! nid:%d usr:%s passwd:%s",
-                head->nid, link_auth_req->usr, link_auth_req->passwd);
+                head->nid, auth->usr, auth->passwd);
     }
 
     /* > 应答鉴权请求 */
     return rtmq_rsvr_link_auth_rsp(ctx, rsvr, sck);
-}
-
-/******************************************************************************
- **函数名称: rtmq_sub_list_creat
- **功    能: 创建订阅列表
- **输入参数:
- **     type: 消息类型
- **输出参数: NONE
- **返    回: 订阅列表
- **实现描述: 
- **注意事项:
- **作    者: # Qifeng.zou # 2016.04.09 07:07:26 #
- ******************************************************************************/
-static rtmq_sub_list_t *rtmq_sub_list_creat(uint32_t type)
-{
-    rtmq_sub_list_t *list;
-
-    list = (rtmq_sub_list_t *)calloc(1, sizeof(rtmq_sub_list_t));
-    if (NULL == list) {
-        return NULL;
-    }
-
-    list->nodes = (list2_t *)list2_creat(NULL);
-    if (NULL == list->nodes) {
-        free(list);
-        return NULL;
-    }
-
-    list->type = type;
-
-    return list;
-}
-
-/* Free sub list memory */
-static void rtmq_sub_list_free(rtmq_sub_list_t *list)
-{
-    list2_destroy(list->nodes, mem_dealloc, NULL);
-    free(list);
-}
-
-static bool rtmq_find_node_for_vec_cb(rtmq_sub_node_t *node, uint64_t *sid)
-{
-    return (node->sid == *sid)? true : false;
-}
-
-static int rtmq_rsvr_sub_find_or_add(rtmq_cntx_t *ctx, rtmq_sck_t *sck, int type)
-{
-    rtmq_sub_mgr_t *sub;
-    rtmq_sub_node_t *node;
-    rtmq_sub_list_t *list, key;
-
-    /* > Find or add sub node */
-    sub = &ctx->sub_mgr;
-
-QUERY_SUB_ONE_TAB:
-    key.type = type;
-
-    list = (rtmq_sub_list_t *)hash_tab_query(sub->sub_one_tab, (void *)&key, WRLOCK);
-    if (NULL == list) {
-        list = (rtmq_sub_list_t *)rtmq_sub_list_creat(type);
-        if (NULL == list) {
-            log_error(ctx->log, "Create sub list failed!");
-            return RTMQ_ERR;
-        }
-
-        if (hash_tab_insert(sub->sub_one_tab, (void *)list, WRLOCK)) {
-            rtmq_sub_list_free(list);
-            log_error(ctx->log, "Insert sub table failed!");
-            return RTMQ_ERR;
-        }
-        goto QUERY_SUB_ONE_TAB;
-    }
-
-    node = list2_find(list->nodes,
-            (find_cb_t)rtmq_find_node_for_vec_cb, (void *)&sck->sid);
-    if (NULL != node) {
-        hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
-        return RTMQ_OK;
-    }
-
-    /* > Add new node */
-    node = (rtmq_sub_node_t *)calloc(1, sizeof(rtmq_sub_node_t));
-    if (NULL == node) {
-        hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
-        log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
-        return RTMQ_ERR;
-    }
-
-    node->sid = sck->sid;
-    node->nid = sck->nid;
-
-    if (list2_rpush(list->nodes, (void *)node)) {
-        hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
-        log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
-        free(node);
-        return RTMQ_ERR;
-    }
-
-    hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
-    log_debug(ctx->log, "Add sub success! type:%u", type);
-    return RTMQ_OK;
-}
-
-/* 删除订阅数据 */
-static int rtmq_sub_del(rtmq_cntx_t *ctx, rtmq_sck_t *sck, int type)
-{
-    rtmq_sub_mgr_t *sub;
-    rtmq_sub_node_t *node;
-    rtmq_sub_list_t *list, key;
-
-    sub = &ctx->sub_mgr;
-
-    key.type = type;
-
-    list = (rtmq_sub_list_t *)hash_tab_query(sub->sub_one_tab, &key, WRLOCK);
-    if (NULL == list) {
-        return 0;
-    }
-
-    node = list2_find_and_del(list->nodes, (find_cb_t)rtmq_find_node_for_vec_cb, (void *)&sck->sid);
-    if (NULL == node) {
-        hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
-        return 0;
-    }
-
-    free(node);
-
-    if (0 == list2_len(list->nodes)) {
-        hash_tab_delete(sub->sub_one_tab, &key, NONLOCK);
-        free(list);
-    }
-    hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
-
-    return 0;
 }
 
 /* 添加订阅数据 */
@@ -1190,19 +1062,22 @@ static int rtmq_rsvr_sub_req_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t
     rtmq_sub_req_t *req = (rtmq_sub_req_t *)(head + 1);
 
     if (!sck->auth_succ) {
+        log_error(ctx->log, "Didn't auth, drop sub request! type:0x%04X nid:%u gid:%u sid:%lu",
+                req->type, sck->nid, sck->gid, sck->sid);
         return RTMQ_ERR;
     }
 
-    /* > Net to host */
+    /* > 字节序转换(网络->主机) */
     RTMQ_SUB_REQ_NTOH(req, req);
 
-    /* > Find or add sub node */
-    if (rtmq_rsvr_sub_find_or_add(ctx, sck, req->type)) {
-        log_debug(ctx->log, "Sub find or add failed! type:%u", req->type);
+    /* > 查找并添加订阅列表 */
+    if (rtmq_sub_add(ctx, sck, req->type)) {
+        log_debug(ctx->log, "Sub find or add failed! type:0x%04X nid:%u gid:%u sid:%lu",
+                req->type, sck->nid, sck->gid, sck->sid);
         return -1;
     }
 
-    /* > Add item into socket sub list */
+    /* > 添加订阅列表 */
     if (rtmq_rsvr_sck_add_sub(ctx, sck, req->type)) {
         rtmq_sub_del(ctx, sck, req->type);
         log_error(ctx->log, "Add item into sub list failed! type:%u", req->type);
@@ -1294,23 +1169,33 @@ int rtmq_rsvr_sck_sub_item_free(rtmq_rsvr_sck_sub_trav_t *args, rtmq_sub_req_t *
     rtmq_sub_list_t *list, key;
     rtmq_sck_t *sck = args->sck;
     rtmq_cntx_t *ctx = args->ctx;
-    rtmq_sub_mgr_t *sub = &ctx->sub_mgr;
+    rtmq_sub_group_t *group, gkey;
 
+    /* 1. 查找订阅列表 */
     key.type = req->type;
 
-    list = hash_tab_query(sub->sub_one_tab, &key, WRLOCK);
+    list = hash_tab_query(ctx->sub, &key, WRLOCK);
     if (NULL == list) {
         return 0;
     }
 
-    node = list2_find_and_del(list->nodes, (find_cb_t)rtmq_find_node_for_vec_cb, &sck->sid);
-    if (NULL == node) {
-        hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
+    /* 2. 查找订阅列表分组 */
+    gkey.gid = sck->gid;
+
+    group = avl_query(list->groups, &gkey);
+    if (NULL == group) {
         return 0;
     }
-    hash_tab_unlock(sub->sub_one_tab, &key, WRLOCK);
 
-    free(node);
+    /* 3. 从订阅列表分组中删除指定连接 */
+    node = vector_find_and_del(group->nodes, (find_cb_t)rtmq_sub_group_find_sid_cb, &sck->sid);
+    if (NULL == node) {
+        hash_tab_unlock(ctx->sub, &key, WRLOCK);
+        return 0;
+    }
+    hash_tab_unlock(ctx->sub, &key, WRLOCK);
+
+    rtmq_sub_node_dealloc(node);
     free(req);
     return 0;
 }

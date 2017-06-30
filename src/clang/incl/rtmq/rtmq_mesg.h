@@ -13,16 +13,14 @@ typedef enum
 {
     RTMQ_CMD_UNKNOWN                    = 0x0000  /* 未知命令 */
 
-    , RTMQ_CMD_LINK_AUTH_REQ            = 0x0001  /* 链路鉴权请求 */
-    , RTMQ_CMD_LINK_AUTH_ACK            = 0x0002  /* 链路鉴权应答 */
+    , RTMQ_CMD_AUTH_REQ                 = 0x0001  /* 链路鉴权请求 */
+    , RTMQ_CMD_AUTH_ACK                 = 0x0002  /* 链路鉴权应答 */
 
     , RTMQ_CMD_KPALIVE_REQ              = 0x0003  /* 链路保活请求 */
     , RTMQ_CMD_KPALIVE_ACK              = 0x0004  /* 链路保活应答 */
 
-    , RTMQ_CMD_SUB_ONE_REQ              = 0x0005  /* 订阅请求: 将消息只发送给一个用户 */
-    , RTMQ_CMD_SUB_ONE_ACK              = 0x0006  /* 订阅应答 */
-    , RTMQ_CMD_SUB_ALL_REQ              = 0x0007  /* 订阅请求: 将消息发送给所有用户 */
-    , RTMQ_CMD_SUB_ALL_ACK              = 0x0008  /* 订阅应答 */
+    , RTMQ_CMD_SUB_REQ                  = 0x0005  /* 订阅请求: 将消息只发送给一个用户 */
+    , RTMQ_CMD_SUB_ACK                  = 0x0006  /* 订阅应答 */
 
     , RTMQ_CMD_ADD_SCK                  = 0x0009  /* 接收客户端数据-请求 */
     , RTMQ_CMD_DIST_REQ                 = 0x000A  /* 分发任务请求 */
@@ -79,6 +77,7 @@ typedef struct
 /* 链路鉴权请求 */
 typedef struct
 {
+    uint32_t gid;                       /* 分组ID */
     char usr[RTMQ_USR_MAX_LEN];         /* 用户名 */
     char passwd[RTMQ_PWD_MAX_LEN];      /* 登录密码 */
 } rtmq_link_auth_req_t;

@@ -36,6 +36,9 @@ void rtmq_workers_destroy(void *_ctx, void *param);
 static int rtmq_lock_server(const rtmq_conf_t *conf);
 static int rtmq_proc_def_hdl(int type, int orig, char *buff, size_t len, void *param);
 
+static int rtmq_pub_trav_cb(void *data, void *args);
+static int rtmq_pub_group_trav_cb(void *data, void *args);
+
 /******************************************************************************
  **函数名称: rtmq_init
  **功    能: 初始化SDTP接收端
@@ -106,7 +109,7 @@ rtmq_cntx_t *rtmq_init(const rtmq_conf_t *cf, log_cycle_t *log)
         }
 
         /* > 初始化订阅列表 */
-        if (rtmq_sub_mgr_init(&ctx->sub_mgr)) {
+        if (rtmq_sub_init(ctx)) {
             log_error(ctx->log, "Initialize sub list failed!");
             break;
         }
@@ -296,6 +299,39 @@ int rtmq_async_send(rtmq_cntx_t *ctx, int type, int dest, void *data, size_t len
     rtmq_cmd_send_dist_req(ctx);
 
     return RTMQ_OK;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_publish
+ **功    能: 发布消息
+ **输入参数:
+ **     ctx: 全局对象
+ **     type: 消息类型
+ **     data: 需要发送的数据
+ **     len: 发送数据的长度
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 将数据放入应答队列
+ **注意事项: 内存结构: 转发信息(rtmq) + 实际数据
+ **作    者: # Qifeng.zou # 2017.06.26 20:50:42 #
+ ******************************************************************************/
+typedef struct{
+    int type;
+    void *data;
+    size_t len;
+    rtmq_cntx_t *ctx;
+} rtmq_pub_item_t;
+
+int rtmq_publish(rtmq_cntx_t *ctx, int type, void *data, size_t len)
+{
+    rtmq_pub_item_t item;
+
+    item.type = type;
+    item.data = data;
+    item.len = len;
+    item.ctx = ctx;
+
+    return hash_tab_trav(ctx->sub, rtmq_pub_trav_cb, &item, RDLOCK);
 }
 
 /******************************************************************************
@@ -759,4 +795,59 @@ bool rtmq_auth_check(rtmq_cntx_t *ctx, char *usr, char *passwd)
         return (0 == strcmp(auth->passwd, passwd))? true : false;
     }
     return false;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_pub_trav_cb
+ **功    能: 发布消息
+ **输入参数:
+ **     ctx: 全局对象
+ **     type: 消息类型
+ **     data: 需要发送的数据
+ **     len: 发送数据的长度
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 将数据放入应答队列
+ **注意事项: 内存结构: 转发信息(rtmq) + 实际数据
+ **作    者: # Qifeng.zou # 2017.06.26 20:50:42 #
+ ******************************************************************************/
+static int rtmq_pub_trav_cb(void *data, void *args)
+{
+    rtmq_sub_list_t *list = (rtmq_sub_list_t *)data;
+
+    return avl_trav(list->groups, rtmq_pub_group_trav_cb, args);
+}
+
+/******************************************************************************
+ **函数名称: rtmq_pub_group_trav_cb
+ **功    能: 发布消息
+ **输入参数:
+ **     ctx: 全局对象
+ **     type: 消息类型
+ **     data: 需要发送的数据
+ **     len: 发送数据的长度
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 将数据放入应答队列
+ **注意事项: 内存结构: 转发信息(rtmq) + 实际数据
+ **作    者: # Qifeng.zou # 2017.06.26 20:50:42 #
+ ******************************************************************************/
+static int rtmq_pub_group_trav_cb(void *data, void *args)
+{
+    rtmq_sub_node_t *node;
+    rtmq_pub_item_t *item = (rtmq_pub_item_t *)args;
+    rtmq_cntx_t *ctx = item->ctx;
+    rtmq_sub_group_t *group = (rtmq_sub_group_t *)data;
+
+    node = vector_get(group->nodes, Random()%vector_len(group->nodes));
+    if (NULL == node) {
+        log_debug(ctx->log, "Get sub item failed! gid:%d type:%d", group->gid, item->type);
+        return RTMQ_OK;
+    }
+
+    rtmq_async_send(ctx, item->type, node->nid, item->data, item->len);
+
+    log_debug(ctx->log, "Node [%d] has sub type [%d]!", node->nid, item->type);
+
+    return RTMQ_OK;
 }

@@ -815,7 +815,7 @@ static int rtmq_proxy_ssvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *s
             log_debug(ssvr->log, "Received keepalive ack!");
             rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_SUCC);
             return RTMQ_OK;
-        case RTMQ_CMD_LINK_AUTH_ACK:    /* 链路鉴权应答 */
+        case RTMQ_CMD_AUTH_ACK:         /* 链路鉴权应答 */
             return rtmq_link_auth_ack_hdl(pxy, ssvr, sck, addr + sizeof(rtmq_header_t));
     }
 
@@ -899,8 +899,8 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
     int size;
     void *addr;
     rtmq_header_t *head;
+    rtmq_link_auth_req_t *auth;
     rtmq_proxy_sct_t *sck = &ssvr->sck;
-    rtmq_link_auth_req_t *link_auth_req;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 申请内存空间 */
@@ -915,17 +915,18 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
     /* > 设置头部数据 */
     head = (rtmq_header_t *)addr;
 
-    head->type = RTMQ_CMD_LINK_AUTH_REQ;
+    head->type = RTMQ_CMD_AUTH_REQ;
     head->nid = conf->nid;
     head->length = sizeof(rtmq_link_auth_req_t);
     head->flag = RTMQ_SYS_MESG;
     head->chksum = RTMQ_CHKSUM_VAL;
 
     /* > 设置鉴权信息 */
-    link_auth_req = (rtmq_link_auth_req_t *)(head + 1);
+    auth = (rtmq_link_auth_req_t *)(head + 1);
 
-    snprintf(link_auth_req->usr, sizeof(link_auth_req->usr), "%s", pxy->conf.auth.usr);
-    snprintf(link_auth_req->passwd, sizeof(link_auth_req->passwd), "%s", pxy->conf.auth.passwd);
+    auth->gid = htonl(conf->gid);
+    snprintf(auth->usr, sizeof(auth->usr), "%s", pxy->conf.auth.usr);
+    snprintf(auth->passwd, sizeof(auth->passwd), "%s", pxy->conf.auth.passwd);
 
     /* > 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
@@ -993,7 +994,7 @@ static int rtmq_add_sub_req(rtmq_reg_t *item, rtmq_proxy_ssvr_t *ssvr)
     /* > 设置头部数据 */
     head = (rtmq_header_t *)addr;
 
-    head->type = RTMQ_CMD_SUB_ONE_REQ;
+    head->type = RTMQ_CMD_SUB_REQ;
     head->nid = conf->nid;
     head->length = sizeof(rtmq_sub_req_t);
     head->flag = RTMQ_SYS_MESG;
