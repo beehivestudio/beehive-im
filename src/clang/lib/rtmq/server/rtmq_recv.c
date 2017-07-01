@@ -847,7 +847,8 @@ static int rtmq_pub_group_trav_cb(void *data, void *args)
 
     rtmq_async_send(ctx, item->type, node->nid, item->data, item->len);
 
-    log_debug(ctx->log, "Node [%d] has sub type [%d]!", node->nid, item->type);
+    log_debug(ctx->log, "Node has sub mesg! type:0x%04X nide:%d sid:%d!",
+            item->type, node->nid, node->sid);
 
     return RTMQ_OK;
 }

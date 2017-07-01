@@ -730,6 +730,7 @@ func (c *ProxyConn) keepalive() {
 
 /* 链路鉴权请求 */
 type RtmqAuthReq struct {
+	gid    uint32                 /* 分组ID */
 	usr    [RTMQ_USR_MAX_LEN]byte /* 用户名 */
 	passwd [RTMQ_PWD_MAX_LEN]byte /* 登录密码 */
 }
