@@ -1189,6 +1189,7 @@ int rtmq_rsvr_sck_sub_item_free(rtmq_rsvr_sck_sub_trav_t *args, rtmq_sub_req_t *
 
     group = avl_query(list->groups, &gkey);
     if (NULL == group) {
+        hash_tab_unlock(ctx->sub, &key, WRLOCK);
         return 0;
     }
 
@@ -1198,9 +1199,20 @@ int rtmq_rsvr_sck_sub_item_free(rtmq_rsvr_sck_sub_trav_t *args, rtmq_sub_req_t *
         hash_tab_unlock(ctx->sub, &key, WRLOCK);
         return 0;
     }
+
+    /* 4. 回收内存空间 */
+    rtmq_sub_node_dealloc(node);
+
+    if (0 == vector_len(group->nodes)) {
+        avl_delete(list->groups, &gkey, (void **)&group);
+        rtmq_sub_group_dealloc(group);
+        if (0 == avl_num(list->groups)) {
+            hash_tab_delete(ctx->sub, &key, NONLOCK);
+            rtmq_sub_list_dealloc(list);
+        }
+    }
     hash_tab_unlock(ctx->sub, &key, WRLOCK);
 
-    rtmq_sub_node_dealloc(node);
     free(req);
     return 0;
 }

@@ -44,4 +44,7 @@ static void rtmq_sub_node_dealloc(rtmq_sub_node_t *node)
     free(node);
 }
 
+void rtmq_sub_list_dealloc(rtmq_sub_list_t *list);
+void rtmq_sub_group_dealloc(rtmq_sub_group_t *group);
+
 #endif /*__RTMQ_SUB_H__*/

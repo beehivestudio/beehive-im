@@ -335,7 +335,7 @@ int rtmq_publish(rtmq_cntx_t *ctx, int type, void *data, size_t len)
         return -1;
     }
 
-    /* > 查找消息订阅列表 */
+    /* > 给各订阅分组发送消息 */
     item.type = type;
     item.data = data;
     item.len = len;

@@ -351,7 +351,7 @@ static int rtmq_sub_group_trav_dealloc_cb(void *data, void *args)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.04.09 07:07:26 #
  ******************************************************************************/
-static void rtmq_sub_list_dealloc(rtmq_sub_list_t *list)
+void rtmq_sub_list_dealloc(rtmq_sub_list_t *list)
 {
     avl_trav(list->groups, rtmq_sub_group_trav_dealloc_cb, NULL);
     avl_destroy(list->groups, mem_dealloc, NULL);
@@ -402,7 +402,7 @@ static rtmq_sub_group_t *rtmq_sub_group_alloc(uint32_t gid)
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.01 00:20:41 #
  ******************************************************************************/
-static void rtmq_sub_group_dealloc(rtmq_sub_group_t *group)
+void rtmq_sub_group_dealloc(rtmq_sub_group_t *group)
 {
     vector_destroy(group->nodes, mem_dealloc, NULL);
     free(group);
