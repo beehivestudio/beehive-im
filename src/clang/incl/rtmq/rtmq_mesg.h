@@ -82,6 +82,14 @@ typedef struct
     char passwd[RTMQ_PWD_MAX_LEN];      /* 登录密码 */
 } rtmq_link_auth_req_t;
 
+#define RTMQ_AUTH_REQ_HTON(n, h) do {   /* 主机 -> 网络 */\
+    (n)->gid = htonl((h)->gid); \
+} while(0)
+
+#define RTMQ_AUTH_REQ_NTOH(h, n) do {   /* 网络 -> 主机 */\
+    (n)->gid = ntohl((h)->gid); \
+} while(0)
+
 /* 链路鉴权应答 */
 typedef struct
 {

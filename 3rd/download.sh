@@ -6,6 +6,7 @@ LIBS[0]="github.com/gorilla/websocket"
 LIBS[1]="github.com/astaxie/beego/logs"
 LIBS[2]="github.com/golang/protobuf/proto"
 LIBS[3]="github.com/garyburd/redigo/redis"
+LIBS[4]="labix.org/v2/mgo"
 
 echo ${LIBS[*]}
 

@@ -4,4 +4,4 @@
 *.log
 cscope.*
 tags
-bin/
+bin/*

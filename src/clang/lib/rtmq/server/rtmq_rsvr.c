@@ -990,6 +990,9 @@ static int rtmq_rsvr_link_auth_req_hdl(rtmq_cntx_t *ctx,
         return RTMQ_ERR;
     }
 
+    /* > 字节序转换 */
+    RTMQ_AUTH_REQ_NTOH(auth, auth);
+
     sck->gid = auth->gid;
 
     /* > 验证鉴权合法性 */
@@ -1080,11 +1083,13 @@ static int rtmq_rsvr_sub_req_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t
     /* > 添加订阅列表 */
     if (rtmq_rsvr_sck_add_sub(ctx, sck, req->type)) {
         rtmq_sub_del(ctx, sck, req->type);
-        log_error(ctx->log, "Add item into sub list failed! type:%u", req->type);
+        log_error(ctx->log, "Add item into sub list failed! type:0x%04X gid:%u nid:%u sid:%lu",
+            req->type, sck->gid, sck->nid, sck->sid);
         return -1;
     }
 
-    log_debug(ctx->log, "Sub req handler success! type:%u", req->type);
+    log_debug(ctx->log, "Sub req handler success! type:0x%04X gid:%u nid:%u sid:%lu",
+            req->type, sck->gid, sck->nid, sck->sid);
 
     return 0;
 }

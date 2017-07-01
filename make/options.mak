@@ -45,8 +45,8 @@ else ifeq (MEMALIGN, $(strip $(CONFIG_MEMALIGN_SUPPORT)))
 endif
 
 # 实时传输协议
-ifeq (__ON__, $(strip $(CONFIG_RTTP_SUPPORT)))
-	OPTIONS += __RTTP_SUPPORT__
+ifeq (__ON__, $(strip $(CONFIG_RTMQ_SUPPORT)))
+	OPTIONS += __RTMQ_SUPPORT__
 endif
 
 # JEMALLOC内存池
