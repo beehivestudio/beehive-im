@@ -341,7 +341,11 @@ int rtmq_publish(rtmq_cntx_t *ctx, int type, void *data, size_t len)
     item.len = len;
     item.ctx = ctx;
 
-    return avl_trav(list->groups, rtmq_pub_group_trav_cb, &item);
+    avl_trav(list->groups, rtmq_pub_group_trav_cb, &item);
+
+    hash_tab_unlock(ctx->sub, &key, RDLOCK);
+
+    return RTMQ_OK;
 }
 
 /******************************************************************************
@@ -823,18 +827,10 @@ bool rtmq_auth_check(rtmq_cntx_t *ctx, char *usr, char *passwd)
  ******************************************************************************/
 static int rtmq_pub_group_trav_cb(void *data, void *args)
 {
-    int idx;
     rtmq_sub_node_t *node;
     rtmq_pub_item_t *item = (rtmq_pub_item_t *)args;
     rtmq_cntx_t *ctx = item->ctx;
     rtmq_sub_group_t *group = (rtmq_sub_group_t *)data;
-
-    for (idx=0; idx<vector_len(group->nodes); ++idx) {
-        node = vector_get(group->nodes, idx);
-        log_debug(ctx->log, "Group list! type:0x%04X gid:%u nid:%u sid:%lu",
-                item->type, group->gid, node->nid, node->sid);
-    }
-    
 
     /* > 随机选择一个结点 */
     node = vector_get(group->nodes, Random()%vector_len(group->nodes));
