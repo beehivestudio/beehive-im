@@ -40,7 +40,10 @@ typedef enum
     , CMD_KICK_ACK              = 0x0111    /* 踢人应答 */
 
     , CMD_ONLINE_NTC            = 0x0151    /* 上线通知 */
-    , CMD_OFFLINE_NTC           = 0x0152    /* 下线通知 */
+    , CMD_ONLINE_NTC_ACK        = 0x0152    /* 上线通知应答 */
+
+    , CMD_OFFLINE_NTC           = 0x0153    /* 下线通知 */
+    , CMD_OFFLINE_NTC_ACK       = 0x0154    /* 下线通知应答 */
 
     /* 私聊消息 */
     , CMD_CHAT                  = 0x0201    /* 私聊消息 */
@@ -102,18 +105,35 @@ typedef enum
     , CMD_GROUP_MGR_DEL         = 0x031A    /* 解除群组管理员 */
     , CMD_GROUP_MGR_DEL_ACK     = 0x031B    /* 解除群组管理员应答 */
 
-    , CMD_GROUP_USR_LIST         = 0x031C    /* 群组成员列表 */
-    , CMD_GROUP_USR_LIST_ACK     = 0x031D    /* 群组成员列表应答 */
+    , CMD_GROUP_USR_LIST        = 0x031C    /* 群组成员列表 */
+    , CMD_GROUP_USR_LIST_ACK    = 0x031D    /* 群组成员列表应答 */
 
     , CMD_GROUP_JOIN_NTC        = 0x0350    /* 入群通知 */
-    , CMD_GROUP_QUIT_NTC        = 0x0351    /* 退群通知 */
-    , CMD_GROUP_KICK_NTC        = 0x0352    /* 踢人通知 */
-    , CMD_GROUP_GAG_ADD_NTC     = 0x0353    /* 禁言通知 */
-    , CMD_GROUP_GAG_DEL_NTC     = 0x0354    /* 解除禁言通知 */
-    , CMD_GROUP_BL_ADD_NTC      = 0x0355    /* 添加群组黑名单通知 */
-    , CMD_GROUP_BL_DEL_NTC      = 0x0356    /* 解除群组黑名单通知 */
-    , CMD_GROUP_MGR_ADD_NTC     = 0x0357    /* 添加群组管理员通知 */
-    , CMD_GROUP_MGR_DEL_NTC     = 0x0358    /* 解除群组管理员通知 */
+    , CMD_GROUP_JOIN_NTC_ACK    = 0x0351    /* 入群通知应答 */
+
+    , CMD_GROUP_QUIT_NTC        = 0x0352    /* 退群通知 */
+    , CMD_GROUP_QUIT_NTC_ACK    = 0x0353    /* 退群通知应答 */
+
+    , CMD_GROUP_KICK_NTC        = 0x0354    /* 踢人通知 */
+    , CMD_GROUP_KICK_NTC_ACK    = 0x0355    /* 踢人通知应答 */
+
+    , CMD_GROUP_GAG_ADD_NTC     = 0x0356    /* 禁言通知 */
+    , CMD_GROUP_GAG_ADD_NTC_ACK = 0x0357    /* 禁言通知应答 */
+
+    , CMD_GROUP_GAG_DEL_NTC     = 0x0358    /* 解除禁言通知 */
+    , CMD_GROUP_GAG_DEL_NTC_ACK = 0x0359    /* 解除禁言通知应答 */
+
+    , CMD_GROUP_BL_ADD_NTC      = 0x0360    /* 添加群组黑名单通知 */
+    , CMD_GROUP_BL_ADD_NTC_ACK  = 0x0361    /* 添加群组黑名单通知应答 */
+
+    , CMD_GROUP_BL_DEL_NTC      = 0x0362    /* 解除群组黑名单通知 */
+    , CMD_GROUP_BL_DEL_NTC_ACK  = 0x0363    /* 解除群组黑名单通知应答 */
+
+    , CMD_GROUP_MGR_ADD_NTC     = 0x0364    /* 添加群组管理员通知 */
+    , CMD_GROUP_MGR_ADD_NTC_ACK = 0x0365    /* 添加群组管理员通知应答 */
+
+    , CMD_GROUP_MGR_DEL_NTC     = 0x0366    /* 解除群组管理员通知 */
+    , CMD_GROUP_MGR_DEL_NTC_ACK = 0x0367    /* 解除群组管理员通知应答 */
 
     /* 聊天室消息 */
     , CMD_ROOM_CREAT            = 0x0401    /* 创建聊天室 */
