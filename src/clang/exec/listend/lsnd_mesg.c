@@ -672,7 +672,7 @@ int lsnd_upmesg_room_bc_handler(int type, int orig, void *data, size_t len, void
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 
- **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
+ **注意事项:
  **作    者: # Qifeng.zou # 2017.05.28 18:27:51 #
  ******************************************************************************/
 int lsnd_upmesg_room_usr_num_handler(int type, int orig, void *data, size_t len, void *args)
@@ -707,6 +707,159 @@ int lsnd_upmesg_room_usr_num_handler(int type, int orig, void *data, size_t len,
 
     /* > 释放PROTO-BUF空间 */
     mesg_room_usr_num__free_unpacked(mesg, NULL);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_upmesg_room_quit_ntc_handler
+ **功    能: 下发聊天室下线通知(下行)
+ **输入参数:
+ **     type: 数据类型
+ **     orig: 源结点ID
+ **     data: 需要转发的数据
+ **     len: 数据长度
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.04 11:20:57 #
+ ******************************************************************************/
+int lsnd_upmesg_room_quit_ntc_handler(int type, int orig, void *data, size_t len, void *args)
+{
+    MesgRoomQuitNtc *mesg;
+    lsnd_room_mesg_param_t param;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
+
+    log_debug(lsnd->log, "Recv chat room quit ntc!");
+
+    /* > 转化字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+
+    /* > 解压PROTO-BUF */
+    mesg = mesg_room_quit_ntc__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == mesg) {
+        log_error(lsnd->log, "Unpack chat room quit ntc failed!");
+        return -1;
+    }
+
+    /* > 给制定聊天室和分组发送消息 */
+    param.lsnd = lsnd;
+    param.data = data;
+    param.length = len;
+    param.hhead = &hhead;
+
+    chat_room_trav_session(lsnd->chat_tab, mesg->rid, 0,
+            (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
+
+    /* > 释放PROTO-BUF空间 */
+    mesg_room_quit_ntc__free_unpacked(mesg, NULL);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_upmesg_room_kick_ntc_handler
+ **功    能: 下发聊天室踢人通知(下行)
+ **输入参数:
+ **     type: 数据类型
+ **     orig: 源结点ID
+ **     data: 需要转发的数据
+ **     len: 数据长度
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.04 11:20:57 #
+ ******************************************************************************/
+int lsnd_upmesg_room_kick_ntc_handler(int type, int orig, void *data, size_t len, void *args)
+{
+    MesgRoomKickNtc *mesg;
+    lsnd_room_mesg_param_t param;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
+
+    log_debug(lsnd->log, "Recv chat room quit ntc!");
+
+    /* > 转化字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+
+    /* > 解压PROTO-BUF */
+    mesg = mesg_room_kick_ntc__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == mesg) {
+        log_error(lsnd->log, "Unpack chat room kick ntc failed!");
+        return -1;
+    }
+
+    /* > 给制定聊天室和分组发送消息 */
+    param.lsnd = lsnd;
+    param.data = data;
+    param.length = len;
+    param.hhead = &hhead;
+
+    chat_room_trav_session(lsnd->chat_tab, mesg->rid, 0,
+            (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
+
+    /* > 释放PROTO-BUF空间 */
+    mesg_room_kick_ntc__free_unpacked(mesg, NULL);
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: lsnd_upmesg_room_join_ntc_handler
+ **功    能: 下发聊天室上线通知(下行)
+ **输入参数:
+ **     type: 数据类型
+ **     orig: 源结点ID
+ **     data: 需要转发的数据
+ **     len: 数据长度
+ **     args: 附加参数
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
+ **作    者: # Qifeng.zou # 2017.07.04 11:20:57 #
+ ******************************************************************************/
+int lsnd_upmesg_room_join_ntc_handler(int type, int orig, void *data, size_t len, void *args)
+{
+    MesgRoomJoinNtc *mesg;
+    lsnd_room_mesg_param_t param;
+    lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
+    mesg_header_t *head = (mesg_header_t *)data, hhead;
+
+    log_debug(lsnd->log, "Recv chat room join ntc!");
+
+    /* > 转化字节序 */
+    MESG_HEAD_NTOH(head, &hhead);
+
+    MESG_HEAD_PRINT(lsnd->log, &hhead)
+
+    /* > 解压PROTO-BUF */
+    mesg = mesg_room_join_ntc__unpack(NULL, hhead.length, (void *)(head + 1));
+    if (NULL == mesg) {
+        log_error(lsnd->log, "Unpack chat room join ntc failed!");
+        return -1;
+    }
+
+    /* > 给制定聊天室和分组发送消息 */
+    param.lsnd = lsnd;
+    param.data = data;
+    param.length = len;
+    param.hhead = &hhead;
+
+    chat_room_trav_session(lsnd->chat_tab, mesg->rid, 0,
+            (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
+
+    /* > 释放PROTO-BUF空间 */
+    mesg_room_join_ntc__free_unpacked(mesg, NULL);
 
     return 0;
 }
