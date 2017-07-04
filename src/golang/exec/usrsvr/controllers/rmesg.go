@@ -531,6 +531,8 @@ func (ctx *UsrSvrCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJo
  **函数名称: room_join_notify
  **功    能: 发送上线通知
  **输入参数:
+ **     head: 请求消息头
+ **     req: 请求消息
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
@@ -977,6 +979,8 @@ func (ctx *UsrSvrCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQu
  **函数名称: room_quit_notify
  **功    能: 发送下线通知
  **输入参数:
+ **     head: 请求消息头
+ **     req: 请求消息
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
@@ -1355,6 +1359,8 @@ func (ctx *UsrSvrCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKi
  **函数名称: room_kick_notify
  **功    能: 发送被踢通知
  **输入参数:
+ **     head: 请求消息头
+ **     req: 请求消息
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
