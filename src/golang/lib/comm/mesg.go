@@ -111,8 +111,11 @@ const (
 	CMD_ROOM_LSN_STAT     = 0x0412 /* 聊天室各侦听层统计 */
 	CMD_ROOM_LSN_STAT_ACK = 0x0413 /* 聊天室各侦听层统计应答 */
 	CMD_ROOM_JOIN_NTC     = 0x0450 /* 加入聊天室通知 */
-	CMD_ROOM_QUIT_NTC     = 0x0451 /* 退出聊天室通知 */
-	CMD_ROOM_KICK_NTC     = 0x0452 /* 踢出聊天室通知 */
+	CMD_ROOM_JOIN_NTC_ACK = 0x0451 /* 加入聊天室通知应答 */
+	CMD_ROOM_QUIT_NTC     = 0x0452 /* 退出聊天室通知 */
+	CMD_ROOM_QUIT_NTC_ACK = 0x0453 /* 退出聊天室通知应答 */
+	CMD_ROOM_KICK_NTC     = 0x0454 /* 踢出聊天室通知 */
+	CMD_ROOM_KICK_NTC_ACK = 0x0455 /* 踢出聊天室通知应答 */
 
 	/* 推送消息 */
 	CMD_BC      = 0x0501 /* 广播消息 */
