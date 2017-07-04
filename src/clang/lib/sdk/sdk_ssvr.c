@@ -591,7 +591,7 @@ static int sdk_ssvr_data_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
         /* 2.1 转化字节序 */
         MESG_HEAD_NTOH(head, head);
 
-        log_trace(ssvr->log, "cmd:0x%04X seq:%lu len:%d",
+        log_trace(ssvr->log, "Recv data! cmd:0x%04X seq:%lu len:%d",
                 head->type, head->seq, head->length);
 
         /* > 收到应答处理 */

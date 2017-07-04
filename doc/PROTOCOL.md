@@ -1066,6 +1066,7 @@ message mesg_room_usr_num
 message mesg_room_join_ntc
 {
     required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
 }
 ```
 
@@ -1077,6 +1078,7 @@ message mesg_room_join_ntc
 message mesg_room_quit_ntc
 {
     required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
 }
 ```
 
@@ -1088,6 +1090,7 @@ message mesg_room_quit_ntc
 message mesg_room_kick_ntc
 {
     required uint64 uid = 1;        // M|用户ID|数字|
+    required uint64 rid = 2;        // M|聊天室ID|数字|
 }
 ```
 

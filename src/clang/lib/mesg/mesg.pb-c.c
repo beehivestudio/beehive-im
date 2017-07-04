@@ -8486,7 +8486,7 @@ const ProtobufCMessageDescriptor mesg_room_lsn_stat__descriptor =
   (ProtobufCMessageInit) mesg_room_lsn_stat__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_join_ntc__field_descriptors[1] =
+static const ProtobufCFieldDescriptor mesg_room_join_ntc__field_descriptors[2] =
 {
   {
     "uid",
@@ -8500,14 +8500,27 @@ static const ProtobufCFieldDescriptor mesg_room_join_ntc__field_descriptors[1] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "rid",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomJoinNtc, rid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mesg_room_join_ntc__field_indices_by_name[] = {
+  1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_room_join_ntc__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor mesg_room_join_ntc__descriptor =
 {
@@ -8517,14 +8530,14 @@ const ProtobufCMessageDescriptor mesg_room_join_ntc__descriptor =
   "MesgRoomJoinNtc",
   "",
   sizeof(MesgRoomJoinNtc),
-  1,
+  2,
   mesg_room_join_ntc__field_descriptors,
   mesg_room_join_ntc__field_indices_by_name,
   1,  mesg_room_join_ntc__number_ranges,
   (ProtobufCMessageInit) mesg_room_join_ntc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_quit_ntc__field_descriptors[1] =
+static const ProtobufCFieldDescriptor mesg_room_quit_ntc__field_descriptors[2] =
 {
   {
     "uid",
@@ -8538,14 +8551,27 @@ static const ProtobufCFieldDescriptor mesg_room_quit_ntc__field_descriptors[1] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "rid",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomQuitNtc, rid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mesg_room_quit_ntc__field_indices_by_name[] = {
+  1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_room_quit_ntc__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor mesg_room_quit_ntc__descriptor =
 {
@@ -8555,14 +8581,14 @@ const ProtobufCMessageDescriptor mesg_room_quit_ntc__descriptor =
   "MesgRoomQuitNtc",
   "",
   sizeof(MesgRoomQuitNtc),
-  1,
+  2,
   mesg_room_quit_ntc__field_descriptors,
   mesg_room_quit_ntc__field_indices_by_name,
   1,  mesg_room_quit_ntc__number_ranges,
   (ProtobufCMessageInit) mesg_room_quit_ntc__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_kick_ntc__field_descriptors[1] =
+static const ProtobufCFieldDescriptor mesg_room_kick_ntc__field_descriptors[2] =
 {
   {
     "uid",
@@ -8576,14 +8602,27 @@ static const ProtobufCFieldDescriptor mesg_room_kick_ntc__field_descriptors[1] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "rid",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT64,
+    0,   /* quantifier_offset */
+    offsetof(MesgRoomKickNtc, rid),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned mesg_room_kick_ntc__field_indices_by_name[] = {
+  1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
 static const ProtobufCIntRange mesg_room_kick_ntc__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor =
 {
@@ -8593,7 +8632,7 @@ const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor =
   "MesgRoomKickNtc",
   "",
   sizeof(MesgRoomKickNtc),
-  1,
+  2,
   mesg_room_kick_ntc__field_descriptors,
   mesg_room_kick_ntc__field_indices_by_name,
   1,  mesg_room_kick_ntc__number_ranges,

@@ -1059,30 +1059,33 @@ struct  _MesgRoomJoinNtc
 {
   ProtobufCMessage base;
   uint64_t uid;
+  uint64_t rid;
 };
 #define MESG_ROOM_JOIN_NTC__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_join_ntc__descriptor) \
-    , 0 }
+    , 0, 0 }
 
 
 struct  _MesgRoomQuitNtc
 {
   ProtobufCMessage base;
   uint64_t uid;
+  uint64_t rid;
 };
 #define MESG_ROOM_QUIT_NTC__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_quit_ntc__descriptor) \
-    , 0 }
+    , 0, 0 }
 
 
 struct  _MesgRoomKickNtc
 {
   ProtobufCMessage base;
   uint64_t uid;
+  uint64_t rid;
 };
 #define MESG_ROOM_KICK_NTC__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&mesg_room_kick_ntc__descriptor) \
-    , 0 }
+    , 0, 0 }
 
 
 struct  _MesgLsndInfo

@@ -783,7 +783,7 @@ func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 遍历下发ROOM-JOIN-NTC消息 */
 	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(head.GetSid(), 0, LsndRoomSendDataCb, p)
+	ctx.chat.TravRoomSession(req.GetRid(), 0, LsndRoomSendDataCb, p)
 
 	return 0
 }
@@ -815,7 +815,7 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
-	if !head.IsValid(1) {
+	if !head.IsValid(0) {
 		ctx.log.Error("Header of room-quit-ntc is invalid!")
 		return -1
 	}
@@ -832,7 +832,7 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 遍历下发ROOM-QUIT-NTC消息 */
 	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(head.GetSid(), 0, LsndRoomSendDataCb, p)
+	ctx.chat.TravRoomSession(req.GetRid(), 0, LsndRoomSendDataCb, p)
 
 	return 0
 }
@@ -881,7 +881,7 @@ func LsndUpMesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 遍历下发ROOM-KICK-NTC消息 */
 	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
-	ctx.chat.TravRoomSession(head.GetSid(), 0, LsndRoomSendDataCb, p)
+	ctx.chat.TravRoomSession(req.GetRid(), 0, LsndRoomSendDataCb, p)
 
 	return 0
 }
