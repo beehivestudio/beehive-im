@@ -21,19 +21,25 @@ import (
 	"beehive-im/src/golang/exec/usrsvr/controllers/conf"
 )
 
-/* 侦听层列表 */
-type UsrSvrLsndList struct {
+/* 侦听层字典 */
+type UsrSvrLsndDictItem struct {
 	sync.RWMutex                                  /* 读写锁 */
 	list         map[string](map[uint32][]string) /* 侦听层列表:map[TCP/WS](map[国家/地区](map([运营商ID][]IP列表))) */
 }
 
-type UsrSvrLsndNetWork struct {
-	sync.RWMutex                         /* 读写锁 */
-	types        map[int]*UsrSvrLsndList /* 侦听层类型:map[网络类型]UsrSvrLsndList */
+type UsrSvrLsndDict struct {
+	sync.RWMutex                             /* 读写锁 */
+	types        map[int]*UsrSvrLsndDictItem /* 侦听层类型:map[网络类型]UsrSvrLsndDictItem */
 }
 
-/* 侦听层列表 */
-type UsrSvrThriftClient struct {
+type UsrSvrLsndList struct {
+	sync.RWMutex          /* 读写锁 */
+	nodes        []uint32 /* 具体信息:[]结点ID */
+}
+
+type UsrSvrLsndData struct {
+	dict UsrSvrLsndDict /* 侦听层映射 */
+	list UsrSvrLsndList /* 侦听层列表 */
 }
 
 /* 用户中心上下文 */
@@ -45,7 +51,7 @@ type UsrSvrCntx struct {
 	redis       *redis.Pool       /* REDIS连接池 */
 	userdb      *sql.DB           /* USERDB数据库 */
 	seqsvr_pool *thrift_pool.Pool /* SEQSVR连接池 */
-	listend     UsrSvrLsndNetWork /* 侦听层类型 */
+	listend     UsrSvrLsndData    /* 侦听层数据 */
 }
 
 var g_usrsvr_cntx *UsrSvrCntx /* 全局对象 */
@@ -91,7 +97,7 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	}
 
 	/* > 创建侦听层列表 */
-	ctx.listend.types = make(map[int]*UsrSvrLsndList)
+	ctx.listend.dict.types = make(map[int]*UsrSvrLsndDictItem)
 
 	/* > REDIS连接池 */
 	ctx.redis = rdb.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 2048)

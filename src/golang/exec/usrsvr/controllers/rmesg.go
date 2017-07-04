@@ -528,6 +528,62 @@ func (ctx *UsrSvrCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJo
 }
 
 /******************************************************************************
+ **函数名称: room_join_notify
+ **功    能: 发送上线通知
+ **输入参数:
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ **     {
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.04 10:51:09 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoomJoin) int {
+	/* > 设置协议体 */
+	ntc := &mesg.MesgRoomJoinNtc{
+		Uid: proto.Uint64(req.GetUid()),
+		Rid: proto.Uint64(req.GetRid()),
+	}
+
+	/* > 生成PB数据 */
+	body, err := proto.Marshal(ntc)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 下发上线通知 */
+	ctx.listend.list.RLock()
+	defer ctx.listend.list.RUnlock()
+
+	num := len(ctx.listend.list.nodes)
+
+	for idx := 0; idx < num; idx += 1 {
+		/* > 拼接协议包 */
+		p := &comm.MesgPacket{}
+		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+		head.Cmd = comm.CMD_ROOM_JOIN_NTC
+		head.Length = uint32(length)
+		head.Nid = ctx.listend.list.nodes[idx]
+
+		comm.MesgHeadHton(head, p)
+		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+		/* > 发送协议包 */
+		ctx.frwder.AsyncSend(comm.CMD_ROOM_JOIN_NTC, p.Buff, uint32(len(p.Buff)))
+	}
+
+	return 0
+}
+
+/******************************************************************************
  **函数名称: alloc_room_gid
  **功    能: 分配组ID
  **输入参数:
@@ -734,6 +790,7 @@ func UsrSvrRoomJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 
 	/* 3. > 发送上线应答 */
 	ctx.room_join_ack(head, req, gid)
+	ctx.room_join_notify(head, req)
 
 	return 0
 }
@@ -917,6 +974,62 @@ func (ctx *UsrSvrCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQu
 }
 
 /******************************************************************************
+ **函数名称: room_quit_notify
+ **功    能: 发送下线通知
+ **输入参数:
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ **     {
+ **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.04 10:51:09 #
+ ******************************************************************************/
+func (ctx *UsrSvrCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
+	/* > 设置协议体 */
+	ntc := &mesg.MesgRoomQuitNtc{
+		Uid: proto.Uint64(req.GetUid()),
+		Rid: proto.Uint64(req.GetRid()),
+	}
+
+	/* > 生成PB数据 */
+	body, err := proto.Marshal(ntc)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	length := len(body)
+
+	/* > 下发下线通知 */
+	ctx.listend.list.RLock()
+	defer ctx.listend.list.RUnlock()
+
+	num := len(ctx.listend.list.nodes)
+
+	for idx := 0; idx < num; idx += 1 {
+		/* > 拼接协议包 */
+		p := &comm.MesgPacket{}
+		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
+		head.Cmd = comm.CMD_ROOM_QUIT_NTC
+		head.Length = uint32(length)
+		head.Nid = ctx.listend.list.nodes[idx]
+
+		comm.MesgHeadHton(head, p)
+		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
+
+		/* > 发送协议包 */
+		ctx.frwder.AsyncSend(comm.CMD_ROOM_QUIT_NTC, p.Buff, uint32(len(p.Buff)))
+	}
+
+	return 0
+}
+
+/******************************************************************************
  **函数名称: room_quit_handler
  **功    能: 退出聊天室处理
  **输入参数:
@@ -994,6 +1107,7 @@ func UsrSvrRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 
 	/* 3. > 发送ROOM-QUIT应答 */
 	ctx.room_quit_ack(head, req)
+	ctx.room_quit_notify(head, req)
 
 	return 0
 }
@@ -1239,31 +1353,28 @@ func (ctx *UsrSvrCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKi
 
 /******************************************************************************
  **函数名称: room_kick_notify
- **功    能: 发送ROOM-KICK-NTC通知
+ **功    能: 发送被踢通知
  **输入参数:
- **     head: 协议头
- **     req: 请求数据
  **输出参数: NONE
  **返    回: VOID
  **实现描述:
- **协议格式:
+ **应答协议:
  **     {
  **         required uint64 uid = 1;    // M|用户ID|数字|
+ **         required uint64 rid = 2;    // M|聊天室ID|数字|
  **     }
  **注意事项:
- **作    者: # Qifeng.zou # 2017.01.13 07:46:08 #
+ **作    者: # Qifeng.zou # 2017.07.04 10:59:32 #
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
 	/* > 设置协议体 */
-	ack := &mesg.MesgRoomKickNtc{
+	ntc := &mesg.MesgRoomKickNtc{
 		Uid: proto.Uint64(req.GetUid()),
+		Rid: proto.Uint64(req.GetRid()),
 	}
 
-	/* 生成PB数据 */
-	body, err := proto.Marshal(ack)
+	/* > 生成PB数据 */
+	body, err := proto.Marshal(ntc)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
@@ -1271,23 +1382,20 @@ func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 
 	length := len(body)
 
-	/* > 拼接协议包 */
-	p := &comm.MesgPacket{}
-	p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+	/* > 下发被踢通知 */
+	ctx.listend.list.RLock()
+	defer ctx.listend.list.RUnlock()
 
-	nid_list, err := redis.Ints(rds.Do("ZRANGEBYSCORE", comm.IM_KEY_LSND_NID_ZSET, "-inf", "+inf"))
-	if nil != err {
-		ctx.log.Error("Get listen nid failed! errmsg:%s", err.Error())
-		return -1
-	}
-
-	num := len(nid_list)
+	num := len(ctx.listend.list.nodes)
 
 	for idx := 0; idx < num; idx += 1 {
+		/* > 拼接协议包 */
+		p := &comm.MesgPacket{}
+		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
+
 		head.Cmd = comm.CMD_ROOM_KICK_NTC
 		head.Length = uint32(length)
-		head.Sid = req.GetRid() // 会话ID改为聊天室ID
-		head.Nid = uint32(nid_list[idx])
+		head.Nid = ctx.listend.list.nodes[idx]
 
 		comm.MesgHeadHton(head, p)
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
@@ -1391,8 +1499,6 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
 
 	/* > 发送ROOM-KICK应答 */
 	ctx.room_kick_ack(head, req)
-
-	/* > 发送ROOM-KICK-NTC通知 */
 	ctx.room_kick_notify(head, req)
 
 	return 0

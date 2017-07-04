@@ -207,10 +207,10 @@ func (this *UsrSvrIplistCtrl) iplist_token(param *IpListParam) string {
  **作    者: # Qifeng.zou # 2016.11.27 07:42:54 #
  ******************************************************************************/
 func (this *UsrSvrIplistCtrl) iplist_get(ctx *UsrSvrCntx, typ int, clientip string) []string {
-	ctx.listend.RLock()
-	defer ctx.listend.RUnlock()
+	ctx.listend.dict.RLock()
+	defer ctx.listend.dict.RUnlock()
 
-	listend, ok := ctx.listend.types[typ]
+	listend, ok := ctx.listend.dict.types[typ]
 	if !ok || 0 == typ {
 		return nil
 	}
@@ -255,7 +255,7 @@ func (this *UsrSvrIplistCtrl) iplist_get(ctx *UsrSvrCntx, typ int, clientip stri
  **注意事项: 外部已经加读锁
  **作    者: # Qifeng.zou # 2016.11.27 19:33:49 #
  ******************************************************************************/
-func (listend *UsrSvrLsndList) get_default(ctx *UsrSvrCntx) []string {
+func (listend *UsrSvrLsndDictItem) get_default(ctx *UsrSvrCntx) []string {
 	var ok bool
 	var typ, n uint32
 

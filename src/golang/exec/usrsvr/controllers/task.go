@@ -23,7 +23,8 @@ import (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) start_task() {
 	for {
-		ctx.listend_update()                                // 更新侦听层列表
+		ctx.listend_dict_update()                           // 更新侦听层字典
+		ctx.listend_list_update()                           // 更新侦听层列表
 		chat.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
 
 		time.Sleep(time.Second)
@@ -34,8 +35,8 @@ func (ctx *UsrSvrCntx) start_task() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: listend_update
- **功    能: 更新侦听层列表
+ **函数名称: listend_dict_update
+ **功    能: 更新侦听层字典
  **输入参数: NONE
  **输出参数: NONE
  **返    回: NONE
@@ -45,7 +46,7 @@ func (ctx *UsrSvrCntx) start_task() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:11:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) listend_update() {
+func (ctx *UsrSvrCntx) listend_dict_update() {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -59,27 +60,27 @@ func (ctx *UsrSvrCntx) listend_update() {
 		return
 	}
 
-	ctx.listend.Lock()
-	defer ctx.listend.Unlock()
+	ctx.listend.dict.Lock()
+	defer ctx.listend.dict.Unlock()
 
 	num := len(types)
 	for idx := 0; idx < num; idx += 1 {
 		typ := types[idx]
 
-		list := ctx.listend_fetch(typ)
+		list := ctx.listend_dict_fetch(typ)
 		if nil == list {
 			ctx.log.Error("Get listen list failed! type:%d", typ)
-			delete(ctx.listend.types, typ)
+			delete(ctx.listend.dict.types, typ)
 			continue
 		}
 
-		ctx.listend.types[typ] = list
+		ctx.listend.dict.types[typ] = list
 	}
 }
 
 /******************************************************************************
- **函数名称: listend_fetch
- **功    能: 获取侦听层列表
+ **函数名称: listend_dict_fetch
+ **功    能: 获取侦听层字典
  **输入参数:
  **     typ: 网络类型(0:Unkonwn 1:TCP 2:WS)
  **输出参数: NONE
@@ -88,13 +89,13 @@ func (ctx *UsrSvrCntx) listend_update() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
+func (ctx *UsrSvrCntx) listend_dict_fetch(typ int) *UsrSvrLsndDictItem {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
 
-	lsnd := &UsrSvrLsndList{
+	lsnd := &UsrSvrLsndDictItem{
 		list: make(map[string](map[uint32][]string)),
 	}
 
@@ -153,13 +154,39 @@ func (ctx *UsrSvrCntx) listend_fetch(typ int) *UsrSvrLsndList {
 /******************************************************************************
  **函数名称: get_lsn_id_list
  **功    能: 更新侦听层ID列表
- **输入参数:
- **     ctx: 上下文
+ **输入参数: NONE
  **输出参数: NONE
- **返    回: 侦听层IP列表
- **实现描述:
+ **返    回: 侦听层ID列表
+ **实现描述: 获取有效的侦听层ID列表
  **注意事项:
- **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
+ **作    者: # Qifeng.zou # 2017.07.04 10:48:23 #
  ******************************************************************************/
-func get_lsn_id_list() {
+func (ctx *UsrSvrCntx) listend_list_update() {
+	var list []uint32
+
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	ctm := time.Now().Unix()
+
+	/* > 获取侦听层列表 */
+	nodes, err := redis.Strings(rds.Do(
+		"ZRANGEBYSCORE", comm.IM_KEY_LSND_NID_ZSET, ctm, "+inf", "WITHSCORES"))
+	if nil != err {
+		ctx.log.Error("Get listend list failed! errmsg:%s", err.Error())
+		return
+	}
+
+	num := len(nodes)
+	for idx := 0; idx < num; idx += 1 {
+		nid, _ := strconv.ParseInt(nodes[idx], 10, 32)
+		list = append(list, uint32(nid))
+	}
+
+	ctx.listend.list.Lock()
+	defer ctx.listend.list.Unlock()
+
+	ctx.listend.list.nodes = list
+
+	return
 }
