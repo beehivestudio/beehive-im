@@ -207,11 +207,9 @@ static int shm_slab_get_alloc_type(size_t size)
 {
     if (size < shm_slab_exact_size()) {
         return SHM_SLAB_ALLOC_SMALL;
-    }
-    else if (size == shm_slab_exact_size()) {
+    } else if (size == shm_slab_exact_size()) {
         return SHM_SLAB_ALLOC_EXACT;
-    }
-    else if (size > shm_slab_exact_size() && size < shm_slab_max_size()) {
+    } else if (size > shm_slab_exact_size() && size < shm_slab_max_size()) {
         return SHM_SLAB_ALLOC_LARGE;
     }
 
@@ -303,8 +301,7 @@ static shm_slab_page_t *shm_slab_alloc_pages(shm_slab_pool_t *pool, size_t pages
 
             if (shm_slab_is_free_page(page->prev_idx)) {
                 prev = &pool->free;
-            }
-            else {
+            } else {
                 prev = &start_page[page->prev_idx];
             }
 
@@ -320,22 +317,18 @@ static shm_slab_page_t *shm_slab_alloc_pages(shm_slab_pool_t *pool, size_t pages
             page->prev_idx = SHM_SLAB_NULL_PAGE;
 
             return page;
-        }
-        else if (pages == page->pages) {
+        } else if (pages == page->pages) {
             if (shm_slab_is_null_page(page->next_idx)) {
                 if (shm_slab_is_free_page(page->prev_idx)) {
                     prev = &pool->free;
-                }
-                else {
+                } else {
                     prev = &start_page[page->prev_idx];
                 }
                 prev->next_idx = SHM_SLAB_NULL_PAGE;
-            }
-            else {
+            } else {
                 if (shm_slab_is_free_page(page->prev_idx)) {
                     prev = &pool->free;
-                }
-                else {
+                } else {
                     prev = &start_page[page->prev_idx];
                 }
                 next = &start_page[page->next_idx];
@@ -382,8 +375,7 @@ static void *shm_slab_alloc_slot(shm_slab_pool_t *pool, size_t size)
             /* Do nothing */
         }
         idx = shift - pool->min_shift;
-    }
-    else {
+    } else {
         size = pool->min_size;
         shift = pool->min_shift;
         idx = 0;
@@ -461,16 +453,14 @@ static void *_shm_slab_alloc_slot(
             for (i=0; i<exp_bitmaps; i++) {
                 page->bitmap |= (1 << i);
             }
-        }
-        else {
+        } else {
             /* 2. 不需要扩展位图: 将不存在的SLOT对应的bit置1 */
             for (i=bits; i<SHM_SLAB_BITMAP_BITS; i++) {
                  page->bitmap |= (1 << i);
             }
         }
         page->rbitmap = ~(page->bitmap);
-    }
-    else {
+    } else {
         page = &start_page[slot[slot_idx].page_idx];
     }
 
@@ -489,8 +479,7 @@ static void *_shm_slab_alloc_slot(
                 ptr += (i * (1 << shift));
                 return ptr;
             }
-        }
-        else if (exp_bitmaps > 0) {
+        } else if (exp_bitmaps > 0) {
             /* 可分配空间的前几个int用作位图: 扩展位图 */
             bitmap = (uint32_t *)(data + (page->index << shm_slab_page_shift()));
             for (idx=0; idx<exp_bitmaps; idx++) {
@@ -531,8 +520,7 @@ static void *_shm_slab_alloc_slot(
                 for (i=0; i<exp_bitmaps; i++) {
                     page->bitmap |= (1 << i);   /* 低位置1 */
                 }
-            }
-            else {
+            } else {
                 for (i=bits; i<SHM_SLAB_BITMAP_BITS; i++) {
                     page->bitmap |= (1 << i);   /* 高位置1 */
                 }
@@ -747,8 +735,7 @@ void shm_slab_dealloc(shm_slab_pool_t *pool, void *p)
 
             if (0 == bitmap_idx) {
                 page->bitmap &= ~(1 << bit_idx);
-            }
-            else {
+            } else {
                 bitmap[bitmap_idx-1] &= ~(1 << bit_idx);
             }
 

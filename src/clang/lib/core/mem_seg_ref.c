@@ -52,8 +52,7 @@ static int mem_seg_ref_cmp(const mem_seg_ref_item_t *item1, const mem_seg_ref_it
 {
     if (item1->addr < item2->addr) {
         return -1; // 小于
-    }
-    else if (item1->addr > (item2->addr + item2->size - 1)) {
+    } else if (item1->addr > (item2->addr + item2->size - 1)) {
         return 1; // 大于
     }
 

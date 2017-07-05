@@ -529,8 +529,7 @@ static int sdk_send_mgr_trav_timeout_cb(sdk_send_item_t *item, list_t *list)
 
     if (tm < item->ttl) {
         return 0; /* 未超时 */
-    }
-    else if (SDK_STAT_SENDING == item->stat) {
+    } else if (SDK_STAT_SENDING == item->stat) {
         return 0;
     }
 
@@ -619,8 +618,7 @@ sdk_send_item_t *sdk_send_mgr_query(sdk_cntx_t *ctx, uint64_t seq, lock_e lock)
 
     if (RDLOCK == lock) {
         pthread_rwlock_rdlock(&mgr->lock);
-    }
-    else if (WRLOCK == lock) {
+    } else if (WRLOCK == lock) {
         pthread_rwlock_wrlock(&mgr->lock);
     }
 
@@ -785,8 +783,7 @@ bool sdk_send_data_is_timeout_and_hdl(sdk_cntx_t *ctx, void *addr)
     item = sdk_send_mgr_query(ctx, head->seq, WRLOCK);
     if (NULL == item) {
         return true;
-    }
-    else if (time(NULL) >= item->ttl) { /* 判断是否超时 */
+    } else if (time(NULL) >= item->ttl) { /* 判断是否超时 */
         item->stat = SDK_STAT_SEND_TIMEOUT;
         if (item->cb) {
             data = (void *)(head + 1);
@@ -843,8 +840,7 @@ bool sdk_ack_succ_hdl(sdk_cntx_t *ctx, uint64_t seq, void *ack)
         pthread_rwlock_unlock(&mgr->lock);
         log_debug(ctx->log, "Didn't find seq! seq:%d", seq);
         return false;
-    }
-    else if (item->cmd == ack_item->req) {
+    } else if (item->cmd == ack_item->req) {
         rbt_delete(mgr->tab, (void *)&key, (void **)&item);
     }
     pthread_rwlock_unlock(&mgr->lock);

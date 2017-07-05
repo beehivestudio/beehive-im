@@ -44,8 +44,7 @@ btree_t *btree_creat(int m, btree_opt_t *opt)
 
     if (m < 3) {
         return NULL;
-    }
-    else if (NULL == opt) {
+    } else if (NULL == opt) {
         opt = &_opt;
         opt->pool = (void *)NULL;
         opt->alloc = (mem_alloc_cb_t)mem_alloc;
@@ -100,8 +99,7 @@ static int btree_key_bsearch(const int *keys, int num, int key)
 
         if (key == keys[mid]) {
             return mid;
-        }
-        else if (key < keys[mid]) {
+        } else if (key < keys[mid]) {
             high = mid - 1;
             continue;
         }
@@ -152,8 +150,7 @@ int btree_insert(btree_t *btree, int key, void *data)
         idx = btree_key_bsearch(node->key, node->num, key);
         if (key == node->key[idx]) {
             return 0;
-        }
-        else if (key > node->key[idx]) {
+        } else if (key > node->key[idx]) {
             idx += 1;
         }
 
@@ -259,16 +256,14 @@ static int btree_split(btree_t *btree, btree_node_t *node)
             parent->data[0] = node->data[sep_idx];
             parent->child[1] = node2;
             parent->num++;
-        }
-        else {
+        } else {
             /* Insert into parent node */
             for (idx=parent->num; idx>0; idx--) {
                 if (node->key[sep_idx] < parent->key[idx-1]) {
                     parent->key[idx] = parent->key[idx-1];
                     parent->data[idx] = parent->data[idx-1];
                     parent->child[idx+1] = parent->child[idx];
-                }
-                else {
+                } else {
                     parent->key[idx] = node->key[sep_idx];
                     parent->data[idx] = node->data[sep_idx];
                     parent->child[idx+1] = node2;
@@ -370,8 +365,7 @@ static int btree_merge(btree_t *btree, btree_node_t *node)
             if (NULL != node->child[0]) {
                 btree->root = node->child[0];
                 node->child[0]->parent = NULL;
-            }
-            else {
+            } else {
                 btree->root = NULL;
             }
             btree->dealloc(btree->pool, node->child);
@@ -571,8 +565,7 @@ void _btree_print(const btree_node_t *node, int deep)
     for (d=0; d<deep; d++) {
         if (d == deep-1) {
             fprintf(stderr, "|-------");
-        }
-        else {
+        } else {
             fprintf(stderr, "|        ");
         }
     }
@@ -708,8 +701,7 @@ int btree_remove(btree_t *btree, int key, void **data)
         if (key == node->key[idx]) {
             *data = node->data[idx];
             return _btree_remove(btree, node, idx);
-        }
-        else if (key < node->key[idx]) {
+        } else if (key < node->key[idx]) {
             node = node->child[idx];
             continue;
         }
@@ -742,8 +734,7 @@ void *btree_query(btree_t *btree, int key)
         idx = btree_key_bsearch(node->key, node->num, key);
         if (key == node->key[idx]) {
             return node->data[idx]; /* 找到 */
-        }
-        else if (key < node->key[idx]) {
+        } else if (key < node->key[idx]) {
             node = node->child[idx];
             continue;
         }

@@ -46,16 +46,13 @@
     if (xml_has_value(node)) { \
         if (xml_has_child(node)) { /* 此时temp指向node的孩子结点 或 NULL */ \
             fprintf(fp, ">%s\n", node->value.str); \
-        } \
-        else { \
+        } else { \
             fprintf(fp, ">%s</%s>\n", node->value.str, node->name.str); \
         } \
-    } \
-    else { \
+    } else { \
         if (NULL != node->temp) { /* 此时temp指向node的孩子结点 或 NULL */ \
             fprintf(fp, ">\n"); \
-        } \
-        else { \
+        } else { \
             fprintf(fp, "/>\n"); \
         } \
     } \
@@ -88,8 +85,7 @@ static xml_node_t *xml_fprint_next(
         node->temp = child->next;
         node = child;
         return node;
-    }
-    else {                      /* 再次: 处理其兄弟结点: 选出下一个兄弟结点 */
+    } else {                      /* 再次: 处理其兄弟结点: 选出下一个兄弟结点 */
         /* 1. 弹出已经处理完成的结点 */
         top = stack_pop(stack);
         if (xml_has_child(top)) {
@@ -233,18 +229,15 @@ int xml_fprint_tree(xml_tree_t *xml, xml_node_t *root, Stack_t *stack, FILE *fp)
         if (xml_has_child(node)) { /* 此时temp指向node的孩子结点 或 NULL */ \
             /* sprintf(sp->ptr, ">%s", node->value); */ \
             len += node->value.len+1; \
-        } \
-        else { \
+        } else { \
             /* sprintf(sp->ptr, ">%s</%s>", node->value, node->name); */ \
             len += node->value.len + node->name.len + 4; \
         } \
-    } \
-    else { \
+    } else { \
         if (NULL != node->temp) { /* 此时temp指向node的孩子结点 或 NULL */ \
             /* sprintf(sp->ptr, ">"); */ \
             len++; \
-        } \
-        else { \
+        } else { \
             /* sprintf(sp->ptr, "></%s>", node->name); */ \
             len += node->name.len + 4; \
         } \
@@ -258,18 +251,15 @@ int xml_fprint_tree(xml_tree_t *xml, xml_node_t *root, Stack_t *stack, FILE *fp)
         if (xml_has_child(node)) { /* 此时temp指向node的孩子结点 或 NULL */ \
             /* sprintf(sp->ptr, ">%s", node->value); */ \
             len += node->value.len+1; \
-        } \
-        else { \
+        } else { \
             /* sprintf(sp->ptr, ">%s</%s>", node->value, node->name); */ \
             len += node->value.len + node->name.len + 4; \
         } \
-    } \
-    else { \
+    } else { \
         if (NULL != node->temp) { /* 此时temp指向node的孩子结点 或 NULL */ \
             /* sprintf(sp->ptr, ">"); */ \
             len++; \
-        } \
-        else { \
+        } else { \
             /* sprintf(sp->ptr, "/>"); */ \
             len += 2; \
         } \
@@ -448,18 +438,15 @@ int xml_pack_node_len(xml_tree_t *xml, xml_node_t *root, Stack_t *stack)
         if (xml_has_child(node)) { /* 此时temp指向node的孩子结点 或 NULL */ \
             sprintf(sp->ptr, ">%s", node->value.str); \
             sp->ptr += (node->value.len + 1); \
-        } \
-        else { \
+        } else { \
             sprintf(sp->ptr, ">%s</%s>", node->value.str, node->name.str); \
             sp->ptr += (node->value.len + node->name.len + 4); \
         } \
-    } \
-    else { \
+    } else { \
         if (NULL != node->temp) { /* 此时temp指向node的孩子结点 或 NULL */ \
             sprintf(sp->ptr, ">"); \
             sp->ptr += 1; \
-        } \
-        else { \
+        } else { \
             sprintf(sp->ptr, "></%s>", node->name.str); \
             sp->ptr += (node->name.len + 4); \
         } \
@@ -473,18 +460,15 @@ int xml_pack_node_len(xml_tree_t *xml, xml_node_t *root, Stack_t *stack)
         if (xml_has_child(node)) { /* 此时temp指向node的孩子结点 或 NULL */ \
             sprintf(sp->ptr, ">%s", node->value.str); \
             sp->ptr += (node->value.len + 1); \
-        } \
-        else { \
+        } else { \
             sprintf(sp->ptr, ">%s</%s>", node->value.str, node->name.str); \
             sp->ptr += (node->value.len + node->name.len + 4); \
         } \
-    } \
-    else { \
+    } else { \
         if (NULL != node->temp) { /* 此时temp指向node的孩子结点 或 NULL */ \
             sprintf(sp->ptr, ">"); \
             sp->ptr += 1; \
-        } \
-        else { \
+        } else { \
             sprintf(sp->ptr, "/>"); \
             sp->ptr += 2; \
         } \
@@ -662,18 +646,15 @@ int xml_pack_tree(xml_tree_t *xml, xml_node_t *root, Stack_t *stack, sprint_t *s
         if (xml_has_child(node)) {/* 此时temp指向node的孩子结点 或 NULL */ \
             sprintf(sp->ptr, ">%s\n", node->value.str); \
             sp->ptr += (node->value.len + 2); \
-        } \
-        else { \
+        } else { \
             sprintf(sp->ptr, ">%s</%s>\n", node->value.str, node->name.str); \
             sp->ptr += (node->value.len + node->name.len + 5); \
         } \
-    } \
-    else { \
+    } else { \
         if (NULL != node->temp) { /* 此时temp指向node的孩子结点 或 NULL */ \
             sprintf(sp->ptr, ">\n"); \
             sp->ptr += 2; \
-        } \
-        else { \
+        } else { \
             sprintf(sp->ptr, "/>\n"); \
             sp->ptr += 3; \
         } \
@@ -707,8 +688,7 @@ static xml_node_t *xml_sprint_next(
         node->temp = child->next;
         node = child;
         return node;
-    }
-    else {                      /* 再次: 处理其兄弟结点: 选出下一个兄弟结点 */
+    } else {                      /* 再次: 处理其兄弟结点: 选出下一个兄弟结点 */
         /* 1. 弹出已经处理完成的结点 */
         top = stack_pop(stack);
         if (xml_has_child(top)) {

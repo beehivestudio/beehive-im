@@ -66,8 +66,7 @@ void *sdk_worker_routine(void *_ctx)
             log_fatal(worker->log, "errmsg:[%d] %s", errno, strerror(errno));
             abort();
             return (void *)-1;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             /* 超时: 模拟处理命令 */
             sdk_cmd_t cmd;
             req = (sdk_cmd_proc_req_t *)&cmd.param;
@@ -244,8 +243,7 @@ static int sdk_worker_cmd_proc_req_hdl(sdk_cntx_t *ctx, sdk_worker_t *worker, co
         if (reg->proc(head->type, head->sid,
             (void *)(head + 1), head->length, reg->param)) {
             ++worker->err_total;    /* 错误计数 */
-        }
-        else {
+        } else {
             ++worker->proc_total;   /* 处理计数 */
         }
 

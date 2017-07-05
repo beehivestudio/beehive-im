@@ -167,8 +167,7 @@ uint32_t chat_room_add_session(chat_tab_t *chat,
             hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
             FREE(room);
             goto QUERY;
-        }
-        else if (0 != ret) {
+        } else if (0 != ret) {
             hash_tab_unlock(chat->sessions, (void *)&key, RDLOCK);
             return -1; /* 失败: 插入聊天室表失败 */
         }
@@ -371,8 +370,7 @@ AGAIN:
             return -1;
         }
         hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
-    }
-    else {
+    } else {
         /* > 新建SID->CID项 */
         item = (chat_sid2cid_item_t *)calloc(1, sizeof(chat_sid2cid_item_t));
         if (NULL == item) {
@@ -420,8 +418,7 @@ int chat_del_sid_to_cid(chat_tab_t *chat, uint64_t sid, uint64_t cid)
             hash_tab_delete(chat->sid2cids, (void *)&key, NONLOCK);
             hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
             free(item);
-        }
-        else {
+        } else {
             hash_tab_unlock(chat->sid2cids, (void *)&key, WRLOCK);
         }
     }

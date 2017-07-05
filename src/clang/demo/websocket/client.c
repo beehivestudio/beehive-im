@@ -103,8 +103,7 @@ int lws_send_handler(struct lws_context *lws,
         if (n < 0) {
             fprintf(stderr, "Send data failed!\n");
             return -1;
-        }
-        else if (n < (int)item->len) {
+        } else if (n < (int)item->len) {
             lwsl_err("Partial write LWS_CALLBACK_CLIENT_WRITEABLE\n");
             return -1;
         }

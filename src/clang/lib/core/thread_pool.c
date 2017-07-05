@@ -115,8 +115,7 @@ int thread_pool_add_worker(thread_pool_t *tpool, void *(*process)(void *arg), vo
             member = member->next;
         }
         member->next = worker;
-    }
-    else {
+    } else {
         tpool->head = worker;
     }
 

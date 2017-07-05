@@ -224,26 +224,21 @@ int str_to_hex(const char *str, int len, char *hex)
         if (str[i] >= 'A' && str[i] <= 'F') {
             if (0 == j) {
                 hex[j] = (str[i]-'A'+10)<<4;
-            }
-            else {
+            } else {
                 hex[j] |= str[i]-'A'+10;
             }
             continue;
-        }
-        else if (str[i] >= 'a' && str[i] <= 'f') {
+        } else if (str[i] >= 'a' && str[i] <= 'f') {
             if (0 == j) {
                 hex[j] = (str[i]-'a'+10)<<4;
-            }
-            else {
+            } else {
                 hex[j] |= str[i]-'a'+10;
             }
             continue;
-        }
-        else if (str[i] >= '0' && str[i] <= '9') {
+        } else if (str[i] >= '0' && str[i] <= '9') {
             if (0 == j) {
                 hex[j] = (str[i]-'0')<<4;
-            }
-            else {
+            } else {
                 hex[j] |= (str[i]-'0');
             }
             continue;
@@ -282,8 +277,7 @@ size_t str_to_num(const char *str)
         if (isdigit(*ptr)) {
             num = 10*num + (*ptr - '0');
             continue;
-        }
-        else if (' ' == *ptr) {
+        } else if (' ' == *ptr) {
             continue;
         }
 
@@ -292,28 +286,23 @@ size_t str_to_num(const char *str)
             len = 2;
             unit = KB;
             break;
-        }
-        else if (!strncasecmp(ptr, "MB", 2)) {
+        } else if (!strncasecmp(ptr, "MB", 2)) {
             len = 2;
             unit = MB;
             break;
-        }
-        else if (!strncasecmp(ptr, "GB", 2)) {
+        } else if (!strncasecmp(ptr, "GB", 2)) {
             len = 2;
             unit = GB;
             break;
-        }
-        else if (!strncasecmp(ptr, "K", 1)) {
+        } else if (!strncasecmp(ptr, "K", 1)) {
             len = 1;
             unit = K;
             break;
-        }
-        else if (!strncasecmp(ptr, "M", 1)) {
+        } else if (!strncasecmp(ptr, "M", 1)) {
             len = 1;
             unit = M;
             break;
-        }
-        else if (!strncasecmp(ptr, "G", 1)) {
+        } else if (!strncasecmp(ptr, "G", 1)) {
             len = 1;
             unit = G;
             break;

@@ -67,13 +67,11 @@ ssize_t Readn(int fd, void *buff, size_t n)
         if (len < 0) {
             if (EAGAIN == errno) {
                 return (n - left);
-            }
-            else if (EINTR == errno) {
+            } else if (EINTR == errno) {
                 continue;
             }
             return -1;
-        }
-        else if (0 == len) {
+        } else if (0 == len) {
             break;
         }
 
@@ -108,8 +106,7 @@ ssize_t Writen(int fd, const void *buff, size_t n)
         if (len < 0) {
             if (EAGAIN == errno) {
                 return (n - left);
-            }
-            else if (EINTR == errno) {
+            } else if (EINTR == errno) {
                 continue;
             }
             return -1;
@@ -324,8 +321,7 @@ int System(const char *cmd)
     if (WIFEXITED(status)) {
         if (0 == WEXITSTATUS(status)) {
             return WEXITSTATUS(status);
-        }
-        else {
+        } else {
             return WEXITSTATUS(status);
         }
     }
@@ -540,8 +536,7 @@ struct tm *local_time(const time_t *timep, struct tm *result)
     if (0 == (result->tm_year & 3)) {
         if (time > 60) {
             time--;
-        }
-        else {
+        } else {
             if (60 == time) {
                 result->tm_mon = 1;
                 result->tm_mday = 29;

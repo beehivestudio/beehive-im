@@ -115,8 +115,7 @@ int wiov_item_adjust(wiov_t *wiov, size_t n)
             len += wiov->iov[idx].iov_len;
             wiov->orig[idx].succ(wiov->orig[idx].param, wiov->orig[idx].addr, wiov->orig[idx].len);
             wiov_item_reset(wiov, idx);
-        }
-        else {
+        } else {
             wiov->iov[idx].iov_base += (n - len);
             wiov->iov[idx].iov_len = (len + wiov->iov[idx].iov_len - n);
             break;

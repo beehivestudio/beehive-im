@@ -66,8 +66,7 @@ void *rtmq_lsn_routine(void *param)
             log_error(lsn->log, "errmsg:[%d] %s", errno, strerror(errno));
             abort();
             return (void *)-1;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             continue;
         }
 
@@ -178,8 +177,7 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
         sckid = accept(lsn->lsn_sck_id, (struct sockaddr *)&cliaddr, &len);
         if (sckid >= 0) {
             break;
-        }
-        else if (EINTR == errno) {
+        } else if (EINTR == errno) {
             continue;
         }
 

@@ -30,8 +30,7 @@ trie_tree_t *trie_creat(trie_opt_t *opt)
 
     if (!ISPOWEROF2(max)) {
         return NULL;
-    }
-    else if (NULL == opt) {
+    } else if (NULL == opt) {
         opt = &_opt;
         opt->pool = (void *)NULL;
         opt->alloc = (mem_alloc_cb_t)mem_alloc;
@@ -92,8 +91,7 @@ int trie_insert(trie_tree_t *kwt, const u_char *str, int len, void *data)
             }
 
             memset(node->child, 0, sizeof(trie_node_t));
-        }
-        else if (i == max) {
+        } else if (i == max) {
             node->data = data;
             return 0;
         }
@@ -128,8 +126,7 @@ int trie_query(trie_tree_t *kwt, const u_char *str, int len, void **data)
         if (node->key != str[i]) {
             *data = NULL;
             return -1;
-        }
-        else if (i == max) {
+        } else if (i == max) {
             *data = node->data;
             return 0;
         }

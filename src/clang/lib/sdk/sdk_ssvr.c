@@ -208,8 +208,7 @@ void sdk_ssvr_set_rwset(sdk_ssvr_t *ssvr)
             || !sdk_queue_empty(ssvr->sendq)) {
             FD_SET(ssvr->sck.fd, &ssvr->wset);
             return;
-        }
-        else if (!wiov_isempty(&ssvr->sck.send)) {
+        } else if (!wiov_isempty(&ssvr->sck.send)) {
             FD_SET(ssvr->sck.fd, &ssvr->wset);
             return;
         }
@@ -262,8 +261,7 @@ void *sdk_ssvr_routine(void *_ctx)
             log_fatal(ssvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
             abort();
             return (void *)-1;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             sdk_ssvr_timeout_hdl(ctx, ssvr);
             continue;
         }
@@ -326,8 +324,7 @@ static int sdk_ssvr_conn_after_hdl(sdk_ssvr_t *ssvr, bool succ)
         ssvr->try_conn_times = 0;
         ssvr->next_conn_tm = tm + SDK_CONN_MAX_SEC;
         SDK_SSVR_SET_ONLINE(ssvr, true);
-    }
-    else { // 失败
+    } else { // 失败
         ++ssvr->try_conn_times;
         SDK_SSVR_SET_ONLINE(ssvr, false);
         intv = pow(4, ssvr->try_conn_times);
@@ -503,18 +500,15 @@ static int sdk_ssvr_recv_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr)
                 return SDK_ERR;
             }
             continue;
-        }
-        else if (0 == n) {
+        } else if (0 == n) {
             log_info(ssvr->log, "Server disconnected. fd:%d n:%d/%d", sck->fd, n, left);
             CLOSE(sck->fd);
             SDK_SSVR_SET_ONLINE(ssvr, false);
             sdk_snap_reset(recv);
             return SDK_SCK_DISCONN;
-        }
-        else if ((n < 0) && (EAGAIN == errno)) {
+        } else if ((n < 0) && (EAGAIN == errno)) {
             return SDK_OK; /* Again */
-        }
-        else if (EINTR == errno) {
+        } else if (EINTR == errno) {
             continue;
         }
 
@@ -605,8 +599,7 @@ static int sdk_ssvr_data_proc(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sck)
             if (sdk_sys_mesg_proc(ctx, ssvr, sck, recv->optr)) {
                 return SDK_ERR;
             }
-        }
-        else {
+        } else {
             sdk_exp_mesg_proc(ctx, ssvr, sck, recv->optr);
         }
 

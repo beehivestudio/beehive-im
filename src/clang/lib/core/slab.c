@@ -192,8 +192,7 @@ void *slab_alloc(slab_pool_t *pool, size_t size)
         if (page) {
             p = (page - pool->pages) << slab_get_page_shift();
             p += (uintptr_t) pool->start;
-        }
-        else {
+        } else {
             p = 0;
         }
 
@@ -206,8 +205,7 @@ void *slab_alloc(slab_pool_t *pool, size_t size)
             /* void */
         }
         slot = shift - pool->min_shift;
-    }
-    else {
+    } else {
         size = pool->min_size;
         shift = pool->min_shift;
         slot = 0;
@@ -259,8 +257,7 @@ void *slab_alloc(slab_pool_t *pool, size_t size)
                 }
                 page = page->next;
             } while (page);
-        }
-        else if (shift == slab_get_exact_shift()) {
+        } else if (shift == slab_get_exact_shift()) {
             do {
                 if (SLAB_BUSY != page->slab) {
                     for (m = 1, i = 0; m; m <<= 1, i++) {
@@ -290,8 +287,7 @@ void *slab_alloc(slab_pool_t *pool, size_t size)
                 page = page->next;
             } while (page);
 
-        }
-        else {   /* shift > slab_exact_shift */
+        } else {   /* shift > slab_exact_shift */
             n = slab_get_page_shift() - (page->slab & SLAB_SHIFT_MASK);
             n = 1 << n;
             n = ((uintptr_t) 1 << n) - 1;
@@ -362,8 +358,7 @@ void *slab_alloc(slab_pool_t *pool, size_t size)
             p = ((page - pool->pages) << slab_get_page_shift()) + s * n;
             p += (uintptr_t) pool->start;
             goto done;
-        }
-        else if (shift == slab_get_exact_shift()) {
+        } else if (shift == slab_get_exact_shift()) {
             page->slab = 1;
             page->next = &slots[slot];
             page->prev = (uintptr_t) &slots[slot] | SLAB_EXACT;
@@ -373,8 +368,7 @@ void *slab_alloc(slab_pool_t *pool, size_t size)
             p = (page - pool->pages) << slab_get_page_shift();
             p += (uintptr_t) pool->start;
             goto done;
-        }
-        else {   /* shift > slab_exact_shift */
+        } else {   /* shift > slab_exact_shift */
             page->slab = ((uintptr_t) 1 << SLAB_MAP_SHIFT) | shift;
             page->next = &slots[slot];
             page->prev = (uintptr_t) &slots[slot] | SLAB_BIG;
@@ -622,9 +616,7 @@ static slab_page_t *slab_alloc_pages(slab_pool_t *pool, uint32_t pages)
                 p = (slab_page_t *) page->prev;
                 p->next = &page[pages];
                 page->next->prev = (uintptr_t) &page[pages];
-
-            }
-            else {
+            } else {
                 p = (slab_page_t *) page->prev;
                 p->next = page->next;
                 page->next->prev = page->prev;

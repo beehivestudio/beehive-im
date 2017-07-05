@@ -85,11 +85,9 @@ static void rbt_right_rotate(rbt_tree_t *tree, rbt_node_t *node)
     if (tree->sentinel == parent) {
         tree->root = lchild;
         lchild->parent = tree->sentinel;
-    }
-    else if (node == parent->lchild) {
+    } else if (node == parent->lchild) {
         rbt_set_lchild(tree, parent, lchild);
-    }
-    else {
+    } else {
         rbt_set_rchild(tree, parent, lchild);
     }
     rbt_set_lchild(tree, node, lchild->rchild);
@@ -129,11 +127,9 @@ static void rbt_left_rotate(rbt_tree_t *tree, rbt_node_t *node)
     if (tree->sentinel == parent) {
         tree->root = rchild;
         rchild->parent = tree->sentinel;
-    }
-    else if (node == parent->lchild) {
+    } else if (node == parent->lchild) {
         rbt_set_lchild(tree, parent, rchild);
-    }
-    else {
+    } else {
         rbt_set_rchild(tree, parent, rchild);
     }
     rbt_set_rchild(tree, node, rchild->lchild);
@@ -227,8 +223,7 @@ static rbt_node_t *rbt_creat_node(rbt_tree_t *tree, int color, int type, rbt_nod
     node->rchild = tree->sentinel;
     if (NULL != parent) {
         rbt_set_child(tree, parent, type, node);
-    }
-    else {
+    } else {
         node->parent = tree->sentinel;
     }
 
@@ -283,8 +278,7 @@ int rbt_insert(rbt_tree_t *tree, void *data)
             ret = tree->cmp_cb(data, node->data);
             if (0 == ret) {
                 return RBT_NODE_EXIST;
-            }
-            else if (ret < 0) {
+            } else if (ret < 0) {
                 if (tree->sentinel == node->lchild) {
                     add = rbt_creat_node(tree, RBT_COLOR_RED, RBT_LCHILD, node);
                     if (NULL == add) {
@@ -296,8 +290,7 @@ int rbt_insert(rbt_tree_t *tree, void *data)
                     return rbt_insert_fixup(tree, add); /* 防止红黑树的性质被破坏 */
                 }
                 node = node->lchild;
-            }
-            else {
+            } else {
                 if (tree->sentinel == node->rchild) {
                     add = rbt_creat_node(tree, RBT_COLOR_RED, RBT_RCHILD, node);
                     if (NULL == add) {
@@ -371,8 +364,7 @@ static int rbt_insert_fixup(rbt_tree_t *tree, rbt_node_t *node)
                 node = parent;
                 continue;
             }
-        }
-        else {                      /* 父结点为右孩子 */
+        } else {                      /* 父结点为右孩子 */
             uncle = grandpa->lchild;
 
             /* case 1: 父结点和叔结点为红色 */
@@ -435,11 +427,9 @@ int rbt_delete(rbt_tree_t *tree, void *key, void **data)
             --tree->num;
             *data = node->data;
             return _rbt_delete(tree, node);
-        }
-        else if (ret < 0) {
+        } else if (ret < 0) {
             node = node->lchild;
-        }
-        else {
+        } else {
             node = node->rchild;
         }
     }
@@ -474,11 +464,9 @@ static int _rbt_delete(rbt_tree_t *tree, rbt_node_t *dnode)
         refer->parent = parent;
         if (tree->sentinel == parent) {
             tree->root = refer;
-        }
-        else if (dnode == parent->lchild) {
+        } else if (dnode == parent->lchild) {
             parent->lchild = refer;
-        }
-        else { /* dnode == parent->rchild */
+        } else { /* dnode == parent->rchild */
             parent->rchild = refer;
         }
 
@@ -501,11 +489,9 @@ static int _rbt_delete(rbt_tree_t *tree, rbt_node_t *dnode)
         refer->parent = parent;
         if (tree->sentinel == parent) {
             tree->root = refer;
-        }
-        else if (dnode == parent->lchild) {
+        } else if (dnode == parent->lchild) {
             parent->lchild = refer;
-        }
-        else { /* dnode == parent->rchild */
+        } else { /* dnode == parent->rchild */
             parent->rchild = refer;
         }
 
@@ -534,8 +520,7 @@ static int _rbt_delete(rbt_tree_t *tree, rbt_node_t *dnode)
     refer->parent = parent;
     if (next == parent->lchild) {
         parent->lchild = refer;
-    }
-    else { /* next == parent->rchild */
+    } else { /* next == parent->rchild */
         parent->rchild = refer;
     }
 
@@ -594,8 +579,7 @@ static int rbt_delete_fixup(rbt_tree_t *tree, rbt_node_t *node)
             if (rbt_is_black(brother->lchild) && rbt_is_black(brother->rchild)) {
                 rbt_set_red(brother);
                 node = parent;
-            }
-            else {
+            } else {
                 /* Case 3: 兄弟结点为黑色(默认),
                     兄弟结点的左子结点为红色, 右子结点为黑色:  以brother为支点, 右旋处理 */
                 if (rbt_is_black(brother->rchild)) {
@@ -618,8 +602,7 @@ static int rbt_delete_fixup(rbt_tree_t *tree, rbt_node_t *node)
 
                 node = tree->root;
             }
-        }
-        else {
+        } else {
             brother = parent->lchild;
 
             /* Case 5: 兄弟结点为红色:  以parent为支点, 右旋处理 */
@@ -639,8 +622,7 @@ static int rbt_delete_fixup(rbt_tree_t *tree, rbt_node_t *node)
             if (rbt_is_black(brother->lchild) && rbt_is_black(brother->rchild)) {
                 rbt_set_red(brother);
                 node = parent;
-            }
-            else {
+            } else {
                 /* Case 7: 兄弟结点为黑色(默认),
                     兄弟结点的右子结点为红色, 左子结点为黑色:  以brother为支点, 左旋处理 */
                 if (rbt_is_black(brother->lchild)) {
@@ -699,17 +681,14 @@ static void rbt_print_head(const rbt_tree_t *tree,
                 if (0 == idx) {
                     if (parent->lchild == node) {
                         fprintf(stderr, "l");
-                    }
-                    else {
+                    } else {
                         fprintf(stderr, "r");
                     }
-                }
-                else {
+                } else {
                     fprintf(stderr, "-");
                 }
             }
-        }
-        else {
+        } else {
             fprintf(stderr, "|");
             for (idx=0; idx<8; idx++) {
                 fprintf(stderr, " ");
@@ -725,8 +704,7 @@ static void rbt_print_head(const rbt_tree_t *tree,
         fprintf(stderr, "<");
         print(node->data);
         fprintf(stderr, ":%c/>\n", node->color);
-    }
-    else {
+    } else {
         //fprintf(stderr, "<%03ld:%c>\n", node->idx, node->color);
         fprintf(stderr, "<");
         print(node->data);
@@ -875,11 +853,9 @@ void *rbt_query(rbt_tree_t *tree, void *key)
         ret = tree->cmp_cb(key, node->data);
         if (0 == ret) {
             return node->data;
-        }
-        else if (ret < 0) {
+        } else if (ret < 0) {
             node = node->lchild;
-        }
-        else {
+        } else {
             node = node->rchild;
         }
     }
@@ -1040,8 +1016,7 @@ int rbt_trav(rbt_tree_t *tree, trav_cb_t proc, void *args)
             if (tree->sentinel != parent->rchild) { /* 有右子树 */
                 node = parent->rchild;  /* 处理右子树 */
                 continue;
-            }
-            else {
+            } else {
                 stack_pop(stack);
                 node = parent;
                 parent = stack_gettop(stack);
@@ -1130,8 +1105,7 @@ void *rbt_find(rbt_tree_t *tree, find_cb_t find, void *args)
             if (tree->sentinel != parent->rchild) { /* 有右子树 */
                 node = parent->rchild;  /* 处理右子树 */
                 continue;
-            }
-            else {
+            } else {
                 stack_pop(stack);
                 node = parent;
                 parent = stack_gettop(stack);

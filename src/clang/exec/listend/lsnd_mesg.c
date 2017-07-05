@@ -143,14 +143,12 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu", ack->sid, cid);
         return -1;
-    }
-    else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
+    } else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
         log_error(lsnd->log, "Connection status isn't establish! sid:%lu cid:%lu", ack->sid, cid);
         lsnd_kick_add(lsnd, extra);
         hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
         return -1;
-    }
-    else if (0 == ack->sid) { /* SID分配失败 */
+    } else if (0 == ack->sid) { /* SID分配失败 */
         lsnd_kick_add(lsnd, extra);
         hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
         log_error(lsnd->log, "Alloc sid failed! kick this connection! sid:%lu cid:%lu errmsg:%s",
@@ -388,8 +386,7 @@ int lsnd_upmesg_room_join_ack_handler(int type, int orig, char *data, size_t len
         log_error(lsnd->log, "Didn't find socket from sid table! sid:%lu", hhead.sid);
         mesg_room_join_ack__free_unpacked(ack, NULL);
         return 0;
-    }
-    else if (CHAT_CONN_STAT_ONLINE != extra->stat) {
+    } else if (CHAT_CONN_STAT_ONLINE != extra->stat) {
         hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
         mesg_room_join_ack__free_unpacked(ack, NULL);
         log_error(lsnd->log, "Connection status isn't online! sid:%lu", hhead.sid);
@@ -1126,8 +1123,7 @@ static int lsnd_callback_recv_handler(lsnd_cntx_t *lsnd,
         log_debug(lsnd->log, "This connection was kicked! sid:%lu cid:%lu",
                 conn->sid, conn->cid);
         return 0;
-    }
-    else if (conn->seq >= hhead.seq) {
+    } else if (conn->seq >= hhead.seq) {
         pthread_rwlock_unlock(&conn->lock);
         log_debug(lsnd->log, "Message seq is invalid! cmd:0x%04X sid:%lu seq:%lu/%lu len:%d",
                 hhead.type, hhead.sid, hhead.seq, conn->seq, len);

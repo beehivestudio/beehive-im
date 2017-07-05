@@ -211,8 +211,7 @@ int list_insert(list_t *list, list_node_t *prev, void *data)
     /* > 插入链头或链尾 */
     if (NULL == prev) {
         return list_lpush(list, data);
-    }
-    else if (list->tail == prev) {
+    } else if (list->tail == prev) {
         return list_rpush(list, data);
     }
 
@@ -531,8 +530,7 @@ void *list_find_and_del(list_t *list, find_cb_t cb, void *args)
             --list->num;
             if (0 == list->num) {
                 list->head = NULL;
-            }
-            else {
+            } else {
                 if (NULL != prev) {
                     prev->next = node->next;
                 }

@@ -55,8 +55,7 @@ void *rtmq_dsvr_routine(void *_ctx)
             if (EINTR == errno) { continue; }
             log_error(dsvr->log, "errno:[%d] %s!", errno, strerror(errno));
             continue;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             rtmq_dsvr_dist_data_hdl(ctx, dsvr);
             continue;
         }

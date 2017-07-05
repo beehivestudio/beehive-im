@@ -197,8 +197,7 @@ void *rtmq_rsvr_routine(void *_ctx)
             log_fatal(rsvr->log, "errmsg:[%d] %s", errno, strerror(errno));
             abort();
             return (void *)RTMQ_ERR;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             rtmq_rsvr_event_timeout_hdl(ctx, rsvr);
             continue;
         }
@@ -404,8 +403,7 @@ static int rtmq_rsvr_wiov_add(rtmq_rsvr_t *rsvr, rtmq_sck_t *sck)
         head = (rtmq_header_t *)list2_lpop(sck->mesg_list);;
         if (NULL == head) {
             break; /* 无数据 */
-        }
-        else if (RTMQ_CHKSUM_VAL != head->chksum) { /* 合法性校验 */
+        } else if (RTMQ_CHKSUM_VAL != head->chksum) { /* 合法性校验 */
             assert(0);
         }
 
@@ -483,8 +481,7 @@ static int rtmq_rsvr_trav_send(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
                     log_error(rsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
                     rtmq_rsvr_del_conn_hdl(ctx, rsvr, node);
                     return RTMQ_ERR;
-                }
-                else {
+                } else {
                     log_trace(ctx->log, "Stream is writable! fd:%d nid:%d sid:%d n:%d",
                             curr->fd, curr->nid, curr->sid, n);
                     /* 删除已发送内容 */
@@ -549,16 +546,13 @@ static int rtmq_rsvr_recv_proc(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t *
                 return RTMQ_ERR;
             }
             continue;
-        }
-        else if (0 == n) {
+        } else if (0 == n) {
             log_error(rsvr->log, "Client disconnected. errmsg:[%d] %s! nid:%u n:%d/%d",
                     errno, strerror(errno), sck->nid, n, left);
             return RTMQ_SCK_DISCONN;
-        }
-        else if ((n < 0) && (EAGAIN == errno)) {
+        } else if ((n < 0) && (EAGAIN == errno)) {
             return RTMQ_OK; /* Again */
-        }
-        else if (EINTR == errno) {
+        } else if (EINTR == errno) {
             continue;
         }
 
@@ -654,8 +648,7 @@ static int rtmq_rsvr_data_proc(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t *
                         head->type, head->length, head->flag);
                 return RTMQ_ERR;
             }
-        }
-        else {
+        } else {
             rtmq_rsvr_exp_mesg_proc(ctx, rsvr, sck, curr->base, curr->optr);
         }
         curr->optr += one_mesg_len;
@@ -1007,8 +1000,7 @@ static int rtmq_rsvr_link_auth_req_hdl(rtmq_cntx_t *ctx,
         }
         log_debug(rsvr->log, "Auth success! nid:%d usr:%s passwd:%s",
                 head->nid, auth->usr, auth->passwd);
-    }
-    else {
+    } else {
         log_error(rsvr->log, "Auth failed! nid:%d usr:%s passwd:%s",
                 head->nid, auth->usr, auth->passwd);
     }

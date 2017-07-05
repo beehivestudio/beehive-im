@@ -68,17 +68,13 @@ int http_parse_response(const char *str, http_response_t *rep)
     /* > 获取版本, 状态 */
     if (!strncasecmp(p, HTTP_KEY_VERS_09, HTTP_KEY_VERS_LEN)) {
         rep->version = HTTP_VERSION_09;
-    }
-    else if (!strncasecmp(p, HTTP_KEY_VERS_10, HTTP_KEY_VERS_LEN)) {
+    } else if (!strncasecmp(p, HTTP_KEY_VERS_10, HTTP_KEY_VERS_LEN)) {
         rep->version = HTTP_VERSION_10;
-    }
-    else if (!strncasecmp(p, HTTP_KEY_VERS_11, HTTP_KEY_VERS_LEN)) {
+    } else if (!strncasecmp(p, HTTP_KEY_VERS_11, HTTP_KEY_VERS_LEN)) {
         rep->version = HTTP_VERSION_11;
-    }
-    else if (!strncasecmp(p, HTTP_KEY_VERS_20, HTTP_KEY_VERS_LEN)) {
+    } else if (!strncasecmp(p, HTTP_KEY_VERS_20, HTTP_KEY_VERS_LEN)) {
         rep->version = HTTP_VERSION_20;
-    }
-    else {
+    } else {
         rep->status = -1;
         rep->total_len = rep->header_len + rep->content_len;
         return -1;
@@ -95,8 +91,7 @@ int http_parse_response(const char *str, http_response_t *rep)
     if (rep->status < 100 || rep->status > 999) {
         rep->total_len = rep->header_len + rep->content_len;
         return rep->header_len;
-    }
-    else if (200 != rep->status) {
+    } else if (200 != rep->status) {
         rep->total_len = rep->header_len + rep->content_len;
         return rep->header_len;
     }
@@ -122,11 +117,9 @@ int http_parse_response(const char *str, http_response_t *rep)
             while (' ' == *p) { ++p; }
             if (!strncasecmp(p, HTTP_KEY_CONNECTION_CLOSE, HTTP_KEY_CONNECTION_CLOSE_LEN)) {
                 rep->connection = HTTP_CONNECTION_CLOSE;
-            }
-            else if (!strncasecmp(p, HTTP_KEY_CONNECTION_KEEPALIVE, HTTP_KEY_CONNECTION_KEEPALIVE_LEN)) {
+            } else if (!strncasecmp(p, HTTP_KEY_CONNECTION_KEEPALIVE, HTTP_KEY_CONNECTION_KEEPALIVE_LEN)) {
                 rep->connection = HTTP_CONNECTION_KEEPALIVE;
-            }
-            else {
+            } else {
                 rep->total_len = rep->header_len + rep->content_len;
                 return -1;
             }

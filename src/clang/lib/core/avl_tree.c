@@ -40,11 +40,9 @@
         if(NULL != (_new)) { \
             (_new)->parent = NULL; \
         } \
-    } \
-    else if(_parent->lchild == old) { \
+    } else if(_parent->lchild == old) { \
         avl_set_lchild(_parent, _new); \
-    } \
-    else if(_parent->rchild == old) { \
+    } else if(_parent->rchild == old) { \
         avl_set_rchild(_parent, _new); \
     } \
 }
@@ -82,8 +80,7 @@ avl_tree_t *avl_creat(avl_opt_t *opt, cmp_cb_t cmp_cb)
     /* 合法性验证 */
     if (NULL == cmp_cb) {
         return NULL;
-    }
-    else if (NULL == opt) {
+    } else if (NULL == opt) {
         opt = &_opt;
         opt->pool = NULL;
         opt->alloc = (mem_alloc_cb_t)mem_alloc;
@@ -182,8 +179,7 @@ static int _avl_insert(avl_tree_t *tree, avl_node_t *node, bool *taller, void *d
     if (0 == ret) {
         *taller = false;
         return AVL_NODE_EXIST;
-    }
-    else if (ret < 0) {
+    } else if (ret < 0) {
         return avl_insert_left(tree, node, taller, data);
     }
 
@@ -224,8 +220,7 @@ static int avl_insert_right(avl_tree_t *tree, avl_node_t *node, bool *taller, vo
 
         node->rchild = add;
         *taller = true;     /* node的高度增加了 */
-    }
-    else {
+    } else {
         ret = _avl_insert(tree, node->rchild, taller, data);
         if (AVL_OK != ret) {
             return ret;
@@ -289,8 +284,7 @@ static int avl_insert_left(avl_tree_t *tree, avl_node_t *node, bool *taller, voi
 
         node->lchild = add;
         *taller = true;     /* node的高度增加了 */
-    }
-    else {
+    } else {
         ret = _avl_insert(tree, node->lchild, taller, data);
         if (AVL_OK != ret) {
             return ret;
@@ -664,11 +658,9 @@ void *avl_query(avl_tree_t *tree, void *key)
         ret = tree->cmp_cb(key, node->data);
         if (0 == ret) {
             return node->data;
-        }
-        else if (ret < 0) {
+        } else if (ret < 0) {
             node = node->lchild;
-        }
-        else {
+        } else {
             node = node->rchild;
         }
     }
@@ -793,8 +785,7 @@ static int _avl_delete(avl_tree_t *tree,
             return avl_delete_left_balance(tree, node, lower);
         }
         return AVL_OK;
-    }
-    else if (ret > 0) { /* 右子树上查找 */
+    } else if (ret > 0) { /* 右子树上查找 */
         if (NULL == node->rchild) {
             *data = NULL;
             return AVL_OK;
@@ -884,8 +875,7 @@ int avl_replace_and_delete(avl_tree_t *tree,
         if (prev == node->lchild) {
             avl_set_lchild(node, prev->lchild);
             /* prev->parent == dnode结点可能失衡，此处理交给前栈的函数处理 */
-        }
-        else {
+        } else {
             avl_set_rchild(prev->parent, prev->lchild);
             /* rnode的父结点可能失衡，此处理交给前栈的函数处理 */
         }
@@ -949,8 +939,7 @@ int avl_delete_left_balance(avl_tree_t *tree, avl_node_t *node, bool *lower)
                         *lower = false;
                         rchild->bf = AVL_LH;
                         node->bf = AVL_RH;
-                    }
-                    else if (AVL_RH == rchild->bf) {
+                    } else if (AVL_RH == rchild->bf) {
                         *lower = true;
                         rchild->bf = AVL_EH;
                         node->bf = AVL_EH;
@@ -1043,8 +1032,7 @@ int avl_delete_right_balance(avl_tree_t *tree, avl_node_t *node, bool *lower)
                         *lower = false;
                         lchild->bf = AVL_RH;
                         node->bf = AVL_LH;
-                    }
-                    else {
+                    } else {
                         *lower = true;
                         lchild->bf = AVL_EH;
                         node->bf = AVL_EH;
@@ -1204,17 +1192,14 @@ static void avl_print_head(avl_node_t *node, int depth)
                 if (0 == idx) {
                     if (parent->lchild == node) {
                         fprintf(stderr, "l");
-                    }
-                    else {
+                    } else {
                         fprintf(stderr, "r");
                     }
-                }
-                else {
+                } else {
                     fprintf(stderr, "-");
                 }
             }
-        }
-        else {
+        } else {
 			fprintf(stderr, "|");
 			for (idx=0; idx<8; idx++) {
 				fprintf(stderr, " ");
@@ -1226,8 +1211,7 @@ static void avl_print_head(avl_node_t *node, int depth)
         && (NULL == node->rchild))
     {
         //fprintf(stderr, "<%03ld:%d/>\n", node->idx, node->bf);
-    }
-    else {
+    } else {
         //fprintf(stderr, "<%03ld:%d>\n", node->idx, node->bf);
     }
 }

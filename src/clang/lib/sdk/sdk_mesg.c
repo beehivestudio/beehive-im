@@ -281,8 +281,7 @@ int sdk_mesg_online_ack_handler(sdk_cntx_t *ctx, sdk_ssvr_t *ssvr, sdk_sck_t *sc
         SDK_SSVR_SET_ONLINE(ssvr, true);
         sdk_mesg_send_sync_req(ctx, ssvr, sck); /* 发送同步请求 */
         log_debug(ctx->log, "code:%d errmsg:%s", ack->code, ack->errmsg);
-    }
-    else {
+    } else {
         SDK_SSVR_SET_ONLINE(ssvr, !ack->code);
         log_error(ctx->log, "code:%d errmsg:%s", ack->code, ack->errmsg);
     }

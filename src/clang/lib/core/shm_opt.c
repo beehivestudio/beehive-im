@@ -243,8 +243,7 @@ void *shm_creat(const char *path, size_t size)
             return NULL;
         }
         return _shm_creat(path, size);  /* 创建 */
-    }
-    else if (0 == st.st_size) {
+    } else if (0 == st.st_size) {
         return _shm_creat(path, size);  /* 创建 */
     }
 

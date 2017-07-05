@@ -428,8 +428,7 @@ xml_node_t *xml_search(xml_tree_t *xml, xml_node_t *curr, const char *path)
     /* 1. 路径判断 */
     if (XML_IS_ROOT_PATH(path)) {
         return curr;
-    }
-    else if (XML_IS_ABS_PATH(path)) {
+    } else if (XML_IS_ABS_PATH(path)) {
         str++;
     }
 
@@ -444,8 +443,7 @@ xml_node_t *xml_search(xml_tree_t *xml, xml_node_t *curr, const char *path)
         ptr = strstr(str, ".");
         if (NULL == ptr) {
             len = strlen(str);
-        }
-        else {
+        } else {
             len = ptr - str;
         }
 
@@ -461,8 +459,7 @@ xml_node_t *xml_search(xml_tree_t *xml, xml_node_t *curr, const char *path)
 
         if (NULL == node) {
             return NULL;
-        }
-        else if (NULL == ptr) {
+        } else if (NULL == ptr) {
             return node;
         }
 
@@ -541,8 +538,7 @@ xml_node_t *xml_add_attr(xml_tree_t *xml,
 
         xml_set_attr_flag(node);
         return attr;
-    }
-    else if (xml_has_child(node) && !xml_has_attr(node)) { /* 有孩子但无属性 */
+    } else if (xml_has_child(node) && !xml_has_attr(node)) { /* 有孩子但无属性 */
         attr->parent = node;
         attr->next = node->child;
         node->child = attr;
@@ -599,8 +595,7 @@ xml_node_t *xml_add_child(xml_tree_t *xml, xml_node_t *node, const char *name, c
     /* 2. 将孩子加入子结点链表尾 */
     if (NULL == node->tail) {            /* 没有孩子&属性结点 */
         node->child = child;
-    }
-    else {
+    } else {
         node->tail->next = child;
     }
 
@@ -913,8 +908,7 @@ static xml_node_t *_xml_delete_empty(xml_tree_t *xml, Stack_t *stack, xml_node_t
             /* 已无兄弟: 则处理父结点 */
             xml_unset_child_flag(parent);
             /* 继续后续处理 */
-        }
-        else {
+        } else {
             while (prev->next != node) {
                 prev = prev->next;
             }
@@ -924,8 +918,7 @@ static xml_node_t *_xml_delete_empty(xml_tree_t *xml, Stack_t *stack, xml_node_t
 
             if (NULL != prev->next) {
                 return prev->next;  /* 还有兄弟: 则处理后续结点 */
-            }
-            else {
+            } else {
                 /* 已无兄弟: 则处理父结点 */
                 if (xml_is_attr(prev)) {
                     xml_unset_child_flag(parent);

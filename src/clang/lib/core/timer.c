@@ -213,8 +213,7 @@ int timer_task_del(timer_cntx_t *ctx, timer_task_t *task)
     if (task->idx >= ctx->len) {
         pthread_rwlock_unlock(&ctx->lock);
         return -1;
-    }
-    else if (task != (timer_task_t *)ctx->e[task->idx]) {
+    } else if (task != (timer_task_t *)ctx->e[task->idx]) {
         pthread_rwlock_unlock(&ctx->lock);
         return -1;
     }
@@ -223,8 +222,7 @@ int timer_task_del(timer_cntx_t *ctx, timer_task_t *task)
     if (0 == idx) {
         left = 1;
         right = 2;
-    }
-    else {
+    } else {
         left = 2 * idx;
         right = 2 * idx + 1;
     }

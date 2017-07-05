@@ -374,8 +374,7 @@ static int xml_parse_version(xml_tree_t *xml, xml_parse_t *parse)
         /* 判断是双引号(")还是单引号(')为版本属性值的边界 */
         if (XmlIsQuotChar(*ptr) || XmlIsSQuotChar(*ptr)) {
             border = *ptr;
-        }
-        else {                              /* 不为双/单引号，则格式错误 */
+        } else {                              /* 不为双/单引号，则格式错误 */
             log_error(xml->log, "XML format is wrong![%-.32s]", parse->ptr);
             return XML_ERR_FORMAT;
         }
@@ -608,23 +607,20 @@ static int xml_mark_get_name(xml_tree_t *xml, Stack_t *stack, xml_parse_t *parse
     if (stack_isempty(stack)) {
         if (NULL == xml->root->tail) {
             xml->root->child = node;
-        }
-        else {
+        } else {
             xml->root->tail->next = node;
         }
         xml->root->tail = node;
         node->parent = xml->root;
         xml_set_type(node, XML_NODE_CHILD);
         xml_set_child_flag(xml->root);
-    }
-    else {
+    } else {
         xml_set_type(node, XML_NODE_CHILD);
         top = stack_gettop(stack);
         node->parent = top;
         if (NULL == top->tail) {
             top->child = node;
-        }
-        else {
+        } else {
             top->tail->next = node;
         }
         top->tail = node;
@@ -773,8 +769,7 @@ static int xml_mark_get_attr(xml_tree_t *xml, Stack_t *stack, xml_parse_t *parse
         /* 判断是单引号(')还是双引号(")为属性的边界 */
         if (XmlIsQuotChar(*ptr) || XmlIsSQuotChar(*ptr)) {
             border = *ptr;
-        }
-        else {                /* 不为 双/单 引号，则格式错误 */
+        } else {                /* 不为 双/单 引号，则格式错误 */
             errflg = 1;
             log_error(xml->log, "XML format is wrong![%-.32s]", parse->ptr);
             break;
@@ -799,8 +794,7 @@ static int xml_mark_get_attr(xml_tree_t *xml, Stack_t *stack, xml_parse_t *parse
 
                 ptr += esc->len;
                 parse->ptr = ptr;
-            }
-            else
+            } else
         #endif /*__XML_ESC_PARSE__*/
             {
                 ptr++;
@@ -833,8 +827,7 @@ static int xml_mark_get_attr(xml_tree_t *xml, Stack_t *stack, xml_parse_t *parse
             strncat(node->value, parse->ptr, len);
 
             xml_esc_free(&split);
-        }
-        else
+        } else
     #endif /*__XML_ESC_PARSE__*/
         {
             node->value.str = (char *)xml->alloc(xml->pool, len+1);
@@ -852,8 +845,7 @@ static int xml_mark_get_attr(xml_tree_t *xml, Stack_t *stack, xml_parse_t *parse
         /* 3.4 将结点加入属性链表 */
         if (NULL == top->tail) { /* 还没有孩子结点 */
             top->child = node;
-        }
-        else {
+        } else {
             top->tail->next = node;
         }
         node->parent = top;
@@ -993,8 +985,7 @@ static int xml_mark_get_value(xml_tree_t *xml, Stack_t *stack, xml_parse_t *pars
 
             p1 += esc->len;
             parse->ptr = p1;
-        }
-        else
+        } else
     #endif /*__XML_ESC_PARSE__*/
         {
             p1++;
@@ -1005,15 +996,13 @@ static int xml_mark_get_value(xml_tree_t *xml, Stack_t *stack, xml_parse_t *pars
         p2 = p1;
         p1--;
         while (XmlIsIgnoreChar(*p1)) { --p1; }
-    }
-    else if (XmlIsStrEndChar(*p1)) { /* 为结束符时 */
+    } else if (XmlIsStrEndChar(*p1)) { /* 为结束符时 */
     #if defined(__XML_ESC_PARSE__)
         xml_esc_free(&split);
     #endif /*__XML_ESC_PARSE__*/
         log_error(xml->log, "XML format is wrong! MarkName:[%s]", curr->name.str);
         return XML_ERR_FORMAT;
-    }
-    else {                          /* 为单引号或双引号时 */
+    } else {                          /* 为单引号或双引号时 */
         p2 = p1 + 1;
         p1--;
         while (XmlIsIgnoreChar(*p2)) { ++p2; }
@@ -1049,8 +1038,7 @@ static int xml_mark_get_value(xml_tree_t *xml, Stack_t *stack, xml_parse_t *pars
         curr->value.len = len;
 
         xml_esc_free(&split);
-    }
-    else
+    } else
 #endif /*__XML_ESC_PARSE__*/
     {
         strncpy(curr->value.str, parse->ptr, len);
@@ -1122,8 +1110,7 @@ xml_node_t *xml_free_next(xml_tree_t *xml, Stack_t *stack, xml_node_t *curr)
         curr->temp = child->next;
         curr = child;
         return curr;
-    }
-    else {                          /* 再次: 处理其兄弟结点: 选出下一个兄弟结点 */
+    } else {                          /* 再次: 处理其兄弟结点: 选出下一个兄弟结点 */
         /* 1. 弹出已经处理完成的结点, 并释放 */
         top = stack_pop(stack);
         if (NULL == top) {
@@ -1191,8 +1178,7 @@ int xml_delete_child(xml_tree_t *xml, xml_node_t *node, xml_node_t *child)
             if (xml_is_attr(child)) {
                 xml_unset_attr_flag(node);
             }
-        }
-        else if (xml_is_attr(child) && !xml_is_attr(node->child)) {
+        } else if (xml_is_attr(child) && !xml_is_attr(node->child)) {
             xml_unset_attr_flag(node);
         }
         return XML_OK;
@@ -1253,18 +1239,15 @@ int xml_delete_child(xml_tree_t *xml, xml_node_t *node, xml_node_t *child)
         if (xml_has_child(node)) { /* 此时temp指向node的孩子结点 或 NULL */ \
             /* fprintf(fp, ">%s\n", node->value); */ \
             len += (node->value.len + 2); \
-        } \
-        else { \
+        } else { \
             /* fprintf(fp, ">%s</%s>\n", node->value, node->name); */ \
             len += (node->value.len + node->name.len + 5); \
         } \
-    } \
-    else { \
+    } else { \
         if (NULL != node->temp) { /* 此时temp指向node的孩子结点 或 NULL */ \
             /* fprintf(fp, ">\n"); */ \
             len += 2; \
-        } \
-        else { \
+        } else { \
             /* fprintf(fp, "/>\n"); */ \
             len += 3; \
         } \
@@ -1442,17 +1425,13 @@ static const xml_esc_t *xml_esc_get(const char *str)
 {
     if (XmlIsLtStr(str)) {       /* &lt; */
         return &g_xml_esc_str[XML_ESC_LT];
-    }
-    else if (XmlIsGtStr(str)) {  /* &gt; */
+    } else if (XmlIsGtStr(str)) {  /* &gt; */
         return &g_xml_esc_str[XML_ESC_GT];
-    }
-    else if (XmlIsAmpStr(str)) { /* &amp; */
+    } else if (XmlIsAmpStr(str)) { /* &amp; */
         return &g_xml_esc_str[XML_ESC_AMP];
-    }
-    else if (XmlIsAposStr(str)) { /* &apos; */
+    } else if (XmlIsAposStr(str)) { /* &apos; */
         return &g_xml_esc_str[XML_ESC_APOS];
-    }
-    else if (XmlIsQuotStr(str)) { /* &quot; */
+    } else if (XmlIsQuotStr(str)) { /* &quot; */
         return &g_xml_esc_str[XML_ESC_QUOT];
     }
 
@@ -1583,8 +1562,7 @@ static int xml_esc_split(xml_tree_t *xml, const xml_esc_t *esc,
 
     if (NULL == split->head) {
         split->head = node;
-    }
-    else {
+    } else {
         split->tail->next = node;
     }
     split->tail = node;

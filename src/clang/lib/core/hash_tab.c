@@ -15,8 +15,7 @@ static void _hash_tab_lock(hash_tab_t *htab, int idx, lock_e lock)
 {
     if (WRLOCK == lock) {
         pthread_rwlock_wrlock(&htab->lock[idx]);
-    }
-    else if (RDLOCK == lock) {
+    } else if (RDLOCK == lock) {
         pthread_rwlock_rdlock(&htab->lock[idx]);
     }
 }

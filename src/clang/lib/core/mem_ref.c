@@ -227,8 +227,7 @@ int mem_ref_decr(void *addr)
         item = hash_tab_query(tab, (void *)&key, WRLOCK);
         if (NULL == item) {
             return 0; // 已被释放
-        }
-        else if (0 == item->count) {
+        } else if (0 == item->count) {
             hash_tab_delete(tab, (void *)&key, NONLOCK);
             hash_tab_unlock(tab, &key, WRLOCK);
 

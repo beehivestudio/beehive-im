@@ -243,8 +243,7 @@ AGAIN:
         if (EINTR == errno) { goto AGAIN; }
         close(fd);
         return -1;
-    }
-    else if (0 == ret) {
+    } else if (0 == ret) {
         close(fd);
         return -1;
     }
@@ -362,16 +361,14 @@ int tcp_block_send(int fd, const void *addr, int len, int timeout)
         if (ret < 0) {
             if (EINTR == errno) { continue; }
             return -1;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             return -1;
         }
 
         n = Writen(fd, (const char *)addr + off, left);
         if (n < 0) {
             return -1;
-        }
-        else if (left != n) {
+        } else if (left != n) {
             left -= n;
             off += n;
             continue;
@@ -411,16 +408,14 @@ int tcp_block_recv(int fd, void *addr, int len, int timeout)
         if (ret < 0) {
             if (EINTR == errno) { continue; }
             return -1;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             return -1;
         }
 
         n = Readn(fd, (char *)addr + off, left);
         if (n < 0) {
             return -1;
-        }
-        else if (left != n) {
+        } else if (left != n) {
             left -= n;
             off += n;
             continue;
@@ -467,14 +462,12 @@ bool ip_isvalid(const char *ip)
             ++p;
             digits = 0;
             continue;
-        }
-        else if ('\0' == *p) {
+        } else if ('\0' == *p) {
             if (3 != dots) {
                 return false;
             }
             return true;
-        }
-        else if (' ' == *p) {
+        } else if (' ' == *p) {
             while (' ' == *p) { ++p; };
             if ('\0' != *p) {
                 return false;

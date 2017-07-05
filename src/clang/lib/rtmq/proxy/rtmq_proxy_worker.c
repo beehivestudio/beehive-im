@@ -67,8 +67,7 @@ void *rtmq_proxy_worker_routine(void *_ctx)
             log_fatal(worker->log, "errmsg:[%d] %s", errno, strerror(errno));
             abort();
             return (void *)-1;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             /* 超时: 模拟处理命令 */
             rtmq_cmd_t cmd;
             req = (rtmq_cmd_proc_req_t *)&cmd.param;
@@ -269,8 +268,7 @@ static int rtmq_proxy_worker_cmd_proc_req_hdl(rtmq_proxy_t *pxy, rtmq_worker_t *
             if (reg->proc(head->type, head->nid,
                 addr[idx] + sizeof(rtmq_header_t), head->length, reg->param)) {
                 ++worker->err_total;    /* 错误计数 */
-            }
-            else {
+            } else {
                 ++worker->proc_total;   /* 处理计数 */
             }
 

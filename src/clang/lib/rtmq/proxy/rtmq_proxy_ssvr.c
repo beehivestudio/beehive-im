@@ -139,8 +139,7 @@ static void rtmq_proxy_ssvr_bind_cpu(rtmq_proxy_t *pxy, int id)
     mod = sysconf(_SC_NPROCESSORS_CONF) - cpu->start;
     if (mod <= 0) {
         idx = id % sysconf(_SC_NPROCESSORS_CONF);
-    }
-    else {
+    } else {
         idx = cpu->start + (id % mod);
     }
 
@@ -179,8 +178,7 @@ void rtmq_proxy_ssvr_set_rwset(rtmq_proxy_ssvr_t *ssvr)
     {
         FD_SET(ssvr->sck.fd, &ssvr->wset);
         return;
-    }
-    else if (!wiov_isempty(&ssvr->sck.send)) {
+    } else if (!wiov_isempty(&ssvr->sck.send)) {
         FD_SET(ssvr->sck.fd, &ssvr->wset);
         return;
     }
@@ -254,8 +252,7 @@ void *rtmq_proxy_ssvr_routine(void *_ctx)
             log_fatal(ssvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
             abort();
             return (void *)-1;
-        }
-        else if (0 == ret) {
+        } else if (0 == ret) {
             rtmq_proxy_ssvr_timeout_hdl(pxy, ssvr);
             continue;
         }
@@ -451,17 +448,14 @@ static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
                 return RTMQ_ERR;
             }
             continue;
-        }
-        else if (0 == n) {
+        } else if (0 == n) {
             log_error(ssvr->log, "Server disconnected. fd:%d n:%d/%d", sck->fd, n, left);
             CLOSE(sck->fd);
             rtmq_snap_reset(recv);
             return RTMQ_SCK_DISCONN;
-        }
-        else if ((n < 0) && (EAGAIN == errno)) {
+        } else if ((n < 0) && (EAGAIN == errno)) {
             return RTMQ_OK; /* Again */
-        }
-        else if (EINTR == errno) {
+        } else if (EINTR == errno) {
             continue;
         }
 
@@ -551,8 +545,7 @@ static int rtmq_proxy_ssvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
         /* 2.3 进行数据处理 */
         if (RTMQ_SYS_MESG == head->flag) {
             rtmq_proxy_ssvr_sys_mesg_proc(pxy, ssvr, sck, recv->optr);
-        }
-        else {
+        } else {
             rtmq_proxy_ssvr_exp_mesg_proc(pxy, ssvr, sck, recv->optr);
         }
 
@@ -654,8 +647,7 @@ static int rtmq_proxy_ssvr_wiov_add(rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *s
         head = (rtmq_header_t *)list_lpop(sck->mesg_list);
         if (NULL == head) {
             break; /* 无数据 */
-        }
-        else if (RTMQ_CHKSUM_VAL != head->chksum) {
+        } else if (RTMQ_CHKSUM_VAL != head->chksum) {
             assert(0);
         }
 
