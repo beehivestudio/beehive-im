@@ -780,6 +780,8 @@ func LsndUpMesgRoomJoinNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 		return -1
 	}
 
+	ctx.log.Debug("Room join ntf! rid:%d uid:%d", req.GetRid(), req.GetUid())
+
 	/* > 遍历下发ROOM-JOIN-NTC消息 */
 	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
@@ -829,6 +831,8 @@ func LsndUpMesgRoomQuitNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 		return -1
 	}
 
+	ctx.log.Debug("Room quit ntf! rid:%d uid:%d", req.GetRid(), req.GetUid())
+
 	/* > 遍历下发ROOM-QUIT-NTC消息 */
 	p := &LsndRoomDataParam{ctx: ctx, data: data}
 
@@ -877,6 +881,8 @@ func LsndUpMesgRoomKickNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 		ctx.log.Error("Unmarshal room-kick-ntc failed! errmsg:%s", err.Error())
 		return -1
 	}
+
+	ctx.log.Debug("Room kick ntf! rid:%d uid:%d", req.GetRid(), req.GetUid())
 
 	/* > 遍历下发ROOM-KICK-NTC消息 */
 	p := &LsndRoomDataParam{ctx: ctx, data: data}

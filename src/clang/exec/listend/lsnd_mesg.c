@@ -730,7 +730,7 @@ int lsnd_upmesg_room_quit_ntf_handler(int type, int orig, void *data, size_t len
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
-    log_debug(lsnd->log, "Recv chat room quit ntc!");
+    log_debug(lsnd->log, "Recv chat room quit ntf!");
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
@@ -740,9 +740,11 @@ int lsnd_upmesg_room_quit_ntf_handler(int type, int orig, void *data, size_t len
     /* > 解压PROTO-BUF */
     mesg = mesg_room_quit_ntf__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
-        log_error(lsnd->log, "Unpack chat room quit ntc failed!");
+        log_error(lsnd->log, "Unpack chat room quit ntf failed!");
         return -1;
     }
+
+    log_debug(lsnd->log, "Room quit ntf! rid:%lu uid:%lu", mesg->rid, mesg->uid);
 
     /* > 给制定聊天室和分组发送消息 */
     param.lsnd = lsnd;
@@ -781,7 +783,7 @@ int lsnd_upmesg_room_kick_ntf_handler(int type, int orig, void *data, size_t len
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
-    log_debug(lsnd->log, "Recv chat room quit ntc!");
+    log_debug(lsnd->log, "Recv chat room kick ntf!");
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
@@ -791,9 +793,11 @@ int lsnd_upmesg_room_kick_ntf_handler(int type, int orig, void *data, size_t len
     /* > 解压PROTO-BUF */
     mesg = mesg_room_kick_ntf__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
-        log_error(lsnd->log, "Unpack chat room kick ntc failed!");
+        log_error(lsnd->log, "Unpack chat room kick ntf failed!");
         return -1;
     }
+
+    log_debug(lsnd->log, "Room kick ntf! rid:%lu uid:%lu", mesg->rid, mesg->uid);
 
     /* > 给制定聊天室和分组发送消息 */
     param.lsnd = lsnd;
@@ -832,7 +836,7 @@ int lsnd_upmesg_room_join_ntf_handler(int type, int orig, void *data, size_t len
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
 
-    log_debug(lsnd->log, "Recv chat room join ntc!");
+    log_debug(lsnd->log, "Recv chat room join ntf!");
 
     /* > 转化字节序 */
     MESG_HEAD_NTOH(head, &hhead);
@@ -842,9 +846,11 @@ int lsnd_upmesg_room_join_ntf_handler(int type, int orig, void *data, size_t len
     /* > 解压PROTO-BUF */
     mesg = mesg_room_join_ntf__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
-        log_error(lsnd->log, "Unpack chat room join ntc failed!");
+        log_error(lsnd->log, "Unpack chat room join ntf failed!");
         return -1;
     }
+
+    log_debug(lsnd->log, "Room join ntf! rid:%lu uid:%lu", mesg->rid, mesg->uid);
 
     /* > 给制定聊天室和分组发送消息 */
     param.lsnd = lsnd;
