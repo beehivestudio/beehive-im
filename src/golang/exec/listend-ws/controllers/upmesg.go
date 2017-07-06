@@ -45,9 +45,9 @@ func (ctx *LsndCntx) UpMesgRegister() {
 	ctx.frwder.Register(comm.CMD_ROOM_BC, LsndUpMesgRoomBcHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_KICK, LsndUpMesgRoomKickHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_USR_NUM, LsndUpMesgRoomUsrNumHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_JOIN_NTC, LsndUpMesgRoomJoinNtcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_QUIT_NTC, LsndUpMesgRoomQuitNtcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_KICK_NTC, LsndUpMesgRoomKickNtcHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_JOIN_NTF, LsndUpMesgRoomJoinNtfHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_QUIT_NTF, LsndUpMesgRoomQuitNtfHandler, ctx)
+	ctx.frwder.Register(comm.CMD_ROOM_KICK_NTF, LsndUpMesgRoomKickNtfHandler, ctx)
 
 	/* > 内部运维消息 */
 	ctx.frwder.Register(comm.CMD_LSND_INFO_ACK, LsndUpMesgLsndInfoAckHandler, ctx)
@@ -742,7 +742,7 @@ func LsndUpMesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uin
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpMesgRoomJoinNtcHandler
+ **函数名称: LsndUpMesgRoomJoinNtfHandler
  **功    能: ROOM-JOIN-NTC消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -756,7 +756,7 @@ func LsndUpMesgRoomUsrNumHandler(cmd uint32, nid uint32, data []byte, length uin
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:26:07 #
  ******************************************************************************/
-func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomJoinNtfHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -772,7 +772,7 @@ func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req := &mesg.MesgRoomJoinNtc{}
+	req := &mesg.MesgRoomJoinNtf{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -791,7 +791,7 @@ func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpMesgRoomQuitNtcHandler
+ **函数名称: LsndUpMesgRoomQuitNtfHandler
  **功    能: ROOM-QUIT-NTC消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -805,7 +805,7 @@ func LsndUpMesgRoomJoinNtcHandler(cmd uint32, nid uint32, data []byte, length ui
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
  ******************************************************************************/
-func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomQuitNtfHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -821,7 +821,7 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req := &mesg.MesgRoomQuitNtc{}
+	req := &mesg.MesgRoomQuitNtf{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
@@ -840,7 +840,7 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: LsndUpMesgRoomKickNtcHandler
+ **函数名称: LsndUpMesgRoomKickNtfHandler
  **功    能: ROOM-KICK-NTC消息的处理
  **输入参数:
  **     cmd: 消息类型
@@ -854,7 +854,7 @@ func LsndUpMesgRoomQuitNtcHandler(cmd uint32, nid uint32, data []byte, length ui
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.08 11:28:34 #
  ******************************************************************************/
-func LsndUpMesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func LsndUpMesgRoomKickNtfHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1
@@ -870,7 +870,7 @@ func LsndUpMesgRoomKickNtcHandler(cmd uint32, nid uint32, data []byte, length ui
 	}
 
 	/* > 解析ROOM-BC消息 */
-	req := &mesg.MesgRoomKickNtc{}
+	req := &mesg.MesgRoomKickNtf{}
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {

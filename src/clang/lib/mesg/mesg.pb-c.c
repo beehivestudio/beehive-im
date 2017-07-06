@@ -2415,391 +2415,391 @@ void   mesg_group_usr_list_ack__free_unpacked
   assert(message->base.descriptor == &mesg_group_usr_list_ack__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_join_ntc__init
-                     (MesgGroupJoinNtc         *message)
+void   mesg_group_join_ntf__init
+                     (MesgGroupJoinNtf         *message)
 {
-  static MesgGroupJoinNtc init_value = MESG_GROUP_JOIN_NTC__INIT;
+  static MesgGroupJoinNtf init_value = MESG_GROUP_JOIN_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_join_ntc__get_packed_size
-                     (const MesgGroupJoinNtc *message)
+size_t mesg_group_join_ntf__get_packed_size
+                     (const MesgGroupJoinNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_join_ntc__pack
-                     (const MesgGroupJoinNtc *message,
+size_t mesg_group_join_ntf__pack
+                     (const MesgGroupJoinNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_join_ntc__pack_to_buffer
-                     (const MesgGroupJoinNtc *message,
+size_t mesg_group_join_ntf__pack_to_buffer
+                     (const MesgGroupJoinNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupJoinNtc *
-       mesg_group_join_ntc__unpack
+MesgGroupJoinNtf *
+       mesg_group_join_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupJoinNtc *)
-     protobuf_c_message_unpack (&mesg_group_join_ntc__descriptor,
+  return (MesgGroupJoinNtf *)
+     protobuf_c_message_unpack (&mesg_group_join_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_join_ntc__free_unpacked
-                     (MesgGroupJoinNtc *message,
+void   mesg_group_join_ntf__free_unpacked
+                     (MesgGroupJoinNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_join_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_quit_ntc__init
-                     (MesgGroupQuitNtc         *message)
+void   mesg_group_quit_ntf__init
+                     (MesgGroupQuitNtf         *message)
 {
-  static MesgGroupQuitNtc init_value = MESG_GROUP_QUIT_NTC__INIT;
+  static MesgGroupQuitNtf init_value = MESG_GROUP_QUIT_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_quit_ntc__get_packed_size
-                     (const MesgGroupQuitNtc *message)
+size_t mesg_group_quit_ntf__get_packed_size
+                     (const MesgGroupQuitNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_quit_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_quit_ntc__pack
-                     (const MesgGroupQuitNtc *message,
+size_t mesg_group_quit_ntf__pack
+                     (const MesgGroupQuitNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_quit_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_quit_ntc__pack_to_buffer
-                     (const MesgGroupQuitNtc *message,
+size_t mesg_group_quit_ntf__pack_to_buffer
+                     (const MesgGroupQuitNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_quit_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupQuitNtc *
-       mesg_group_quit_ntc__unpack
+MesgGroupQuitNtf *
+       mesg_group_quit_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupQuitNtc *)
-     protobuf_c_message_unpack (&mesg_group_quit_ntc__descriptor,
+  return (MesgGroupQuitNtf *)
+     protobuf_c_message_unpack (&mesg_group_quit_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_quit_ntc__free_unpacked
-                     (MesgGroupQuitNtc *message,
+void   mesg_group_quit_ntf__free_unpacked
+                     (MesgGroupQuitNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_quit_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_kick_ntc__init
-                     (MesgGroupKickNtc         *message)
+void   mesg_group_kick_ntf__init
+                     (MesgGroupKickNtf         *message)
 {
-  static MesgGroupKickNtc init_value = MESG_GROUP_KICK_NTC__INIT;
+  static MesgGroupKickNtf init_value = MESG_GROUP_KICK_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_kick_ntc__get_packed_size
-                     (const MesgGroupKickNtc *message)
+size_t mesg_group_kick_ntf__get_packed_size
+                     (const MesgGroupKickNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_kick_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_kick_ntc__pack
-                     (const MesgGroupKickNtc *message,
+size_t mesg_group_kick_ntf__pack
+                     (const MesgGroupKickNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_kick_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_kick_ntc__pack_to_buffer
-                     (const MesgGroupKickNtc *message,
+size_t mesg_group_kick_ntf__pack_to_buffer
+                     (const MesgGroupKickNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_kick_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupKickNtc *
-       mesg_group_kick_ntc__unpack
+MesgGroupKickNtf *
+       mesg_group_kick_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupKickNtc *)
-     protobuf_c_message_unpack (&mesg_group_kick_ntc__descriptor,
+  return (MesgGroupKickNtf *)
+     protobuf_c_message_unpack (&mesg_group_kick_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_kick_ntc__free_unpacked
-                     (MesgGroupKickNtc *message,
+void   mesg_group_kick_ntf__free_unpacked
+                     (MesgGroupKickNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_kick_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_gag_add_ntc__init
-                     (MesgGroupGagAddNtc         *message)
+void   mesg_group_gag_add_ntf__init
+                     (MesgGroupGagAddNtf         *message)
 {
-  static MesgGroupGagAddNtc init_value = MESG_GROUP_GAG_ADD_NTC__INIT;
+  static MesgGroupGagAddNtf init_value = MESG_GROUP_GAG_ADD_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_gag_add_ntc__get_packed_size
-                     (const MesgGroupGagAddNtc *message)
+size_t mesg_group_gag_add_ntf__get_packed_size
+                     (const MesgGroupGagAddNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_gag_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_add_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_gag_add_ntc__pack
-                     (const MesgGroupGagAddNtc *message,
+size_t mesg_group_gag_add_ntf__pack
+                     (const MesgGroupGagAddNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_gag_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_add_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_gag_add_ntc__pack_to_buffer
-                     (const MesgGroupGagAddNtc *message,
+size_t mesg_group_gag_add_ntf__pack_to_buffer
+                     (const MesgGroupGagAddNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_gag_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_add_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupGagAddNtc *
-       mesg_group_gag_add_ntc__unpack
+MesgGroupGagAddNtf *
+       mesg_group_gag_add_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupGagAddNtc *)
-     protobuf_c_message_unpack (&mesg_group_gag_add_ntc__descriptor,
+  return (MesgGroupGagAddNtf *)
+     protobuf_c_message_unpack (&mesg_group_gag_add_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_gag_add_ntc__free_unpacked
-                     (MesgGroupGagAddNtc *message,
+void   mesg_group_gag_add_ntf__free_unpacked
+                     (MesgGroupGagAddNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_gag_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_add_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_gag_del_ntc__init
-                     (MesgGroupGagDelNtc         *message)
+void   mesg_group_gag_del_ntf__init
+                     (MesgGroupGagDelNtf         *message)
 {
-  static MesgGroupGagDelNtc init_value = MESG_GROUP_GAG_DEL_NTC__INIT;
+  static MesgGroupGagDelNtf init_value = MESG_GROUP_GAG_DEL_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_gag_del_ntc__get_packed_size
-                     (const MesgGroupGagDelNtc *message)
+size_t mesg_group_gag_del_ntf__get_packed_size
+                     (const MesgGroupGagDelNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_gag_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_del_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_gag_del_ntc__pack
-                     (const MesgGroupGagDelNtc *message,
+size_t mesg_group_gag_del_ntf__pack
+                     (const MesgGroupGagDelNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_gag_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_del_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_gag_del_ntc__pack_to_buffer
-                     (const MesgGroupGagDelNtc *message,
+size_t mesg_group_gag_del_ntf__pack_to_buffer
+                     (const MesgGroupGagDelNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_gag_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_del_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupGagDelNtc *
-       mesg_group_gag_del_ntc__unpack
+MesgGroupGagDelNtf *
+       mesg_group_gag_del_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupGagDelNtc *)
-     protobuf_c_message_unpack (&mesg_group_gag_del_ntc__descriptor,
+  return (MesgGroupGagDelNtf *)
+     protobuf_c_message_unpack (&mesg_group_gag_del_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_gag_del_ntc__free_unpacked
-                     (MesgGroupGagDelNtc *message,
+void   mesg_group_gag_del_ntf__free_unpacked
+                     (MesgGroupGagDelNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_gag_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_gag_del_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_bl_add_ntc__init
-                     (MesgGroupBlAddNtc         *message)
+void   mesg_group_bl_add_ntf__init
+                     (MesgGroupBlAddNtf         *message)
 {
-  static MesgGroupBlAddNtc init_value = MESG_GROUP_BL_ADD_NTC__INIT;
+  static MesgGroupBlAddNtf init_value = MESG_GROUP_BL_ADD_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_bl_add_ntc__get_packed_size
-                     (const MesgGroupBlAddNtc *message)
+size_t mesg_group_bl_add_ntf__get_packed_size
+                     (const MesgGroupBlAddNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_bl_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_add_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_bl_add_ntc__pack
-                     (const MesgGroupBlAddNtc *message,
+size_t mesg_group_bl_add_ntf__pack
+                     (const MesgGroupBlAddNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_bl_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_add_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_bl_add_ntc__pack_to_buffer
-                     (const MesgGroupBlAddNtc *message,
+size_t mesg_group_bl_add_ntf__pack_to_buffer
+                     (const MesgGroupBlAddNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_bl_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_add_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupBlAddNtc *
-       mesg_group_bl_add_ntc__unpack
+MesgGroupBlAddNtf *
+       mesg_group_bl_add_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupBlAddNtc *)
-     protobuf_c_message_unpack (&mesg_group_bl_add_ntc__descriptor,
+  return (MesgGroupBlAddNtf *)
+     protobuf_c_message_unpack (&mesg_group_bl_add_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_bl_add_ntc__free_unpacked
-                     (MesgGroupBlAddNtc *message,
+void   mesg_group_bl_add_ntf__free_unpacked
+                     (MesgGroupBlAddNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_bl_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_add_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_bl_del_ntc__init
-                     (MesgGroupBlDelNtc         *message)
+void   mesg_group_bl_del_ntf__init
+                     (MesgGroupBlDelNtf         *message)
 {
-  static MesgGroupBlDelNtc init_value = MESG_GROUP_BL_DEL_NTC__INIT;
+  static MesgGroupBlDelNtf init_value = MESG_GROUP_BL_DEL_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_bl_del_ntc__get_packed_size
-                     (const MesgGroupBlDelNtc *message)
+size_t mesg_group_bl_del_ntf__get_packed_size
+                     (const MesgGroupBlDelNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_bl_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_del_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_bl_del_ntc__pack
-                     (const MesgGroupBlDelNtc *message,
+size_t mesg_group_bl_del_ntf__pack
+                     (const MesgGroupBlDelNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_bl_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_del_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_bl_del_ntc__pack_to_buffer
-                     (const MesgGroupBlDelNtc *message,
+size_t mesg_group_bl_del_ntf__pack_to_buffer
+                     (const MesgGroupBlDelNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_bl_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_del_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupBlDelNtc *
-       mesg_group_bl_del_ntc__unpack
+MesgGroupBlDelNtf *
+       mesg_group_bl_del_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupBlDelNtc *)
-     protobuf_c_message_unpack (&mesg_group_bl_del_ntc__descriptor,
+  return (MesgGroupBlDelNtf *)
+     protobuf_c_message_unpack (&mesg_group_bl_del_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_bl_del_ntc__free_unpacked
-                     (MesgGroupBlDelNtc *message,
+void   mesg_group_bl_del_ntf__free_unpacked
+                     (MesgGroupBlDelNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_bl_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_bl_del_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_mgr_add_ntc__init
-                     (MesgGroupMgrAddNtc         *message)
+void   mesg_group_mgr_add_ntf__init
+                     (MesgGroupMgrAddNtf         *message)
 {
-  static MesgGroupMgrAddNtc init_value = MESG_GROUP_MGR_ADD_NTC__INIT;
+  static MesgGroupMgrAddNtf init_value = MESG_GROUP_MGR_ADD_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_mgr_add_ntc__get_packed_size
-                     (const MesgGroupMgrAddNtc *message)
+size_t mesg_group_mgr_add_ntf__get_packed_size
+                     (const MesgGroupMgrAddNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_add_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_mgr_add_ntc__pack
-                     (const MesgGroupMgrAddNtc *message,
+size_t mesg_group_mgr_add_ntf__pack
+                     (const MesgGroupMgrAddNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_add_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_mgr_add_ntc__pack_to_buffer
-                     (const MesgGroupMgrAddNtc *message,
+size_t mesg_group_mgr_add_ntf__pack_to_buffer
+                     (const MesgGroupMgrAddNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_add_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupMgrAddNtc *
-       mesg_group_mgr_add_ntc__unpack
+MesgGroupMgrAddNtf *
+       mesg_group_mgr_add_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupMgrAddNtc *)
-     protobuf_c_message_unpack (&mesg_group_mgr_add_ntc__descriptor,
+  return (MesgGroupMgrAddNtf *)
+     protobuf_c_message_unpack (&mesg_group_mgr_add_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_mgr_add_ntc__free_unpacked
-                     (MesgGroupMgrAddNtc *message,
+void   mesg_group_mgr_add_ntf__free_unpacked
+                     (MesgGroupMgrAddNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_add_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_add_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_group_mgr_del_ntc__init
-                     (MesgGroupMgrDelNtc         *message)
+void   mesg_group_mgr_del_ntf__init
+                     (MesgGroupMgrDelNtf         *message)
 {
-  static MesgGroupMgrDelNtc init_value = MESG_GROUP_MGR_DEL_NTC__INIT;
+  static MesgGroupMgrDelNtf init_value = MESG_GROUP_MGR_DEL_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_group_mgr_del_ntc__get_packed_size
-                     (const MesgGroupMgrDelNtc *message)
+size_t mesg_group_mgr_del_ntf__get_packed_size
+                     (const MesgGroupMgrDelNtf *message)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_del_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_group_mgr_del_ntc__pack
-                     (const MesgGroupMgrDelNtc *message,
+size_t mesg_group_mgr_del_ntf__pack
+                     (const MesgGroupMgrDelNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_del_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_group_mgr_del_ntc__pack_to_buffer
-                     (const MesgGroupMgrDelNtc *message,
+size_t mesg_group_mgr_del_ntf__pack_to_buffer
+                     (const MesgGroupMgrDelNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_del_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgGroupMgrDelNtc *
-       mesg_group_mgr_del_ntc__unpack
+MesgGroupMgrDelNtf *
+       mesg_group_mgr_del_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgGroupMgrDelNtc *)
-     protobuf_c_message_unpack (&mesg_group_mgr_del_ntc__descriptor,
+  return (MesgGroupMgrDelNtf *)
+     protobuf_c_message_unpack (&mesg_group_mgr_del_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_group_mgr_del_ntc__free_unpacked
-                     (MesgGroupMgrDelNtc *message,
+void   mesg_group_mgr_del_ntf__free_unpacked
+                     (MesgGroupMgrDelNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_group_mgr_del_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_group_mgr_del_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   mesg_room_creat__init
@@ -3490,133 +3490,133 @@ void   mesg_room_lsn_stat__free_unpacked
   assert(message->base.descriptor == &mesg_room_lsn_stat__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_room_join_ntc__init
-                     (MesgRoomJoinNtc         *message)
+void   mesg_room_join_ntf__init
+                     (MesgRoomJoinNtf         *message)
 {
-  static MesgRoomJoinNtc init_value = MESG_ROOM_JOIN_NTC__INIT;
+  static MesgRoomJoinNtf init_value = MESG_ROOM_JOIN_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_room_join_ntc__get_packed_size
-                     (const MesgRoomJoinNtc *message)
+size_t mesg_room_join_ntf__get_packed_size
+                     (const MesgRoomJoinNtf *message)
 {
-  assert(message->base.descriptor == &mesg_room_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_join_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_room_join_ntc__pack
-                     (const MesgRoomJoinNtc *message,
+size_t mesg_room_join_ntf__pack
+                     (const MesgRoomJoinNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_room_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_join_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_room_join_ntc__pack_to_buffer
-                     (const MesgRoomJoinNtc *message,
+size_t mesg_room_join_ntf__pack_to_buffer
+                     (const MesgRoomJoinNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_room_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_join_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgRoomJoinNtc *
-       mesg_room_join_ntc__unpack
+MesgRoomJoinNtf *
+       mesg_room_join_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgRoomJoinNtc *)
-     protobuf_c_message_unpack (&mesg_room_join_ntc__descriptor,
+  return (MesgRoomJoinNtf *)
+     protobuf_c_message_unpack (&mesg_room_join_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_room_join_ntc__free_unpacked
-                     (MesgRoomJoinNtc *message,
+void   mesg_room_join_ntf__free_unpacked
+                     (MesgRoomJoinNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_room_join_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_join_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_room_quit_ntc__init
-                     (MesgRoomQuitNtc         *message)
+void   mesg_room_quit_ntf__init
+                     (MesgRoomQuitNtf         *message)
 {
-  static MesgRoomQuitNtc init_value = MESG_ROOM_QUIT_NTC__INIT;
+  static MesgRoomQuitNtf init_value = MESG_ROOM_QUIT_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_room_quit_ntc__get_packed_size
-                     (const MesgRoomQuitNtc *message)
+size_t mesg_room_quit_ntf__get_packed_size
+                     (const MesgRoomQuitNtf *message)
 {
-  assert(message->base.descriptor == &mesg_room_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_quit_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_room_quit_ntc__pack
-                     (const MesgRoomQuitNtc *message,
+size_t mesg_room_quit_ntf__pack
+                     (const MesgRoomQuitNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_room_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_quit_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_room_quit_ntc__pack_to_buffer
-                     (const MesgRoomQuitNtc *message,
+size_t mesg_room_quit_ntf__pack_to_buffer
+                     (const MesgRoomQuitNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_room_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_quit_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgRoomQuitNtc *
-       mesg_room_quit_ntc__unpack
+MesgRoomQuitNtf *
+       mesg_room_quit_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgRoomQuitNtc *)
-     protobuf_c_message_unpack (&mesg_room_quit_ntc__descriptor,
+  return (MesgRoomQuitNtf *)
+     protobuf_c_message_unpack (&mesg_room_quit_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_room_quit_ntc__free_unpacked
-                     (MesgRoomQuitNtc *message,
+void   mesg_room_quit_ntf__free_unpacked
+                     (MesgRoomQuitNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_room_quit_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_quit_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   mesg_room_kick_ntc__init
-                     (MesgRoomKickNtc         *message)
+void   mesg_room_kick_ntf__init
+                     (MesgRoomKickNtf         *message)
 {
-  static MesgRoomKickNtc init_value = MESG_ROOM_KICK_NTC__INIT;
+  static MesgRoomKickNtf init_value = MESG_ROOM_KICK_NTF__INIT;
   *message = init_value;
 }
-size_t mesg_room_kick_ntc__get_packed_size
-                     (const MesgRoomKickNtc *message)
+size_t mesg_room_kick_ntf__get_packed_size
+                     (const MesgRoomKickNtf *message)
 {
-  assert(message->base.descriptor == &mesg_room_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_kick_ntf__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t mesg_room_kick_ntc__pack
-                     (const MesgRoomKickNtc *message,
+size_t mesg_room_kick_ntf__pack
+                     (const MesgRoomKickNtf *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &mesg_room_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_kick_ntf__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t mesg_room_kick_ntc__pack_to_buffer
-                     (const MesgRoomKickNtc *message,
+size_t mesg_room_kick_ntf__pack_to_buffer
+                     (const MesgRoomKickNtf *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &mesg_room_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_kick_ntf__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-MesgRoomKickNtc *
-       mesg_room_kick_ntc__unpack
+MesgRoomKickNtf *
+       mesg_room_kick_ntf__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (MesgRoomKickNtc *)
-     protobuf_c_message_unpack (&mesg_room_kick_ntc__descriptor,
+  return (MesgRoomKickNtf *)
+     protobuf_c_message_unpack (&mesg_room_kick_ntf__descriptor,
                                 allocator, len, data);
 }
-void   mesg_room_kick_ntc__free_unpacked
-                     (MesgRoomKickNtc *message,
+void   mesg_room_kick_ntf__free_unpacked
+                     (MesgRoomKickNtf *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &mesg_room_kick_ntc__descriptor);
+  assert(message->base.descriptor == &mesg_room_kick_ntf__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   mesg_lsnd_info__init
@@ -6886,7 +6886,7 @@ const ProtobufCMessageDescriptor mesg_group_usr_list_ack__descriptor =
   (ProtobufCMessageInit) mesg_group_usr_list_ack__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_join_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_join_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -6894,7 +6894,7 @@ static const ProtobufCFieldDescriptor mesg_group_join_ntc__field_descriptors[2] 
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupJoinNtc, uid),
+    offsetof(MesgGroupJoinNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -6906,38 +6906,38 @@ static const ProtobufCFieldDescriptor mesg_group_join_ntc__field_descriptors[2] 
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupJoinNtc, gid),
+    offsetof(MesgGroupJoinNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_join_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_join_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_join_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_join_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_join_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_join_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_join_ntc",
-  "MesgGroupJoinNtc",
-  "MesgGroupJoinNtc",
+  "mesg_group_join_ntf",
+  "MesgGroupJoinNtf",
+  "MesgGroupJoinNtf",
   "",
-  sizeof(MesgGroupJoinNtc),
+  sizeof(MesgGroupJoinNtf),
   2,
-  mesg_group_join_ntc__field_descriptors,
-  mesg_group_join_ntc__field_indices_by_name,
-  1,  mesg_group_join_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_join_ntc__init,
+  mesg_group_join_ntf__field_descriptors,
+  mesg_group_join_ntf__field_indices_by_name,
+  1,  mesg_group_join_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_join_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_quit_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_quit_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -6945,7 +6945,7 @@ static const ProtobufCFieldDescriptor mesg_group_quit_ntc__field_descriptors[2] 
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupQuitNtc, uid),
+    offsetof(MesgGroupQuitNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -6957,38 +6957,38 @@ static const ProtobufCFieldDescriptor mesg_group_quit_ntc__field_descriptors[2] 
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupQuitNtc, gid),
+    offsetof(MesgGroupQuitNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_quit_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_quit_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_quit_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_quit_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_quit_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_quit_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_quit_ntc",
-  "MesgGroupQuitNtc",
-  "MesgGroupQuitNtc",
+  "mesg_group_quit_ntf",
+  "MesgGroupQuitNtf",
+  "MesgGroupQuitNtf",
   "",
-  sizeof(MesgGroupQuitNtc),
+  sizeof(MesgGroupQuitNtf),
   2,
-  mesg_group_quit_ntc__field_descriptors,
-  mesg_group_quit_ntc__field_indices_by_name,
-  1,  mesg_group_quit_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_quit_ntc__init,
+  mesg_group_quit_ntf__field_descriptors,
+  mesg_group_quit_ntf__field_indices_by_name,
+  1,  mesg_group_quit_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_quit_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_kick_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_kick_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -6996,7 +6996,7 @@ static const ProtobufCFieldDescriptor mesg_group_kick_ntc__field_descriptors[2] 
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupKickNtc, uid),
+    offsetof(MesgGroupKickNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -7008,38 +7008,38 @@ static const ProtobufCFieldDescriptor mesg_group_kick_ntc__field_descriptors[2] 
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupKickNtc, gid),
+    offsetof(MesgGroupKickNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_kick_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_kick_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_kick_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_kick_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_kick_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_kick_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_kick_ntc",
-  "MesgGroupKickNtc",
-  "MesgGroupKickNtc",
+  "mesg_group_kick_ntf",
+  "MesgGroupKickNtf",
+  "MesgGroupKickNtf",
   "",
-  sizeof(MesgGroupKickNtc),
+  sizeof(MesgGroupKickNtf),
   2,
-  mesg_group_kick_ntc__field_descriptors,
-  mesg_group_kick_ntc__field_indices_by_name,
-  1,  mesg_group_kick_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_kick_ntc__init,
+  mesg_group_kick_ntf__field_descriptors,
+  mesg_group_kick_ntf__field_indices_by_name,
+  1,  mesg_group_kick_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_kick_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_gag_add_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_gag_add_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -7047,7 +7047,7 @@ static const ProtobufCFieldDescriptor mesg_group_gag_add_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupGagAddNtc, uid),
+    offsetof(MesgGroupGagAddNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -7059,38 +7059,38 @@ static const ProtobufCFieldDescriptor mesg_group_gag_add_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupGagAddNtc, gid),
+    offsetof(MesgGroupGagAddNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_gag_add_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_gag_add_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_gag_add_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_gag_add_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_gag_add_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_gag_add_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_gag_add_ntc",
-  "MesgGroupGagAddNtc",
-  "MesgGroupGagAddNtc",
+  "mesg_group_gag_add_ntf",
+  "MesgGroupGagAddNtf",
+  "MesgGroupGagAddNtf",
   "",
-  sizeof(MesgGroupGagAddNtc),
+  sizeof(MesgGroupGagAddNtf),
   2,
-  mesg_group_gag_add_ntc__field_descriptors,
-  mesg_group_gag_add_ntc__field_indices_by_name,
-  1,  mesg_group_gag_add_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_gag_add_ntc__init,
+  mesg_group_gag_add_ntf__field_descriptors,
+  mesg_group_gag_add_ntf__field_indices_by_name,
+  1,  mesg_group_gag_add_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_gag_add_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_gag_del_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_gag_del_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -7098,7 +7098,7 @@ static const ProtobufCFieldDescriptor mesg_group_gag_del_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupGagDelNtc, uid),
+    offsetof(MesgGroupGagDelNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -7110,38 +7110,38 @@ static const ProtobufCFieldDescriptor mesg_group_gag_del_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupGagDelNtc, gid),
+    offsetof(MesgGroupGagDelNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_gag_del_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_gag_del_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_gag_del_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_gag_del_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_gag_del_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_gag_del_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_gag_del_ntc",
-  "MesgGroupGagDelNtc",
-  "MesgGroupGagDelNtc",
+  "mesg_group_gag_del_ntf",
+  "MesgGroupGagDelNtf",
+  "MesgGroupGagDelNtf",
   "",
-  sizeof(MesgGroupGagDelNtc),
+  sizeof(MesgGroupGagDelNtf),
   2,
-  mesg_group_gag_del_ntc__field_descriptors,
-  mesg_group_gag_del_ntc__field_indices_by_name,
-  1,  mesg_group_gag_del_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_gag_del_ntc__init,
+  mesg_group_gag_del_ntf__field_descriptors,
+  mesg_group_gag_del_ntf__field_indices_by_name,
+  1,  mesg_group_gag_del_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_gag_del_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_bl_add_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_bl_add_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -7149,7 +7149,7 @@ static const ProtobufCFieldDescriptor mesg_group_bl_add_ntc__field_descriptors[2
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupBlAddNtc, uid),
+    offsetof(MesgGroupBlAddNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -7161,38 +7161,38 @@ static const ProtobufCFieldDescriptor mesg_group_bl_add_ntc__field_descriptors[2
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupBlAddNtc, gid),
+    offsetof(MesgGroupBlAddNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_bl_add_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_bl_add_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_bl_add_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_bl_add_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_bl_add_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_bl_add_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_bl_add_ntc",
-  "MesgGroupBlAddNtc",
-  "MesgGroupBlAddNtc",
+  "mesg_group_bl_add_ntf",
+  "MesgGroupBlAddNtf",
+  "MesgGroupBlAddNtf",
   "",
-  sizeof(MesgGroupBlAddNtc),
+  sizeof(MesgGroupBlAddNtf),
   2,
-  mesg_group_bl_add_ntc__field_descriptors,
-  mesg_group_bl_add_ntc__field_indices_by_name,
-  1,  mesg_group_bl_add_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_bl_add_ntc__init,
+  mesg_group_bl_add_ntf__field_descriptors,
+  mesg_group_bl_add_ntf__field_indices_by_name,
+  1,  mesg_group_bl_add_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_bl_add_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_bl_del_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_bl_del_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -7200,7 +7200,7 @@ static const ProtobufCFieldDescriptor mesg_group_bl_del_ntc__field_descriptors[2
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupBlDelNtc, uid),
+    offsetof(MesgGroupBlDelNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -7212,38 +7212,38 @@ static const ProtobufCFieldDescriptor mesg_group_bl_del_ntc__field_descriptors[2
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupBlDelNtc, gid),
+    offsetof(MesgGroupBlDelNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_bl_del_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_bl_del_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_bl_del_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_bl_del_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_bl_del_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_bl_del_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_bl_del_ntc",
-  "MesgGroupBlDelNtc",
-  "MesgGroupBlDelNtc",
+  "mesg_group_bl_del_ntf",
+  "MesgGroupBlDelNtf",
+  "MesgGroupBlDelNtf",
   "",
-  sizeof(MesgGroupBlDelNtc),
+  sizeof(MesgGroupBlDelNtf),
   2,
-  mesg_group_bl_del_ntc__field_descriptors,
-  mesg_group_bl_del_ntc__field_indices_by_name,
-  1,  mesg_group_bl_del_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_bl_del_ntc__init,
+  mesg_group_bl_del_ntf__field_descriptors,
+  mesg_group_bl_del_ntf__field_indices_by_name,
+  1,  mesg_group_bl_del_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_bl_del_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_mgr_add_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_mgr_add_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -7251,7 +7251,7 @@ static const ProtobufCFieldDescriptor mesg_group_mgr_add_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupMgrAddNtc, uid),
+    offsetof(MesgGroupMgrAddNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -7263,38 +7263,38 @@ static const ProtobufCFieldDescriptor mesg_group_mgr_add_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupMgrAddNtc, gid),
+    offsetof(MesgGroupMgrAddNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_mgr_add_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_mgr_add_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_mgr_add_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_mgr_add_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_mgr_add_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_mgr_add_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_mgr_add_ntc",
-  "MesgGroupMgrAddNtc",
-  "MesgGroupMgrAddNtc",
+  "mesg_group_mgr_add_ntf",
+  "MesgGroupMgrAddNtf",
+  "MesgGroupMgrAddNtf",
   "",
-  sizeof(MesgGroupMgrAddNtc),
+  sizeof(MesgGroupMgrAddNtf),
   2,
-  mesg_group_mgr_add_ntc__field_descriptors,
-  mesg_group_mgr_add_ntc__field_indices_by_name,
-  1,  mesg_group_mgr_add_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_mgr_add_ntc__init,
+  mesg_group_mgr_add_ntf__field_descriptors,
+  mesg_group_mgr_add_ntf__field_indices_by_name,
+  1,  mesg_group_mgr_add_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_mgr_add_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_group_mgr_del_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_group_mgr_del_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -7302,7 +7302,7 @@ static const ProtobufCFieldDescriptor mesg_group_mgr_del_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupMgrDelNtc, uid),
+    offsetof(MesgGroupMgrDelNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -7314,35 +7314,35 @@ static const ProtobufCFieldDescriptor mesg_group_mgr_del_ntc__field_descriptors[
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgGroupMgrDelNtc, gid),
+    offsetof(MesgGroupMgrDelNtf, gid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_group_mgr_del_ntc__field_indices_by_name[] = {
+static const unsigned mesg_group_mgr_del_ntf__field_indices_by_name[] = {
   1,   /* field[1] = gid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_group_mgr_del_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_group_mgr_del_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_group_mgr_del_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_group_mgr_del_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_group_mgr_del_ntc",
-  "MesgGroupMgrDelNtc",
-  "MesgGroupMgrDelNtc",
+  "mesg_group_mgr_del_ntf",
+  "MesgGroupMgrDelNtf",
+  "MesgGroupMgrDelNtf",
   "",
-  sizeof(MesgGroupMgrDelNtc),
+  sizeof(MesgGroupMgrDelNtf),
   2,
-  mesg_group_mgr_del_ntc__field_descriptors,
-  mesg_group_mgr_del_ntc__field_indices_by_name,
-  1,  mesg_group_mgr_del_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_group_mgr_del_ntc__init,
+  mesg_group_mgr_del_ntf__field_descriptors,
+  mesg_group_mgr_del_ntf__field_indices_by_name,
+  1,  mesg_group_mgr_del_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_group_mgr_del_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_room_creat__field_descriptors[3] =
@@ -8486,7 +8486,7 @@ const ProtobufCMessageDescriptor mesg_room_lsn_stat__descriptor =
   (ProtobufCMessageInit) mesg_room_lsn_stat__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_join_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_room_join_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -8494,7 +8494,7 @@ static const ProtobufCFieldDescriptor mesg_room_join_ntc__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgRoomJoinNtc, uid),
+    offsetof(MesgRoomJoinNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -8506,38 +8506,38 @@ static const ProtobufCFieldDescriptor mesg_room_join_ntc__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgRoomJoinNtc, rid),
+    offsetof(MesgRoomJoinNtf, rid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_room_join_ntc__field_indices_by_name[] = {
+static const unsigned mesg_room_join_ntf__field_indices_by_name[] = {
   1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_room_join_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_room_join_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_room_join_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_room_join_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_room_join_ntc",
-  "MesgRoomJoinNtc",
-  "MesgRoomJoinNtc",
+  "mesg_room_join_ntf",
+  "MesgRoomJoinNtf",
+  "MesgRoomJoinNtf",
   "",
-  sizeof(MesgRoomJoinNtc),
+  sizeof(MesgRoomJoinNtf),
   2,
-  mesg_room_join_ntc__field_descriptors,
-  mesg_room_join_ntc__field_indices_by_name,
-  1,  mesg_room_join_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_room_join_ntc__init,
+  mesg_room_join_ntf__field_descriptors,
+  mesg_room_join_ntf__field_indices_by_name,
+  1,  mesg_room_join_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_room_join_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_quit_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_room_quit_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -8545,7 +8545,7 @@ static const ProtobufCFieldDescriptor mesg_room_quit_ntc__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgRoomQuitNtc, uid),
+    offsetof(MesgRoomQuitNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -8557,38 +8557,38 @@ static const ProtobufCFieldDescriptor mesg_room_quit_ntc__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgRoomQuitNtc, rid),
+    offsetof(MesgRoomQuitNtf, rid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_room_quit_ntc__field_indices_by_name[] = {
+static const unsigned mesg_room_quit_ntf__field_indices_by_name[] = {
   1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_room_quit_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_room_quit_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_room_quit_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_room_quit_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_room_quit_ntc",
-  "MesgRoomQuitNtc",
-  "MesgRoomQuitNtc",
+  "mesg_room_quit_ntf",
+  "MesgRoomQuitNtf",
+  "MesgRoomQuitNtf",
   "",
-  sizeof(MesgRoomQuitNtc),
+  sizeof(MesgRoomQuitNtf),
   2,
-  mesg_room_quit_ntc__field_descriptors,
-  mesg_room_quit_ntc__field_indices_by_name,
-  1,  mesg_room_quit_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_room_quit_ntc__init,
+  mesg_room_quit_ntf__field_descriptors,
+  mesg_room_quit_ntf__field_indices_by_name,
+  1,  mesg_room_quit_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_room_quit_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor mesg_room_kick_ntc__field_descriptors[2] =
+static const ProtobufCFieldDescriptor mesg_room_kick_ntf__field_descriptors[2] =
 {
   {
     "uid",
@@ -8596,7 +8596,7 @@ static const ProtobufCFieldDescriptor mesg_room_kick_ntc__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgRoomKickNtc, uid),
+    offsetof(MesgRoomKickNtf, uid),
     NULL,
     NULL,
     0,             /* flags */
@@ -8608,35 +8608,35 @@ static const ProtobufCFieldDescriptor mesg_room_kick_ntc__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_UINT64,
     0,   /* quantifier_offset */
-    offsetof(MesgRoomKickNtc, rid),
+    offsetof(MesgRoomKickNtf, rid),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned mesg_room_kick_ntc__field_indices_by_name[] = {
+static const unsigned mesg_room_kick_ntf__field_indices_by_name[] = {
   1,   /* field[1] = rid */
   0,   /* field[0] = uid */
 };
-static const ProtobufCIntRange mesg_room_kick_ntc__number_ranges[1 + 1] =
+static const ProtobufCIntRange mesg_room_kick_ntf__number_ranges[1 + 1] =
 {
   { 1, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor mesg_room_kick_ntc__descriptor =
+const ProtobufCMessageDescriptor mesg_room_kick_ntf__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "mesg_room_kick_ntc",
-  "MesgRoomKickNtc",
-  "MesgRoomKickNtc",
+  "mesg_room_kick_ntf",
+  "MesgRoomKickNtf",
+  "MesgRoomKickNtf",
   "",
-  sizeof(MesgRoomKickNtc),
+  sizeof(MesgRoomKickNtf),
   2,
-  mesg_room_kick_ntc__field_descriptors,
-  mesg_room_kick_ntc__field_indices_by_name,
-  1,  mesg_room_kick_ntc__number_ranges,
-  (ProtobufCMessageInit) mesg_room_kick_ntc__init,
+  mesg_room_kick_ntf__field_descriptors,
+  mesg_room_kick_ntf__field_indices_by_name,
+  1,  mesg_room_kick_ntf__number_ranges,
+  (ProtobufCMessageInit) mesg_room_kick_ntf__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
 static const ProtobufCFieldDescriptor mesg_lsnd_info__field_descriptors[7] =

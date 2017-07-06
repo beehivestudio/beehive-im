@@ -546,7 +546,7 @@ func (ctx *UsrSvrCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJo
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoomJoin) int {
 	/* > 设置协议体 */
-	ntc := &mesg.MesgRoomJoinNtc{
+	ntc := &mesg.MesgRoomJoinNtf{
 		Uid: proto.Uint64(req.GetUid()),
 		Rid: proto.Uint64(req.GetRid()),
 	}
@@ -571,7 +571,7 @@ func (ctx *UsrSvrCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 		p := &comm.MesgPacket{}
 		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-		head.Cmd = comm.CMD_ROOM_JOIN_NTC
+		head.Cmd = comm.CMD_ROOM_JOIN_NTF
 		head.Length = uint32(length)
 		head.Nid = ctx.listend.list.nodes[idx]
 
@@ -579,7 +579,7 @@ func (ctx *UsrSvrCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 		/* > 发送协议包 */
-		ctx.frwder.AsyncSend(comm.CMD_ROOM_JOIN_NTC, p.Buff, uint32(len(p.Buff)))
+		ctx.frwder.AsyncSend(comm.CMD_ROOM_JOIN_NTF, p.Buff, uint32(len(p.Buff)))
 	}
 
 	return 0
@@ -994,7 +994,7 @@ func (ctx *UsrSvrCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQu
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
 	/* > 设置协议体 */
-	ntc := &mesg.MesgRoomQuitNtc{
+	ntc := &mesg.MesgRoomQuitNtf{
 		Uid: proto.Uint64(req.GetUid()),
 		Rid: proto.Uint64(req.GetRid()),
 	}
@@ -1019,7 +1019,7 @@ func (ctx *UsrSvrCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 		p := &comm.MesgPacket{}
 		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-		head.Cmd = comm.CMD_ROOM_QUIT_NTC
+		head.Cmd = comm.CMD_ROOM_QUIT_NTF
 		head.Length = uint32(length)
 		head.Nid = ctx.listend.list.nodes[idx]
 
@@ -1027,7 +1027,7 @@ func (ctx *UsrSvrCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 		/* > 发送协议包 */
-		ctx.frwder.AsyncSend(comm.CMD_ROOM_QUIT_NTC, p.Buff, uint32(len(p.Buff)))
+		ctx.frwder.AsyncSend(comm.CMD_ROOM_QUIT_NTF, p.Buff, uint32(len(p.Buff)))
 	}
 
 	return 0
@@ -1374,7 +1374,7 @@ func (ctx *UsrSvrCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKi
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
 	/* > 设置协议体 */
-	ntc := &mesg.MesgRoomKickNtc{
+	ntc := &mesg.MesgRoomKickNtf{
 		Uid: proto.Uint64(req.GetUid()),
 		Rid: proto.Uint64(req.GetRid()),
 	}
@@ -1399,7 +1399,7 @@ func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 		p := &comm.MesgPacket{}
 		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
 
-		head.Cmd = comm.CMD_ROOM_KICK_NTC
+		head.Cmd = comm.CMD_ROOM_KICK_NTF
 		head.Length = uint32(length)
 		head.Nid = ctx.listend.list.nodes[idx]
 
@@ -1407,7 +1407,7 @@ func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoo
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 
 		/* > 发送协议包 */
-		ctx.frwder.AsyncSend(comm.CMD_ROOM_KICK_NTC, p.Buff, uint32(len(p.Buff)))
+		ctx.frwder.AsyncSend(comm.CMD_ROOM_KICK_NTF, p.Buff, uint32(len(p.Buff)))
 	}
 
 	return 0

@@ -709,7 +709,7 @@ int lsnd_upmesg_room_usr_num_handler(int type, int orig, void *data, size_t len,
 }
 
 /******************************************************************************
- **函数名称: lsnd_upmesg_room_quit_ntc_handler
+ **函数名称: lsnd_upmesg_room_quit_ntf_handler
  **功    能: 下发聊天室下线通知(下行)
  **输入参数:
  **     type: 数据类型
@@ -723,9 +723,9 @@ int lsnd_upmesg_room_usr_num_handler(int type, int orig, void *data, size_t len,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 11:20:57 #
  ******************************************************************************/
-int lsnd_upmesg_room_quit_ntc_handler(int type, int orig, void *data, size_t len, void *args)
+int lsnd_upmesg_room_quit_ntf_handler(int type, int orig, void *data, size_t len, void *args)
 {
-    MesgRoomQuitNtc *mesg;
+    MesgRoomQuitNtf *mesg;
     lsnd_room_mesg_param_t param;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -738,7 +738,7 @@ int lsnd_upmesg_room_quit_ntc_handler(int type, int orig, void *data, size_t len
     MESG_HEAD_PRINT(lsnd->log, &hhead)
 
     /* > 解压PROTO-BUF */
-    mesg = mesg_room_quit_ntc__unpack(NULL, hhead.length, (void *)(head + 1));
+    mesg = mesg_room_quit_ntf__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
         log_error(lsnd->log, "Unpack chat room quit ntc failed!");
         return -1;
@@ -754,13 +754,13 @@ int lsnd_upmesg_room_quit_ntc_handler(int type, int orig, void *data, size_t len
             (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
-    mesg_room_quit_ntc__free_unpacked(mesg, NULL);
+    mesg_room_quit_ntf__free_unpacked(mesg, NULL);
 
     return 0;
 }
 
 /******************************************************************************
- **函数名称: lsnd_upmesg_room_kick_ntc_handler
+ **函数名称: lsnd_upmesg_room_kick_ntf_handler
  **功    能: 下发聊天室踢人通知(下行)
  **输入参数:
  **     type: 数据类型
@@ -774,9 +774,9 @@ int lsnd_upmesg_room_quit_ntc_handler(int type, int orig, void *data, size_t len
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 11:20:57 #
  ******************************************************************************/
-int lsnd_upmesg_room_kick_ntc_handler(int type, int orig, void *data, size_t len, void *args)
+int lsnd_upmesg_room_kick_ntf_handler(int type, int orig, void *data, size_t len, void *args)
 {
-    MesgRoomKickNtc *mesg;
+    MesgRoomKickNtf *mesg;
     lsnd_room_mesg_param_t param;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -789,7 +789,7 @@ int lsnd_upmesg_room_kick_ntc_handler(int type, int orig, void *data, size_t len
     MESG_HEAD_PRINT(lsnd->log, &hhead)
 
     /* > 解压PROTO-BUF */
-    mesg = mesg_room_kick_ntc__unpack(NULL, hhead.length, (void *)(head + 1));
+    mesg = mesg_room_kick_ntf__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
         log_error(lsnd->log, "Unpack chat room kick ntc failed!");
         return -1;
@@ -805,13 +805,13 @@ int lsnd_upmesg_room_kick_ntc_handler(int type, int orig, void *data, size_t len
             (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
-    mesg_room_kick_ntc__free_unpacked(mesg, NULL);
+    mesg_room_kick_ntf__free_unpacked(mesg, NULL);
 
     return 0;
 }
 
 /******************************************************************************
- **函数名称: lsnd_upmesg_room_join_ntc_handler
+ **函数名称: lsnd_upmesg_room_join_ntf_handler
  **功    能: 下发聊天室上线通知(下行)
  **输入参数:
  **     type: 数据类型
@@ -825,9 +825,9 @@ int lsnd_upmesg_room_kick_ntc_handler(int type, int orig, void *data, size_t len
  **注意事项: 注意hash tab加锁时, 不要造成死锁的情况.
  **作    者: # Qifeng.zou # 2017.07.04 11:20:57 #
  ******************************************************************************/
-int lsnd_upmesg_room_join_ntc_handler(int type, int orig, void *data, size_t len, void *args)
+int lsnd_upmesg_room_join_ntf_handler(int type, int orig, void *data, size_t len, void *args)
 {
-    MesgRoomJoinNtc *mesg;
+    MesgRoomJoinNtf *mesg;
     lsnd_room_mesg_param_t param;
     lsnd_cntx_t *lsnd = (lsnd_cntx_t *)args;
     mesg_header_t *head = (mesg_header_t *)data, hhead;
@@ -840,7 +840,7 @@ int lsnd_upmesg_room_join_ntc_handler(int type, int orig, void *data, size_t len
     MESG_HEAD_PRINT(lsnd->log, &hhead)
 
     /* > 解压PROTO-BUF */
-    mesg = mesg_room_join_ntc__unpack(NULL, hhead.length, (void *)(head + 1));
+    mesg = mesg_room_join_ntf__unpack(NULL, hhead.length, (void *)(head + 1));
     if (NULL == mesg) {
         log_error(lsnd->log, "Unpack chat room join ntc failed!");
         return -1;
@@ -856,7 +856,7 @@ int lsnd_upmesg_room_join_ntc_handler(int type, int orig, void *data, size_t len
             (trav_cb_t)lsnd_room_mesg_trav_send_handler, (void *)&param);
 
     /* > 释放PROTO-BUF空间 */
-    mesg_room_join_ntc__free_unpacked(mesg, NULL);
+    mesg_room_join_ntf__free_unpacked(mesg, NULL);
 
     return 0;
 }

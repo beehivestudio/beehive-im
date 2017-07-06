@@ -747,10 +747,10 @@ message mesg_group_usr_list_ack
 
 ---
 命令ID: 0x0350<br>
-命令描述: 入群通知(GROUP-JOIN-NTC)<br>
+命令描述: 入群通知(GROUP-JOIN-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_join_ntc
+message mesg_group_join_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -759,10 +759,10 @@ message mesg_group_join_ntc
 
 ---
 命令ID: 0x0351<br>
-命令描述: 退群通知(GROUP-QUIT-NTC)<br>
+命令描述: 退群通知(GROUP-QUIT-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_quit_ntc
+message mesg_group_quit_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -771,10 +771,10 @@ message mesg_group_quit_ntc
 
 ---
 命令ID: 0x0352<br>
-命令描述: 踢人通知(GROUP-KICK-NTC)<br>
+命令描述: 踢人通知(GROUP-KICK-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_kick_ntc
+message mesg_group_kick_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -783,10 +783,10 @@ message mesg_group_kick_ntc
 
 ---
 命令ID: 0x0353<br>
-命令描述: 禁言通知(GROUP-GAG-ADD-NTC)<br>
+命令描述: 禁言通知(GROUP-GAG-ADD-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_gag_add_ntc
+message mesg_group_gag_add_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -795,10 +795,10 @@ message mesg_group_gag_add_ntc
 
 ---
 命令ID: 0x0354<br>
-命令描述: 解除禁言通知(GROUP-GAG-DEL-NTC)<br>
+命令描述: 解除禁言通知(GROUP-GAG-DEL-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_gag_del_ntc
+message mesg_group_gag_del_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -807,10 +807,10 @@ message mesg_group_gag_del_ntc
 
 ---
 命令ID: 0x0355<br>
-命令描述: 加入黑名单通知(GROUP-BL-ADD-NTC)<br>
+命令描述: 加入黑名单通知(GROUP-BL-ADD-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_bl_add_ntc
+message mesg_group_bl_add_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -819,10 +819,10 @@ message mesg_group_bl_add_ntc
 
 ---
 命令ID: 0x0356<br>
-命令描述: 移除黑名单通知(GROUP-BL-DEL-NTC)<br>
+命令描述: 移除黑名单通知(GROUP-BL-DEL-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_bl_del_ntc
+message mesg_group_bl_del_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -831,10 +831,10 @@ message mesg_group_bl_del_ntc
 
 ---
 命令ID: 0x0357<br>
-命令描述: 添加管理员通知(GROUP-MGR-ADD-NTC)<br>
+命令描述: 添加管理员通知(GROUP-MGR-ADD-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_mgr_add_ntc
+message mesg_group_mgr_add_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -843,10 +843,10 @@ message mesg_group_mgr_add_ntc
 
 ---
 命令ID: 0x0358<br>
-命令描述: 移除管理员通知(GROUP-MGR-DEL-NTC)<br>
+命令描述: 移除管理员通知(GROUP-MGR-DEL-NTF)<br>
 协议格式: <br>
 ```
-message mesg_group_mgr_del_ntc
+message mesg_group_mgr_del_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 gid = 2;        // M|群组ID|数字|
@@ -1060,10 +1060,10 @@ message mesg_room_usr_num
 
 ---
 命令ID: 0x0450<br>
-命令描述: 加入聊天室通知(ROOM-JOIN-NTC)<br>
+命令描述: 加入聊天室通知(ROOM-JOIN-NTF)<br>
 协议格式: <br>
 ```
-message mesg_room_join_ntc
+message mesg_room_join_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 rid = 2;        // M|聊天室ID|数字|
@@ -1072,10 +1072,10 @@ message mesg_room_join_ntc
 
 ---
 命令ID: 0x0451<br>
-命令描述: 退出聊天室通知(ROOM-QUIT-NTC)<br>
+命令描述: 退出聊天室通知(ROOM-QUIT-NTF)<br>
 协议格式: <br>
 ```
-message mesg_room_quit_ntc
+message mesg_room_quit_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 rid = 2;        // M|聊天室ID|数字|
@@ -1084,10 +1084,10 @@ message mesg_room_quit_ntc
 
 ---
 命令ID: 0x0452<br>
-命令描述: 踢出聊天室通知(ROOM-KICK-NTC)<br>
+命令描述: 踢出聊天室通知(ROOM-KICK-NTF)<br>
 协议格式: <br>
 ```
-message mesg_room_kick_ntc
+message mesg_room_kick_ntf
 {
     required uint64 uid = 1;        // M|用户ID|数字|
     required uint64 rid = 2;        // M|聊天室ID|数字|
