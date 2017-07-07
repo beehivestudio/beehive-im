@@ -256,8 +256,7 @@ int xml_parse(xml_tree_t *xml, Stack_t *stack, const char *str, size_t len)
         switch(*(parse.ptr)) {
             case XML_BEGIN_FLAG:
             {
-                switch(*(parse.ptr+1))
-                {
+                switch(*(parse.ptr+1)) {
                     case XML_VERS_FLAG:  /* "<?" 版本开始 */
                     {
                         /* 版本信息不用加载到XML树中 */

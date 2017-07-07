@@ -181,14 +181,10 @@ static int rtmq_worker_event_core_hdl(rtmq_cntx_t *ctx, rtmq_worker_t *worker)
 
     switch (cmd.type) {
         case RTMQ_CMD_PROC_REQ:
-        {
             return rtmq_worker_cmd_proc_req_hdl(ctx, worker, &cmd);
-        }
         default:
-        {
             log_error(worker->log, "Received unknown type! %d", cmd.type);
             return RTMQ_ERR_UNKNOWN_CMD;
-        }
     }
 
     return RTMQ_ERR_UNKNOWN_CMD;

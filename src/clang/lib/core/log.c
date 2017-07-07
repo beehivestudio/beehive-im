@@ -171,33 +171,19 @@ const char *log_get_str(int level)
 {
     switch (level) {
         case LOG_LEVEL_FATAL:
-        {
             return LOG_LEVEL_FATAL_STR;
-        }
         case LOG_LEVEL_ERROR:
-        {
             return LOG_LEVEL_ERROR_STR;
-        }
         case LOG_LEVEL_WARN:
-        {
             return LOG_LEVEL_WARN_STR;
-        }
         case LOG_LEVEL_INFO:
-        {
             return LOG_LEVEL_INFO_STR;
-        }
         case LOG_LEVEL_DEBUG:
-        {
             return LOG_LEVEL_DEBUG_STR;
-        }
         case LOG_LEVEL_TRACE:
-        {
             return LOG_LEVEL_TRACE_STR;
-        }
         default:
-        {
             return LOG_LEVEL_UNKNOWN_STR;
-        }
     }
 }
 

@@ -623,17 +623,12 @@ xml_node_t *xml_add_child(xml_tree_t *xml, xml_node_t *node, const char *name, c
 xml_node_t *xml_add_node(xml_tree_t *xml,
         xml_node_t *node, const char *name, const char *value, int type)
 {
-    switch(type)
-    {
+    switch(type) {
         case XML_NODE_ATTR:
-        {
             return xml_add_attr(xml, node, name, value);
-        }
         case XML_NODE_ROOT:
         case XML_NODE_CHILD:
-        {
             return xml_add_child(xml, node, name, value);
-        }
     }
 
     return NULL;
@@ -762,8 +757,7 @@ int _xml_pack_len(xml_tree_t *xml, xml_node_t *node)
 
     len = 0;
 
-    switch(node->type)
-    {
+    switch(node->type) {
         case XML_NODE_CHILD: /* 处理孩子结点 */
         {
             len = xml_pack_node_len(xml, node, &stack);

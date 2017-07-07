@@ -149,8 +149,7 @@ int uri_get_host(const char *uri, char *host, int size)
         ++p;
     }
 
-    switch (*p)
-    {
+    switch (*p) {
         case ':':
         {
             if ('/' == *(p+1)) {
@@ -182,8 +181,7 @@ int uri_get_host(const char *uri, char *host, int size)
     }
 
     while (isalpha(*p) || isdigit(*p)
-        || '.' == *p || '-' == *p || '_' == *p)
-    {
+        || '.' == *p || '-' == *p || '_' == *p) {
         ++p;
     }
 
@@ -220,8 +218,7 @@ int uri_get_port(const char *uri)
 
     while (isalpha(*p) || isdigit(*p) || '.' == *p) { ++p; }
 
-    switch (*p)
-    {
+    switch (*p) {
         case ':':
         {
             if ('/' == *(p+1)) {
@@ -372,8 +369,7 @@ bool uri_is_valid(const char *uri)
     }
 
     for (; '\0' != *uri; ++uri) {
-        switch (*uri)
-        {
+        switch (*uri) {
             case ' ':
             case '\n':
             case '\r':

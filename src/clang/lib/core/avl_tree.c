@@ -457,13 +457,9 @@ static int avl_right_balance(avl_tree_t *tree, avl_node_t *node)
 
     switch(rchild->bf) {
         case AVL_RH:    /* 场景1: RR型 - 向左旋转 */
-        {
             return avl_rr_balance(tree, node);
-        }
         case AVL_LH:    /* 场景2: RL型 - 先向右旋转 再向左旋转 */
-        {
             return avl_rl_balance(tree, node);
-        }
     }
 
     return AVL_ERR;
