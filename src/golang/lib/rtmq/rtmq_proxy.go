@@ -1,11 +1,13 @@
 package rtmq
 
 import (
+	"bytes"
 	"encoding/binary"
 	"errors"
 	"io"
 	"math/rand"
 	"net"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -26,7 +28,7 @@ var (
 
 /* 常量定义 */
 const (
-	RTMQ_SSVR_NUM    = 10         /* 服务个数 */
+	RTMQ_MSGQ_NUM    = 10         /* 收发队列个数 */
 	RTMQ_CHKSUM_VAL  = 0x1FE23DC4 /* 校验值 */
 	RTMQ_USR_MAX_LEN = 32         /* 用户名长度 */
 	RTMQ_PWD_MAX_LEN = 16         /* 登录密码长度 */
@@ -108,10 +110,10 @@ type ProxyConn struct {
 	conn          *net.TCPConn         /* 原始TCP连接 */
 	extra         interface{}          /* 扩展数据 */
 	is_close      int32                /* 连接是否关闭 */
-	send_chan     chan *RtmqPacket     /* 普通消息发送队列 */
-	mesg_chan     chan *RtmqPacket     /* 系统消息发送队列 */
-	recv_chan     chan *RtmqRecvPacket /* 普通消息接收队列 */
-	close_chan    chan struct{}        /* 关闭通道 */
+	sendq         chan *RtmqPacket     /* 普通消息发送队列 */
+	mesgq         chan *RtmqPacket     /* 系统消息发送队列 */
+	recvq         chan *RtmqRecvPacket /* 普通消息接收队列 */
+	closeq        chan struct{}        /* 关闭通道 */
 	close_once    sync.Once            /* 连接只允许被关闭一次 */
 	is_auth       bool                 /* 鉴权是否成功 */
 	kpalive_time  int64                /* 发送保活的时间 */
@@ -122,20 +124,24 @@ type ProxyConn struct {
 /* 代理服务 */
 type ProxyServer struct {
 	ctx       *Proxy               /* 全局对象 */
-	conf      *ProxyConf           /* 配置数据 */
+	conf      *ProxyConf           /* 配置信息 */
+	addr      string               /* 远程IP地址 */
 	log       *logs.BeeLogger      /* 日志对象 */
-	send_chan chan *RtmqPacket     /* 发送队列 */
-	recv_chan chan *RtmqRecvPacket /* 接收队列 */
-	exit_chan chan struct{}        /* 通知所有协程退出 */
+	sendq     chan *RtmqPacket     /* 发送队列 */
+	recvq     chan *RtmqRecvPacket /* 接收队列 */
+	exitq     chan struct{}        /* 通知所有协程退出 */
 	waitGroup *sync.WaitGroup      /* 用于等待所有协程 */
 }
 
 /* 上下文信息 */
 type Proxy struct {
-	conf   *ProxyConf                  /* 配置数据 */
-	log    *logs.BeeLogger             /* 日志对象 */
-	reg    map[uint32]*RtmqRegItem     /* 回调注册 */
-	server [RTMQ_SSVR_NUM]*ProxyServer /* 服务对象 */
+	conf      *ProxyConf                          /* 配置数据 */
+	log       *logs.BeeLogger                     /* 日志对象 */
+	reg       map[uint32]*RtmqRegItem             /* 回调注册 */
+	server    []*ProxyServer                      /* 服务对象 */
+	addr_list []string                            /* IP列表 */
+	sendq     [RTMQ_MSGQ_NUM]chan *RtmqPacket     /* 发送队列 */
+	recvq     [RTMQ_MSGQ_NUM]chan *RtmqRecvPacket /* 接收队列 */
 }
 
 /* 获取日志对象 */
@@ -144,9 +150,10 @@ func (pxy *Proxy) GetLog() *logs.BeeLogger {
 }
 
 /******************************************************************************
- **函数名称: OnDial
+ **函数名称: dial
  **功    能: 连接远端服务
- **输入参数: NONE
+ **输入参数:
+ **     addr: 远程IP地址(格式:${IP}:${PORT})
  **输出参数: NONE
  **返    回:
  **     conn: 连接对象
@@ -155,18 +162,14 @@ func (pxy *Proxy) GetLog() *logs.BeeLogger {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 20:56:41 #
  ******************************************************************************/
-func (svr *ProxyServer) OnDial() (conn *net.TCPConn, err error) {
-	conf := svr.conf
-
-	addr, err := net.ResolveTCPAddr("tcp4", conf.RemoteAddr)
+func dial(addr string) (conn *net.TCPConn, err error) {
+	tcp_addr, err := net.ResolveTCPAddr("tcp4", addr)
 	if nil != err {
-		svr.log.Error("Resolve tcp addr failed! errmsg:%s", err.Error())
 		return nil, err
 	}
 
-	conn, err = net.DialTCP("tcp", nil, addr)
+	conn, err = net.DialTCP("tcp", nil, tcp_addr)
 	if nil != err {
-		svr.log.Error("Dial tcp addr failed! errmsg:%s", err.Error())
 		return nil, err
 	}
 
@@ -258,11 +261,35 @@ func ProxyInit(conf *ProxyConf, log *logs.BeeLogger) *Proxy {
 
 	ctx.log = log
 	ctx.conf = conf
-	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
-		ctx.server[idx] = ctx.server_new()
-		if nil == ctx.server[idx] {
-			log.Error("Init rtmq proxy failed!")
-			return nil
+
+	/* > 校验${IP}:${PORT}格式的准确性 */
+	addr_list := strings.Split(conf.RemoteAddr, ",")
+
+	for _, addr := range addr_list {
+		addr = string(bytes.TrimSpace([]byte(addr)))
+		if 0 == len(addr) {
+			continue
+		}
+
+		_, err := net.ResolveTCPAddr("tcp4", addr)
+		if nil != err {
+			return nil /* 格式非法 */
+		}
+
+		ctx.addr_list = append(ctx.addr_list, addr)
+	}
+
+	/* > 生成收发队列 */
+	for idx := 0; idx < RTMQ_MSGQ_NUM; idx += 1 {
+		ctx.sendq[idx] = make(chan *RtmqPacket, conf.SendChanLen)
+		ctx.recvq[idx] = make(chan *RtmqRecvPacket, conf.RecvChanLen)
+	}
+
+	/* > 生成服务对象列表 */
+	for n := 0; n < len(ctx.addr_list); n += 1 {
+		for m := 0; m < RTMQ_MSGQ_NUM; m += 1 {
+			ctx.server = append(ctx.server, ctx.server_new(ctx.addr_list[n],
+				ctx.sendq[m%RTMQ_MSGQ_NUM], ctx.recvq[m%RTMQ_MSGQ_NUM]))
 		}
 	}
 
@@ -310,7 +337,7 @@ func (ctx *Proxy) Register(cmd uint32, proc RtmqRegCb, param interface{}) bool {
  **作    者: # Qifeng.zou # 2016.10.30 21:24:34 #
  ******************************************************************************/
 func (ctx *Proxy) Launch() {
-	for idx := 0; idx < RTMQ_SSVR_NUM; idx += 1 {
+	for idx := 0; idx < len(ctx.server); idx += 1 {
 		go ctx.server[idx].StartConnector(3)
 	}
 }
@@ -347,13 +374,14 @@ func (ctx *Proxy) AsyncSend(cmd uint32, data []byte, length uint32) int {
 	copy(p.body, data)
 
 	/* > 放入发送队列 */
-	idx := rand.Intn(RTMQ_SSVR_NUM)
+	idx := rand.Intn(len(ctx.server))
 
 	select {
-	case ctx.server[idx].send_chan <- p:
+	case ctx.server[idx].sendq <- p:
 		ctx.log.Debug("Send data success! cmd:0x%04x len:%d", cmd, length)
 		return 0
-	case <-time.After(3 * time.Second): /* 超时则丢弃 */
+	case <-time.After(1 * time.Second): /* 超时则丢弃 */
+		ctx.log.Error("Send data timeout! cmd:0x%04x len:%d", cmd, length)
 		return -1
 	}
 
@@ -363,22 +391,26 @@ func (ctx *Proxy) AsyncSend(cmd uint32, data []byte, length uint32) int {
 /******************************************************************************
  **函数名称: server_new
  **功    能: 新建PROXY服务对象
- **输入参数: NONE
+ **输入参数:
+ **     addr: 服务端IP地址
+ **     sendq: 发送队列
+ **     recvq: 接收队列
  **输出参数: NONE
  **返    回: 服务对象
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:17:46 #
  ******************************************************************************/
-func (ctx *Proxy) server_new() *ProxyServer {
+func (ctx *Proxy) server_new(addr string, sendq chan *RtmqPacket, recvq chan *RtmqRecvPacket) *ProxyServer {
 	conf := ctx.conf
 	return &ProxyServer{
 		ctx:       ctx,
+		addr:      addr,
 		conf:      conf,
 		log:       ctx.log,
-		exit_chan: make(chan struct{}),
-		send_chan: make(chan *RtmqPacket, conf.SendChanLen),
-		recv_chan: make(chan *RtmqRecvPacket, conf.RecvChanLen),
+		exitq:     make(chan struct{}),
+		sendq:     sendq,
+		recvq:     recvq,
 		waitGroup: &sync.WaitGroup{},
 	}
 }
@@ -402,14 +434,14 @@ func (svr *ProxyServer) StartConnector(timeout time.Duration) {
 
 	for {
 		/* > 建立TCP连接 */
-		conn, err := svr.OnDial()
+		conn, err := dial(svr.addr)
 		if nil != err {
 			svr.log.Error("Dial failed! errmsg:%s", err.Error())
 			select {
-			case <-svr.exit_chan:
+			case <-svr.exitq:
 				svr.log.Error("Recv exit signal! errmsg:%s", err.Error())
 				return
-			case <-time.After(time.Second * timeout):
+			case <-time.After(timeout * time.Second):
 				svr.log.Error("Dial timeout! errmsg:%s", err.Error())
 				continue
 			}
@@ -423,9 +455,9 @@ func (svr *ProxyServer) StartConnector(timeout time.Duration) {
 
 		/* > 等待异常信号 */
 		select {
-		case <-svr.exit_chan:
+		case <-svr.exitq:
 			return
-		case <-c.close_chan:
+		case <-c.closeq:
 			time.Sleep(time.Second * timeout)
 		}
 	}
@@ -442,7 +474,7 @@ func (svr *ProxyServer) StartConnector(timeout time.Duration) {
  **作    者: # Qifeng.zou # 2016.10.30 21:47:58 #
  ******************************************************************************/
 func (svr *ProxyServer) Stop() {
-	close(svr.exit_chan)
+	close(svr.exitq)
 	svr.waitGroup.Wait()
 }
 
@@ -483,10 +515,10 @@ func (svr *ProxyServer) conn_new(conn *net.TCPConn) *ProxyConn {
 	return &ProxyConn{
 		svr:           svr,
 		conn:          conn,
-		close_chan:    make(chan struct{}),
-		send_chan:     svr.send_chan,
-		mesg_chan:     make(chan *RtmqPacket, 1000),
-		recv_chan:     svr.recv_chan,
+		closeq:        make(chan struct{}),
+		sendq:         svr.sendq,
+		mesgq:         make(chan *RtmqPacket, 1000),
+		recvq:         svr.recvq,
 		kpalive_time:  time.Now().Unix(),
 		kpalive_stat:  RTMQ_KPALIVE_STAT_UNKNOWN,
 		kpalive_times: 0,
@@ -502,8 +534,8 @@ func (c *ProxyConn) GetRawConn() *net.TCPConn {
 func (c *ProxyConn) Close() {
 	c.close_once.Do(func() {
 		atomic.StoreInt32(&c.is_close, 1)
-		close(c.mesg_chan)
-		close(c.close_chan)
+		close(c.mesgq)
+		close(c.closeq)
 		c.conn.Close()
 		c.svr.OnClose(c)
 	})
@@ -569,9 +601,9 @@ func (c *ProxyConn) recv_routine() {
 
 	for {
 		select {
-		case <-c.svr.exit_chan:
+		case <-c.svr.exitq:
 			return
-		case <-c.close_chan:
+		case <-c.closeq:
 			return
 		default:
 		}
@@ -601,7 +633,7 @@ func (c *ProxyConn) recv_routine() {
 		c.kpalive_stat = RTMQ_KPALIVE_STAT_SUCC
 
 		/* 放入接收队列 */
-		c.recv_chan <- p
+		c.recvq <- p
 	}
 }
 
@@ -628,13 +660,13 @@ func (c *ProxyConn) send_routine() {
 
 	for {
 		select {
-		case <-c.svr.exit_chan:
+		case <-c.svr.exitq:
 			return
 
-		case <-c.close_chan:
+		case <-c.closeq:
 			return
 
-		case p, _ := <-c.mesg_chan: /* 系统消息发送队列 */
+		case p, _ := <-c.mesgq: /* 系统消息发送队列 */
 			if _, err := c.conn.Write([]byte(p.head)); nil != err {
 				return
 			}
@@ -642,7 +674,7 @@ func (c *ProxyConn) send_routine() {
 				return
 			}
 
-		case p, _ := <-c.send_chan: /* 普通消息发送队列 */
+		case p, _ := <-c.sendq: /* 普通消息发送队列 */
 			if _, err := c.conn.Write([]byte(p.head)); nil != err {
 				return
 			}
@@ -681,13 +713,13 @@ func (c *ProxyConn) handle_routine() {
 
 	for {
 		select {
-		case <-c.svr.exit_chan:
+		case <-c.svr.exitq:
 			return
 
-		case <-c.close_chan:
+		case <-c.closeq:
 			return
 
-		case p := <-c.recv_chan: /* 业务消息 */
+		case p := <-c.recvq: /* 业务消息 */
 			c.svr.OnMessage(c, p)
 		}
 	}
@@ -724,7 +756,7 @@ func (c *ProxyConn) keepalive() {
 
 	c.kpalive_time = time.Now().Unix()
 	c.kpalive_times += 1
-	c.mesg_chan <- p
+	c.mesgq <- p
 	c.kpalive_stat = RTMQ_KPALIVE_STAT_SENT
 }
 
@@ -760,7 +792,7 @@ func rtmq_set_auth_req(conf *ProxyConf, p *RtmqPacket) {
  **输出参数: NONE
  **返    回:
  **实现描述:
- **注意事项: 系统内部消息放在mesg_chan队列中
+ **注意事项: 系统内部消息放在mesgq队列中
  **作    者: # Qifeng.zou # 2016.10.30 22:07:19 #
  ******************************************************************************/
 func (c *ProxyConn) auth() {
@@ -784,7 +816,7 @@ func (c *ProxyConn) auth() {
 	rtmq_head_hton(head, p)
 	rtmq_set_auth_req(conf, p)
 
-	c.mesg_chan <- p
+	c.mesgq <- p
 }
 
 /* 订阅请求 */
@@ -804,7 +836,7 @@ func rtmq_set_sub_req(req *RtmqSubReq, p *RtmqPacket) {
  **输出参数: NONE
  **返    回:
  **实现描述: 根据ctx.reg映射表发送订阅请求
- **注意事项: 系统内部消息放在mesg_chan队列中
+ **注意事项: 系统内部消息放在mesgq队列中
  **作    者: # Qifeng.zou # 2016.10.30 22:03:59 #
  ******************************************************************************/
 func (c *ProxyConn) subscribe() {
@@ -834,7 +866,7 @@ func (c *ProxyConn) subscribe() {
 		rtmq_head_hton(head, p)
 		rtmq_set_sub_req(req, p)
 
-		c.mesg_chan <- p
+		c.mesgq <- p
 	}
 }
 
