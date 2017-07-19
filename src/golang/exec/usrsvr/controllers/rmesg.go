@@ -546,13 +546,13 @@ func (ctx *UsrSvrCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJo
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoomJoin) int {
 	/* > 设置协议体 */
-	ntc := &mesg.MesgRoomJoinNtf{
+	ntf := &mesg.MesgRoomJoinNtf{
 		Uid: proto.Uint64(req.GetUid()),
 		Rid: proto.Uint64(req.GetRid()),
 	}
 
 	/* > 生成PB数据 */
-	body, err := proto.Marshal(ntc)
+	body, err := proto.Marshal(ntf)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
@@ -994,13 +994,13 @@ func (ctx *UsrSvrCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQu
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
 	/* > 设置协议体 */
-	ntc := &mesg.MesgRoomQuitNtf{
+	ntf := &mesg.MesgRoomQuitNtf{
 		Uid: proto.Uint64(req.GetUid()),
 		Rid: proto.Uint64(req.GetRid()),
 	}
 
 	/* > 生成PB数据 */
-	body, err := proto.Marshal(ntc)
+	body, err := proto.Marshal(ntf)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1
@@ -1374,13 +1374,13 @@ func (ctx *UsrSvrCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKi
  ******************************************************************************/
 func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
 	/* > 设置协议体 */
-	ntc := &mesg.MesgRoomKickNtf{
+	ntf := &mesg.MesgRoomKickNtf{
 		Uid: proto.Uint64(req.GetUid()),
 		Rid: proto.Uint64(req.GetRid()),
 	}
 
 	/* > 生成PB数据 */
-	body, err := proto.Marshal(ntc)
+	body, err := proto.Marshal(ntf)
 	if nil != err {
 		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
 		return -1

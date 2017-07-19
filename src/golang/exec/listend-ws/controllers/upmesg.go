@@ -767,7 +767,7 @@ func LsndUpMesgRoomJoinNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
-		ctx.log.Error("Header of room-join-ntc is invalid!")
+		ctx.log.Error("Header of room-join-ntf is invalid!")
 		return -1
 	}
 
@@ -776,7 +776,7 @@ func LsndUpMesgRoomJoinNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
-		ctx.log.Error("Unmarshal room-join-ntc failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal room-join-ntf failed! errmsg:%s", err.Error())
 		return -1
 	}
 
@@ -818,7 +818,7 @@ func LsndUpMesgRoomQuitNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
 	if !head.IsValid(0) {
-		ctx.log.Error("Header of room-quit-ntc is invalid!")
+		ctx.log.Error("Header of room-quit-ntf is invalid!")
 		return -1
 	}
 
@@ -827,7 +827,7 @@ func LsndUpMesgRoomQuitNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
-		ctx.log.Error("Unmarshal room-quit-ntc failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal room-quit-ntf failed! errmsg:%s", err.Error())
 		return -1
 	}
 
@@ -869,7 +869,7 @@ func LsndUpMesgRoomKickNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 	/* > 字节序转换(网络 -> 主机) */
 	head := comm.MesgHeadNtoh(data)
 	if !head.IsValid(1) {
-		ctx.log.Error("Header of room-kick-ntc is invalid!")
+		ctx.log.Error("Header of room-kick-ntf is invalid!")
 		return -1
 	}
 
@@ -878,7 +878,7 @@ func LsndUpMesgRoomKickNtfHandler(cmd uint32, nid uint32, data []byte, length ui
 
 	err := proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req) /* 解析报体 */
 	if nil != err {
-		ctx.log.Error("Unmarshal room-kick-ntc failed! errmsg:%s", err.Error())
+		ctx.log.Error("Unmarshal room-kick-ntf failed! errmsg:%s", err.Error())
 		return -1
 	}
 
