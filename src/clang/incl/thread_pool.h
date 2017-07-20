@@ -37,8 +37,7 @@ typedef struct
     void *data;                     /* 附加数据 */
 
     /* 内存池相关 */
-    struct
-    {
+    struct {
         void *mem_pool;             /* 内存池 */
         mem_alloc_cb_t alloc;       /* 申请内存 */
         mem_dealloc_cb_t dealloc;   /* 释放内存 */
@@ -47,12 +46,12 @@ typedef struct
 
 int thread_creat(pthread_t *tid, void *(*process)(void *args), void *args);
 thread_pool_t *thread_pool_init(int num, const thread_pool_opt_t *opt, void *args);
-int thread_pool_add_worker(thread_pool_t *tp, void *(*process)(void *arg), void *arg);
-int thread_pool_keepalive(thread_pool_t *tp);
-int thread_pool_get_tidx(thread_pool_t *tp);
-int thread_pool_destroy(thread_pool_t *tp);
+int thread_pool_add_worker(thread_pool_t *p, void *(*process)(void *arg), void *arg);
+int thread_pool_keepalive(thread_pool_t *p);
+int thread_pool_get_tidx(thread_pool_t *p);
+int thread_pool_destroy(thread_pool_t *p);
 
 /* 获取附加数据 */
-#define thread_pool_get_args(tpool) ((tpool)->data)
+#define thread_pool_get_args(p) ((p)->data)
 
 #endif /*__THREAD_POOL_H__*/

@@ -54,31 +54,64 @@ static int rtmq_proxy_creat_workers(rtmq_proxy_t *pxy)
 }
 
 /******************************************************************************
+ **函数名称: rtmq_proxy_ssvr_init_cb
+ **功    能: 初始化线程对象
+ **输入参数:
+ **     pxy: 全局对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 根据ip列表新建发送线程.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.20 11:28:40 #
+ ******************************************************************************/
+static int rtmq_proxy_ssvr_init_cb(iplist_item_t *item, rtmq_proxy_t *pxy)
+{
+    int m, idx;
+    rtmq_proxy_conf_t *conf = &pxy->conf;
+    rtmq_proxy_ssvr_t *ssvr = thread_pool_get_args(pxy->sendtp);
+
+    for (m=0; m<conf->send_thd_num; ++m) {
+        idx = item->idx * conf->send_thd_num + m;
+        if (rtmq_proxy_ssvr_init(pxy, ssvr+idx, idx,
+                    item->ipaddr, item->port,
+                    pxy->sendq[idx % conf->send_thd_num])) {
+            log_fatal(pxy->log, "Initialize send thread failed!");
+            free(ssvr);
+            thread_pool_destroy(pxy->sendtp);
+            return RTMQ_ERR;
+        }
+    }
+    return RTMQ_OK;
+}
+
+/******************************************************************************
  **函数名称: rtmq_proxy_creat_sends
  **功    能: 创建发送线程线程池
  **输入参数:
  **     pxy: 全局对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 根据ip列表新建发送线程.
  **注意事项:
- **作    者: # Qifeng.zou # 2015.08.19 #
+ **作    者: # Qifeng.zou # 2015.08.19, 2017.07.20 11:28:40 #
  ******************************************************************************/
 static int rtmq_proxy_creat_sends(rtmq_proxy_t *pxy)
 {
-    int idx;
+    int num;
     rtmq_proxy_ssvr_t *ssvr;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
+    num = list_length(pxy->iplist); /* IP数目 */
+
     /* > 创建对象 */
-    ssvr = (rtmq_proxy_ssvr_t *)calloc(conf->send_thd_num, sizeof(rtmq_proxy_ssvr_t));
+    ssvr = (rtmq_proxy_ssvr_t *)calloc(num * conf->send_thd_num, sizeof(rtmq_proxy_ssvr_t));
     if (NULL == ssvr) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }
 
     /* > 创建线程池 */
-    pxy->sendtp = thread_pool_init(conf->send_thd_num, NULL, (void *)ssvr);
+    pxy->sendtp = thread_pool_init(num * conf->send_thd_num, NULL, (void *)ssvr);
     if (NULL == pxy->sendtp) {
         log_error(pxy->log, "Initialize thread pool failed!");
         free(ssvr);
@@ -86,14 +119,7 @@ static int rtmq_proxy_creat_sends(rtmq_proxy_t *pxy)
     }
 
     /* > 初始化线程 */
-    for (idx=0; idx<conf->send_thd_num; ++idx) {
-        if (rtmq_proxy_ssvr_init(pxy, ssvr+idx, idx)) {
-            log_fatal(pxy->log, "Initialize send thread failed!");
-            free(ssvr);
-            thread_pool_destroy(pxy->sendtp);
-            return RTMQ_ERR;
-        }
-    }
+    list_trav(pxy->iplist, (trav_cb_t)rtmq_proxy_ssvr_init_cb, pxy);
 
     return RTMQ_OK;
 }
@@ -200,6 +226,13 @@ rtmq_proxy_t *rtmq_proxy_init(const rtmq_proxy_conf_t *conf, log_cycle_t *log)
         /* > 锁住指定文件 */
         if (rtmq_proxy_lock_server(conf)) {
             log_fatal(log, "Lock proxy server failed! errmsg:[%d] %s", errno, strerror(errno));
+            break;
+        }
+
+        /* > 解析IP地址列表 */
+        pxy->iplist = iplist_parse(conf->ipaddr);
+        if (NULL == pxy->iplist) {
+            log_fatal(log, "Parse iplist failed! addr:%s", conf->ipaddr);
             break;
         }
 

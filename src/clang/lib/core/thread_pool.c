@@ -10,7 +10,7 @@
  ******************************************************************************/
 #include "thread_pool.h"
 
-static void *thread_routine(void *_tpool);
+static void *thread_routine(void *_p);
 
 /******************************************************************************
  **函数名称: thread_pool_init
@@ -30,7 +30,7 @@ static void *thread_routine(void *_tpool);
 thread_pool_t *thread_pool_init(int num, const thread_pool_opt_t *opt, void *args)
 {
     int idx;
-    thread_pool_t *tpool;
+    thread_pool_t *p;
     thread_pool_opt_t _opt;
 
     if (NULL == opt) {
@@ -42,45 +42,45 @@ thread_pool_t *thread_pool_init(int num, const thread_pool_opt_t *opt, void *arg
     }
 
     /* 1. 分配线程池空间, 并初始化 */
-    tpool = (thread_pool_t *)opt->alloc(opt->pool, sizeof(thread_pool_t));
-    if (NULL == tpool) {
+    p = (thread_pool_t *)opt->alloc(opt->pool, sizeof(thread_pool_t));
+    if (NULL == p) {
         return NULL;
     }
 
-    pthread_mutex_init(&(tpool->queue_lock), NULL);
-    pthread_cond_init(&(tpool->queue_ready), NULL);
-    tpool->head = NULL;
-    tpool->queue_size = 0;
-    tpool->shutdown = 0;
-    tpool->data = (void *)args;
+    pthread_mutex_init(&(p->queue_lock), NULL);
+    pthread_cond_init(&(p->queue_ready), NULL);
+    p->head = NULL;
+    p->queue_size = 0;
+    p->shutdown = 0;
+    p->data = (void *)args;
 
-    tpool->mem_pool = opt->pool;
-    tpool->alloc = opt->alloc;
-    tpool->dealloc = opt->dealloc;
+    p->mem_pool = opt->pool;
+    p->alloc = opt->alloc;
+    p->dealloc = opt->dealloc;
 
-    tpool->tid = (pthread_t *)tpool->alloc(tpool->mem_pool, num*sizeof(pthread_t));
-    if (NULL == tpool->tid) {
-        opt->dealloc(opt->pool, tpool);
+    p->tid = (pthread_t *)p->alloc(p->mem_pool, num*sizeof(pthread_t));
+    if (NULL == p->tid) {
+        opt->dealloc(opt->pool, p);
         return NULL;
     }
 
     /* 2. 创建指定数目的线程 */
     for (idx=0; idx<num; ++idx) {
-        if (thread_creat(&tpool->tid[idx], thread_routine, tpool)) {
-            thread_pool_destroy(tpool);
+        if (thread_creat(&p->tid[idx], thread_routine, p)) {
+            thread_pool_destroy(p);
             return NULL;
         }
-        ++tpool->num;
+        ++p->num;
     }
 
-    return tpool;
+    return p;
 }
 
 /******************************************************************************
  **函数名称: thread_pool_add_worker
  **功    能: 注册处理任务(回调函数)
  **输入参数:
- **     tpool: 线程池
+ **     p: 线程池
  **     process: 回调函数
  **     arg: 回调函数的参数
  **输出参数:
@@ -92,12 +92,12 @@ thread_pool_t *thread_pool_init(int num, const thread_pool_opt_t *opt, void *arg
  **注意事项:
  **作    者: # Qifeng.zou # 2012.12.26 #
  ******************************************************************************/
-int thread_pool_add_worker(thread_pool_t *tpool, void *(*process)(void *arg), void *arg)
+int thread_pool_add_worker(thread_pool_t *p, void *(*process)(void *arg), void *arg)
 {
     thread_worker_t *worker, *member;
 
     /* 1. 新建任务节点 */
-    worker = (thread_worker_t*)tpool->alloc(tpool->mem_pool, sizeof(thread_worker_t));
+    worker = (thread_worker_t*)p->alloc(p->mem_pool, sizeof(thread_worker_t));
     if (NULL == worker) {
         return -1;
     }
@@ -107,24 +107,24 @@ int thread_pool_add_worker(thread_pool_t *tpool, void *(*process)(void *arg), vo
     worker->next = NULL;
 
     /* 2. 将回调函数加入工作队列 */
-    pthread_mutex_lock(&(tpool->queue_lock));
+    pthread_mutex_lock(&(p->queue_lock));
 
-    member = tpool->head;
+    member = p->head;
     if (NULL != member) {
         while (NULL != member->next) {
             member = member->next;
         }
         member->next = worker;
     } else {
-        tpool->head = worker;
+        p->head = worker;
     }
 
-    tpool->queue_size++;
+    p->queue_size++;
 
-    pthread_mutex_unlock(&(tpool->queue_lock));
+    pthread_mutex_unlock(&(p->queue_lock));
 
     /* 3. 唤醒正在等待的线程 */
-    pthread_cond_signal(&(tpool->queue_ready));
+    pthread_cond_signal(&(p->queue_ready));
 
     return 0;
 }
@@ -133,7 +133,7 @@ int thread_pool_add_worker(thread_pool_t *tpool, void *(*process)(void *arg), vo
  **函数名称: thread_pool_keepalive
  **功    能: 线程保活处理
  **输入参数:
- **     tpool: 线程池
+ **     p: 线程池
  **     process: 回调函数
  **     arg: 回调函数的参数
  **输出参数:
@@ -144,13 +144,13 @@ int thread_pool_add_worker(thread_pool_t *tpool, void *(*process)(void *arg), vo
  **注意事项:
  **作    者: # Qifeng.zou # 2012.12.26 #
  ******************************************************************************/
-int thread_pool_keepalive(thread_pool_t *tpool)
+int thread_pool_keepalive(thread_pool_t *p)
 {
     int idx;
 
-    for (idx=0; idx<tpool->num; idx++) {
-        if (ESRCH == pthread_kill(tpool->tid[idx], 0)) {
-            if (thread_creat(&tpool->tid[idx], thread_routine, tpool) < 0) {
+    for (idx=0; idx<p->num; idx++) {
+        if (ESRCH == pthread_kill(p->tid[idx], 0)) {
+            if (thread_creat(&p->tid[idx], thread_routine, p) < 0) {
                 return -1;
             }
         }
@@ -163,20 +163,20 @@ int thread_pool_keepalive(thread_pool_t *tpool)
  **函数名称: thread_pool_get_tidx
  **功    能: 获取当前线程在线程池中的序列号
  **输入参数:
- **     tpool: 线程池
+ **     p: 线程池
  **输出参数:
  **返    回: 线程序列号
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2012.12.26 #
  ******************************************************************************/
-int thread_pool_get_tidx(thread_pool_t *tpool)
+int thread_pool_get_tidx(thread_pool_t *p)
 {
     int idx;
     pthread_t tid = pthread_self();
 
-    for (idx=0; idx<tpool->num; ++idx) {
-        if (tpool->tid[idx] == tid) {
+    for (idx=0; idx<p->num; ++idx) {
+        if (p->tid[idx] == tid) {
             return idx;
         }
     }
@@ -188,7 +188,7 @@ int thread_pool_get_tidx(thread_pool_t *tpool)
  **函数名称: thread_pool_destroy
  **功    能: 销毁线程池
  **输入参数:
- **     tpool: 线程池
+ **     p: 线程池
  **输出参数:
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -198,31 +198,31 @@ int thread_pool_get_tidx(thread_pool_t *tpool)
  **注意事项:
  **作    者: # Qifeng.zou # 2012.12.26 #
  ******************************************************************************/
-int thread_pool_destroy(thread_pool_t *tpool)
+int thread_pool_destroy(thread_pool_t *p)
 {
     int idx;
 
-    if (0 != tpool->shutdown) {
+    if (0 != p->shutdown) {
         return -1;
     }
 
     /* 1. 设置销毁标志 */
-    tpool->shutdown = 1;
+    p->shutdown = 1;
 
     /* 2. 唤醒所有等待的线程 */
-    pthread_cond_broadcast(&(tpool->queue_ready));
+    pthread_cond_broadcast(&(p->queue_ready));
 
     /* 3. 等待线程结束 */
-    for (idx=0; idx<tpool->num; ++idx) {
-        if (ESRCH == pthread_kill(tpool->tid[idx], 0)) {
+    for (idx=0; idx<p->num; ++idx) {
+        if (ESRCH == pthread_kill(p->tid[idx], 0)) {
             continue;
         }
-        pthread_cancel(tpool->tid[idx]);
+        pthread_cancel(p->tid[idx]);
     }
 
-    pthread_mutex_destroy(&(tpool->queue_lock));
-    pthread_cond_destroy(&(tpool->queue_ready));
-    tpool->dealloc(tpool->mem_pool, tpool);
+    pthread_mutex_destroy(&(p->queue_lock));
+    pthread_cond_destroy(&(p->queue_ready));
+    p->dealloc(p->mem_pool, p);
 
     return 0;
 }
@@ -231,7 +231,7 @@ int thread_pool_destroy(thread_pool_t *tpool)
  **函数名称: thread_routine
  **功    能: 线程运行函数
  **输入参数:
- **     _tpool: 线程池
+ **     _p: 线程池
  **输出参数:
  **返    回: VOID *
  **实现描述:
@@ -239,34 +239,34 @@ int thread_pool_destroy(thread_pool_t *tpool)
  **注意事项:
  **作    者: # Qifeng.zou # 2014.04.18 #
  ******************************************************************************/
-static void *thread_routine(void *_tpool)
+static void *thread_routine(void *_p)
 {
     thread_worker_t *worker;
-    thread_pool_t *tpool = (thread_pool_t*)_tpool;
+    thread_pool_t *p = (thread_pool_t*)_p;
 
     while (1) {
-        pthread_mutex_lock(&(tpool->queue_lock));
-        while ((0 == tpool->shutdown)
-            && (0 == tpool->queue_size))
+        pthread_mutex_lock(&(p->queue_lock));
+        while ((0 == p->shutdown)
+            && (0 == p->queue_size))
         {
-            pthread_cond_wait(&(tpool->queue_ready), &(tpool->queue_lock));
+            pthread_cond_wait(&(p->queue_ready), &(p->queue_lock));
         }
 
-        if (0 != tpool->shutdown) {
-            pthread_mutex_unlock(&(tpool->queue_lock));
+        if (0 != p->shutdown) {
+            pthread_mutex_unlock(&(p->queue_lock));
             pthread_exit(NULL);
         }
 
-        tpool->queue_size--;
-        worker = tpool->head;
-        tpool->head = worker->next;
-        pthread_mutex_unlock(&(tpool->queue_lock));
+        p->queue_size--;
+        worker = p->head;
+        p->head = worker->next;
+        pthread_mutex_unlock(&(p->queue_lock));
 
         (*(worker->process))(worker->arg);
 
-        pthread_mutex_lock(&(tpool->queue_lock));
-        tpool->dealloc(tpool->mem_pool, worker);
-        pthread_mutex_unlock(&(tpool->queue_lock));
+        pthread_mutex_lock(&(p->queue_lock));
+        p->dealloc(p->mem_pool, worker);
+        pthread_mutex_unlock(&(p->queue_lock));
     }
 
     return NULL;

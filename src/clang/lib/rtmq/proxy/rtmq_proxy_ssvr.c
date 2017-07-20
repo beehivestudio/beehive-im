@@ -38,13 +38,18 @@ static int rtmq_proxy_ssvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t
  **输入参数:
  **     pxy: 全局信息
  **     ssvr: 发送服务对象
+ **     idx: 对象序列号
+ **     ipaddr: 服务端IP地址
+ **     port: 服务端侦听端口
+ **     sendq: 发送队列
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
- **作    者: # Qifeng.zou # 2015.01.14 #
+ **作    者: # Qifeng.zou # 2015.01.14, 2017-07-20 15:31:33 #
  ******************************************************************************/
-int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int idx)
+int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy,
+        rtmq_proxy_ssvr_t *ssvr, int idx, const char *ipaddr, int port, queue_t *sendq)
 {
     void *addr;
     rtmq_proxy_conf_t *conf = &pxy->conf;
@@ -56,8 +61,9 @@ int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int idx)
     ssvr->ctx = (void *)pxy;
     ssvr->sck.fd = INVALID_FD;
 
-    /* > 创建发送队列 */
-    ssvr->sendq = pxy->sendq[idx];
+    ssvr->sendq = sendq; /* 发送队列 */
+    ssvr->port = port;   /* 服务端端口 */
+    snprintf(ssvr->ipaddr, sizeof(ssvr->ipaddr), "%s", ipaddr); /* 服务端IP地址 */
 
     /* > 创建unix套接字 */
     if (rtmq_proxy_ssvr_creat_usck(ssvr, conf)) {
@@ -204,7 +210,6 @@ void *rtmq_proxy_ssvr_routine(void *_ctx)
     rtmq_proxy_ssvr_t *ssvr;
     struct timeval timeout;
     rtmq_proxy_t *pxy = (rtmq_proxy_t *)_ctx;
-    rtmq_proxy_conf_t *conf = &pxy->conf;
 
     nice(-20);
 
@@ -230,9 +235,9 @@ void *rtmq_proxy_ssvr_routine(void *_ctx)
             Sleep(RTMQ_RECONN_INTV);
 
             /* 重连Recv端 */
-            if ((sck->fd = tcp_connect(AF_INET, conf->ipaddr, conf->port)) < 0) {
+            if ((sck->fd = tcp_connect(AF_INET, ssvr->ipaddr, ssvr->port)) < 0) {
                 log_error(ssvr->log, "Conncet [%s:%d] failed! errmsg:[%d] %s!",
-                        conf->ipaddr, conf->port, errno, strerror(errno));
+                        ssvr->ipaddr, ssvr->port, errno, strerror(errno));
                 continue;
             }
 

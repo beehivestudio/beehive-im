@@ -2,6 +2,7 @@
 #define __SCK_H__
 
 #include "comm.h"
+#include "list.h"
 
 #define TCP_LISTEN_BACKLOG  (20)
 
@@ -91,5 +92,14 @@ int unix_udp_recv(int fd, void *buff, int len);
 int udp_listen(int port);
 
 bool ip_isvalid(const char *ip);
+
+typedef struct
+{
+    int idx;                        // 序号
+    char ipaddr[IP_ADDR_MAX_LEN];   // IP地址
+    int port;                       // 端口号
+} iplist_item_t;
+
+list_t *iplist_parse(const char *iplist);
 
 #endif /*__SCK_H__*/

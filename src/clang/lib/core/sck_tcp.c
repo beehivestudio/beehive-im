@@ -487,3 +487,132 @@ bool ip_isvalid(const char *ip)
 
     return true;
 }
+
+/******************************************************************************
+ **函数名称: iplist_parse
+ **功    能: 解析IP列表
+ **输入参数:
+ **     iplist: IP列表字串
+ **输出参数:
+ **     list: IP列表
+ **返    回: 0:成功 !0:失败
+ **实现描述: 按照字串格式解析&提取数据
+ **注意事项: 格式:${IP1}:${PORT1},${IP2}:${PORT2},${IP...}:${PORT...}
+ **作    者: # Qifeng.zou # 2017.07.19 18:18:15 #
+ ******************************************************************************/
+list_t *iplist_parse(const char *iplist)
+{
+    list_t *list;
+    int digit, len, idx;
+    iplist_item_t *item;
+    const char *ptr = iplist, *start, *end;
+
+    /* > 创建列表对象 */
+    list = list_creat(NULL);
+    if (NULL == list) {
+        return NULL;
+    }
+
+    /* > 解析&提取IP列表 */
+    idx = 0;
+    while (1) {
+        while (' ' == *ptr || ',' == *ptr) {
+            ptr += 1;
+        }
+
+        if ('\0' == *ptr) {
+            break;
+        }
+
+        start = ptr;
+
+        /* 第一个字段 */
+        digit = 0;
+        while (isdigit(*ptr)) {
+            digit = 10 * digit + (*ptr - '0');
+            ++ptr;
+        }
+
+        if (('.' != *ptr) || (0 == digit || digit > 255)) {
+            goto ERR_IPLIST;
+        }
+
+        /* 第二个字段 */
+        ++ptr;
+        digit = 0;
+        while (isdigit(*ptr)) {
+            digit = 10 * digit + (*ptr - '0');
+            ++ptr;
+        }
+
+        if (('.' != *ptr) || (digit > 255)) {
+            goto ERR_IPLIST;
+        }
+
+        /* 第三个字段 */
+        ++ptr;
+        digit = 0;
+        while (isdigit(*ptr)) {
+            digit = 10 * digit + (*ptr - '0');
+            ++ptr;
+        }
+
+        if (('.' != *ptr) || (digit > 255)) {
+            goto ERR_IPLIST;
+        }
+
+        /* 第四个字段 */
+        ++ptr;
+        digit = 0;
+        while (isdigit(*ptr)) {
+            digit = 10 * digit + (*ptr - '0');
+            ++ptr;
+        }
+
+        if ((':' != *ptr) || (0 == digit || digit > 255)) {
+            goto ERR_IPLIST;
+        }
+
+        end = ptr; /* 注意: 此时end指向字符':'冒号 */
+
+        /* 端口号 */
+        ++ptr;
+        digit = 0;
+        while (isdigit(*ptr)) {
+            digit = 10 * digit + (*ptr - '0');
+            ++ptr;
+        }
+
+        if (0 == digit || digit > 65535) {
+            goto ERR_IPLIST;
+        }
+
+        /* 存储数据 */
+        item = (iplist_item_t *)calloc(1, sizeof(iplist_item_t));
+        if (NULL == item) {
+            goto ERR_IPLIST;
+        }
+
+        len = end - start;
+        if (len >= (int)(sizeof(item->ipaddr) - 1)) {
+            free(item);
+            goto ERR_IPLIST;
+        }
+
+        memcpy(item->ipaddr, start, len);
+        item->port = digit;
+        item->idx = idx++;
+
+        list_rpush(list, item);
+    }
+
+    if (0 == list_length(list)) {
+        goto ERR_IPLIST;
+    }
+
+    return list;
+
+ERR_IPLIST:
+    list_destroy(list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+    return NULL;
+}
