@@ -141,7 +141,7 @@ static int rtmq_proxy_creat_recvq(rtmq_proxy_t *pxy)
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 创建队列对象 */
-    pxy->recvq = (queue_t **)calloc(conf->send_thd_num, sizeof(queue_t *));
+    pxy->recvq = (queue_t **)calloc(conf->work_thd_num, sizeof(queue_t *));
     if (NULL == pxy->recvq) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
