@@ -675,7 +675,7 @@ static int rtmq_rsvr_sys_mesg_proc(rtmq_cntx_t *ctx,
 {
     rtmq_header_t *head = (rtmq_header_t *)addr;
 
-    log_debug(rsvr->log, "type:%u nid:%u chksum:0x%X",
+    log_debug(rsvr->log, "type:0x%04X nid:%u chksum:0x%X",
             head->type, head->nid, head->chksum);
 
     switch (head->type) {

@@ -206,6 +206,12 @@ func (svr *ProxyServer) OnConnect(c *ProxyConn) bool {
  ******************************************************************************/
 func (svr *ProxyServer) OnMessage(c *ProxyConn, p *RtmqRecvPacket) bool {
 	ctx := svr.ctx
+	defer func() {
+		if err := recover(); nil != err {
+			ctx.log.Error("On message crashed! errmsg:%s", err)
+		}
+	}()
+
 	header := rtmq_head_ntoh(p)
 
 	/* 内部消息处理 */
@@ -288,8 +294,9 @@ func ProxyInit(conf *ProxyConf, log *logs.BeeLogger) *Proxy {
 	/* > 生成服务对象列表 */
 	for n := 0; n < len(ctx.addr_list); n += 1 {
 		for m := 0; m < RTMQ_MSGQ_NUM; m += 1 {
-			ctx.server = append(ctx.server, ctx.server_new(ctx.addr_list[n],
-				ctx.sendq[m%RTMQ_MSGQ_NUM], ctx.recvq[m%RTMQ_MSGQ_NUM]))
+			server := ctx.server_new(ctx.addr_list[n],
+				ctx.sendq[m%RTMQ_MSGQ_NUM], ctx.recvq[m%RTMQ_MSGQ_NUM])
+			ctx.server = append(ctx.server, server)
 		}
 	}
 
@@ -401,7 +408,8 @@ func (ctx *Proxy) AsyncSend(cmd uint32, data []byte, length uint32) int {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 21:17:46 #
  ******************************************************************************/
-func (ctx *Proxy) server_new(addr string, sendq chan *RtmqPacket, recvq chan *RtmqRecvPacket) *ProxyServer {
+func (ctx *Proxy) server_new(addr string,
+	sendq chan *RtmqPacket, recvq chan *RtmqRecvPacket) *ProxyServer {
 	conf := ctx.conf
 	return &ProxyServer{
 		ctx:       ctx,
@@ -704,9 +712,12 @@ func (c *ProxyConn) send_routine() {
  **作    者: # Qifeng.zou # 2016.10.30 22:10:36 #
  ******************************************************************************/
 func (c *ProxyConn) handle_routine() {
+	log := c.svr.log
 	c.svr.waitGroup.Add(1)
 	defer func() {
-		recover()
+		if err := recover(); nil != err {
+			log.Error("Handle routine crashed! errmsg:%s", err)
+		}
 		c.Close()
 		c.svr.waitGroup.Done()
 	}()
