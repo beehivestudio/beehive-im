@@ -3,7 +3,7 @@
     <REDIS ADDR="127.0.0.1:6379" USR="beehive" PASSWD="111111" /> <!-- REDIS配置 -->
     <MYSQL ADDR="127.0.0.1:7379" USR="beehive" PASSWD="111111" DBNAME="testdb" /> <!-- MYSQL配置 -->
     <MONGO ADDR="127.0.0.1:8379" USR="beehive" PASSWD="111111" /> <!-- MONGO配置 -->
-    <FRWDER ADDR="127.0.0.1:28889"> <!-- RTMQ代理 -->
+    <FRWDER ADDR="127.0.0.1:28889,127.0.0.1:38889"> <!-- RTMQ代理 -->
         <AUTH USR="qifeng" PASSWD="111111" />       <!-- 鉴权: 用户名 + 登录密码 -->
         <WORKER-NUM>10</WORKER-NUM>                 <!-- 工作协程数 -->
         <SEND-CHAN-LEN>20000</SEND-CHAN-LEN>        <!-- 发送队列长度 -->
