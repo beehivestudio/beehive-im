@@ -19,6 +19,7 @@
 
 /* 宏定义 */
 #define RTMQ_CTX_POOL_SIZE          (5 * MB)/* 全局内存池空间 */
+#define RTMQ_CONNQ_LEN              (8192)  /* 连接队列长度 */
 
 /* Recv线程的UNIX-UDP路径 */
 #define rtmq_rsvr_usck_path(conf, _path, tidx) \
@@ -139,6 +140,15 @@ typedef struct
     void *data;                         /* 数据地址: 真实数据地址 */
 } rtmq_recv_item_t;
 
+/* 新增连接项 */
+typedef struct
+{
+    int fd;                             /* 文件描述符 */
+    struct timeb ctm;                   /* 创建时间(s) */
+    uint64_t sid;                       /* 会话序列号 */
+    char ipaddr[IP_ADDR_MAX_LEN];       /* 客户端IP地址 */
+} rtmq_conn_item_t;
+
 /* 全局对象 */
 typedef struct
 {
@@ -155,6 +165,7 @@ typedef struct
     int cmd_sck_id;                     /* 命令套接字(注: 用于给各线程发送命令) */
     spinlock_t cmd_sck_lock;            /* 命令套接字锁 */
 
+    queue_t **connq;                    /* 连接队列(注:其长度与recvtp一致) */
     queue_t **recvq;                    /* 接收队列(内部队列) */
     ring_t **sendq;                     /* 发送队列(内部队列) */
     ring_t **distq;                     /* 分发队列(外部队列)

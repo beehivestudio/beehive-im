@@ -112,14 +112,6 @@ typedef struct
     (h)->type = ntohl((n)->type); \
 } while(0)
 
-/* 添加套接字请求的相关参数 */
-typedef struct
-{
-    int sckid;                          /* 套接字 */
-    uint64_t sid;                       /* Session ID */
-    char ipaddr[IP_ADDR_MAX_LEN];       /* IP地址 */
-} rtmq_cmd_add_sck_t;
-
 /* 处理数据请求的相关参数 */
 typedef struct
 {
@@ -168,7 +160,6 @@ typedef struct
 /* 各命令所附带的数据 */
 typedef union
 {
-    rtmq_cmd_add_sck_t add_sck_req;
     rtmq_cmd_proc_req_t proc_req;
     rtmq_cmd_send_req_t send_req;
     rtmq_cmd_proc_stat_t proc_stat;

@@ -60,7 +60,7 @@ typedef struct _socket_t
 {
     int fd;                         /* 套接字FD */
 
-    struct timeb crtm;              /* 创建时间 */
+    struct timeb ctm;               /* 创建时间 */
     time_t wrtm;                    /* 最近写入时间 */
     time_t rdtm;                    /* 最近读取时间 */
 

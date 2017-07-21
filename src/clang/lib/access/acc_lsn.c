@@ -201,7 +201,7 @@ static int acc_lsvr_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
 
     add->fd = fd;
     add->cid = cid;
-    ftime(&add->crtm);
+    ftime(&add->ctm);
 
     log_debug(lsvr->log, "Push data! fd:%d addr:%p cid:%u idx:%d", fd, add, cid, idx);
 

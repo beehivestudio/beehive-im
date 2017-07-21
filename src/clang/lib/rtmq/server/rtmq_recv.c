@@ -21,6 +21,7 @@
 
 static int rtmq_auth_init(rtmq_cntx_t *ctx);
 
+static int rtmq_creat_connq(rtmq_cntx_t *ctx);
 static int rtmq_creat_recvq(rtmq_cntx_t *ctx);
 static int rtmq_creat_sendq(rtmq_cntx_t *ctx);
 static int rtmq_creat_distq(rtmq_cntx_t *ctx);
@@ -117,6 +118,12 @@ rtmq_cntx_t *rtmq_init(const rtmq_conf_t *cf, log_cycle_t *log)
         ctx->reg = avl_creat(NULL, (cmp_cb_t)rtmq_reg_cmp_cb);
         if (NULL == ctx->reg) {
             log_error(ctx->log, "Create register map failed!");
+            break;
+        }
+
+        /* > 创建接收队列 */
+        if (rtmq_creat_connq(ctx)) {
+            log_error(ctx->log, "Create conn queue failed!");
             break;
         }
 
@@ -344,6 +351,43 @@ int rtmq_publish(rtmq_cntx_t *ctx, int type, void *data, size_t len)
     avl_trav(list->groups, rtmq_pub_group_trav_cb, &item);
 
     hash_tab_unlock(ctx->sub, &key, RDLOCK);
+
+    return RTMQ_OK;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_creat_connq
+ **功    能: 创建连接队列
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **     1. 创建队列数组
+ **     2. 依次创建连接队列
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.07.21 23:48:12 #
+ ******************************************************************************/
+static int rtmq_creat_connq(rtmq_cntx_t *ctx)
+{
+    int idx;
+    rtmq_conf_t *conf = &ctx->conf;
+
+    /* > 创建队列数组 */
+    ctx->connq = calloc(conf->recv_thd_num, sizeof(queue_t *));
+    if (NULL == ctx->connq) {
+        log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        return RTMQ_ERR;
+    }
+
+    /* > 依次创建连接队列 */
+    for(idx=0; idx<conf->recv_thd_num; ++idx) {
+        ctx->connq[idx] = queue_creat(RTMQ_CONNQ_LEN, sizeof(rtmq_conn_item_t));
+        if (NULL == ctx->connq[idx]) {
+            log_error(ctx->log, "Create conn queue failed!");
+            return RTMQ_ERR;
+        }
+    }
 
     return RTMQ_OK;
 }

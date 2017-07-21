@@ -21,9 +21,6 @@ static int rtmq_lsn_cmd_query_conf_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtm
 static int rtmq_lsn_cmd_query_recv_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd);
 static int rtmq_lsn_cmd_query_proc_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd);
 
-/* 随机选择接收线程 */
-#define rtmq_rand_rsvr(ctx) ((ctx)->listen.sid % (ctx->recvtp->num))
-
 /******************************************************************************
  **函数名称: rtmq_lsn_routine
  **功    能: 启动SDTP侦听线程
@@ -162,11 +159,12 @@ int rtmq_lsn_destroy(rtmq_listen_t *lsn)
  ******************************************************************************/
 static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
 {
-    int sckid;
+    int fd, idx;
     socklen_t len;
     rtmq_cmd_t cmd;
+    rtmq_conn_item_t *item;
     struct sockaddr_in cliaddr;
-    rtmq_cmd_add_sck_t *param = (rtmq_cmd_add_sck_t *)&cmd.param;
+    rtmq_conf_t *conf = &ctx->conf;
 
     /* 1. 接收连接请求 */
     for (;;) {
@@ -174,8 +172,8 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
 
         len = sizeof(struct sockaddr_in);
 
-        sckid = accept(lsn->lsn_sck_id, (struct sockaddr *)&cliaddr, &len);
-        if (sckid >= 0) {
+        fd = accept(lsn->lsn_sck_id, (struct sockaddr *)&cliaddr, &len);
+        if (fd >= 0) {
             break;
         } else if (EINTR == errno) {
             continue;
@@ -185,24 +183,34 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
         return RTMQ_ERR;
     }
 
-    fd_set_nonblocking(sckid);
+    fd_set_nonblocking(fd);
 
-    /* 2. 发送至接收端 */
+    /* 2. 将连接放入队列 */
+    idx = lsn->sid % conf->recv_thd_num;
+
+    item = queue_malloc(ctx->connq[idx], sizeof(rtmq_conn_item_t));
+    if (NULL == item) {
+        close(fd);
+        log_error(lsn->log, "Alloc from conn queue failed!");
+        return RTMQ_ERR;
+    }
+
+    item->fd = fd;
+    ftime(&item->ctm);
+    item->sid = ++lsn->sid;
+    snprintf(item->ipaddr, sizeof(item->ipaddr), "%s", inet_ntoa(cliaddr.sin_addr));
+
+    queue_push(ctx->connq[idx], item);
+
+    /* 3. 发送信号给接收服务 */
     memset(&cmd, 0, sizeof(cmd));
 
     cmd.type = RTMQ_CMD_ADD_SCK;
-    param->sckid = sckid;
-    param->sid = ++lsn->sid; /* 设置套接字序列号 */
-    snprintf(param->ipaddr, sizeof(param->ipaddr), "%s", inet_ntoa(cliaddr.sin_addr));
 
-    log_trace(lsn->log, "New connection! serial:%lu sckid:%d ip:%s",
-            lsn->sid, sckid, inet_ntoa(cliaddr.sin_addr));
+    rtmq_cmd_to_rsvr(ctx, lsn->cmd_sck_id, &cmd, idx);
 
-    if (rtmq_cmd_to_rsvr(ctx, lsn->cmd_sck_id, &cmd, rtmq_rand_rsvr(ctx)) < 0) {
-        CLOSE(sckid);
-        log_error(lsn->log, "Send command failed! serial:%lu sckid:[%d]", lsn->sid, sckid);
-        return RTMQ_ERR;
-    }
+    log_trace(lsn->log, "Accept new connection! idx:%d sid:%lu fd:%d ip:%s",
+            idx, lsn->sid, fd, item->ipaddr);
 
     return RTMQ_OK;
 }

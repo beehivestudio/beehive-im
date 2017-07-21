@@ -38,7 +38,7 @@ typedef enum
 typedef struct
 {
     int fd;                 /* 套接字 */
-    struct timeb crtm;      /* 创建时间 */
+    struct timeb ctm;       /* 创建时间 */
     uint64_t cid;           /* Connection ID */
 } acc_add_sck_t;
 
