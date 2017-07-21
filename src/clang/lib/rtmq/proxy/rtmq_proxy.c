@@ -294,7 +294,7 @@ rtmq_proxy_t *rtmq_proxy_init(const rtmq_proxy_conf_t *conf, log_cycle_t *log)
  ******************************************************************************/
 int rtmq_proxy_launch(rtmq_proxy_t *pxy)
 {
-    int idx;
+    int idx, m, n, num;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 注册Worker线程回调 */
@@ -303,8 +303,12 @@ int rtmq_proxy_launch(rtmq_proxy_t *pxy)
     }
 
     /* > 注册Send线程回调 */
-    for (idx=0; idx<conf->send_thd_num; ++idx) {
-        thread_pool_add_worker(pxy->sendtp, rtmq_proxy_ssvr_routine, pxy);
+    num = list_length(pxy->iplist);
+    for (n=0; n<num; ++n) {
+        for (m=0; m<conf->send_thd_num; ++m) {
+            idx = n*conf->send_thd_num + m;
+            thread_pool_add_worker(pxy->sendtp, rtmq_proxy_ssvr_routine, pxy);
+        }
     }
 
     return RTMQ_OK;
