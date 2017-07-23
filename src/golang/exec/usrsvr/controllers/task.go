@@ -56,13 +56,24 @@ func (ctx *UsrSvrCntx) listend_dict_update() {
 	types, err := redis.Ints(rds.Do("ZRANGEBYSCORE",
 		comm.IM_KEY_LSND_TYPE_ZSET, ctm, "+inf"))
 	if nil != err {
+		/* 清理所有数据 */
+		ctx.listend.dict.Lock()
+		defer ctx.listend.dict.Unlock()
+		for typ, _ := range ctx.listend.dict.types {
+			delete(ctx.listend.dict.types, typ)
+		}
 		ctx.log.Error("Get listend type list failed! errmsg:%s", err.Error())
 		return
 	}
 
+	/* > 清理所有数据 */
 	ctx.listend.dict.Lock()
 	defer ctx.listend.dict.Unlock()
+	for typ, _ := range ctx.listend.dict.types {
+		delete(ctx.listend.dict.types, typ)
+	}
 
+	/* > 重新设置数据 */
 	num := len(types)
 	for idx := 0; idx < num; idx += 1 {
 		typ := types[idx]
@@ -174,6 +185,9 @@ func (ctx *UsrSvrCntx) listend_list_update() {
 		"ZRANGEBYSCORE", comm.IM_KEY_LSND_NID_ZSET, ctm, "+inf", "WITHSCORES"))
 	if nil != err {
 		ctx.log.Error("Get listend list failed! errmsg:%s", err.Error())
+		ctx.listend.list.Lock()
+		defer ctx.listend.list.Unlock()
+		ctx.listend.list.nodes = make([]uint32, 0)
 		return
 	}
 
