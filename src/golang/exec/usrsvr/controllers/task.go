@@ -59,9 +59,7 @@ func (ctx *UsrSvrCntx) listend_dict_update() {
 		/* 清理所有数据 */
 		ctx.listend.dict.Lock()
 		defer ctx.listend.dict.Unlock()
-		for typ, _ := range ctx.listend.dict.types {
-			delete(ctx.listend.dict.types, typ)
-		}
+		ctx.listend.dict.types = make(map[int]*UsrSvrLsndDictItem, 0)
 		ctx.log.Error("Get listend type list failed! errmsg:%s", err.Error())
 		return
 	}
@@ -69,9 +67,7 @@ func (ctx *UsrSvrCntx) listend_dict_update() {
 	/* > 清理所有数据 */
 	ctx.listend.dict.Lock()
 	defer ctx.listend.dict.Unlock()
-	for typ, _ := range ctx.listend.dict.types {
-		delete(ctx.listend.dict.types, typ)
-	}
+	ctx.listend.dict.types = make(map[int]*UsrSvrLsndDictItem, 0)
 
 	/* > 重新设置数据 */
 	num := len(types)
