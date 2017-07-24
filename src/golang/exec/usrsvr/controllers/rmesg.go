@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"labix.org/v2/mgo"
+
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
@@ -1450,6 +1452,21 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
 
 	pl.Send("ZADD", key, req.GetUid())
+
+	/* > 提交MONGO存储 */
+	data := &chat.RoomUserListTabRow{
+		Rid:    req.GetRid(),             // 聊天室ID
+		Uid:    req.GetUid(),             // 用户ID
+		Status: chat.ROOM_USER_STAT_KICK, // 状态(被踢)
+		Ctm:    time.Now().Unix(),        // 设置时间
+	}
+
+	cb := func(c *mgo.Collection) (err error) {
+		c.Insert(data)
+		return err
+	}
+
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, "room-blacklist", cb)
 
 	/* > 遍历下发踢除指令 */
 	ctx.room_kick_by_uid(req.GetRid(), req.GetUid())

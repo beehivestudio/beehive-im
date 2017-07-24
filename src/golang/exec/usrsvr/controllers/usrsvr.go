@@ -14,6 +14,7 @@ import (
 	"beehive-im/src/golang/lib/dbase"
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/mesg/seqsvr"
+	"beehive-im/src/golang/lib/mongo"
 	"beehive-im/src/golang/lib/rdb"
 	"beehive-im/src/golang/lib/rtmq"
 	"beehive-im/src/golang/lib/thrift_pool"
@@ -49,6 +50,7 @@ type UsrSvrCntx struct {
 	ipdict      *comm.IpDict      /* IP字典 */
 	frwder      *rtmq.Proxy       /* 代理对象 */
 	redis       *redis.Pool       /* REDIS连接池 */
+	mongo       *mongo.Pool       /* MONGO连接池 */
 	userdb      *sql.DB           /* USERDB数据库 */
 	seqsvr_pool *thrift_pool.Pool /* SEQSVR连接池 */
 	listend     UsrSvrLsndData    /* 侦听层数据 */
@@ -104,6 +106,14 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	if nil == ctx.redis {
 		ctx.log.Error("Create redis pool failed! addr:%s", conf.Redis.Addr)
 		return nil, errors.New("Create redis pool failed!")
+	}
+
+	/* > MONGO连接池 */
+	ctx.mongo, err = mongo.CreatePool(conf.Mongo.Addr, conf.Mongo.Passwd)
+	if nil != err {
+		ctx.log.Error("Connect to mongo failed! addr:%s errmsg:%s",
+			conf.Mongo.Addr, err.Error())
+		return nil, err
 	}
 
 	/* > MYSQL连接池 */

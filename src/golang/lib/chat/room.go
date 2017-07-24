@@ -26,6 +26,29 @@ const (
 	ROOM_STAT_CLOSE = 0 // 聊天室-关闭
 )
 
+/* 聊天室用户状态 */
+const (
+	ROOM_USER_STAT_NORMAL = 0 // 正常
+	ROOM_USER_STAT_KICK   = 1 // 被踢
+)
+
+/* 聊天室数据 */
+type RoomChatTabRow struct {
+	Rid  uint64 "rid"  // 聊天室ID
+	Uid  uint64 "uid"  // 用户UID
+	Ctm  int64  "ctm"  // 发送时间
+	Data []byte "data" // 原始数据包
+}
+
+/* 聊天室用户列表 */
+type RoomUserListTabRow struct {
+	Rid    uint64 "rid"    // 聊天室ID
+	Uid    uint64 "uid"    // 用户UID
+	Role   uint64 "role"   // 角色
+	Status uint8  "status" // 状态(0:正常 1:被踢)
+	Ctm    int64  "ctm"    // 设置时间
+}
+
 /******************************************************************************
  **函数名称: RoomGetRidToNidSet
  **功    能: 通过聊天室RID获取对应的帧听层NID列表

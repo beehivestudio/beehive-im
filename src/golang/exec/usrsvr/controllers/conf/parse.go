@@ -43,6 +43,7 @@ type UsrSvrMysqlConf struct {
 type UsrSvrMongoConf struct {
 	Name   xml.Name `xml:"MONGO"`       // 结点名
 	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
+	DbName string   `xml:"DANAME,attr"` // 数据库名
 	Usr    string   `xml:"USR,attr"`    // 用户名
 	Passwd string   `xml:"PASSWD,attr"` // 登录密码
 }
@@ -177,6 +178,11 @@ func (conf *UsrSvrConf) parse() (err error) {
 	conf.Mongo.Addr = node.Mongo.Addr
 	if 0 == len(conf.Mongo.Addr) {
 		return errors.New("Get mongo addr failed!")
+	}
+
+	conf.Mongo.DbName = node.Mongo.DbName
+	if 0 == len(conf.Mongo.DbName) {
+		return errors.New("Get mongo dbname failed!")
 	}
 
 	conf.Mongo.Usr = node.Mongo.Usr

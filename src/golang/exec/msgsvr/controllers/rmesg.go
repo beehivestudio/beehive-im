@@ -11,6 +11,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"
 
+	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/mesg"
 )
@@ -351,13 +352,6 @@ func (ctx *MsgSvrCntx) task_room_mesg_chan_pop() {
 	}
 }
 
-type RoomChatRow struct {
-	Rid  uint64 "rid"  // 聊天室ID
-	Uid  uint64 "uid"  // 用户UID
-	Ctm  int64  "ctm"  // 发送时间
-	Data []byte "data" // 原始数据包
-}
-
 /******************************************************************************
  **函数名称: storage
  **功    能: 聊天室消息的存储处理
@@ -377,9 +371,9 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
 	}()
 
 	/* > 解析PB协议 */
-	chat := &mesg.MesgRoomChat{}
+	msg := &mesg.MesgRoomChat{}
 
-	err := proto.Unmarshal(item.raw[comm.MESG_HEAD_SIZE:], chat)
+	err := proto.Unmarshal(item.raw[comm.MESG_HEAD_SIZE:], msg)
 	if nil != err {
 		ctx.log.Error("Unmarshal room-chat-mesg failed!")
 		return
@@ -390,9 +384,9 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
 	pl.Send("LPUSH", key, item.raw[comm.MESG_HEAD_SIZE:])
 
 	/* > 提交MONGO存储 */
-	data := &RoomChatRow{
-		Rid:  chat.GetRid(),
-		Uid:  chat.GetUid(),
+	data := &chat.RoomChatTabRow{
+		Rid:  msg.GetRid(),
+		Uid:  msg.GetUid(),
 		Ctm:  time.Now().Unix(),
 		Data: item.raw,
 	}
