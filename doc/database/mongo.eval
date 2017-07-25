@@ -1,0 +1,9 @@
+use chat;
+
+db.ChatRoomMesg.ensureIndex({rid:1});
+db.ChatRoomMesg.ensureIndex({uid:1});
+db.ChatRoomMesg.ensureIndex({rid:1, uid:1});
+
+db.ChatRoomBlacklist.ensureIndex({rid:1});
+db.ChatRoomBlacklist.ensureIndex({uid:1});
+db.ChatRoomBlacklist.ensureIndex({rid:1, uid:1}, {unique:true});
