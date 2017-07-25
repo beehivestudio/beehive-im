@@ -32,6 +32,12 @@ const (
 	ROOM_USER_STAT_KICK   = 1 // 被踢
 )
 
+/* 聊天室数据表 */
+const (
+	ROOM_TAB_MESG      = "ChatRoomMesg"      // 聊天消息表
+	ROOM_TAB_BLACKLIST = "ChatRoomBlacklist" // 黑名单表
+)
+
 /* 聊天室数据 */
 type RoomChatTabRow struct {
 	Rid  uint64 "rid"  // 聊天室ID
@@ -40,8 +46,8 @@ type RoomChatTabRow struct {
 	Data []byte "data" // 原始数据包
 }
 
-/* 聊天室用户列表 */
-type RoomUserListTabRow struct {
+/* 聊天室黑名单 */
+type RoomBlacklistTabRow struct {
 	Rid    uint64 "rid"    // 聊天室ID
 	Uid    uint64 "uid"    // 用户UID
 	Role   uint64 "role"   // 角色

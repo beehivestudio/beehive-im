@@ -396,7 +396,7 @@ func (item *MesgRoomItem) storage(ctx *MsgSvrCntx) {
 		return err
 	}
 
-	ctx.mongo.Exec(ctx.conf.Mongo.DbName, "room-mesg", cb)
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, chat.ROOM_TAB_MESG, cb)
 }
 
 /******************************************************************************

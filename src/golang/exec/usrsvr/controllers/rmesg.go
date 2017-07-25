@@ -1454,7 +1454,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 	pl.Send("ZADD", key, req.GetUid())
 
 	/* > 提交MONGO存储 */
-	data := &chat.RoomUserListTabRow{
+	data := &chat.RoomBlacklistTabRow{
 		Rid:    req.GetRid(),             // 聊天室ID
 		Uid:    req.GetUid(),             // 用户ID
 		Status: chat.ROOM_USER_STAT_KICK, // 状态(被踢)
@@ -1466,7 +1466,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 		return err
 	}
 
-	ctx.mongo.Exec(ctx.conf.Mongo.DbName, "room-blacklist", cb)
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, chat.ROOM_TAB_BLACKLIST, cb)
 
 	/* > 遍历下发踢除指令 */
 	ctx.room_kick_by_uid(req.GetRid(), req.GetUid())
