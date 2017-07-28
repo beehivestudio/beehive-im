@@ -73,11 +73,14 @@ func (ctx *LwsCntx) ConnPoolDel(cid uint64) int {
  **输出参数: NONE
  **返    回: 错误码
  **实现描述:
- **注意事项:
+ **注意事项: 调用upgrader.Upgrade()与调用websocket.Upgrade()的区别是:
+ **     1. upgrader.Upgrade(): 建立websocket的客户端的host和origin的域名"必须"一致.
+ **     2. websocket.Upgrade(): 建立websocket的客户端的host和origin的域名"不必"一致.
  **作    者: # Qifeng.zou # 2017.02.06 23:19:44 #
  ******************************************************************************/
 func conn_handler(ctx *LwsCntx, w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
+	//conn, err := upgrader.Upgrade(w, r, nil)
+	conn, err := websocket.Upgrade(w, r, nil, upgrader.ReadBufferSize, upgrader.WriteBufferSize)
 	if nil != err {
 		ctx.log.Error("Upgrade websocket failed! errmsg:%s", err.Error())
 		return
