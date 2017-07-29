@@ -247,6 +247,7 @@ int main(int argc, char *argv[])
     sdk_cmd_add(ctx, CMD_ROOM_CREAT, CMD_ROOM_CREAT_ACK);
     sdk_cmd_add(ctx, CMD_ROOM_JOIN, CMD_ROOM_JOIN_ACK);
     sdk_cmd_add(ctx, CMD_ROOM_CHAT, CMD_ROOM_CHAT_ACK);
+    sdk_cmd_add(ctx, CMD_ROOM_KICK, CMD_ROOM_KICK_ACK);
     sdk_cmd_add(ctx, CMD_ROOM_QUIT, CMD_ROOM_QUIT_ACK);
 
     sdk_register(ctx, CMD_PONG, (sdk_reg_cb_t)sdk_cmd_pong_handler, NULL);
