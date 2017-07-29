@@ -199,6 +199,35 @@ int room_chat(sdk_cntx_t *ctx, uint64_t rid)
     return 0;
 }
 
+/* 聊天室KICK */
+int room_kick(sdk_cntx_t *ctx, uint64_t rid)
+{
+    void *addr;
+    size_t size;
+    MesgRoomKick chat = MESG_ROOM_KICK__INIT;
+
+    /* > 设置ONLINE字段 */
+    chat.rid = rid;
+    chat.uid = 18610485118;
+
+    /* > 申请内存空间 */
+    size = mesg_room_kick__get_packed_size(&chat);
+
+    addr = (void *)calloc(1, size);
+    if (NULL == addr) {
+        return SDK_ERR;
+    }
+
+    mesg_room_kick__pack(&chat, addr);
+
+    /* > 发起ROOM-KICK请求 */
+    sdk_async_send(ctx, CMD_ROOM_KICK, addr, size, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
+
+    free(addr);
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     sdk_conf_t conf;
@@ -218,6 +247,7 @@ int main(int argc, char *argv[])
     sdk_cmd_add(ctx, CMD_ROOM_CREAT, CMD_ROOM_CREAT_ACK);
     sdk_cmd_add(ctx, CMD_ROOM_JOIN, CMD_ROOM_JOIN_ACK);
     sdk_cmd_add(ctx, CMD_ROOM_CHAT, CMD_ROOM_CHAT_ACK);
+    sdk_cmd_add(ctx, CMD_ROOM_QUIT, CMD_ROOM_QUIT_ACK);
 
     sdk_register(ctx, CMD_PONG, (sdk_reg_cb_t)sdk_cmd_pong_handler, NULL);
 
@@ -226,13 +256,15 @@ int main(int argc, char *argv[])
     Sleep(1);
 
     while (1) {
-        room_creat(ctx);
+        //room_creat(ctx);
         Sleep(1);
         room_join(ctx, 1000000015);
         Sleep(1);
         chat_send(ctx);
         Sleep(1);
         room_chat(ctx, 1000000015);
+        Sleep(1);
+        room_kick(ctx, 1000000015);
         Sleep(1);
         sdk_async_send(ctx, CMD_PING, NULL, 0, 3, (sdk_send_cb_t)sdk_send_cb, NULL);
         Sleep(1);

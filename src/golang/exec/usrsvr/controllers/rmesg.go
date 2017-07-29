@@ -1245,7 +1245,7 @@ func (ctx *UsrSvrCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, er
 	/* > 获取会话列表 */
 	key := fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, uid)
 
-	sid_list, err := redis.Strings(rds.Do("SCARD", key))
+	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
 		ctx.log.Error("Get sid list by uid failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
@@ -1444,14 +1444,15 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 			req.GetRid(), req.GetUid(), err.Error())
 		return comm.ERR_SYS_SYSTEM, err
 	} else if !chat.IsRoomManager(ctx.redis, req.GetRid(), attr.GetUid()) {
-		ctx.log.Error("You're not owner! rid:%d uid:%d", req.GetRid(), req.GetUid())
+		ctx.log.Error("You're not owner! rid:%d kicked-uid:%d attr.uid:%d",
+			req.GetRid(), req.GetUid(), attr.GetUid())
 		return comm.ERR_SYS_PERM_DENIED, errors.New("You're not room owner!")
 	}
 
 	/* > 用户加入黑名单 */
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
 
-	pl.Send("ZADD", key, req.GetUid())
+	pl.Send("SADD", key, req.GetUid())
 
 	/* > 提交MONGO存储 */
 	data := &chat.RoomBlacklistTabRow{

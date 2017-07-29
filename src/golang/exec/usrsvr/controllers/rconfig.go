@@ -143,7 +143,7 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_add(ctx *UsrSvrCntx) {
 	/* > 用户加入黑名单 */
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, param.rid)
 
-	pl.Send("ZADD", key, time.Now().Unix(), param.uid)
+	pl.Send("SADD", key, param.uid)
 
 	/* > 回复处理应答 */
 	this.Error(comm.OK, "Ok")
@@ -225,7 +225,7 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
 	/* > 用户移除黑名单 */
 	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, param.rid)
 
-	pl.Send("ZREM", key, param.uid)
+	pl.Send("SREM", key, param.uid)
 
 	/* > 回复处理应答 */
 	this.Error(comm.OK, "Ok")
