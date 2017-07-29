@@ -188,11 +188,6 @@ func (ctx *TaskerCntx) clean_uid_by_rid(rid uint64) {
 			sid_str := vals[1] // 会话ID
 
 			ctx.log.Debug("uid:%d sid:%d", uid_str, sid_str)
-
-			/* > 逐一清理UID->RID记录 */
-			uid, _ := strconv.ParseInt(uid_str, 10, 64)
-			key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, uid)
-			pl.Send("HDEL", key, rid)
 		}
 
 		if uid_sid_num < comm.CHAT_BAT_NUM {
@@ -300,9 +295,6 @@ func (ctx *TaskerCntx) clean_by_uid(uid uint64) {
 	}()
 
 	/* > 获取SID对应的数据 */
-	key := fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, uid)
-	pl.Send("DEL", key)
-
 	pl.Send("ZREM", comm.IM_KEY_UID_ZSET, uid)
 }
 

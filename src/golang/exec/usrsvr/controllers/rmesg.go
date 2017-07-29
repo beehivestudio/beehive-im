@@ -668,66 +668,11 @@ func (ctx *UsrSvrCntx) room_join_handler(
 		return 0, errors.New("User is in blacklist!")
 	}
 
-GET_GID:
-	/* > 判断UID是否登录过 */
-	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, req.GetUid())
-	ok, err = redis.Bool(rds.Do("HEXISTS", key, req.GetRid()))
-	if nil != err {
-		ctx.log.Error("Get rid [%d] by uid failed! errmsg:%s", req.GetRid(), err.Error())
-		return 0, err
-	} else if true == ok { // 已登录过则放在同一个分组中...
-		ctx.log.Debug("Uid has been login! rid:%d uid:%d", req.GetRid(), req.GetUid())
-		gid_int, err := redis.Int(rds.Do("HGET", key, req.GetRid()))
-		if nil != err {
-			ctx.log.Error("Get rid [%d] by uid failed! errmsg:%s", req.GetRid(), err.Error())
-			return 0, err
-		}
-
-		ctx.log.Debug("Uid has been login! rid:%d uid:%d gid:%d", req.GetRid(), req.GetUid(), gid_int)
-
-		/* > 判断SID依然在聊天室列表 */
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
-
-		exist, _ := redis.Uint64(rds.Do("ZSCORE", key, head.GetSid()))
-
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
-		member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
-		ttl := time.Now().Unix() + comm.CHAT_SID_TTL
-		pl.Send("ZADD", key, ttl, member) // 加入RID -> UID集合"${uid}:${sid}"
-
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, req.GetRid())
-		pl.Send("ZADD", key, ttl, head.GetSid()) // 加入RID -> SID集合
-
-		key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, req.GetRid())
-		pl.Send("ZADD", key, ttl, head.GetNid()) // 加入RID -> NID集合
-
-		key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, head.GetSid())
-		pl.Send("ZADD", key, uint32(gid_int), req.GetRid()) // 加入SID -> RID集合
-
-		/* > 更新数据库统计 */
-		if 0 == exist {
-			key = fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
-			pl.Send("ZINCRBY", key, 1, uint32(gid_int))
-		}
-
-		return uint32(gid_int), nil
-	}
-
 	/* > 分配新的分组 */
 	gid, err = ctx.alloc_room_gid(req.GetRid())
 	if nil != err {
 		ctx.log.Error("Alloc gid failed! rid:%d", req.GetRid())
 		return 0, err
-	}
-
-	/* > 设置UID的RID组GID */
-	key = fmt.Sprintf(comm.CHAT_KEY_UID_TO_RID, req.GetUid())
-	ok, err = redis.Bool(rds.Do("HSETNX", key, req.GetRid(), gid)) /* 防止冲突 */
-	if nil != err {
-		ctx.log.Error("Get rid [%d] by uid failed!", req.GetRid())
-		return 0, err
-	} else if !ok {
-		goto GET_GID /* 存在冲突 */
 	}
 
 	/* > 更新数据库统计 */
