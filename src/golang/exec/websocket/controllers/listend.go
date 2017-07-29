@@ -12,7 +12,7 @@ import (
 	"beehive-im/src/golang/lib/lws"
 	"beehive-im/src/golang/lib/rtmq"
 
-	"beehive-im/src/golang/exec/listend-ws/controllers/conf"
+	"beehive-im/src/golang/exec/websocket/controllers/conf"
 )
 
 const (

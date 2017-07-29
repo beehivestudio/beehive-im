@@ -9,8 +9,8 @@ import (
 	"runtime/pprof"
 	"syscall"
 
-	"beehive-im/src/golang/exec/listend-ws/controllers"
-	"beehive-im/src/golang/exec/listend-ws/controllers/conf"
+	"beehive-im/src/golang/exec/websocket/controllers"
+	"beehive-im/src/golang/exec/websocket/controllers/conf"
 )
 
 /* 输入参数 */
