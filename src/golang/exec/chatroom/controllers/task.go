@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -215,7 +216,10 @@ func (ctx *ChatRoomCntx) listend_list_update() {
  ******************************************************************************/
 func (ctx *ChatRoomCntx) update() {
 	for {
+		ctm := time.Now().Unix()
+
 		ctx.update_rid_to_nid_map()
+		ctx.clean_rid_zset(ctm)
 
 		time.Sleep(5 * time.Second)
 	}
@@ -241,4 +245,184 @@ func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
 	ctx.room.node.Lock()
 	ctx.room.node.m = m
 	ctx.room.node.Unlock()
+}
+
+/******************************************************************************
+ **函数名称: clean_by_rid
+ **功    能: 通过RID清理资源
+ **输入参数:
+ **     rid: 聊天室ID
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 12:08:43 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	key := fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, rid)
+	pl.Send("DEL", key)
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_NID_TO_NUM_ZSET, rid)
+	pl.Send("DEL", key)
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_NID_ZSET, rid)
+	pl.Send("DEL", key)
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, rid)
+	ctx.clean_uid_by_rid(rid)
+	pl.Send("DEL", key)
+
+	key = fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, rid)
+	ctx.clean_sid_by_rid(rid)
+	pl.Send("DEL", key)
+
+	pl.Send("ZREM", comm.CHAT_KEY_RID_ZSET, rid)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: clean_sid_by_rid
+ **功    能: 通过RID清理SID数据
+ **输入参数:
+ **     rid: 聊天室ID
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 17:16:38 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 获取RID->SID集合 */
+	off := 0
+	for {
+		key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, rid)
+		sid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			key, "-inf", "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			ctx.log.Error("Get sid list failed! errmsg:%s", err.Error())
+			return
+		}
+
+		sid_len := len(sid_list)
+		for idx := 0; idx < sid_len; idx += 1 {
+			/* > 逐一清理SID->RID记录 */
+			sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
+			key = fmt.Sprintf(comm.CHAT_KEY_SID_TO_RID_ZSET, sid)
+			pl.Send("ZREM", key, rid)
+		}
+
+		if sid_len < comm.CHAT_BAT_NUM {
+			break
+		}
+		off += comm.CHAT_BAT_NUM
+		pl.Do("")
+	}
+}
+
+/******************************************************************************
+ **函数名称: clean_uid_by_rid
+ **功    能: 通过RID清理UID数据
+ **输入参数:
+ **     rid: 聊天室ID
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 17:16:38 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 获取RID->UID集合 */
+	off := 0
+	for {
+		key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_UID_SID_ZSET, rid)
+		uid_sid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			key, "-inf", "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			ctx.log.Error("Get sid list failed! errmsg:%s", err.Error())
+			return
+		}
+
+		uid_sid_num := len(uid_sid_list)
+		for idx := 0; idx < uid_sid_num; idx += 1 {
+			vals := strings.Split(uid_sid_list[idx], ":")
+			if 2 != len(vals) {
+				ctx.log.Error("Format of [uid:sid] is invalid! str:%s", uid_sid_list[idx])
+				continue
+			}
+
+			uid_str := vals[0] // 用户ID
+			sid_str := vals[1] // 会话ID
+
+			ctx.log.Debug("uid:%d sid:%d", uid_str, sid_str)
+		}
+
+		if uid_sid_num < comm.CHAT_BAT_NUM {
+			break
+		}
+		off += comm.CHAT_BAT_NUM
+		pl.Do("")
+	}
+}
+
+/******************************************************************************
+ **函数名称: clean_rid_zset
+ **功    能: 清理聊天室RID资源
+ **输入参数:
+ **输出参数: NONE
+ **返    回:
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 12:08:43 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) clean_rid_zset(ctm int64) {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	off := 0
+	for {
+		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			comm.CHAT_KEY_RID_ZSET, "-inf", ctm,
+			"LIMIT", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			ctx.log.Error("Get sid list failed! errmsg:%s", err.Error())
+			return
+		}
+
+		rid_num := len(rid_list)
+		for idx := 0; idx < rid_num; idx += 1 {
+			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
+			ctx.clean_by_rid(uint64(rid))
+		}
+
+		if rid_num < comm.CHAT_BAT_NUM {
+			break
+		}
+		off += comm.CHAT_BAT_NUM
+	}
 }
