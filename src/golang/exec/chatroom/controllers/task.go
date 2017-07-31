@@ -25,13 +25,27 @@ import (
 func (ctx *ChatRoomCntx) task() {
 	go ctx.task_room_mesg_chan_pop()
 	go ctx.task_room_mesg_queue_clean()
-	for {
-		ctx.listend_dict_update()                           // 更新侦听层字典
-		ctx.listend_list_update()                           // 更新侦听层列表
-		chat.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
 
-		time.Sleep(time.Second)
-	}
+	/* 每1秒执行一次任务 */
+	go func() {
+		for {
+			ctx.listend_dict_update()                           // 更新侦听层字典
+			ctx.listend_list_update()                           // 更新侦听层列表
+			chat.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
+
+			time.Sleep(time.Second)
+		}
+	}()
+
+	/* 每30秒执行一次任务 */
+	go func() {
+		for {
+			ctm := time.Now().Unix()
+			ctx.clean_rid_zset(ctm) // 定时清理超时聊天室
+
+			time.Sleep(30 * time.Second)
+		}
+	}()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,10 +230,7 @@ func (ctx *ChatRoomCntx) listend_list_update() {
  ******************************************************************************/
 func (ctx *ChatRoomCntx) update() {
 	for {
-		ctm := time.Now().Unix()
-
 		ctx.update_rid_to_nid_map()
-		ctx.clean_rid_zset(ctm)
 
 		time.Sleep(5 * time.Second)
 	}
