@@ -48,7 +48,8 @@ DIR += "$(GOLANG_EXEC_DIR)/usrsvr"
 DIR += "$(GOLANG_EXEC_DIR)/msgsvr"
 DIR += "$(GOLANG_EXEC_DIR)/tasker"
 DIR += "$(GOLANG_EXEC_DIR)/monitor"
-DIR += "$(GOLANG_EXEC_DIR)/listend-ws"
+DIR += "$(GOLANG_EXEC_DIR)/chatroom"
+DIR += "$(GOLANG_EXEC_DIR)/websocket"
 DIR += "$(GOLANG_EXEC_DIR)/micsvr/seqsvr"
 
 # 获取系统配置
