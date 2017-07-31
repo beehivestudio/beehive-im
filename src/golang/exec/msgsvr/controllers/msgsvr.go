@@ -17,17 +17,6 @@ import (
 	"beehive-im/src/golang/exec/msgsvr/controllers/conf"
 )
 
-/* RID->NID映射表 */
-type RidToNidMap struct {
-	sync.RWMutex                     /* 读写锁 */
-	m            map[uint64][]uint32 /* RID->NID映射表 */
-}
-
-/* 聊天室映射表 */
-type RoomMap struct {
-	node RidToNidMap /* RID->NID映射表 */
-}
-
 /* GID->NID映射表 */
 type GidToNidMap struct {
 	sync.RWMutex                     /* 读写锁 */
@@ -53,13 +42,6 @@ type MesgGroupItem struct {
 	raw  []byte              /* 原始消息 */
 }
 
-/* 聊天室消息 */
-type MesgRoomItem struct {
-	head *comm.MesgHeader   /* 头部信息 */
-	req  *mesg.MesgRoomChat /* 请求内容 */
-	raw  []byte             /* 原始消息 */
-}
-
 /* MSGSVR上下文 */
 type MsgSvrCntx struct {
 	conf            *conf.MsgSvrConf    /* 配置信息 */
@@ -67,9 +49,7 @@ type MsgSvrCntx struct {
 	frwder          *rtmq.Proxy         /* 代理对象 */
 	redis           *redis.Pool         /* REDIS连接池 */
 	mongo           *mongo.Pool         /* MONGO连接池 */
-	room            RoomMap             /* 聊天室映射 */
 	group           GroupMap            /* 群组映射 */
-	room_mesg_chan  chan *MesgRoomItem  /* 聊天室消息存储队列 */
 	group_mesg_chan chan *MesgGroupItem /* 组聊消息存储队列 */
 	chat_chan       chan *MesgChatItem  /* 私聊消息存储队列 */
 }
@@ -122,7 +102,6 @@ func MsgSvrInit(conf *conf.MsgSvrConf) (ctx *MsgSvrCntx, err error) {
 	}
 
 	/* > 初始化存储队列 */
-	ctx.room_mesg_chan = make(chan *MesgRoomItem, 100000)
 	ctx.group_mesg_chan = make(chan *MesgGroupItem, 100000)
 	ctx.chat_chan = make(chan *MesgChatItem, 100000)
 
@@ -153,13 +132,6 @@ func (ctx *MsgSvrCntx) Register() {
 	/* > 群聊消息 */
 	ctx.frwder.Register(comm.CMD_GROUP_CHAT, MsgSvrGroupChatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_GROUP_CHAT_ACK, MsgSvrGroupChatAckHandler, ctx)
-
-	/* > 聊天室消息 */
-	ctx.frwder.Register(comm.CMD_ROOM_CHAT, MsgSvrRoomChatHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_CHAT_ACK, MsgSvrRoomChatAckHandler, ctx)
-
-	ctx.frwder.Register(comm.CMD_ROOM_BC, MsgSvrRoomBcHandler, ctx)
-	ctx.frwder.Register(comm.CMD_ROOM_BC_ACK, MsgSvrRoomBcAckHandler, ctx)
 
 	/* > 推送消息 */
 	ctx.frwder.Register(comm.CMD_BC, MsgSvrBcHandler, ctx)

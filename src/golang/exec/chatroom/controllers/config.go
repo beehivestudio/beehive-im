@@ -13,11 +13,11 @@ import (
 )
 
 /* 聊天室配置 */
-type UsrSvrRoomConfigCtrl struct {
+type ChatRoomConfigCtrl struct {
 	BaseController
 }
 
-func (this *UsrSvrRoomConfigCtrl) Config() {
+func (this *ChatRoomConfigCtrl) Config() {
 	ctx := GetUsrSvrCtx()
 
 	option := this.GetString("option")
@@ -54,7 +54,7 @@ func (this *UsrSvrRoomConfigCtrl) Config() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:33:48 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) Blacklist(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) Blacklist(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "add": // 添加聊天室黑名单
@@ -77,7 +77,7 @@ type RoomBlacklistAddParam struct {
 
 /* 加入黑名单请求 */
 type RoomBlacklistAddReq struct {
-	ctrl *UsrSvrRoomConfigCtrl
+	ctrl *ChatRoomConfigCtrl
 }
 
 /******************************************************************************
@@ -124,7 +124,7 @@ func (req *RoomBlacklistAddReq) parse_param() (*RoomBlacklistAddParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:49:16 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) blacklist_add(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) blacklist_add(ctx *ChatRoomCntx) {
 	req := &RoomBlacklistAddReq{ctrl: this}
 
 	param, err := req.parse_param()
@@ -159,7 +159,7 @@ type RoomBlackListDelParam struct {
 
 /* 请求对象 */
 type RoomBlackListDelReq struct {
-	ctrl *UsrSvrRoomConfigCtrl // 空间对象
+	ctrl *ChatRoomConfigCtrl // 空间对象
 }
 
 /******************************************************************************
@@ -206,7 +206,7 @@ func (req *RoomBlackListDelReq) parse_param() (*RoomBlackListDelParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 10:11:20 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) blacklist_del(ctx *ChatRoomCntx) {
 	req := &RoomBlackListDelReq{ctrl: this}
 
 	param, err := req.parse_param()
@@ -247,7 +247,7 @@ func (this *UsrSvrRoomConfigCtrl) blacklist_del(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 11:23:31 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) Gag(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) Gag(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "add": // 添加禁言
@@ -270,7 +270,7 @@ type RoomGagAddParam struct {
 
 /* 加入禁言请求 */
 type RoomGagAddReq struct {
-	ctrl *UsrSvrRoomConfigCtrl
+	ctrl *ChatRoomConfigCtrl
 }
 
 /******************************************************************************
@@ -317,7 +317,7 @@ func (req *RoomGagAddReq) parse_param() (*RoomGagAddParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 11:27:21 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) gag_add(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) gag_add(ctx *ChatRoomCntx) {
 	req := &RoomGagAddReq{ctrl: this}
 
 	param, err := req.parse_param()
@@ -352,7 +352,7 @@ type RoomGagDelParam struct {
 
 /* 请求对象 */
 type RoomGagDelReq struct {
-	ctrl *UsrSvrRoomConfigCtrl // 空间对象
+	ctrl *ChatRoomConfigCtrl // 空间对象
 }
 
 /******************************************************************************
@@ -399,7 +399,7 @@ func (req *RoomGagDelReq) parse_param() (*RoomGagDelParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 11:29:04 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) gag_del(ctx *ChatRoomCntx) {
 	req := &RoomGagDelReq{ctrl: this}
 
 	param, err := req.parse_param()
@@ -439,7 +439,7 @@ func (this *UsrSvrRoomConfigCtrl) gag_del(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) Room(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) Room(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "open": // 打开聊天室
@@ -461,7 +461,7 @@ type RoomOpenParam struct {
 
 /* 打开请求 */
 type RoomOpenReq struct {
-	ctrl *UsrSvrRoomConfigCtrl
+	ctrl *ChatRoomConfigCtrl
 }
 
 /******************************************************************************
@@ -501,7 +501,7 @@ func (req *RoomOpenReq) parse_param() (*RoomOpenParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.19 08:07:31 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) room_open(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) room_open(ctx *ChatRoomCntx) {
 	req := &RoomOpenReq{ctrl: this}
 
 	param, err := req.parse_param()
@@ -537,7 +537,7 @@ type RoomCloseParam struct {
 
 /* 打开请求 */
 type RoomCloseReq struct {
-	ctrl *UsrSvrRoomConfigCtrl
+	ctrl *ChatRoomConfigCtrl
 }
 
 /******************************************************************************
@@ -577,7 +577,7 @@ func (req *RoomCloseReq) parse_param() (*RoomCloseParam, error) {
  **注意事项: TODO: 关闭聊天室后, 需要给所有侦听层广播解散聊天室的指令.
  **作    者: # Qifeng.zou # 2017.03.19 08:07:31 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) room_close(ctx *ChatRoomCntx) {
 	req := &RoomCloseReq{ctrl: this}
 
 	param, err := req.parse_param()
@@ -619,7 +619,7 @@ func (this *UsrSvrRoomConfigCtrl) room_close(ctx *UsrSvrCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:48:21 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) Capacity(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) Capacity(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "set": // 设置聊天室分组容量
@@ -639,7 +639,7 @@ type RoomCapSetParam struct {
 
 /* 请求对象 */
 type RoomCapSetReq struct {
-	ctrl *UsrSvrRoomConfigCtrl // 空间对象
+	ctrl *ChatRoomConfigCtrl // 空间对象
 }
 
 /******************************************************************************
@@ -686,7 +686,7 @@ func (req *RoomCapSetReq) parse_param() (*RoomCapSetParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) capacity_set(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) capacity_set(ctx *ChatRoomCntx) {
 	req := &RoomCapSetReq{ctrl: this}
 
 	param, err := req.parse_param()
@@ -721,7 +721,7 @@ type RoomCapGetParam struct {
 
 /* 请求对象 */
 type RoomCapGetReq struct {
-	ctrl *UsrSvrRoomConfigCtrl // 空间对象
+	ctrl *ChatRoomConfigCtrl // 空间对象
 }
 
 /* 请求应答 */
@@ -776,7 +776,7 @@ func (req *RoomCapGetReq) parse_param() (*RoomCapGetParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
  ******************************************************************************/
-func (this *UsrSvrRoomConfigCtrl) capacity_get(ctx *UsrSvrCntx) {
+func (this *ChatRoomConfigCtrl) capacity_get(ctx *ChatRoomCntx) {
 	req := &RoomCapGetReq{ctrl: this}
 
 	param, err := req.parse_param()

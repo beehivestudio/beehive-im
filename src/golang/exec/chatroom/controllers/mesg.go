@@ -38,7 +38,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 22:32:20 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_creat_parse(data []byte) (
+func (ctx *ChatRoomCntx) room_creat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -81,7 +81,7 @@ func (ctx *UsrSvrCntx) room_creat_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 22:33:42 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_creat_failed(
+func (ctx *ChatRoomCntx) room_creat_failed(
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat, code uint32, err error) int {
 	if nil == head {
 		return -1
@@ -140,7 +140,7 @@ func (ctx *UsrSvrCntx) room_creat_failed(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 22:28:40 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_creat_ack(
+func (ctx *ChatRoomCntx) room_creat_ack(
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat, rid uint64) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomCreatAck{
@@ -190,7 +190,7 @@ func (ctx *UsrSvrCntx) room_creat_ack(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.29 08:48:19 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) alloc_rid() (rid uint64, err error) {
+func (ctx *ChatRoomCntx) alloc_rid() (rid uint64, err error) {
 	/* > 获取连接对象 */
 	conn, err := ctx.seqsvr_pool.Get()
 	if nil != err {
@@ -225,7 +225,7 @@ func (ctx *UsrSvrCntx) alloc_rid() (rid uint64, err error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.29 20:37:40 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
+func (ctx *ChatRoomCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
 	/* > 准备SQL语句 */
 	sql := fmt.Sprintf("INSERT INTO CHAT_ROOM_INFO_%d(rid, name, status, description, create_time, update_time, owner) VALUES(?, ?, ?, ?, ?, ?, ?)", rid%256)
 
@@ -264,7 +264,7 @@ func (ctx *UsrSvrCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
  **注意事项: 已验证了ROOM-CREAT请求的合法性
  **作    者: # Qifeng.zou # 2017.01.19 22:22:50 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_creat_handler(
+func (ctx *ChatRoomCntx) room_creat_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat) (rid uint64, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
@@ -316,7 +316,7 @@ func (ctx *UsrSvrCntx) room_creat_handler(
 }
 
 /******************************************************************************
- **函数名称: UsrSvrRoomCreatHandler
+ **函数名称: ChatRoomCreatHandler
  **功    能: 创建聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -336,8 +336,8 @@ func (ctx *UsrSvrCntx) room_creat_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 22:21:48 #
  ******************************************************************************/
-func UsrSvrRoomCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*UsrSvrCntx)
+func ChatRoomCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
 	if !ok {
 		return -1
 	}
@@ -367,7 +367,7 @@ func UsrSvrRoomCreatHandler(cmd uint32, nid uint32, data []byte, length uint32, 
 }
 
 /* 解散聊天室 */
-func UsrSvrRoomDismissHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+func ChatRoomDismissHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
 	return 0
 }
 
@@ -389,7 +389,7 @@ func UsrSvrRoomDismissHandler(cmd uint32, nid uint32, data []byte, length uint32
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 16:41:17 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
+func (ctx *ChatRoomCntx) room_join_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomJoin, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -433,7 +433,7 @@ func (ctx *UsrSvrCntx) room_join_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_join_failed(head *comm.MesgHeader,
+func (ctx *ChatRoomCntx) room_join_failed(head *comm.MesgHeader,
 	req *mesg.MesgRoomJoin, code uint32, err error) int {
 	if nil == head {
 		return -1
@@ -494,7 +494,7 @@ func (ctx *UsrSvrCntx) room_join_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJoin, gid uint32) int {
+func (ctx *ChatRoomCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJoin, gid uint32) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomJoinAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -546,7 +546,7 @@ func (ctx *UsrSvrCntx) room_join_ack(head *comm.MesgHeader, req *mesg.MesgRoomJo
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 10:51:09 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoomJoin) int {
+func (ctx *ChatRoomCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoomJoin) int {
 	/* > 设置协议体 */
 	ntf := &mesg.MesgRoomJoinNtf{
 		Uid: proto.Uint64(req.GetUid()),
@@ -598,7 +598,7 @@ func (ctx *UsrSvrCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgRoo
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 20:08:06 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) alloc_room_gid(rid uint64) (gid uint32, err error) {
+func (ctx *ChatRoomCntx) alloc_room_gid(rid uint64) (gid uint32, err error) {
 	var num int
 
 	rds := ctx.redis.Get()
@@ -645,7 +645,7 @@ func (ctx *UsrSvrCntx) alloc_room_gid(rid uint64) (gid uint32, err error) {
  **注意事项: 已验证了ROOM-JOIN请求的合法性
  **作    者: # Qifeng.zou # 2016.11.03 19:51:46 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_join_handler(
+func (ctx *ChatRoomCntx) room_join_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomJoin) (gid uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
@@ -694,7 +694,7 @@ func (ctx *UsrSvrCntx) room_join_handler(
 }
 
 /******************************************************************************
- **函数名称: UsrSvrRoomJoinHandler
+ **函数名称: ChatRoomJoinHandler
  **功    能: 加入聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -713,8 +713,8 @@ func (ctx *UsrSvrCntx) room_join_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrRoomJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*UsrSvrCntx)
+func ChatRoomJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
 	if !ok {
 		return -1
 	}
@@ -758,7 +758,7 @@ func UsrSvrRoomJoinHandler(cmd uint32, nid uint32, data []byte, length uint32, p
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:26:22 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_quit_isvalid(req *mesg.MesgRoomQuit) bool {
+func (ctx *ChatRoomCntx) room_quit_isvalid(req *mesg.MesgRoomQuit) bool {
 	if 0 == req.GetUid() || 0 == req.GetRid() {
 		return false
 	}
@@ -787,7 +787,7 @@ func (ctx *UsrSvrCntx) room_quit_isvalid(req *mesg.MesgRoomQuit) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:20:34 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_quit_failed(head *comm.MesgHeader,
+func (ctx *ChatRoomCntx) room_quit_failed(head *comm.MesgHeader,
 	req *mesg.MesgRoomQuit, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -842,7 +842,7 @@ func (ctx *UsrSvrCntx) room_quit_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 21:18:29 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
+func (ctx *ChatRoomCntx) room_quit_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomQuit, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -888,7 +888,7 @@ func (ctx *UsrSvrCntx) room_quit_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
+func (ctx *ChatRoomCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomQuitAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -939,7 +939,7 @@ func (ctx *UsrSvrCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoomQu
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 10:51:09 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
+func (ctx *ChatRoomCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
 	/* > 设置协议体 */
 	ntf := &mesg.MesgRoomQuitNtf{
 		Uid: proto.Uint64(req.GetUid()),
@@ -994,7 +994,7 @@ func (ctx *UsrSvrCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoo
  **注意事项: 已验证了ROOM-QUIT请求的合法性
  **作    者: # Qifeng.zou # 2016.11.03 21:28:18 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_quit_handler(
+func (ctx *ChatRoomCntx) room_quit_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomQuit) (code uint32, err error) {
 	pl := ctx.redis.Get()
 	defer func() {
@@ -1013,7 +1013,7 @@ func (ctx *UsrSvrCntx) room_quit_handler(
 }
 
 /******************************************************************************
- **函数名称: UsrSvrRoomQuitHandler
+ **函数名称: ChatRoomQuitHandler
  **功    能: 退出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -1032,8 +1032,8 @@ func (ctx *UsrSvrCntx) room_quit_handler(
  **注意事项: 需要对协议头进行字节序转换
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
-func UsrSvrRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*UsrSvrCntx)
+func ChatRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
 	if !ok {
 		return -1
 	}
@@ -1079,7 +1079,7 @@ func UsrSvrRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, p
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 23:21:37 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
+func (ctx *ChatRoomCntx) room_kick_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomKick, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -1122,7 +1122,7 @@ func (ctx *UsrSvrCntx) room_kick_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.03 17:12:36 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_kick_failed(head *comm.MesgHeader,
+func (ctx *ChatRoomCntx) room_kick_failed(head *comm.MesgHeader,
 	req *mesg.MesgRoomKick, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1183,7 +1183,7 @@ func (ctx *UsrSvrCntx) room_kick_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.19 23:06:38 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, err error) {
+func (ctx *ChatRoomCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -1268,7 +1268,7 @@ func (ctx *UsrSvrCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, er
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 23:32:20 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
+func (ctx *ChatRoomCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgRoomKickAck{
 		Uid:    proto.Uint64(req.GetUid()),
@@ -1319,7 +1319,7 @@ func (ctx *UsrSvrCntx) room_kick_ack(head *comm.MesgHeader, req *mesg.MesgRoomKi
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 10:59:32 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
+func (ctx *ChatRoomCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoomKick) int {
 	/* > 设置协议体 */
 	ntf := &mesg.MesgRoomKickNtf{
 		Uid: proto.Uint64(req.GetUid()),
@@ -1374,7 +1374,7 @@ func (ctx *UsrSvrCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgRoo
  **注意事项: 已验证了ROOM-KICK请求的合法性
  **作    者: # Qifeng.zou # 2017.01.12 23:34:28 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_kick_handler(
+func (ctx *ChatRoomCntx) room_kick_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomKick) (code uint32, err error) {
 	pl := ctx.redis.Get()
 	defer func() {
@@ -1421,7 +1421,7 @@ func (ctx *UsrSvrCntx) room_kick_handler(
 }
 
 /******************************************************************************
- **函数名称: UsrSvrRoomKickHandler
+ **函数名称: ChatRoomKickHandler
  **功    能: 踢出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -1442,8 +1442,8 @@ func (ctx *UsrSvrCntx) room_kick_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.12 23:58:49 #
  ******************************************************************************/
-func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*UsrSvrCntx)
+func ChatRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
 	if !ok {
 		return -1
 	}
@@ -1489,7 +1489,7 @@ func UsrSvrRoomKickHandler(cmd uint32, nid uint32, data []byte, length uint32, p
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.13 06:51:41 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_lsn_stat_parse(data []byte) (
+func (ctx *ChatRoomCntx) room_lsn_stat_parse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgRoomLsnStat, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -1526,7 +1526,7 @@ func (ctx *UsrSvrCntx) room_lsn_stat_parse(data []byte) (
  **注意事项: 已验证了ROOM-LSN-STAT请求的合法性
  **作    者: # Qifeng.zou # 2017.05.13 06:54:54 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) room_lsn_stat_handler(
+func (ctx *ChatRoomCntx) room_lsn_stat_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomLsnStat) (code uint32, err error) {
 	pl := ctx.redis.Get()
 	defer func() {
@@ -1546,7 +1546,7 @@ func (ctx *UsrSvrCntx) room_lsn_stat_handler(
 }
 
 /******************************************************************************
- **函数名称: UsrSvrRoomKickHandler
+ **函数名称: ChatRoomKickHandler
  **功    能: 踢出聊天室
  **输入参数:
  **     cmd: 消息类型
@@ -1566,8 +1566,8 @@ func (ctx *UsrSvrCntx) room_lsn_stat_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.13 07:03:24 #
  ******************************************************************************/
-func UsrSvrRoomLsnStatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
-	ctx, ok := param.(*UsrSvrCntx)
+func ChatRoomLsnStatHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
 	if !ok {
 		return -1
 	}
@@ -1589,4 +1589,444 @@ func UsrSvrRoomLsnStatHandler(cmd uint32, nid uint32, data []byte, length uint32
 	}
 
 	return 0
+}
+
+/******************************************************************************
+ **函数名称: room_chat_parse
+ **功    能: 解析ROOM-CHAT
+ **输入参数:
+ **     data: 接收的数据
+ **输出参数: NONE
+ **返    回:
+ **     head: 通用协议头
+ **     req: 协议体内容
+ **     code: 错误码
+ **     err: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:29:23 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) room_chat_parse(data []byte) (
+	head *comm.MesgHeader, req *mesg.MesgRoomChat, code uint32, err error) {
+	/* > 字节序转换 */
+	head = comm.MesgHeadNtoh(data)
+	if !head.IsValid(1) {
+		ctx.log.Error("Header is invalid! cmd:0x%04X nid:%d",
+			head.GetCmd(), head.GetNid())
+		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New("Header is invalid!")
+	}
+
+	/* > 解析PB协议 */
+	req = &mesg.MesgRoomChat{}
+
+	err = proto.Unmarshal(data[comm.MESG_HEAD_SIZE:], req)
+	if nil != err {
+		ctx.log.Error("Unmarshal room-msg failed! sid:%d cid:%d nid:%d errmsg:%s",
+			head.GetSid(), head.GetCid(), head.GetNid(), err.Error())
+		return head, nil, comm.ERR_SVR_BODY_INVALID, err
+	}
+
+	return head, req, 0, nil
+}
+
+/******************************************************************************
+ **函数名称: room_chat_failed
+ **功    能: 发送ROOM-CHAT应答(异常)
+ **输入参数:
+ **     head: 协议头
+ **     req: 聊天消息
+ **     code: 错误码
+ **     errmsg: 错误描述
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **应答协议:
+ **     {
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) room_chat_failed(head *comm.MesgHeader,
+	req *mesg.MesgRoomChat, code uint32, errmsg string) int {
+	if nil == head {
+		return -1
+	}
+
+	/* > 设置协议体 */
+	ack := &mesg.MesgRoomChatAck{
+		Code:   proto.Uint32(code),
+		Errmsg: proto.String(errmsg),
+	}
+
+	if nil != req {
+		ack.Uid = proto.Uint64(req.GetUid())
+		ack.Rid = proto.Uint64(req.GetRid())
+		ack.Gid = proto.Uint32(req.GetGid())
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	return ctx.send_data(comm.CMD_ROOM_CHAT_ACK, head.GetSid(),
+		head.GetCid(), head.GetNid(), head.GetSeq(), body, uint32(len(body)))
+}
+
+/******************************************************************************
+ **函数名称: room_chat_ack
+ **功    能: 发送聊天消息应答
+ **输入参数:
+ **     head: 协议头
+ **     req: 聊天室消息
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 生成PB格式消息应答 并发送应答.
+ **应答协议:
+ **     {
+ **         required uint32 code = 1; // M|错误码|数字|
+ **         required string errmsg = 2; // M|错误描述|字串|
+ **     }
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) room_chat_ack(head *comm.MesgHeader, req *mesg.MesgRoomChat) int {
+	/* > 设置协议体 */
+	ack := &mesg.MesgRoomChatAck{
+		Uid:    proto.Uint64(req.GetUid()),
+		Rid:    proto.Uint64(req.GetRid()),
+		Gid:    proto.Uint32(req.GetGid()),
+		Code:   proto.Uint32(0),
+		Errmsg: proto.String("Ok"),
+	}
+
+	/* 生成PB数据 */
+	body, err := proto.Marshal(ack)
+	if nil != err {
+		ctx.log.Error("Marshal protobuf failed! errmsg:%s", err.Error())
+		return -1
+	}
+
+	return ctx.send_data(comm.CMD_ROOM_CHAT_ACK, head.GetSid(),
+		head.GetCid(), head.GetNid(), head.GetSeq(), body, uint32(len(body)))
+}
+
+/******************************************************************************
+ **函数名称: room_chat_handler
+ **功    能: ROOM-CHAT处理
+ **输入参数:
+ **     head: 协议头
+ **     req: ROOM-CHAT请求
+ **     data: 原始数据
+ **输出参数: NONE
+ **返    回: 错误信息
+ **实现描述:
+ **     1. 将消息存放在聊天室历史消息表中
+ **     2. 遍历rid->nid列表, 并转发聊天室消息
+ **注意事项: TODO: 增加敏感词过滤功能, 屏蔽政治、低俗、侮辱性词汇.
+ **作    者: # Qifeng.zou # 2016.11.04 22:34:55 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) room_chat_handler(
+	head *comm.MesgHeader, req *mesg.MesgRoomChat, data []byte) (err error) {
+	item := &MesgRoomItem{}
+
+	ctx.log.Debug("rid:%d gid:%d sid:%d cid:%d nid:%d",
+		req.GetRid(), req.GetGid(), head.GetSid(), head.GetCid(), head.GetNid())
+
+	/* 1. 放入存储队列 */
+	item.head = head
+	item.req = req
+	item.raw = data
+
+	ctx.room_mesg_chan <- item
+
+	/* 2. 下发聊天室消息 */
+	ctx.room.node.RLock()
+	defer ctx.room.node.RUnlock()
+	nid_list, ok := ctx.room.node.m[req.GetRid()]
+	if !ok {
+		ctx.log.Error("Get node list failed! rid:%d", req.GetRid())
+		return nil
+	}
+
+	/* > 遍历rid->nid列表, 并下发聊天室消息 */
+	for idx, nid := range nid_list {
+		ctx.log.Debug("idx:%d rid:%d nid:%d", idx, req.GetRid(), nid)
+
+		ctx.send_data(comm.CMD_ROOM_CHAT, head.GetSid(), 0, uint32(nid),
+			head.GetSeq(), data[comm.MESG_HEAD_SIZE:], head.GetLength())
+	}
+	return err
+}
+
+/******************************************************************************
+ **函数名称: ChatRoomChatHandler
+ **功    能: 聊天室消息的处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **     1. 判断消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
+ **        进行进行第2步的处理.
+ **     2. 将消息放入历史队列
+ **     3. 将消息发送分发到聊天室对应帧听层.
+ **     4. 回复发送成功应答给发送方.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:28:02 #
+ ******************************************************************************/
+func ChatRoomChatHandler(cmd uint32, nid uint32,
+	data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv room-chat message!")
+
+	/* > 解析ROOM-CHAT协议 */
+	head, req, code, err := ctx.room_chat_parse(data)
+	if nil != err {
+		ctx.log.Error("Parse room-msg failed! code:%d errmsg:%s", code, err.Error())
+		if nil != head {
+			ctx.room_chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		}
+		return -1
+	}
+
+	/* > 进行业务处理 */
+	err = ctx.room_chat_handler(head, req, data)
+	if nil != err {
+		ctx.log.Error("Handle room message failed!")
+		ctx.room_chat_failed(head, req, comm.ERR_SVR_PARSE_PARAM, err.Error())
+		return -1
+	}
+
+	return ctx.room_chat_ack(head, req)
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: ChatRoomChatAckHandler
+ **功    能: 聊天室消息应答
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 暂不处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
+ ******************************************************************************/
+func ChatRoomChatAckHandler(cmd uint32, nid uint32,
+	data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv group msg ack!")
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: ChatRoomBcHandler
+ **功    能: 聊天室广播消息处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **     1. 判断消息的合法性. 如果不合法, 则直接回复错误应答; 如果正常的话, 则
+ **        进行进行第2步的处理.
+ **     2. 将消息放入聊天室广播队列
+ **     3. 将消息发送分发到聊天室对应帧听层.
+ **     4. 回复发送成功应答给发送方.
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
+ ******************************************************************************/
+func ChatRoomBcHandler(cmd uint32, nid uint32,
+	data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv group msg ack!")
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: ChatRoomBcAckHandler
+ **功    能: 聊天室广播消息处理
+ **输入参数:
+ **     cmd: 消息类型
+ **     nid: 结点ID
+ **     data: 收到数据
+ **     length: 数据长度
+ **     param: 附加参
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 暂不处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.04 22:01:06 #
+ ******************************************************************************/
+func ChatRoomBcAckHandler(cmd uint32, nid uint32,
+	data []byte, length uint32, param interface{}) int {
+	ctx, ok := param.(*ChatRoomCntx)
+	if !ok {
+		return -1
+	}
+
+	ctx.log.Debug("Recv group msg ack!")
+
+	return 0
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: task_room_mesg_chan_pop
+ **功    能: 聊天室消息的存储任务
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 从聊天室消息队列中取出消息, 并进行存储处理
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.27 23:43:03 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) task_room_mesg_chan_pop() {
+	for item := range ctx.room_mesg_chan {
+		item.storage(ctx)
+	}
+}
+
+/******************************************************************************
+ **函数名称: storage
+ **功    能: 聊天室消息的存储处理
+ **输入参数:
+ **     ctx: 全局对象
+ **输出参数: NONE
+ **返    回: NONE
+ **实现描述: 将消息存入聊天室缓存和数据库
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
+ ******************************************************************************/
+func (item *MesgRoomItem) storage(ctx *ChatRoomCntx) {
+	pl := ctx.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	/* > 解析PB协议 */
+	msg := &mesg.MesgRoomChat{}
+
+	err := proto.Unmarshal(item.raw[comm.MESG_HEAD_SIZE:], msg)
+	if nil != err {
+		ctx.log.Error("Unmarshal room-chat-mesg failed!")
+		return
+	}
+
+	/* > 提交REDIS缓存 */
+	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_MESG_QUEUE, item.req.GetRid())
+	pl.Send("LPUSH", key, item.raw[comm.MESG_HEAD_SIZE:])
+
+	/* > 提交MONGO存储 */
+	data := &chat.RoomChatTabRow{
+		Rid:  msg.GetRid(),
+		Uid:  msg.GetUid(),
+		Ctm:  time.Now().Unix(),
+		Data: item.raw,
+	}
+
+	cb := func(c *mgo.Collection) (err error) {
+		c.Insert(data)
+		return err
+	}
+
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, chat.ROOM_TAB_MESG, cb)
+}
+
+/******************************************************************************
+ **函数名称: task_room_mesg_queue_clean
+ **功    能: 清理聊天室缓存消息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 保持聊天室缓存消息为最新的100条
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 22:34:18 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) task_room_mesg_queue_clean() {
+	for {
+		ctx.room_mesg_queue_clean()
+
+		time.Sleep(30 * time.Second)
+	}
+}
+
+/******************************************************************************
+ **函数名称: room_mesg_queue_clean
+ **功    能: 清理聊天室缓存消息
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回:
+ **实现描述: 保持聊天室缓存消息为最新的100条
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 22:34:18 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) room_mesg_queue_clean() {
+	rds := ctx.redis.Get()
+	defer rds.Close()
+
+	off := 0
+	for {
+		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
+			comm.CHAT_KEY_RID_ZSET, 0, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+		if nil != err {
+			ctx.log.Error("Get rid list failed! errmsg:%s", err.Error())
+			break
+		}
+
+		num := len(rid_list)
+		for idx := 0; idx < num; idx += 1 {
+			/* 保持聊天室缓存消息为最新的100条 */
+			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
+			key := fmt.Sprintf(comm.CHAT_KEY_ROOM_MESG_QUEUE, uint64(rid))
+
+			rds.Do("LTRIM", key, 0, 99)
+		}
+
+		if num < comm.CHAT_BAT_NUM {
+			break
+		}
+		off += num
+	}
 }

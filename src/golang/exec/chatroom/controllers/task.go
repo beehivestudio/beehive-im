@@ -21,7 +21,9 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 08:20:07 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) task() {
+func (ctx *ChatRoomCntx) task() {
+	go ctx.task_room_mesg_chan_pop()
+	go ctx.task_room_mesg_queue_clean()
 	for {
 		ctx.listend_dict_update()                           // 更新侦听层字典
 		ctx.listend_list_update()                           // 更新侦听层列表
@@ -46,7 +48,7 @@ func (ctx *UsrSvrCntx) task() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:11:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) listend_dict_update() {
+func (ctx *ChatRoomCntx) listend_dict_update() {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
@@ -59,7 +61,7 @@ func (ctx *UsrSvrCntx) listend_dict_update() {
 		/* 清理所有数据 */
 		ctx.listend.dict.Lock()
 		defer ctx.listend.dict.Unlock()
-		ctx.listend.dict.types = make(map[int]*UsrSvrLsndDictItem)
+		ctx.listend.dict.types = make(map[int]*ChatRoomLsndDictItem)
 		ctx.log.Error("Get listend type list failed! errmsg:%s", err.Error())
 		return
 	}
@@ -67,7 +69,7 @@ func (ctx *UsrSvrCntx) listend_dict_update() {
 	/* > 清理所有数据 */
 	ctx.listend.dict.Lock()
 	defer ctx.listend.dict.Unlock()
-	ctx.listend.dict.types = make(map[int]*UsrSvrLsndDictItem)
+	ctx.listend.dict.types = make(map[int]*ChatRoomLsndDictItem)
 
 	/* > 重新设置数据 */
 	num := len(types)
@@ -96,13 +98,13 @@ func (ctx *UsrSvrCntx) listend_dict_update() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) listend_dict_fetch(typ int) *UsrSvrLsndDictItem {
+func (ctx *ChatRoomCntx) listend_dict_fetch(typ int) *ChatRoomLsndDictItem {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
 
-	lsnd := &UsrSvrLsndDictItem{
+	lsnd := &ChatRoomLsndDictItem{
 		list: make(map[string](map[uint32][]string)),
 	}
 
@@ -168,7 +170,7 @@ func (ctx *UsrSvrCntx) listend_dict_fetch(typ int) *UsrSvrLsndDictItem {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 10:48:23 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) listend_list_update() {
+func (ctx *ChatRoomCntx) listend_list_update() {
 	var list []uint32
 
 	rds := ctx.redis.Get()
@@ -199,4 +201,44 @@ func (ctx *UsrSvrCntx) listend_list_update() {
 	ctx.listend.list.nodes = list
 
 	return
+}
+
+/******************************************************************************
+ **函数名称: update
+ **功    能: 启动update服务
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.11.05 01:00:10 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) update() {
+	for {
+		ctx.update_rid_to_nid_map()
+
+		time.Sleep(5 * time.Second)
+	}
+}
+
+/******************************************************************************
+ **函数名称: update_rid_to_nid_map
+ **功    能: 更新聊天室RID->NID映射表
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述:
+ **注意事项: 为减小锁的粒度, 获取rid->nid的映射时, 无需加锁.
+ **作    者: # Qifeng.zou # 2016.11.05 00:21:54 #
+ ******************************************************************************/
+func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
+	m, err := chat.RoomGetRidToNidMap(ctx.redis)
+	if nil != err {
+		ctx.log.Error("Get rid to nid map failed! errmsg:%s", err.Error())
+		return
+	}
+
+	ctx.room.node.Lock()
+	ctx.room.node.m = m
+	ctx.room.node.Unlock()
 }

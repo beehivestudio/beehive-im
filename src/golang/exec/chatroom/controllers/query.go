@@ -12,11 +12,11 @@ import (
 )
 
 // 聊天室信息查询
-type UsrSvrRoomQueryCtrl struct {
+type ChatRoomQueryCtrl struct {
 	BaseController
 }
 
-func (this *UsrSvrRoomQueryCtrl) Query() {
+func (this *ChatRoomQueryCtrl) Query() {
 	ctx := GetUsrSvrCtx()
 
 	option := this.GetString("option")
@@ -63,7 +63,7 @@ func (list RoomTopList) Swap(i, j int)      { list[i], list[j] = list[j], list[i
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.23 22:51:05 #
  ******************************************************************************/
-func (this *UsrSvrRoomQueryCtrl) TopList(ctx *UsrSvrCntx) {
+func (this *ChatRoomQueryCtrl) TopList(ctx *ChatRoomCntx) {
 	rsp := &RoomTopListRsp{}
 
 	rds := ctx.redis.Get()
@@ -166,7 +166,7 @@ func (list RoomGroupList) Swap(i, j int)      { list[i], list[j] = list[j], list
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.23 22:51:05 #
  ******************************************************************************/
-func (this *UsrSvrRoomQueryCtrl) GroupList(ctx *UsrSvrCntx) {
+func (this *ChatRoomQueryCtrl) GroupList(ctx *ChatRoomCntx) {
 	rsp := &RoomGroupListRsp{}
 
 	rds := ctx.redis.Get()
