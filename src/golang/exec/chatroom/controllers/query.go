@@ -9,6 +9,8 @@ import (
 	"github.com/garyburd/redigo/redis"
 
 	"beehive-im/src/golang/lib/comm"
+
+	"beehive-im/src/golang/exec/chatroom/controllers/room"
 )
 
 // 聊天室信息查询
@@ -79,7 +81,7 @@ func (this *ChatRoomQueryCtrl) TopList(ctx *ChatRoomCntx) {
 	ctm := time.Now().Unix()
 	for {
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			comm.CHAT_KEY_RID_ZSET, ctm, "+inf", "LIMIT", comm.CHAT_BAT_NUM))
+			room.CR_KEY_RID_ZSET, ctm, "+inf", "LIMIT", comm.CHAT_BAT_NUM))
 		if nil != err {
 			ctx.log.Error("Get room list failed! errmsg:%s", err.Error())
 			break
@@ -92,7 +94,7 @@ func (this *ChatRoomQueryCtrl) TopList(ctx *ChatRoomCntx) {
 				continue
 			}
 
-			key := fmt.Sprintf(comm.CHAT_KEY_RID_TO_SID_ZSET, uint64(rid))
+			key := fmt.Sprintf(room.CR_KEY_RID_TO_SID_ZSET, uint64(rid))
 
 			total, err := redis.Int(rds.Do("ZCARD", key))
 			if nil != err {
@@ -186,7 +188,7 @@ func (this *ChatRoomQueryCtrl) GroupList(ctx *ChatRoomCntx) {
 
 	/* 获取聊天室分组列表 */
 	off := 0
-	key := fmt.Sprintf(comm.CHAT_KEY_RID_GID_TO_NUM_ZSET, rid)
+	key := fmt.Sprintf(room.CR_KEY_RID_GID_TO_NUM_ZSET, rid)
 	for {
 		gid_num_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
 			key, "-inf", "+inf", "WITHSCORES", "LIMIT", comm.CHAT_BAT_NUM))

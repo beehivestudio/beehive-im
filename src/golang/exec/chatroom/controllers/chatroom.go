@@ -179,6 +179,11 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) Register() {
+	ctx.frwder.Register(comm.CMD_ONLINE, ChatRoomOnlineHandler, ctx)
+	ctx.frwder.Register(comm.CMD_OFFLINE, ChatRoomOfflineHandler, ctx)
+
+	ctx.frwder.Register(comm.CMD_PING, ChatRoomPingHandler, ctx)
+
 	ctx.frwder.Register(comm.CMD_ROOM_CREAT, ChatRoomCreatHandler, ctx)
 	ctx.frwder.Register(comm.CMD_ROOM_DISMISS, ChatRoomDismissHandler, ctx)
 

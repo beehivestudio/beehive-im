@@ -8,8 +8,9 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
-	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
+
+	"beehive-im/src/golang/exec/chatroom/controllers/room"
 )
 
 /* 聊天室配置 */
@@ -141,7 +142,7 @@ func (this *ChatRoomConfigCtrl) blacklist_add(ctx *ChatRoomCntx) {
 	}()
 
 	/* > 用户加入黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, param.rid)
+	key := fmt.Sprintf(room.CR_KEY_ROOM_USR_BLACKLIST_SET, param.rid)
 
 	pl.Send("SADD", key, param.uid)
 
@@ -223,7 +224,7 @@ func (this *ChatRoomConfigCtrl) blacklist_del(ctx *ChatRoomCntx) {
 	}()
 
 	/* > 用户移除黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_BLACKLIST_SET, param.rid)
+	key := fmt.Sprintf(room.CR_KEY_ROOM_USR_BLACKLIST_SET, param.rid)
 
 	pl.Send("SREM", key, param.uid)
 
@@ -334,7 +335,7 @@ func (this *ChatRoomConfigCtrl) gag_add(ctx *ChatRoomCntx) {
 	}()
 
 	/* > 用户加入禁言 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_GAG_SET, param.rid)
+	key := fmt.Sprintf(room.CR_KEY_ROOM_USR_GAG_SET, param.rid)
 
 	pl.Send("ZADD", key, time.Now().Unix(), param.uid)
 
@@ -416,7 +417,7 @@ func (this *ChatRoomConfigCtrl) gag_del(ctx *ChatRoomCntx) {
 	}()
 
 	/* > 用户移除黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_USR_GAG_SET, param.rid)
+	key := fmt.Sprintf(room.CR_KEY_ROOM_USR_GAG_SET, param.rid)
 
 	pl.Send("ZREM", key, param.uid)
 
@@ -515,9 +516,9 @@ func (this *ChatRoomConfigCtrl) room_open(ctx *ChatRoomCntx) {
 	defer rds.Close()
 
 	/* > 用户加入禁言 */
-	key := fmt.Sprintf(comm.CHAT_KEY_RID_ATTR, param.rid)
+	key := fmt.Sprintf(room.CR_KEY_RID_ATTR, param.rid)
 
-	_, err = rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_OPEN)
+	_, err = rds.Do("HSET", key, "STATUS", room.ROOM_STAT_OPEN)
 	if nil != err {
 		/* > 回复处理应答 */
 		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
@@ -591,9 +592,9 @@ func (this *ChatRoomConfigCtrl) room_close(ctx *ChatRoomCntx) {
 	defer rds.Close()
 
 	/* > 修改聊天室属性 */
-	key := fmt.Sprintf(comm.CHAT_KEY_RID_ATTR, param.rid)
+	key := fmt.Sprintf(room.CR_KEY_RID_ATTR, param.rid)
 
-	_, err = rds.Do("HSET", key, "STATUS", chat.ROOM_STAT_CLOSE)
+	_, err = rds.Do("HSET", key, "STATUS", room.ROOM_STAT_CLOSE)
 	if nil != err {
 		/* > 回复处理应答 */
 		this.Error(comm.ERR_SYS_SYSTEM, err.Error())
@@ -703,7 +704,7 @@ func (this *ChatRoomConfigCtrl) capacity_set(ctx *ChatRoomCntx) {
 	}()
 
 	/* > 存储聊天室分组容量 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GROUP_CAP_ZSET)
+	key := fmt.Sprintf(room.CR_KEY_ROOM_GROUP_CAP_ZSET)
 
 	pl.Send("ZADD", key, param.capacity, param.rid)
 
@@ -790,7 +791,7 @@ func (this *ChatRoomConfigCtrl) capacity_get(ctx *ChatRoomCntx) {
 	defer rds.Close()
 
 	/* > 存储聊天室分组容量 */
-	key := fmt.Sprintf(comm.CHAT_KEY_ROOM_GROUP_CAP_ZSET)
+	key := fmt.Sprintf(room.CR_KEY_ROOM_GROUP_CAP_ZSET)
 
 	capacity, err := redis.Int(rds.Do("ZSCORE", key, param.rid))
 	if nil != err {

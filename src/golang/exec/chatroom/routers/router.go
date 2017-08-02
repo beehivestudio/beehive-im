@@ -12,6 +12,8 @@ import (
 //  beego.Router("/api/update",&RestController{},"put:UpdateFood")
 //  beego.Router("/api/delete",&RestController{},"delete:DeleteFood")
 func Router() {
-	beego.Router("/im/room/query", &controllers.ChatRoomQueryCtrl{}, "get:Query")
-	beego.Router("/im/room/config", &controllers.ChatRoomConfigCtrl{}, "get:Config")
+	beego.Router("/room/push", &controllers.ChatRoomPushCtrl{}, "post:Push")
+
+	beego.Router("/room/query", &controllers.ChatRoomQueryCtrl{}, "get:Query")
+	beego.Router("/room/config", &controllers.ChatRoomConfigCtrl{}, "get:Config")
 }
