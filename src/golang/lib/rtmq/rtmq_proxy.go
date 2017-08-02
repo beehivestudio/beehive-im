@@ -503,7 +503,7 @@ func rtmq_head_ntoh(p *RtmqRecvPacket) *RtmqHeader {
 func rtmq_head_hton(header *RtmqHeader, p *RtmqPacket) {
 	binary.BigEndian.PutUint32(p.head[0:4], header.cmd)      /* CMD */
 	binary.BigEndian.PutUint32(p.head[4:8], header.nid)      /* NID */
-	binary.BigEndian.PutUint32(p.head[8:12], header.flag)    /* NID */
+	binary.BigEndian.PutUint32(p.head[8:12], header.flag)    /* FLAG */
 	binary.BigEndian.PutUint32(p.head[12:16], header.length) /* LENGTH */
 	binary.BigEndian.PutUint32(p.head[16:20], header.chksum) /* CHKSUM */
 }

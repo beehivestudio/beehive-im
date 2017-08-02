@@ -8,9 +8,6 @@
         2) NATION: 所属国家 -->
     <OPERATOR ID="1" NATION="CN" />
 
-    <!-- 分发队列配置 -->
-    <DISTQ NUM="8" MAX="4096" SIZE="4KB" />
-
     <!-- 帧听配置
         1) IP: 外网IP
         2) PORT: 帧听端口 -->

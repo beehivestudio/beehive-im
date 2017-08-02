@@ -1053,6 +1053,8 @@ func (ctx *ChatRoomCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgR
 		head.Length = uint32(length)
 		head.Nid = ctx.listend.list.nodes[idx]
 
+		ctx.log.Debug("Send room join notification! nid:%d", head.Nid)
+
 		comm.MesgHeadHton(head, p)
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
 

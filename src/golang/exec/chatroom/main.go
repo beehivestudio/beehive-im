@@ -45,7 +45,7 @@ func _init() *controllers.ChatRoomCntx {
 
 	param := parse_param()
 
-	/* > 加载USRSVR配置 */
+	/* > 加载CHATROOM配置 */
 	conf, err := conf.Load(*param.conf)
 	if nil != err {
 		fmt.Printf("Load configuration failed! errmsg:%s\n", err.Error())
@@ -54,7 +54,7 @@ func _init() *controllers.ChatRoomCntx {
 
 	beego_config(conf)
 
-	/* > 初始化USRSVR环境 */
+	/* > 初始化CHATROOM环境 */
 	ctx, err := controllers.ChatRoomInit(conf)
 	if nil != err {
 		fmt.Printf("Initialize context failed! errmsg:%s\n", err.Error())

@@ -206,7 +206,7 @@ func (ctx *ChatRoomCntx) listend_list_update() {
 	}
 
 	num := len(nodes)
-	for idx := 0; idx < num; idx += 1 {
+	for idx := 0; idx < num; idx += 2 {
 		nid, _ := strconv.ParseInt(nodes[idx], 10, 32)
 		list = append(list, uint32(nid))
 	}

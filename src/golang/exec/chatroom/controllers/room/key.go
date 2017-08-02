@@ -1,8 +1,8 @@
 package room
 
+/* 聊天室相关KEY定义 */
 const (
 	//|**宏**|**键值**|**类型**|**描述**|**备注**|
-	//聊天室
 	CR_KEY_SID_ZSET               = "cr:sid:zset"                 //*| ZSET | 会话SID集合 | 成员:SID 分值:TTL |
 	CR_KEY_UID_ZSET               = "cr:uid:zset"                 //| ZSET | 用户UID集合 | 成员:UID 分值:TTL |
 	CR_KEY_SID_INCR               = "cr:sid:incr"                 //*| STRING | 会话SID增量器 | 只增不减 注意:sid不能为0 |

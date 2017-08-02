@@ -108,7 +108,7 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
 	ctx.conf = conf
 
 	/* > 初始化日志 */
-	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "usrsvr.log")
+	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "chatroom.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
 	}
