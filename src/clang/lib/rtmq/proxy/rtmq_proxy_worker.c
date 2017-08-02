@@ -55,9 +55,9 @@ void *rtmq_proxy_worker_routine(void *_ctx)
         /* 2. 等待事件通知 */
         FD_ZERO(&worker->rdset);
 
-        FD_SET(worker->cmd_sck_id, &worker->rdset);
+        FD_SET(worker->cmd_fd, &worker->rdset);
 
-        worker->max = worker->cmd_sck_id;
+        worker->max = worker->cmd_fd;
 
         timeout.tv_sec = 1;
         timeout.tv_usec = 0;
@@ -152,19 +152,10 @@ static rtmq_worker_t *rtmq_proxy_worker_get_curr(rtmq_proxy_t *pxy)
  ******************************************************************************/
 int rtmq_proxy_worker_init(rtmq_proxy_t *pxy, rtmq_worker_t *worker, int id)
 {
-    char path[FILE_PATH_MAX_LEN];
-    rtmq_proxy_conf_t *conf = &pxy->conf;
-
     worker->id = id;
     worker->log = pxy->log;
 
-    rtmq_proxy_worker_usck_path(conf, path, worker->id);
-
-    worker->cmd_sck_id = unix_udp_creat(path);
-    if (worker->cmd_sck_id < 0) {
-        log_error(worker->log, "Create unix-udp socket failed!");
-        return RTMQ_ERR;
-    }
+    worker->cmd_fd = pxy->work_cmd_fd[id].fd[0];
 
     return RTMQ_OK;
 }
@@ -186,11 +177,11 @@ static int rtmq_proxy_worker_event_core_hdl(rtmq_proxy_t *pxy, rtmq_worker_t *wo
 {
     rtmq_cmd_t cmd;
 
-    if (!FD_ISSET(worker->cmd_sck_id, &worker->rdset)) {
+    if (!FD_ISSET(worker->cmd_fd, &worker->rdset)) {
         return RTMQ_OK; /* 无数据 */
     }
 
-    if (unix_udp_recv(worker->cmd_sck_id, (void *)&cmd, sizeof(cmd)) < 0) {
+    if (read(worker->cmd_fd, (void *)&cmd, sizeof(cmd)) < 0) {
         log_error(worker->log, "errmsg:[%d] %s", errno, strerror(errno));
         return RTMQ_ERR_RECV_CMD;
     }

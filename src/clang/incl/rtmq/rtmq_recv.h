@@ -71,7 +71,7 @@ typedef struct
 {
     pthread_t tid;                      /* 侦听线程ID */
     log_cycle_t *log;                   /* 日志对象 */
-    int cmd_sck_id;                     /* 命令套接字 */
+    int cmd_fd;                     /* 命令套接字 */
     int lsn_sck_id;                     /* 侦听套接字 */
 
     uint64_t sid;                       /* Session ID */
@@ -118,7 +118,8 @@ typedef struct
     log_cycle_t *log;                   /* 日志对象 */
     void *ctx;                          /* 全局对象(rtmq_cntx_t) */
 
-    int cmd_sck_id;                     /* 命令套接字 */
+    int fd[2];                          /* 通信FD(0:读 1:写) */
+    int cmd_fd;                         /* 命令套接字 */
 
     int max;                            /* 最大套接字 */
     time_t ctm;                         /* 当前时间 */
@@ -162,7 +163,7 @@ typedef struct
     thread_pool_t *recvtp;              /* 接收线程池 */
     thread_pool_t *worktp;              /* 工作线程池 */
 
-    int cmd_sck_id;                     /* 命令套接字(注: 用于给各线程发送命令) */
+    int cmd_fd;                     /* 命令套接字(注: 用于给各线程发送命令) */
     spinlock_t cmd_sck_lock;            /* 命令套接字锁 */
 
     queue_t **connq;                    /* 连接队列(注:其长度与recvtp一致) */
@@ -203,7 +204,7 @@ int rtmq_worker_init(rtmq_cntx_t *ctx, rtmq_worker_t *worker, int tidx);
 
 void rtmq_rsvr_del_all_conn_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr);
 
-int rtmq_cmd_to_rsvr(rtmq_cntx_t *ctx, int cmd_sck_id, const rtmq_cmd_t *cmd, int idx);
+int rtmq_cmd_to_rsvr(rtmq_cntx_t *ctx, int cmd_fd, const rtmq_cmd_t *cmd, int idx);
 int rtmq_link_auth_check(rtmq_cntx_t *ctx, rtmq_link_auth_req_t *link_auth_req);
 
 shm_queue_t *rtmq_shm_distq_creat(const rtmq_conf_t *conf, int idx);

@@ -88,8 +88,8 @@ rtmq_cntx_t *rtmq_init(const rtmq_conf_t *cf, log_cycle_t *log)
         /* > 创建通信套接字 */
         rtmq_cli_unix_path(conf, path);
 
-        ctx->cmd_sck_id = unix_udp_creat(path);
-        if (ctx->cmd_sck_id < 0) {
+        ctx->cmd_fd = unix_udp_creat(path);
+        if (ctx->cmd_fd < 0) {
             log_error(ctx->log, "Create command socket failed! path:%s", path);
             break;
         }
@@ -166,7 +166,7 @@ rtmq_cntx_t *rtmq_init(const rtmq_conf_t *cf, log_cycle_t *log)
         return ctx;
     } while(0);
 
-    close(ctx->cmd_sck_id);
+    close(ctx->cmd_fd);
     return NULL;
 }
 
@@ -572,7 +572,7 @@ void rtmq_recvs_destroy(void *_ctx, void *param)
 
     for (idx=0; idx<ctx->conf.recv_thd_num; ++idx, ++rsvr) {
         /* > 关闭命令套接字 */
-        CLOSE(rsvr->cmd_sck_id);
+        CLOSE(rsvr->cmd_fd);
 
         /* > 关闭通信套接字 */
         rtmq_rsvr_del_all_conn_hdl(ctx, rsvr);
@@ -653,7 +653,7 @@ void rtmq_workers_destroy(void *_ctx, void *param)
     rtmq_worker_t *wrk = (rtmq_worker_t *)ctx->worktp->data;
 
     for (idx=0; idx<conf->work_thd_num; ++idx, ++wrk) {
-        CLOSE(wrk->cmd_sck_id);
+        CLOSE(wrk->cmd_fd);
     }
 
     FREE(ctx->worktp->data);
@@ -709,7 +709,7 @@ static int rtmq_cmd_send_dist_req(rtmq_cntx_t *ctx)
 
     cmd.type = RTMQ_CMD_DIST_REQ;
     rtmq_dsvr_usck_path(conf, path);
-    ret = unix_udp_send(ctx->cmd_sck_id, path, &cmd, sizeof(cmd));
+    ret = unix_udp_send(ctx->cmd_fd, path, &cmd, sizeof(cmd));
 
     spin_unlock(&ctx->cmd_sck_lock);
 

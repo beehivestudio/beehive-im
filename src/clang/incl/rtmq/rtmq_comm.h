@@ -39,6 +39,12 @@ typedef enum
     , RTMQ_ERR_UNKNOWN_CMD              /* 未知命令类型 */
 } rtmq_err_e;
 
+/* 通信管道 */
+typedef struct
+{
+    int fd[2];                          /* 通信管道(0:读 1:写) */
+} rtmq_pipe_t;
+
 /* 鉴权配置 */
 typedef struct
 {
@@ -96,7 +102,8 @@ typedef struct
     int id;                             /* 对象索引 */
     log_cycle_t *log;                   /* 日志对象 */
 
-    int cmd_sck_id;                     /* 命令套接字 */
+    int fd[2];                          /* 通信FD(0:读 1:写) */
+    int cmd_fd;                         /* 命令套接字 */
 
     int max;                            /* 套接字最大值 */
     fd_set rdset;                       /* 可读套接字集合 */

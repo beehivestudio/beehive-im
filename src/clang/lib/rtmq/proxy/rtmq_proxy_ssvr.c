@@ -8,7 +8,6 @@
 static rtmq_proxy_ssvr_t *rtmq_proxy_ssvr_get_curr(rtmq_proxy_t *pxy);
 
 static int rtmq_proxy_ssvr_creat_sendq(rtmq_proxy_ssvr_t *ssvr, const rtmq_proxy_conf_t *conf);
-static int rtmq_proxy_ssvr_creat_usck(rtmq_proxy_ssvr_t *ssvr, const rtmq_proxy_conf_t *conf);
 
 static int rtmq_proxy_ssvr_recv_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
 static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
@@ -42,14 +41,15 @@ static int rtmq_proxy_ssvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t
  **     ipaddr: 服务端IP地址
  **     port: 服务端侦听端口
  **     sendq: 发送队列
+ **     pipe: 通信管道
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项:
+ **注意事项: 存在多个线程侦听同一个发送队列、同一个通信管道的情况.
  **作    者: # Qifeng.zou # 2015.01.14, 2017-07-20 15:31:33 #
  ******************************************************************************/
-int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy,
-        rtmq_proxy_ssvr_t *ssvr, int idx, const char *ipaddr, int port, queue_t *sendq)
+int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
+        int idx, const char *ipaddr, int port, queue_t *sendq, rtmq_pipe_t *pipe)
 {
     void *addr;
     rtmq_proxy_conf_t *conf = &pxy->conf;
@@ -65,11 +65,7 @@ int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy,
     ssvr->port = port;   /* 服务端端口 */
     snprintf(ssvr->ipaddr, sizeof(ssvr->ipaddr), "%s", ipaddr); /* 服务端IP地址 */
 
-    /* > 创建unix套接字 */
-    if (rtmq_proxy_ssvr_creat_usck(ssvr, conf)) {
-        log_error(ssvr->log, "Initialize send queue failed!");
-        return RTMQ_ERR;
-    }
+    ssvr->cmd_fd = pipe->fd[0]; /* 通信管道描述符 */
 
     /* > 创建发送链表 */
     sck->mesg_list = list_creat(NULL);
@@ -93,34 +89,6 @@ int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy,
 
     rtmq_snap_setup(recv, addr, conf->recv_buff_size);
 
-    return RTMQ_OK;
-}
-
-/******************************************************************************
- **函数名称: rtmq_proxy_ssvr_creat_usck
- **功    能: 创建发送线程的命令接收套接字
- **输入参数:
- **     ssvr: 发送服务对象
- **     conf: 配置信息
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2015.01.14 #
- ******************************************************************************/
-static int rtmq_proxy_ssvr_creat_usck(rtmq_proxy_ssvr_t *ssvr, const rtmq_proxy_conf_t *conf)
-{
-    char path[FILE_PATH_MAX_LEN];
-
-    rtmq_proxy_ssvr_usck_path(conf, path, ssvr->id);
-
-    ssvr->cmd_sck_id = unix_udp_creat(path);
-    if (ssvr->cmd_sck_id < 0) {
-        log_error(ssvr->log, "errmsg:[%d] %s! path:%s", errno, strerror(errno), path);
-        return RTMQ_ERR;
-    }
-
-    log_trace(ssvr->log, "cmd_sck_id:[%d] path:%s", ssvr->cmd_sck_id, path);
     return RTMQ_OK;
 }
 
@@ -171,9 +139,9 @@ void rtmq_proxy_ssvr_set_rwset(rtmq_proxy_ssvr_t *ssvr)
     FD_ZERO(&ssvr->rset);
     FD_ZERO(&ssvr->wset);
 
-    FD_SET(ssvr->cmd_sck_id, &ssvr->rset);
+    FD_SET(ssvr->cmd_fd, &ssvr->rset);
 
-    ssvr->max = MAX(ssvr->cmd_sck_id, ssvr->sck.fd);
+    ssvr->max = MAX(ssvr->cmd_fd, ssvr->sck.fd);
 
     /* 1 设置读集合 */
     FD_SET(ssvr->sck.fd, &ssvr->rset);
@@ -268,7 +236,7 @@ void *rtmq_proxy_ssvr_routine(void *_ctx)
         }
 
         /* 接收命令 */
-        if (FD_ISSET(ssvr->cmd_sck_id, &ssvr->rset)) {
+        if (FD_ISSET(ssvr->cmd_fd, &ssvr->rset)) {
             rtmq_proxy_ssvr_recv_cmd(pxy, ssvr);
         }
 
@@ -581,7 +549,7 @@ static int rtmq_proxy_ssvr_recv_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
     memset(&cmd, 0, sizeof(cmd));
 
     /* 1. 接收命令 */
-    if (unix_udp_recv(ssvr->cmd_sck_id, &cmd, sizeof(cmd)) < 0) {
+    if (read(ssvr->cmd_fd, &cmd, sizeof(cmd)) < 0) {
         log_error(ssvr->log, "Recv command failed! errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }
@@ -616,6 +584,9 @@ static int rtmq_proxy_ssvr_proc_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, 
             return RTMQ_OK;
         default:
             log_error(ssvr->log, "Unknown command! type:[%d]", cmd->type);
+            if (fd_is_writable(sck->fd)) {
+                return rtmq_proxy_ssvr_send_data(pxy, ssvr);
+            }
             return RTMQ_OK;
     }
     return RTMQ_OK;
@@ -1047,7 +1018,6 @@ static int rtmq_sub_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
 static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int rqid)
 {
     rtmq_cmd_t cmd;
-    char path[FILE_PATH_MAX_LEN];
     rtmq_cmd_proc_req_t *req = (rtmq_cmd_proc_req_t *)&cmd.param;
 
     memset(&cmd, 0, sizeof(cmd));
@@ -1057,11 +1027,8 @@ static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ss
     req->num = -1;
     req->rqidx = rqid;
 
-    /* > 获取Worker路径 */
-    rtmq_proxy_worker_usck_path(&pxy->conf, path, rqid);
-
     /* > 发送处理命令 */
-    return unix_udp_send(ssvr->cmd_sck_id, path, &cmd, sizeof(rtmq_cmd_t));
+    return write(pxy->work_cmd_fd[rqid].fd[1], &cmd, sizeof(rtmq_cmd_t));
 }
 
 /******************************************************************************

@@ -6,7 +6,10 @@
 #include "rtmq_proxy.h"
 
 static int rtmq_proxy_lock_server(const rtmq_proxy_conf_t *conf);
-static int rtmq_proxy_creat_cmd_usck(rtmq_proxy_t *pxy);
+static int rtmq_proxy_creat_send_cmd_fd(rtmq_proxy_t *pxy);
+static int rtmq_proxy_creat_work_cmd_fd(rtmq_proxy_t *pxy);
+
+static int rtmq_proxy_cmd_work_chan_init(rtmq_proxy_t *pxy);
 
 /******************************************************************************
  **函数名称: rtmq_proxy_creat_workers
@@ -25,29 +28,47 @@ static int rtmq_proxy_creat_workers(rtmq_proxy_t *pxy)
     rtmq_worker_t *worker;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
-    /* > 创建对象 */
+    /* > 初始化对象 */
     worker = (rtmq_worker_t *)calloc(conf->work_thd_num, sizeof(rtmq_worker_t));
     if (NULL == worker) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }
 
+    for (idx=0; idx<conf->work_thd_num; ++idx) {
+        if (rtmq_proxy_worker_init(pxy, worker+idx, idx)) {
+            log_fatal(pxy->log, "Initialize worker object failed!");
+            return RTMQ_ERR;
+        }
+    }
+
     /* > 创建线程池 */
     pxy->worktp = thread_pool_init(conf->work_thd_num, NULL, (void *)worker);
     if (NULL == pxy->worktp) {
         log_error(pxy->log, "Initialize thread pool failed!");
-        free(worker);
         return RTMQ_ERR;
     }
 
-    /* > 初始化线程 */
-    for (idx=0; idx<conf->work_thd_num; ++idx) {
-        if (rtmq_proxy_worker_init(pxy, worker+idx, idx)) {
-            log_fatal(pxy->log, "Initialize work thread failed!");
-            free(worker);
-            thread_pool_destroy(pxy->worktp);
-            return RTMQ_ERR;
-        }
+    return RTMQ_OK;
+}
+
+/* 创建工作线程通信管道 */
+static int rtmq_proxy_creat_work_cmd_fd(rtmq_proxy_t *pxy)
+{
+    int idx;
+    rtmq_proxy_conf_t *conf = &pxy->conf;
+
+    pxy->work_cmd_fd = (rtmq_pipe_t *)calloc(conf->work_thd_num, sizeof(rtmq_pipe_t));
+    if (NULL == pxy->work_cmd_fd) {
+        log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        return RTMQ_OK;
+    }
+
+    for (idx=0; idx<conf->work_thd_num; idx+=1) {
+        pipe(pxy->work_cmd_fd[idx].fd);
+
+        fd_set_nonblocking(pxy->work_cmd_fd[idx].fd[0]);
+        fd_set_nonblocking(pxy->work_cmd_fd[idx].fd[1]);
     }
 
     return RTMQ_OK;
@@ -72,9 +93,10 @@ static int rtmq_proxy_ssvr_init_cb(iplist_item_t *item, rtmq_proxy_t *pxy)
 
     for (m=0; m<conf->send_thd_num; ++m) {
         idx = item->idx * conf->send_thd_num + m;
-        if (rtmq_proxy_ssvr_init(pxy, ssvr+idx, idx,
-                    item->ipaddr, item->port,
-                    pxy->sendq[idx % conf->send_thd_num])) {
+        if (rtmq_proxy_ssvr_init(pxy, ssvr+idx,
+                    idx, item->ipaddr, item->port,
+                    pxy->sendq[idx % conf->send_thd_num],
+                    &pxy->send_cmd_fd[idx % conf->send_thd_num])) {
             log_fatal(pxy->log, "Initialize send thread failed!");
             free(ssvr);
             thread_pool_destroy(pxy->sendtp);
@@ -84,8 +106,30 @@ static int rtmq_proxy_ssvr_init_cb(iplist_item_t *item, rtmq_proxy_t *pxy)
     return RTMQ_OK;
 }
 
+/* 创建发送线程通信管道 */
+static int rtmq_proxy_creat_send_cmd_fd(rtmq_proxy_t *pxy)
+{
+    int idx;
+    rtmq_proxy_conf_t *conf = &pxy->conf;
+
+    pxy->send_cmd_fd = (rtmq_pipe_t *)calloc(conf->send_thd_num, sizeof(rtmq_pipe_t));
+    if (NULL == pxy->send_cmd_fd) {
+        log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        return RTMQ_OK;
+    }
+
+    for (idx=0; idx<conf->send_thd_num; idx+=1) {
+        pipe(pxy->send_cmd_fd[idx].fd);
+
+        fd_set_nonblocking(pxy->send_cmd_fd[idx].fd[0]);
+        fd_set_nonblocking(pxy->send_cmd_fd[idx].fd[1]);
+    }
+
+    return RTMQ_OK;
+}
+
 /******************************************************************************
- **函数名称: rtmq_proxy_creat_sends
+ **函数名称: rtmq_proxy_creat_senders
  **功    能: 创建发送线程线程池
  **输入参数:
  **     pxy: 全局对象
@@ -95,23 +139,24 @@ static int rtmq_proxy_ssvr_init_cb(iplist_item_t *item, rtmq_proxy_t *pxy)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.08.19, 2017.07.20 11:28:40 #
  ******************************************************************************/
-static int rtmq_proxy_creat_sends(rtmq_proxy_t *pxy)
+static int rtmq_proxy_creat_senders(rtmq_proxy_t *pxy)
 {
-    int num;
+    int num, total;
     rtmq_proxy_ssvr_t *ssvr;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     num = list_length(pxy->iplist); /* IP数目 */
+    total = num * conf->send_thd_num;
 
     /* > 创建对象 */
-    ssvr = (rtmq_proxy_ssvr_t *)calloc(num * conf->send_thd_num, sizeof(rtmq_proxy_ssvr_t));
+    ssvr = (rtmq_proxy_ssvr_t *)calloc(total, sizeof(rtmq_proxy_ssvr_t));
     if (NULL == ssvr) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }
 
     /* > 创建线程池 */
-    pxy->sendtp = thread_pool_init(num * conf->send_thd_num, NULL, (void *)ssvr);
+    pxy->sendtp = thread_pool_init(total, NULL, (void *)ssvr);
     if (NULL == pxy->sendtp) {
         log_error(pxy->log, "Initialize thread pool failed!");
         free(ssvr);
@@ -242,11 +287,6 @@ rtmq_proxy_t *rtmq_proxy_init(const rtmq_proxy_conf_t *conf, log_cycle_t *log)
             log_fatal(log, "Create register map failed!");
             break;
         }
-        /* > 创建通信套接字 */
-        if (rtmq_proxy_creat_cmd_usck(pxy)) {
-            log_fatal(log, "Create cmd socket failed!");
-            break;
-        }
 
         /* > 创建接收队列 */
         if (rtmq_proxy_creat_recvq(pxy)) {
@@ -260,6 +300,18 @@ rtmq_proxy_t *rtmq_proxy_init(const rtmq_proxy_conf_t *conf, log_cycle_t *log)
             break;
         }
 
+        /* > 创建发送线程通信FD */
+        if (rtmq_proxy_creat_send_cmd_fd(pxy)) {
+            log_fatal(log, "Create send cmd fd failed!");
+            break;
+        }
+
+        /* > 创建工作线程通信FD */
+        if (rtmq_proxy_creat_work_cmd_fd(pxy)) {
+            log_fatal(log, "Create work cmd fd failed!");
+            break;
+        }
+
         /* > 创建工作线程池 */
         if (rtmq_proxy_creat_workers(pxy)) {
             log_fatal(pxy->log, "Create work thread pool failed!");
@@ -267,7 +319,7 @@ rtmq_proxy_t *rtmq_proxy_init(const rtmq_proxy_conf_t *conf, log_cycle_t *log)
         }
 
         /* > 创建发送线程池 */
-        if (rtmq_proxy_creat_sends(pxy)) {
+        if (rtmq_proxy_creat_senders(pxy)) {
             log_fatal(pxy->log, "Create send thread pool failed!");
             break;
         }
@@ -354,34 +406,6 @@ int rtmq_proxy_reg_add(rtmq_proxy_t *pxy, int type, rtmq_reg_cb_t proc, void *pa
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_creat_cmd_usck
- **功    能: 创建命令套接字
- **输入参数:
- **     pxy: 上下文信息
- **     idx: 目标队列序号
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2015.01.14 #
- ******************************************************************************/
-static int rtmq_proxy_creat_cmd_usck(rtmq_proxy_t *pxy)
-{
-    char path[FILE_NAME_MAX_LEN];
-
-    rtmq_proxy_comm_usck_path(&pxy->conf, path);
-
-    spin_lock_init(&pxy->cmd_sck_lck);
-    pxy->cmd_sck_id = unix_udp_creat(path);
-    if (pxy->cmd_sck_id < 0) {
-        log_error(pxy->log, "errmsg:[%d] %s! path:%s", errno, strerror(errno), path);
-        return RTMQ_ERR;
-    }
-
-    return RTMQ_OK;
-}
-
-/******************************************************************************
  **函数名称: rtmq_proxy_lock_server
  **功    能: 锁住指定路径(注: 防止路径和结点ID相同的配置)
  **输入参数:
@@ -414,7 +438,7 @@ static int rtmq_proxy_lock_server(const rtmq_proxy_conf_t *conf)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_cli_cmd_send_req
+ **函数名称: rtmq_proxy_cmd_send_req
  **功    能: 通知Send服务线程
  **输入参数:
  **     pxy: 上下文信息
@@ -422,34 +446,27 @@ static int rtmq_proxy_lock_server(const rtmq_proxy_conf_t *conf)
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项:
+ **注意事项: 只要发送的数据小于4096字节, 就"无需"加锁.
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static int rtmq_proxy_cli_cmd_send_req(rtmq_proxy_t *pxy, int idx)
+static int rtmq_proxy_cmd_send_req(rtmq_proxy_t *pxy, int idx)
 {
+    int fd;
     rtmq_cmd_t cmd;
-    char path[FILE_NAME_MAX_LEN];
-    rtmq_proxy_conf_t *conf = &pxy->conf;
 
     memset(&cmd, 0, sizeof(cmd));
 
     cmd.type = RTMQ_CMD_SEND_ALL;
-    rtmq_proxy_ssvr_usck_path(conf, path, idx);
 
-    if (spin_trylock(&pxy->cmd_sck_lck)) {
-        log_debug(pxy->log, "Try lock failed!");
-        return RTMQ_OK;
-    }
+    fd = pxy->send_cmd_fd[idx].fd[1]; /* 写 */
 
-    if (unix_udp_send(pxy->cmd_sck_id, path, &cmd, sizeof(cmd)) < 0) {
-        spin_unlock(&pxy->cmd_sck_lck);
+    if (write(fd, &cmd, sizeof(cmd)) < 0) {
         if (EAGAIN != errno) {
-            log_debug(pxy->log, "errmsg:[%d] %s! path:%s", errno, strerror(errno), path);
+            log_debug(pxy->log, "idx:%d fd:%d errmsg:[%d] %s!",
+                    idx, fd, errno, strerror(errno));
         }
         return RTMQ_ERR;
     }
-
-    spin_unlock(&pxy->cmd_sck_lck);
 
     return RTMQ_OK;
 }
@@ -476,7 +493,7 @@ int rtmq_proxy_async_send(rtmq_proxy_t *pxy, int type, const void *data, size_t 
     int idx;
     void *addr;
     rtmq_header_t *head;
-    static uint8_t num = 0; // 无需加锁
+    static uint32_t num = 0; // 无需加锁
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 选择发送队列 */
@@ -511,7 +528,7 @@ int rtmq_proxy_async_send(rtmq_proxy_t *pxy, int type, const void *data, size_t 
     }
 
     /* > 通知发送线程 */
-    rtmq_proxy_cli_cmd_send_req(pxy, idx);
+    rtmq_proxy_cmd_send_req(pxy, idx);
 
     return RTMQ_OK;
 }

@@ -8,15 +8,6 @@
 #include "rtmq_comm.h"
 #include "thread_pool.h"
 
-/* COMM的UNIX-UDP路径 */
-#define rtmq_proxy_comm_usck_path(conf, _path) \
-    snprintf(_path, sizeof(_path), "%s/rtmq/%d_comm.usck", (conf)->path, (conf)->nid)
-/* SSVR线程的UNIX-UDP路径 */
-#define rtmq_proxy_ssvr_usck_path(conf, _path, id) \
-    snprintf(_path, sizeof(_path), "%s/rtmq/%d_ssvr_%d.usck", (conf)->path, (conf)->nid, id+1)
-/* WORKER线程的UNIX-UDP路径 */
-#define rtmq_proxy_worker_usck_path(conf, _path, id) \
-    snprintf(_path, sizeof(_path), "%s/rtmq/%d_swrk_%d.usck", (conf)->path, (conf)->nid, id+1)
 /* 加锁路径 */
 #define rtmq_proxy_lock_path(conf, _path) \
     snprintf(_path, sizeof(_path), "%s/rtmq/%d.lock", (conf)->path, (conf)->nid)
@@ -53,7 +44,8 @@ typedef struct
     char ipaddr[IP_ADDR_MAX_LEN];       /* IP地址 */
     int port;                           /* 服务端端口 */
 
-    int cmd_sck_id;                     /* 命令通信套接字ID */
+    int fd[2];                          /* 通信FD */
+    int cmd_fd;                         /* 命令通信FD */
     rtmq_proxy_sct_t sck;               /* 发送套接字 */
 
     int max;                            /* 套接字最大值 */

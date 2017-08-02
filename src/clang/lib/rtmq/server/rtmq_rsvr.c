@@ -74,8 +74,8 @@ static void rtmq_rsvr_set_rdset(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
 
     FD_ZERO(&rsvr->rdset);
 
-    FD_SET(rsvr->cmd_sck_id, &rsvr->rdset);
-    rsvr->max = rsvr->cmd_sck_id;
+    FD_SET(rsvr->cmd_fd, &rsvr->rdset);
+    rsvr->max = rsvr->cmd_fd;
 
     node = rsvr->conn_list->head;
     if (NULL != node) {
@@ -268,8 +268,8 @@ int rtmq_rsvr_init(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, int id)
     /* > 创建CMD套接字 */
     rtmq_rsvr_usck_path(conf, path, rsvr->id);
 
-    rsvr->cmd_sck_id = unix_udp_creat(path);
-    if (rsvr->cmd_sck_id < 0) {
+    rsvr->cmd_fd = unix_udp_creat(path);
+    if (rsvr->cmd_fd < 0) {
         log_error(rsvr->log, "Create unix-udp socket failed!");
         return RTMQ_ERR;
     }
@@ -278,7 +278,7 @@ int rtmq_rsvr_init(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, int id)
     rsvr->conn_list = list2_creat(NULL);
     if (NULL == rsvr->conn_list) {
         log_error(rsvr->log, "Create list2 failed!");
-        CLOSE(rsvr->cmd_sck_id);
+        CLOSE(rsvr->cmd_fd);
         return RTMQ_ERR;
     }
 
@@ -306,7 +306,7 @@ static int rtmq_rsvr_recv_cmd(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
     memset(&cmd, 0, sizeof(cmd));
 
     /* 1. 接收命令数据 */
-    if (unix_udp_recv(rsvr->cmd_sck_id, (void *)&cmd, sizeof(cmd)) < 0) {
+    if (unix_udp_recv(rsvr->cmd_fd, (void *)&cmd, sizeof(cmd)) < 0) {
         log_error(rsvr->log, "Recv command failed!");
         return RTMQ_ERR_RECV_CMD;
     }
@@ -777,7 +777,7 @@ static int rtmq_rsvr_exp_mesg_proc(rtmq_cntx_t *ctx,
 static int rtmq_rsvr_event_core_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
 {
     /* 1. 接收命令数据 */
-    if (FD_ISSET(rsvr->cmd_sck_id, &rsvr->rdset)) {
+    if (FD_ISSET(rsvr->cmd_fd, &rsvr->rdset)) {
         rtmq_rsvr_recv_cmd(ctx, rsvr);
     }
 
@@ -1420,7 +1420,7 @@ static int rtmq_rsvr_cmd_proc_req(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, int rqid)
     rtmq_worker_usck_path(conf, path, widx);
 
     /* 2. 发送处理命令 */
-    if (unix_udp_send(rsvr->cmd_sck_id, path, &cmd, sizeof(rtmq_cmd_t)) < 0) {
+    if (unix_udp_send(rsvr->cmd_fd, path, &cmd, sizeof(rtmq_cmd_t)) < 0) {
         if (EAGAIN != errno) {
             log_error(rsvr->log, "Send command failed! errmsg:[%d] %s! path:[%s]",
                       errno, strerror(errno), path);

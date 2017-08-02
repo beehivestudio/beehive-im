@@ -7,7 +7,7 @@
 /* 分发对象 */
 typedef struct
 {
-    int cmd_sck_id;                     /* 命令套接字 */
+    int cmd_fd;                     /* 命令套接字 */
     log_cycle_t *log;                   /* 日志对象 */
 } rtmq_dsvr_t;
 
@@ -46,11 +46,11 @@ void *rtmq_dsvr_routine(void *_ctx)
     while (1) {
         FD_ZERO(&rdset);
 
-        FD_SET(dsvr->cmd_sck_id, &rdset);
+        FD_SET(dsvr->cmd_fd, &rdset);
 
         timeout.tv_sec = 1;
         timeout.tv_usec = 0;
-        ret = select(dsvr->cmd_sck_id+1, &rdset, NULL, NULL, &timeout);
+        ret = select(dsvr->cmd_fd+1, &rdset, NULL, NULL, &timeout);
         if (ret < 0) {
             if (EINTR == errno) { continue; }
             log_error(dsvr->log, "errno:[%d] %s!", errno, strerror(errno));
@@ -60,7 +60,7 @@ void *rtmq_dsvr_routine(void *_ctx)
             continue;
         }
 
-        if (FD_ISSET(dsvr->cmd_sck_id, &rdset)) {
+        if (FD_ISSET(dsvr->cmd_fd, &rdset)) {
             rtmq_dsvr_cmd_recv_and_proc(ctx, dsvr);
         }
     }
@@ -97,8 +97,8 @@ static rtmq_dsvr_t *rtmq_dsvr_init(rtmq_cntx_t *ctx)
     /* > 创建通信套接字 */
     rtmq_dsvr_usck_path(conf, path);
 
-    dsvr->cmd_sck_id = unix_udp_creat(path);
-    if (dsvr->cmd_sck_id < 0) {
+    dsvr->cmd_fd = unix_udp_creat(path);
+    if (dsvr->cmd_fd < 0) {
         log_error(dsvr->log, "errmsg:[%d] %s! path:%s", errno, strerror(errno), path);
         free(dsvr);
         return NULL;
@@ -131,7 +131,7 @@ static int rtmq_dsvr_cmd_dist_req(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr, int idx)
 
     rtmq_rsvr_usck_path(&ctx->conf, path, idx);
 
-    return (unix_udp_send(dsvr->cmd_sck_id, path, &cmd, sizeof(cmd)) > 0)? 0 : -1;
+    return (unix_udp_send(dsvr->cmd_fd, path, &cmd, sizeof(cmd)) > 0)? 0 : -1;
 }
 
 /******************************************************************************
@@ -214,7 +214,7 @@ static int rtmq_dsvr_cmd_recv_and_proc(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr)
     rtmq_cmd_t cmd;
 
     /* > 接收命令 */
-    if (unix_udp_recv(dsvr->cmd_sck_id, &cmd, sizeof(cmd)) < 0) {
+    if (unix_udp_recv(dsvr->cmd_fd, &cmd, sizeof(cmd)) < 0) {
         log_error(dsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }

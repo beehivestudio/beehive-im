@@ -1,6 +1,7 @@
 #if !defined(__RTMQ_PROXY_H__)
 #define __RTMQ_PROXY_H__
 
+#include "rtmq_comm.h"
 #include "rtmq_proxy_ssvr.h"
 
 #define RTMQ_IPADD_MAX_NUM  (30)
@@ -38,19 +39,23 @@ typedef struct
     log_cycle_t *log;                   /* 日志对象 */
     list_t *iplist;                     /* 服务端IP列表(注: 存储iplist_item_t对象) */
 
-    int cmd_sck_id;                     /* 命令套接字 */
-    spinlock_t cmd_sck_lck;             /* 命令套接字锁 */
-
     thread_pool_t *sendtp;              /* 发送线程池 */
+
     thread_pool_t *worktp;              /* 工作线程池 */
 
     avl_tree_t *reg;                    /* 回调注册对象(注: 存储rtmq_reg_t数据) */
-    queue_t **recvq;                    /* 接收队列(数组长度与send_thd_num一致) */
-    queue_t **sendq;                    /* 发送缓存(数组长度与send_thd_num一致) */
+
+    rtmq_pipe_t *work_cmd_fd;           /* 工作线程通信FD */
+    queue_t **recvq;                    /* 接收队列(数组长度与conf->send_thd_num一致) */
+
+    rtmq_pipe_t *send_cmd_fd;           /* 发送线程通信FD */
+    queue_t **sendq;                    /* 发送缓存(数组长度与conf->send_thd_num一致) */
 } rtmq_proxy_t;
 
 /* 内部接口 */
-int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int tidx, const char *ipaddr, int port, queue_t *sendq);
+int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy,
+        rtmq_proxy_ssvr_t *ssvr, int tidx,
+        const char *ipaddr, int port, queue_t *sendq, rtmq_pipe_t *pipe);
 void *rtmq_proxy_ssvr_routine(void *_ctx);
 
 int rtmq_proxy_worker_init(rtmq_proxy_t *pxy, rtmq_worker_t *worker, int tidx);
