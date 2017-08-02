@@ -257,22 +257,12 @@ static rtmq_rsvr_t *rtmq_rsvr_get_curr(rtmq_cntx_t *ctx)
  ******************************************************************************/
 int rtmq_rsvr_init(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, int id)
 {
-    char path[FILE_PATH_MAX_LEN];
-    rtmq_conf_t *conf = &ctx->conf;
-
     rsvr->id = id;
     rsvr->log = ctx->log;
     rsvr->ctm = time(NULL);
     rsvr->ctx = (void *)ctx;
 
-    /* > 创建CMD套接字 */
-    rtmq_rsvr_usck_path(conf, path, rsvr->id);
-
-    rsvr->cmd_fd = unix_udp_creat(path);
-    if (rsvr->cmd_fd < 0) {
-        log_error(rsvr->log, "Create unix-udp socket failed!");
-        return RTMQ_ERR;
-    }
+    rsvr->cmd_fd = ctx->recv_cmd_fd[id].fd[0];
 
     /* > 创建套接字链表 */
     rsvr->conn_list = list2_creat(NULL);
@@ -306,7 +296,7 @@ static int rtmq_rsvr_recv_cmd(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
     memset(&cmd, 0, sizeof(cmd));
 
     /* 1. 接收命令数据 */
-    if (unix_udp_recv(rsvr->cmd_fd, (void *)&cmd, sizeof(cmd)) < 0) {
+    if (read(rsvr->cmd_fd, (void *)&cmd, sizeof(cmd)) < 0) {
         log_error(rsvr->log, "Recv command failed!");
         return RTMQ_ERR_RECV_CMD;
     }
@@ -637,7 +627,7 @@ static int rtmq_rsvr_data_proc(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t *
         /* 2.2 校验合法性 */
         if (!RTMQ_HEAD_ISVALID(head)) {
             ++rsvr->err_total;
-            log_error(rsvr->log, "Header is invalid! Mark:%u/%u type:%d len:%d flag:%d",
+            log_error(rsvr->log, "Header is invalid! Mark:%u/%u type:0x%04X len:%d flag:%d",
                     head->chksum, RTMQ_CHKSUM_VAL, head->type, head->length, head->flag);
             return RTMQ_ERR;
         }
@@ -645,7 +635,7 @@ static int rtmq_rsvr_data_proc(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t *
         /* 2.3 进行数据处理 */
         if (RTMQ_SYS_MESG == head->flag) {
             if (rtmq_rsvr_sys_mesg_proc(ctx, rsvr, sck, curr->optr)) {
-                log_error(rsvr->log, "Proc system message failed! ype:%d len:%d flag:%d",
+                log_error(rsvr->log, "Proc system message failed! type:0x%04X len:%d flag:%d",
                         head->type, head->length, head->flag);
                 return RTMQ_ERR;
             }
@@ -1402,8 +1392,6 @@ static int rtmq_rsvr_cmd_proc_req(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, int rqid)
 {
     int widx;
     rtmq_cmd_t cmd;
-    char path[FILE_PATH_MAX_LEN];
-    rtmq_conf_t *conf = &ctx->conf;
     rtmq_cmd_proc_req_t *req = (rtmq_cmd_proc_req_t *)&cmd.param;
 
     memset(&cmd, 0, sizeof(cmd));
@@ -1417,17 +1405,9 @@ static int rtmq_rsvr_cmd_proc_req(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, int rqid)
     /* widx = rtmq_rand_work(ctx); */
     widx = rqid / RTMQ_WORKER_HDL_QNUM;
 
-    rtmq_worker_usck_path(conf, path, widx);
-
     /* 2. 发送处理命令 */
-    if (unix_udp_send(rsvr->cmd_fd, path, &cmd, sizeof(rtmq_cmd_t)) < 0) {
-        if (EAGAIN != errno) {
-            log_error(rsvr->log, "Send command failed! errmsg:[%d] %s! path:[%s]",
-                      errno, strerror(errno), path);
-        }
-        return RTMQ_ERR;
-    }
-
+    write(ctx->work_cmd_fd[widx].fd[1], &cmd, sizeof(cmd));
+    
     return RTMQ_OK;
 }
 

@@ -16,11 +16,6 @@
 /* 静态函数 */
 static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn);
 
-static int rtmq_lsn_cmd_core_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn);
-static int rtmq_lsn_cmd_query_conf_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd);
-static int rtmq_lsn_cmd_query_recv_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd);
-static int rtmq_lsn_cmd_query_proc_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd);
-
 /******************************************************************************
  **函数名称: rtmq_lsn_routine
  **功    能: 启动SDTP侦听线程
@@ -51,9 +46,8 @@ void *rtmq_lsn_routine(void *param)
         FD_ZERO(&rdset);
 
         FD_SET(lsn->lsn_sck_id, &rdset);
-        FD_SET(lsn->cmd_fd, &rdset);
 
-        max = MAX(lsn->lsn_sck_id, lsn->cmd_fd);
+        max = lsn->lsn_sck_id;
 
         timeout.tv_sec = RTMQ_LSN_TMOUT_SEC;
         timeout.tv_usec = RTMQ_LSN_TMOUT_USEC;
@@ -70,11 +64,6 @@ void *rtmq_lsn_routine(void *param)
         /* 3. 接收连接请求 */
         if (FD_ISSET(lsn->lsn_sck_id, &rdset)) {
             rtmq_lsn_accept(ctx, lsn);
-        }
-
-        /* 4. 接收处理命令 */
-        if (FD_ISSET(lsn->cmd_fd, &rdset)) {
-            rtmq_lsn_cmd_core_hdl(ctx, lsn);
         }
     }
 
@@ -97,49 +86,18 @@ void *rtmq_lsn_routine(void *param)
  ******************************************************************************/
 int rtmq_lsn_init(rtmq_cntx_t *ctx)
 {
-    char path[FILE_NAME_MAX_LEN];
     rtmq_listen_t *lsn = &ctx->listen;
     rtmq_conf_t *conf = &ctx->conf;
 
     lsn->log = ctx->log;
 
     /* 1. 侦听指定端口 */
-    lsn->lsn_sck_id = tcp_listen(ctx->conf.port);
+    lsn->lsn_sck_id = tcp_listen(conf->port);
     if (lsn->lsn_sck_id < 0) {
         log_error(lsn->log, "Listen special port failed!");
         return RTMQ_ERR;
     }
 
-    /* 2. 创建CMD套接字 */
-    rtmq_lsn_usck_path(conf, path);
-
-    lsn->cmd_fd = unix_udp_creat(path);
-    if (lsn->cmd_fd < 0) {
-        CLOSE(lsn->lsn_sck_id);
-        log_error(lsn->log, "Create unix udp socket failed!");
-        return RTMQ_ERR;
-    }
-
-    return RTMQ_OK;
-}
-
-/******************************************************************************
- **函数名称: rtmq_lsn_destroy
- **功    能: 销毁侦听线程
- **输入参数:
- **     lsn: 侦听对象
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2015.01.07 #
- ******************************************************************************/
-int rtmq_lsn_destroy(rtmq_listen_t *lsn)
-{
-    CLOSE(lsn->lsn_sck_id);
-    CLOSE(lsn->cmd_fd);
-
-    pthread_cancel(lsn->tid);
     return RTMQ_OK;
 }
 
@@ -207,182 +165,10 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
 
     cmd.type = RTMQ_CMD_ADD_SCK;
 
-    rtmq_cmd_to_rsvr(ctx, lsn->cmd_fd, &cmd, idx);
+    write(ctx->recv_cmd_fd[idx].fd[1], &cmd, sizeof(cmd));
 
     log_trace(lsn->log, "Accept new connection! idx:%d sid:%lu fd:%d ip:%s",
             idx, lsn->sid, fd, item->ipaddr);
-
-    return RTMQ_OK;
-}
-
-/******************************************************************************
- **函数名称: rtmq_lsn_cmd_core_hdl
- **功    能: 接收和处理命令
- **输入参数:
- **     ctx: 全局对象
- **     lsn: 侦听对象
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **     1. 接收命令
- **     2. 处理命令
- **注意事项:
- **作    者: # Qifeng.zou # 2014.12.30 #
- ******************************************************************************/
-static int rtmq_lsn_cmd_core_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
-{
-    rtmq_cmd_t cmd;
-
-    memset(&cmd, 0, sizeof(cmd));
-
-    /* 1. 接收命令 */
-    if (unix_udp_recv(lsn->cmd_fd, (void *)&cmd, sizeof(cmd)) < 0) {
-        log_error(lsn->log, "Recv command failed! errmsg:[%d] %s", errno, strerror(errno));
-        return RTMQ_ERR_RECV_CMD;
-    }
-
-    /* 2. 处理命令 */
-    switch (cmd.type) {
-        case RTMQ_CMD_QUERY_CONF_REQ:
-            return rtmq_lsn_cmd_query_conf_hdl(ctx, lsn, &cmd);
-        case RTMQ_CMD_QUERY_RECV_STAT_REQ:
-            return rtmq_lsn_cmd_query_recv_stat_hdl(ctx, lsn, &cmd);
-        case RTMQ_CMD_QUERY_PROC_STAT_REQ:
-            return rtmq_lsn_cmd_query_proc_stat_hdl(ctx, lsn, &cmd);
-        default:
-            log_error(lsn->log, "Unknown command! type:%d", cmd.type);
-            return RTMQ_ERR_UNKNOWN_CMD;
-    }
-
-    return RTMQ_ERR_UNKNOWN_CMD;
-}
-
-/******************************************************************************
- **函数名称: rtmq_lsn_cmd_query_conf_hdl
- **功    能: 查询配置信息
- **输入参数:
- **     ctx: 全局对象
- **     lsn: 侦听对象
- **     cmd: 处理命令
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **     1. 设置应答参数
- **     2. 发送应答信息
- **注意事项:
- **作    者: # Qifeng.zou # 2014.12.30 #
- ******************************************************************************/
-static int rtmq_lsn_cmd_query_conf_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd)
-{
-    rtmq_cmd_t rep;
-    rtmq_conf_t *cf = &ctx->conf;
-    rtmq_cmd_conf_t *param = (rtmq_cmd_conf_t *)&rep.param;
-
-    memset(&rep, 0, sizeof(rep));
-
-    /* 1. 设置应答信息 */
-    rep.type = RTMQ_CMD_QUERY_CONF_ACK;
-
-    snprintf(param->path, sizeof(param->path), "%s", cf->path);
-    param->port = cf->port;
-    param->recv_thd_num = cf->recv_thd_num;
-    param->work_thd_num = cf->work_thd_num;
-    param->recvq_num = cf->recvq_num;
-
-    param->qmax = cf->recvq.max;
-    param->qsize = cf->recvq.size;
-
-    /* 2. 发送应答信息 */
-    if (unix_udp_send(lsn->cmd_fd, cmd->src_path, &rep, sizeof(rep)) < 0) {
-        if (EAGAIN != errno) {
-            log_error(lsn->log, "errmsg:[%d] %s!", errno, strerror(errno));
-        }
-        return RTMQ_ERR;
-    }
-
-    return RTMQ_OK;
-}
-
-/******************************************************************************
- **函数名称: rtmq_lsn_cmd_query_recv_stat_hdl
- **功    能: 查询接收线程状态
- **输入参数:
- **     ctx: 全局对象
- **     lsn: 侦听对象
- **     cmd: 处理命令
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **     1. 设置应答信息
- **     2. 发送应答信息
- **注意事项:
- **作    者: # Qifeng.zou # 2014.12.30 #
- ******************************************************************************/
-static int rtmq_lsn_cmd_query_recv_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd)
-{
-    int idx;
-    rtmq_cmd_t rep;
-    rtmq_cmd_recv_stat_t *stat = (rtmq_cmd_recv_stat_t *)&rep.param;
-    const rtmq_rsvr_t *rsvr = (const rtmq_rsvr_t *)ctx->recvtp->data;
-
-    for (idx=0; idx<ctx->conf.recv_thd_num; ++idx, ++rsvr) {
-        /* 1. 设置应答信息 */
-        rep.type = RTMQ_CMD_QUERY_RECV_STAT_ACK;
-
-        stat->connections = rsvr->connections;
-        stat->recv_total = rsvr->recv_total;
-        stat->drop_total = rsvr->drop_total;
-        stat->err_total = rsvr->err_total;
-
-        /* 2. 发送命令信息 */
-        if (unix_udp_send(rsvr->cmd_fd, cmd->src_path, &rep, sizeof(rep)) < 0) {
-            if (EAGAIN != errno) {
-                log_error(lsn->log, "errmsg:[%d] %s!", errno, strerror(errno));
-            }
-            return RTMQ_ERR;
-        }
-    }
-    return RTMQ_OK;
-}
-
-/******************************************************************************
- **函数名称: rtmq_lsn_cmd_query_proc_stat_hdl
- **功    能: 查询工作线程状态
- **输入参数:
- **     ctx: 全局对象
- **     lsn: 侦听对象
- **     cmd: 处理命令
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **     1. 设置应答信息
- **     2. 发送应答信息
- **注意事项:
- **作    者: # Qifeng.zou # 2014.12.30 #
- ******************************************************************************/
-static int rtmq_lsn_cmd_query_proc_stat_hdl(rtmq_cntx_t *ctx, rtmq_listen_t *lsn, rtmq_cmd_t *cmd)
-{
-    int idx;
-    rtmq_cmd_t rep;
-    const rtmq_worker_t *wrk = (rtmq_worker_t *)ctx->worktp->data;
-    rtmq_cmd_proc_stat_t *stat = (rtmq_cmd_proc_stat_t *)&rep.param;
-
-    for (idx=0; idx<ctx->conf.work_thd_num; ++idx, ++wrk) {
-        /* > 设置应答信息 */
-        rep.type = RTMQ_CMD_QUERY_PROC_STAT_ACK;
-
-        stat->proc_total = wrk->proc_total;
-        stat->drop_total = wrk->drop_total;
-        stat->err_total = wrk->err_total;
-
-        /* > 发送应答信息 */
-        if (unix_udp_send(wrk->cmd_fd, cmd->src_path, &rep, sizeof(rep)) < 0) {
-            if (EAGAIN != errno) {
-                log_error(lsn->log, "errmsg:[%d] %s!", errno, strerror(errno));
-            }
-            return RTMQ_ERR;
-        }
-    }
 
     return RTMQ_OK;
 }

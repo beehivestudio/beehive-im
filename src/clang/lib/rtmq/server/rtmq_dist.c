@@ -82,8 +82,6 @@ void *rtmq_dsvr_routine(void *_ctx)
 static rtmq_dsvr_t *rtmq_dsvr_init(rtmq_cntx_t *ctx)
 {
     rtmq_dsvr_t *dsvr;
-    char path[FILE_NAME_MAX_LEN];
-    rtmq_conf_t *conf = &ctx->conf;
 
     /* > 创建对象 */
     dsvr = (rtmq_dsvr_t *)calloc(1, sizeof(rtmq_dsvr_t));
@@ -93,16 +91,7 @@ static rtmq_dsvr_t *rtmq_dsvr_init(rtmq_cntx_t *ctx)
     }
 
     dsvr->log = ctx->log;
-
-    /* > 创建通信套接字 */
-    rtmq_dsvr_usck_path(conf, path);
-
-    dsvr->cmd_fd = unix_udp_creat(path);
-    if (dsvr->cmd_fd < 0) {
-        log_error(dsvr->log, "errmsg:[%d] %s! path:%s", errno, strerror(errno), path);
-        free(dsvr);
-        return NULL;
-    }
+    dsvr->cmd_fd = ctx->dist_cmd_fd[0].fd[0]; /* 通信管道 */
 
     return dsvr;
 }
@@ -123,15 +112,12 @@ static rtmq_dsvr_t *rtmq_dsvr_init(rtmq_cntx_t *ctx)
 static int rtmq_dsvr_cmd_dist_req(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr, int idx)
 {
     rtmq_cmd_t cmd;
-    char path[FILE_NAME_MAX_LEN];
 
     memset(&cmd, 0, sizeof(cmd));
 
     cmd.type = RTMQ_CMD_DIST_REQ;
 
-    rtmq_rsvr_usck_path(&ctx->conf, path, idx);
-
-    return (unix_udp_send(dsvr->cmd_fd, path, &cmd, sizeof(cmd)) > 0)? 0 : -1;
+    return (write(ctx->recv_cmd_fd[idx].fd[1], &cmd, sizeof(cmd)) > 0)? 0 : -1;
 }
 
 /******************************************************************************
@@ -214,7 +200,7 @@ static int rtmq_dsvr_cmd_recv_and_proc(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr)
     rtmq_cmd_t cmd;
 
     /* > 接收命令 */
-    if (unix_udp_recv(dsvr->cmd_fd, &cmd, sizeof(cmd)) < 0) {
+    if (read(dsvr->cmd_fd, &cmd, sizeof(cmd)) < 0) {
         log_error(dsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }
@@ -224,14 +210,10 @@ static int rtmq_dsvr_cmd_recv_and_proc(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr)
     /* > 处理命令 */
     switch (cmd.type) {
         case RTMQ_CMD_DIST_REQ:
-        {
             return rtmq_dsvr_dist_data_hdl(ctx, dsvr);
-        }
         default:
-        {
             log_error(dsvr->log, "Unknown command! type:%d", cmd.type);
             return RTMQ_ERR;
-        }
     }
 
     log_error(dsvr->log, "Unknown command! type:%d", cmd.type);

@@ -21,25 +21,6 @@
 #define RTMQ_CTX_POOL_SIZE          (5 * MB)/* 全局内存池空间 */
 #define RTMQ_CONNQ_LEN              (8192)  /* 连接队列长度 */
 
-/* Recv线程的UNIX-UDP路径 */
-#define rtmq_rsvr_usck_path(conf, _path, tidx) \
-    snprintf(_path, sizeof(_path), "%s/%d_rsvr_%d.usck", (conf)->path, (conf)->nid, tidx+1)
-/* Worker线程的UNIX-UDP路径 */
-#define rtmq_worker_usck_path(conf, _path, tidx) \
-    snprintf(_path, sizeof(_path), "%s/%d_wsvr_%d.usck", (conf)->path, (conf)->nid, tidx+1)
-/* Listen线程的UNIX-UDP路径 */
-#define rtmq_lsn_usck_path(conf, _path) \
-    snprintf(_path, sizeof(_path), "%s/%d_lsn.usck", (conf)->path, (conf)->nid)
-/* 分发线程的UNIX-UDP路径 */
-#define rtmq_dsvr_usck_path(conf, _path) \
-    snprintf(_path, sizeof(_path), "%s/%d_dsvr.usck", (conf)->path, (conf)->nid)
-/* 客户端的通信路径 */
-#define rtmq_cli_unix_path(conf, _path) \
-    snprintf(_path, sizeof(_path), "%s/%d_cli.usck", (conf)->path, (conf)->nid)
-/* RTMQ服务端文件锁路径 */
-#define rtmq_lock_path(conf, _path) \
-    snprintf(_path, sizeof(_path), "%s/%d.lck", (conf)->path, (conf)->nid)
-
 /* 鉴权信息 */
 typedef struct
 {
@@ -51,7 +32,6 @@ typedef struct
 typedef struct
 {
     int nid;                            /* 节点ID(唯一值: 不允许重复) */
-    char path[FILE_NAME_MAX_LEN];       /* 工作路径 */
 
     list_t *auth;                       /* 鉴权列表 */
 
@@ -71,10 +51,9 @@ typedef struct
 {
     pthread_t tid;                      /* 侦听线程ID */
     log_cycle_t *log;                   /* 日志对象 */
-    int cmd_fd;                     /* 命令套接字 */
     int lsn_sck_id;                     /* 侦听套接字 */
 
-    uint64_t sid;                       /* Session ID */
+    uint64_t sid;                       /* 会话ID(递增) */
 } rtmq_listen_t;
 
 /* 套接字信息 */
@@ -118,7 +97,6 @@ typedef struct
     log_cycle_t *log;                   /* 日志对象 */
     void *ctx;                          /* 全局对象(rtmq_cntx_t) */
 
-    int fd[2];                          /* 通信FD(0:读 1:写) */
     int cmd_fd;                         /* 命令套接字 */
 
     int max;                            /* 最大套接字 */
@@ -160,15 +138,18 @@ typedef struct
     avl_tree_t *auth;                   /* 鉴权信息(注: 存储rtmq_auth_t数据) */
 
     rtmq_listen_t listen;               /* 侦听对象 */
-    thread_pool_t *recvtp;              /* 接收线程池 */
-    thread_pool_t *worktp;              /* 工作线程池 */
 
-    int cmd_fd;                     /* 命令套接字(注: 用于给各线程发送命令) */
-    spinlock_t cmd_sck_lock;            /* 命令套接字锁 */
+    rtmq_pipe_t *recv_cmd_fd;           /* 接收线程通信FD */
+    thread_pool_t *recvtp;              /* 接收线程池 */
+
+    rtmq_pipe_t *work_cmd_fd;           /* 工作线程通信FD */
+    thread_pool_t *worktp;              /* 工作线程池 */
 
     queue_t **connq;                    /* 连接队列(注:其长度与recvtp一致) */
     queue_t **recvq;                    /* 接收队列(内部队列) */
     ring_t **sendq;                     /* 发送队列(内部队列) */
+
+    rtmq_pipe_t *dist_cmd_fd;           /* 分发线程通信FD(分发线程只有1个) */
     ring_t **distq;                     /* 分发队列(外部队列)
                                            注: 外部接口首先将要发送的数据放入
                                            此队列, 再从此队列分发到不同的线程队列 */
@@ -192,7 +173,6 @@ bool rtmq_conf_isvalid(const rtmq_conf_t *conf);
 
 int rtmq_lsn_init(rtmq_cntx_t *ctx);
 void *rtmq_lsn_routine(void *_ctx);
-int rtmq_lsn_destroy(rtmq_listen_t *lsn);
 
 void *rtmq_dsvr_routine(void *_ctx);
 
@@ -204,7 +184,6 @@ int rtmq_worker_init(rtmq_cntx_t *ctx, rtmq_worker_t *worker, int tidx);
 
 void rtmq_rsvr_del_all_conn_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr);
 
-int rtmq_cmd_to_rsvr(rtmq_cntx_t *ctx, int cmd_fd, const rtmq_cmd_t *cmd, int idx);
 int rtmq_link_auth_check(rtmq_cntx_t *ctx, rtmq_link_auth_req_t *link_auth_req);
 
 shm_queue_t *rtmq_shm_distq_creat(const rtmq_conf_t *conf, int idx);

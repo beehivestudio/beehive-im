@@ -16,7 +16,6 @@
 bool rtmq_conf_isvalid(const rtmq_conf_t *conf)
 {
     if ((0 == conf->nid)
-        || (0 == strlen(conf->path))
         || (NULL == conf->auth)
         || ((0 == conf->port) || (conf->port > 65535))
         || (0 == conf->recv_thd_num)
@@ -29,39 +28,6 @@ bool rtmq_conf_isvalid(const rtmq_conf_t *conf)
         return false;
     }
     return true;
-}
-
-/******************************************************************************
- **函数名称: rtmq_cmd_to_rsvr
- **功    能: 发送命令到指定的接收线程
- **输入参数:
- **     ctx: 全局对象
- **     cmd_fd: 命令套接字
- **     cmd: 处理命令
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **     1. 随机选择接收线程
- **     2. 发送命令至接收线程
- **注意事项: 如果发送失败，最多重复3次发送!
- **作    者: # Qifeng.zou # 2015.01.09 #
- ******************************************************************************/
-int rtmq_cmd_to_rsvr(rtmq_cntx_t *ctx, int cmd_fd, const rtmq_cmd_t *cmd, int idx)
-{
-    char path[FILE_PATH_MAX_LEN];
-
-    rtmq_rsvr_usck_path(&ctx->conf, path, idx);
-
-    /* 发送命令至接收线程 */
-    if (unix_udp_send(cmd_fd, path, cmd, sizeof(rtmq_cmd_t)) < 0) {
-        if (EAGAIN != errno) {
-            log_error(ctx->log, "errmsg:[%d] %s! path:%s type:%d",
-                      errno, strerror(errno), path, cmd->type);
-        }
-        return RTMQ_ERR;
-    }
-
-    return RTMQ_OK;
 }
 
 /******************************************************************************
