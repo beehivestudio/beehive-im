@@ -8,7 +8,6 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 
-	"beehive-im/src/golang/lib/chat"
 	"beehive-im/src/golang/lib/comm"
 )
 
@@ -104,9 +103,6 @@ func CleanSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) erro
 		return nil
 	}
 
-	/* > 清理相关资源 */
-	chat.RoomCleanBySid(pool, attr.uid, attr.nid, sid)
-
 	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
 
 	return nil
@@ -134,12 +130,6 @@ func CleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
 		pl.Close()
 	}()
 
-	/* > 获取SID对应的数据 */
-	attr, err := GetSidAttr(pool, sid)
-	if nil != err {
-		return err
-	}
-
 	/* > 删除SID对应的数据 */
 	key := fmt.Sprintf(comm.IM_KEY_SID_ATTR, sid)
 
@@ -150,9 +140,6 @@ func CleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
 		pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
 		return nil
 	}
-
-	/* > 清理相关资源 */
-	chat.RoomCleanBySid(pool, attr.uid, attr.nid, sid)
 
 	pl.Send("ZREM", comm.IM_KEY_SID_ZSET, sid)
 
@@ -198,9 +185,6 @@ func UpdateSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) (co
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, sid)
 	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, attr.uid)
-
-	/* > 更新聊天室信息 */
-	chat.RoomUpdateBySid(pool, attr.uid, attr.nid, sid)
 
 	return 0, nil
 }
