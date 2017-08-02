@@ -205,17 +205,16 @@ static int rtmq_dsvr_cmd_recv_and_proc(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr)
         return RTMQ_ERR;
     }
 
-    log_trace(dsvr->log, "Recv command! type:%d", cmd.type);
+    log_trace(dsvr->log, "Recv command! type:0x%04X", cmd.type);
 
     /* > 处理命令 */
     switch (cmd.type) {
         case RTMQ_CMD_DIST_REQ:
             return rtmq_dsvr_dist_data_hdl(ctx, dsvr);
         default:
-            log_error(dsvr->log, "Unknown command! type:%d", cmd.type);
+            log_error(dsvr->log, "Unknown command! type:0x%04X", cmd.type);
             return RTMQ_ERR;
     }
 
-    log_error(dsvr->log, "Unknown command! type:%d", cmd.type);
     return RTMQ_ERR;
 }
