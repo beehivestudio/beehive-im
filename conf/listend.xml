@@ -1,5 +1,5 @@
 <!-- 代理服务配置信息 -->
-<LISTEND GID="10001" ID="10001" WORKDIR="../.temp/listend/">
+<LISTEND GID="10001" ID="10001">
     <!-- 运营商配置
         1) ID: 运营商ID(与ipdict.txt中的ID一致)
         2) NATION: 所属国家 -->

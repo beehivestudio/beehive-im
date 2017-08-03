@@ -1,5 +1,5 @@
 <!-- 转发器配置 -->
-<FRWDER ID="20001" NAME="frwder">
+<FRWDER ID="20001">
     <!-- 下行配置 -->
     <FORWARD PORT="28888">
         <AUTH>                                                <!-- 鉴权配置 -->
