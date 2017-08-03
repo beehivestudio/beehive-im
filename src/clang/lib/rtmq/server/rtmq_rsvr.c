@@ -1262,18 +1262,20 @@ static void rtmq_rsvr_sck_free(rtmq_rsvr_t *rsvr, rtmq_sck_t *sck)
 static int rtmq_rsvr_add_conn_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
 {
     int num, idx;
+    queue_t *connq;
     rtmq_sck_t *sck;
     rtmq_conf_t *conf = &ctx->conf;
     rtmq_conn_item_t *item[RTMQ_CONNQ_LEN];
 
+    connq = ctx->connq[rsvr->id];
     while (1) {
         /* > 获取新建连接 */
-        num = MIN(queue_used(ctx->connq[rsvr->id]), RTMQ_CONNQ_LEN);
+        num = MIN(queue_used(connq), RTMQ_CONNQ_LEN);
         if (0 == num) {
             return RTMQ_OK;
         }
 
-        num = queue_mpop(ctx->connq[rsvr->id], (void **)item, num);
+        num = queue_mpop(connq, (void **)item, num);
         if (0 == num) {
             continue;
         }
@@ -1283,6 +1285,7 @@ static int rtmq_rsvr_add_conn_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
             sck = rtmq_rsvr_sck_creat(rsvr, item[idx]);
             if (NULL == sck) {
                 log_error(rsvr->log, "Create socket object failed!");
+                queue_dealloc(connq, item[idx]);
                 continue;
             }
 
@@ -1290,6 +1293,7 @@ static int rtmq_rsvr_add_conn_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
             if (list2_rpush(rsvr->conn_list, (void *)sck)) {
                 log_error(rsvr->log, "Insert into list failed!");
                 rtmq_rsvr_sck_free(rsvr, sck);
+                queue_dealloc(connq, item[idx]);
                 continue;
             }
 
@@ -1297,6 +1301,7 @@ static int rtmq_rsvr_add_conn_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
             if (wiov_init(&sck->send, 2 * conf->sendq.max)) {
                 log_error(rsvr->log, "Init wiov failed!");
                 rtmq_rsvr_sck_free(rsvr, sck);
+                queue_dealloc(connq, item[idx]);
                 continue;
             }
 
@@ -1304,6 +1309,7 @@ static int rtmq_rsvr_add_conn_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
 
             log_trace(rsvr->log, "Add socket success! tid:%d fd:%d ipaddr:%s",
                     rsvr->id, item[idx]->fd, item[idx]->ipaddr);
+            queue_dealloc(connq, item[idx]);
         }
     }
 

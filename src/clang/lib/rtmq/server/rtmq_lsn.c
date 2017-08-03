@@ -149,7 +149,8 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
     item = queue_malloc(ctx->connq[idx], sizeof(rtmq_conn_item_t));
     if (NULL == item) {
         close(fd);
-        log_error(lsn->log, "Alloc from conn queue failed!");
+        log_error(lsn->log, "Alloc from conn queue failed! idx:%d size:%d|%d",
+                idx, queue_space(ctx->connq[idx]), sizeof(rtmq_conn_item_t));
         return RTMQ_ERR;
     }
 
