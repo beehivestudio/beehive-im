@@ -8,8 +8,6 @@
 #include "rtmq_proxy.h"
 #include "rtmq_proxy_ssvr.h"
 
-#define FRWD_CMD_PATH "../.temp/frwder/cmd.usck"
-
 typedef enum
 {
     FRWD_OK                                 /* 正常 */
@@ -29,7 +27,6 @@ typedef struct
 /* 全局对象 */
 typedef struct
 {
-    int cmd_sck_id;                         /* 命令套接字 */
     frwd_conf_t conf;                       /* 配置信息 */
     log_cycle_t *log;                       /* 日志对象 */
     rtmq_cntx_t *backend;                   /* Backend对象 */

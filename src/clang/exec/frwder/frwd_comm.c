@@ -111,7 +111,6 @@ int frwd_usage(const char *exec)
 frwd_cntx_t *frwd_init(const frwd_conf_t *conf, log_cycle_t *log)
 {
     frwd_cntx_t *frwd;
-    char path[FILE_PATH_MAX_LEN];
 
     frwd = (frwd_cntx_t *)calloc(1, sizeof(frwd_cntx_t));
     if (NULL == frwd) {
@@ -123,15 +122,6 @@ frwd_cntx_t *frwd_init(const frwd_conf_t *conf, log_cycle_t *log)
     memcpy(&frwd->conf, conf, sizeof(frwd_conf_t));
 
     do {
-        /* > 创建命令套接字 */
-        snprintf(path, sizeof(path), FRWD_CMD_PATH);
-
-        frwd->cmd_sck_id = unix_udp_creat(path);
-        if (frwd->cmd_sck_id < 0) {
-            fprintf(stderr, "errmsg:[%d] %s! path:%s\n", errno, strerror(errno), path);
-            break;
-        }
-
         /* > 初始化RTMQ服务 */
         frwd->backend = rtmq_init(&conf->backend, frwd->log);
         if (NULL == frwd->backend) {
