@@ -8,10 +8,6 @@
 #include "rtmq_comm.h"
 #include "thread_pool.h"
 
-/* 加锁路径 */
-#define rtmq_proxy_lock_path(conf, _path) \
-    snprintf(_path, sizeof(_path), "%s/rtmq/%d.lock", (conf)->path, (conf)->nid)
-
 /* 套接字信息 */
 typedef struct
 {
