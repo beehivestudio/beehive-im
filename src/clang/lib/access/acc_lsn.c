@@ -70,10 +70,9 @@ void *acc_lsvr_routine(void *_ctx)
     while (1) {
         FD_ZERO(&rdset);
 
-        FD_SET(lsvr->cmd_sck_id, &rdset);
         FD_SET(ctx->listen.lsn_sck_id, &rdset);
 
-        max = MAX(ctx->listen.lsn_sck_id, lsvr->cmd_sck_id);
+        max = ctx->listen.lsn_sck_id;
 
         /* > 等待事件通知 */
         tv.tv_sec = 1;

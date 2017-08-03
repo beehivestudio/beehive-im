@@ -9,7 +9,6 @@ typedef struct
 {
     int id;                                 /* 线程ID(从0开始计数) */
 
-    int cmd_sck_id;                         /* 命令套接字 */
     log_cycle_t *log;                       /* 日志对象 */
 } acc_lsvr_t;
 
