@@ -49,7 +49,7 @@ static int rtmq_proxy_ssvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t
  **作    者: # Qifeng.zou # 2015.01.14, 2017-07-20 15:31:33 #
  ******************************************************************************/
 int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
-        int idx, const char *ipaddr, int port, queue_t *sendq, rtmq_pipe_t *pipe)
+        int idx, const char *ipaddr, int port, queue_t *sendq, pipe_t *pipe)
 {
     void *addr;
     rtmq_proxy_conf_t *conf = &pxy->conf;
@@ -1028,7 +1028,7 @@ static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ss
     req->rqidx = rqid;
 
     /* > 发送处理命令 */
-    return write(pxy->work_cmd_fd[rqid].fd[1], &cmd, sizeof(rtmq_cmd_t));
+    return pipe_write(&pxy->work_cmd_fd[rqid], &cmd, sizeof(rtmq_cmd_t));
 }
 
 /******************************************************************************

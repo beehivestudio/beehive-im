@@ -11,7 +11,6 @@
 typedef struct
 {
     int nid;                                /* 结点名ID */
-    char name[NODE_MAX_LEN];                /* 结点名 */
     rtmq_conf_t backend;                    /* Backend配置 */
     rtmq_conf_t forward;                    /* Forward配置 */
 } frwd_conf_t;

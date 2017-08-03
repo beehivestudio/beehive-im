@@ -4,6 +4,7 @@
 #include "sck.h"
 #include "log.h"
 #include "comm.h"
+#include "pipe.h"
 #include "queue.h"
 #include "iovec.h"
 #include "rtmq_mesg.h"
@@ -38,12 +39,6 @@ typedef enum
     , RTMQ_ERR_TOO_LONG                 /* 数据太长 */
     , RTMQ_ERR_UNKNOWN_CMD              /* 未知命令类型 */
 } rtmq_err_e;
-
-/* 通信管道 */
-typedef struct
-{
-    int fd[2];                          /* 通信管道(0:读 1:写) */
-} rtmq_pipe_t;
 
 /* 鉴权配置 */
 typedef struct

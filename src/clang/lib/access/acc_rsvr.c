@@ -93,7 +93,7 @@ static int agt_rsvr_recv_cmd_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sc
 
     while (1) {
         /* > 接收命令 */
-        if (unix_udp_recv(sck->fd, &cmd, sizeof(cmd)) < 0) {
+        if (read(sck->fd, &cmd, sizeof(cmd)) < 0) {
             return ACC_SCK_AGAIN;
         }
 
@@ -139,13 +139,15 @@ int acc_rsvr_init(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int idx)
 {
     struct epoll_event ev;
     acc_socket_extra_t *extra;
-    char path[FILE_NAME_MAX_LEN];
-    acc_conf_t *conf = ctx->conf;
     socket_t *cmd_sck = &rsvr->cmd_sck;
 
     rsvr->id = idx;
     rsvr->log = ctx->log;
     rsvr->recv_seq = 0;
+
+    rsvr->sendq = ctx->sendq[idx];
+    rsvr->connq = ctx->connq[idx];
+    rsvr->kickq = ctx->kickq[idx];
 
     do {
         /* > 创建epoll对象 */
@@ -170,15 +172,7 @@ int acc_rsvr_init(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int idx)
 
         extra->sck = cmd_sck;
         cmd_sck->extra = extra;
-
-        /* > 创建命令套接字 */
-        acc_rsvr_cmd_usck_path(conf, rsvr->id, path, sizeof(path));
-
-        cmd_sck->fd = unix_udp_creat(path);
-        if (cmd_sck->fd < 0) {
-            log_error(rsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
-            break;
-        }
+        cmd_sck->fd = ctx->rsvr_cmd_fd[idx].fd[0];
 
         ftime(&cmd_sck->ctm);
         cmd_sck->wrtm = cmd_sck->rdtm = cmd_sck->ctm.time;
@@ -442,19 +436,21 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 #define AGT_RSVR_CONN_POP_NUM (1024)
     int num, idx;
     socket_t *sck;
+    queue_t *connq;
     struct epoll_event ev;
     time_t ctm = time(NULL);
     acc_socket_extra_t *extra;
     acc_add_sck_t *add[AGT_RSVR_CONN_POP_NUM];
 
+    connq = rsvr->connq;
     while (1) {
-        num = MIN(queue_used(ctx->connq[rsvr->id]), AGT_RSVR_CONN_POP_NUM);
+        num = MIN(queue_used(connq), AGT_RSVR_CONN_POP_NUM);
         if (0 == num) {
             return ACC_OK;
         }
 
         /* > 取数据 */
-        num = queue_mpop(ctx->connq[rsvr->id], (void **)add, num);
+        num = queue_mpop(connq, (void **)add, num);
         if (0 == num) {
             continue;
         }
@@ -465,7 +461,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             if (NULL == sck) {
                 log_error(rsvr->log, "Alloc memory failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
-                queue_dealloc(ctx->connq[rsvr->id], add[idx]);
+                queue_dealloc(connq, add[idx]);
                 continue;
             }
 
@@ -477,7 +473,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
                 log_error(rsvr->log, "Alloc memory failed! cid:%lu", add[idx]->cid);
                 CLOSE(add[idx]->fd);
                 FREE(sck);
-                queue_dealloc(ctx->connq[rsvr->id], add[idx]);
+                queue_dealloc(connq, add[idx]);
                 continue;
             }
 
@@ -487,7 +483,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
                 CLOSE(add[idx]->fd);
                 FREE(sck);
                 FREE(extra);
-                queue_dealloc(ctx->connq[rsvr->id], add[idx]);
+                queue_dealloc(connq, add[idx]);
                 continue;
             }
 
@@ -501,7 +497,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
                 FREE(extra->user);
                 FREE(extra);
                 FREE(sck);
-                queue_dealloc(ctx->connq[rsvr->id], add[idx]);
+                queue_dealloc(connq, add[idx]);
                 continue;
             }
 
@@ -516,7 +512,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             sck->recv_cb = (socket_recv_cb_t)acc_recv_data;   /* Recv回调函数 */
             sck->send_cb = (socket_send_cb_t)acc_send_data;   /* Send回调函数*/
 
-            queue_dealloc(ctx->connq[rsvr->id], add[idx]);      /* 释放连接队列空间 */
+            queue_dealloc(connq, add[idx]);      /* 释放连接队列空间 */
 
             /* > 插入红黑树中(以序列号为主键) */
             if (acc_conn_cid_tab_add(ctx, extra)) {
@@ -908,7 +904,7 @@ static int acc_rsvr_dist_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
     struct epoll_event ev;
     void *addr[AGT_RSVR_DIST_POP_NUM];
 
-    sendq = ctx->sendq[rsvr->id];
+    sendq = rsvr->sendq;
     while (1) {
         num = MIN(ring_used(sendq), AGT_RSVR_DIST_POP_NUM);
         if (0 == num) {
@@ -1011,7 +1007,7 @@ static int acc_rsvr_kick_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
     acc_socket_extra_t *extra, key;
     void *addr[AGT_RSVR_DIST_POP_NUM];
 
-    kickq = ctx->kickq[rsvr->id];
+    kickq = rsvr->kickq;
     while (1) {
         num = MIN(queue_used(kickq), AGT_RSVR_DIST_POP_NUM);
         if (0 == num) {

@@ -20,16 +20,11 @@
 static int acc_send_cmd_to_rsvr(acc_cntx_t *ctx, int rid, int cmd_id)
 {
     cmd_data_t cmd;
-    char path[FILE_PATH_MAX_LEN];
-    acc_conf_t *conf = ctx->conf;
 
     cmd.type = cmd_id;
-    acc_rsvr_cmd_usck_path(conf, rid, path, sizeof(path));
 
-    return unix_udp_send(ctx->cmd_sck_id, path, (void *)&cmd, sizeof(cmd));
+    return pipe_write(&ctx->rsvr_cmd_fd[rid], (void *)&cmd, sizeof(cmd));
 }
-
-
 
 /******************************************************************************
  **函数名称: acc_async_send

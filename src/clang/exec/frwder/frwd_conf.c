@@ -99,16 +99,6 @@ static int frwd_conf_parse_comm(xml_tree_t *xml, frwd_conf_t *conf)
 
     conf->nid = str_to_num(node->value.str);
 
-    /* > 结点名 */
-    node = xml_query(xml, ".FRWDER.NAME");
-    if (NULL == node
-        || 0 == node->value.len)
-    {
-        return -1;
-    }
-
-    snprintf(conf->name, sizeof(conf->name), "%s", node->value.str);
-
     return 0;
 }
 

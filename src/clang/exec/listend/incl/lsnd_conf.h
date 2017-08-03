@@ -10,7 +10,6 @@ typedef struct
 {
     int gid;                        /* 分组ID */
     int nid;                        /* 结点ID */
-    char wdir[FILE_PATH_MAX_LEN];   /* 工作路径 */
 
     struct {
         uint32_t id;                /* 运营商ID */

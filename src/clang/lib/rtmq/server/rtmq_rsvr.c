@@ -1412,7 +1412,7 @@ static int rtmq_rsvr_cmd_proc_req(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, int rqid)
     widx = rqid / RTMQ_WORKER_HDL_QNUM;
 
     /* 2. 发送处理命令 */
-    write(ctx->work_cmd_fd[widx].fd[1], &cmd, sizeof(cmd));
+    pipe_write(&ctx->work_cmd_fd[widx], &cmd, sizeof(cmd));
     
     return RTMQ_OK;
 }

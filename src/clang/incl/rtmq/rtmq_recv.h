@@ -139,17 +139,17 @@ typedef struct
 
     rtmq_listen_t listen;               /* 侦听对象 */
 
-    rtmq_pipe_t *recv_cmd_fd;           /* 接收线程通信FD */
+    pipe_t *recv_cmd_fd;                /* 接收线程通信FD */
     thread_pool_t *recvtp;              /* 接收线程池 */
 
-    rtmq_pipe_t *work_cmd_fd;           /* 工作线程通信FD */
+    pipe_t *work_cmd_fd;                /* 工作线程通信FD */
     thread_pool_t *worktp;              /* 工作线程池 */
 
     queue_t **connq;                    /* 连接队列(注:其长度与recvtp一致) */
     queue_t **recvq;                    /* 接收队列(内部队列) */
     ring_t **sendq;                     /* 发送队列(内部队列) */
 
-    rtmq_pipe_t *dist_cmd_fd;           /* 分发线程通信FD(分发线程只有1个) */
+    pipe_t *dist_cmd_fd;                /* 分发线程通信FD(分发线程只有1个) */
     ring_t **distq;                     /* 分发队列(外部队列)
                                            注: 外部接口首先将要发送的数据放入
                                            此队列, 再从此队列分发到不同的线程队列 */

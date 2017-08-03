@@ -108,41 +108,6 @@ LSND_INIT_ERR:
     return -1;
 }
 
-/******************************************************************************
- **函数名称: lsnd_proc_lock
- **功    能: 代理服务进程锁(防止同时启动两个服务进程)
- **输入参数: NONE
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述: 使用文件锁
- **注意事项:
- **作    者: # Qifeng.zou # 2014.11.15 #
- ******************************************************************************/
-static int lsnd_proc_lock(lsnd_conf_t *conf)
-{
-    int fd;
-    char path[FILE_PATH_MAX_LEN];
-
-    /* 1. 获取路径 */
-    snprintf(path, sizeof(path), "%s/lsnd.lck", conf->wdir);
-
-    Mkdir2(path, DIR_MODE);
-
-    /* 2. 打开文件 */
-    fd = Open(path, OPEN_FLAGS, OPEN_MODE);
-    if (fd < 0) {
-        return -1;
-    }
-
-    /* 3. 尝试加锁 */
-    if (proc_try_wrlock(fd) < 0) {
-        CLOSE(fd);
-        return -1;
-    }
-
-    return 0;
-}
-
 /* 注册比较回调 */
 static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
 {
@@ -212,12 +177,6 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
         (acc_get_packet_body_size_cb_t)lsnd_mesg_body_length,
         sizeof(lsnd_conn_extra_t)
     };
-
-    /* > 加进程锁 */
-    if (lsnd_proc_lock(conf)) {
-        log_error(log, "errmsg:[%d] %s!", errno, strerror(errno));
-        return NULL;
-    }
 
     /* > 创建全局对象 */
     ctx = (lsnd_cntx_t *)calloc(1, sizeof(lsnd_cntx_t));

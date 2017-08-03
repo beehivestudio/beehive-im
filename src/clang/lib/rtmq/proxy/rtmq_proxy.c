@@ -57,17 +57,14 @@ static int rtmq_proxy_creat_work_cmd_fd(rtmq_proxy_t *pxy)
     int idx;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
-    pxy->work_cmd_fd = (rtmq_pipe_t *)calloc(conf->work_thd_num, sizeof(rtmq_pipe_t));
+    pxy->work_cmd_fd = (pipe_t *)calloc(conf->work_thd_num, sizeof(pipe_t));
     if (NULL == pxy->work_cmd_fd) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_OK;
     }
 
     for (idx=0; idx<conf->work_thd_num; idx+=1) {
-        pipe(pxy->work_cmd_fd[idx].fd);
-
-        fd_set_nonblocking(pxy->work_cmd_fd[idx].fd[0]);
-        fd_set_nonblocking(pxy->work_cmd_fd[idx].fd[1]);
+        pipe_creat(&pxy->work_cmd_fd[idx]);
     }
 
     return RTMQ_OK;
@@ -111,17 +108,14 @@ static int rtmq_proxy_creat_send_cmd_fd(rtmq_proxy_t *pxy)
     int idx;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
-    pxy->send_cmd_fd = (rtmq_pipe_t *)calloc(conf->send_thd_num, sizeof(rtmq_pipe_t));
+    pxy->send_cmd_fd = (pipe_t *)calloc(conf->send_thd_num, sizeof(pipe_t));
     if (NULL == pxy->send_cmd_fd) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_OK;
     }
 
     for (idx=0; idx<conf->send_thd_num; idx+=1) {
-        pipe(pxy->send_cmd_fd[idx].fd);
-
-        fd_set_nonblocking(pxy->send_cmd_fd[idx].fd[0]);
-        fd_set_nonblocking(pxy->send_cmd_fd[idx].fd[1]);
+        pipe_creat(&pxy->send_cmd_fd[idx]);
     }
 
     return RTMQ_OK;
@@ -412,22 +406,11 @@ int rtmq_proxy_reg_add(rtmq_proxy_t *pxy, int type, rtmq_reg_cb_t proc, void *pa
  ******************************************************************************/
 static int rtmq_proxy_cmd_send_req(rtmq_proxy_t *pxy, int idx)
 {
-    int fd;
     rtmq_cmd_t cmd;
-
-    memset(&cmd, 0, sizeof(cmd));
 
     cmd.type = RTMQ_CMD_SEND_ALL;
 
-    fd = pxy->send_cmd_fd[idx].fd[1]; /* 写 */
-
-    if (write(fd, &cmd, sizeof(cmd)) < 0) {
-        if (EAGAIN != errno) {
-            log_debug(pxy->log, "idx:%d fd:%d errmsg:[%d] %s!",
-                    idx, fd, errno, strerror(errno));
-        }
-        return RTMQ_ERR;
-    }
+    pipe_write(&pxy->send_cmd_fd[idx], &cmd, sizeof(cmd));
 
     return RTMQ_OK;
 }

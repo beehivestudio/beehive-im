@@ -508,17 +508,14 @@ static int rtmq_creat_dist_cmd_fd(rtmq_cntx_t *ctx)
 {
     int idx, total = 1;
 
-    ctx->dist_cmd_fd = (rtmq_pipe_t *)calloc(total, sizeof(rtmq_pipe_t));
+    ctx->dist_cmd_fd = (pipe_t *)calloc(total, sizeof(pipe_t));
     if (NULL == ctx->dist_cmd_fd) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_OK;
     }
 
     for (idx=0; idx<total; idx+=1) {
-        pipe(ctx->dist_cmd_fd[idx].fd);
-
-        fd_set_nonblocking(ctx->dist_cmd_fd[idx].fd[0]);
-        fd_set_nonblocking(ctx->dist_cmd_fd[idx].fd[1]);
+        pipe_creat(&ctx->dist_cmd_fd[idx]);
     }
 
     return RTMQ_OK;
@@ -530,17 +527,14 @@ static int rtmq_creat_recv_cmd_fd(rtmq_cntx_t *ctx)
     int idx;
     rtmq_conf_t *conf = &ctx->conf;
 
-    ctx->recv_cmd_fd = (rtmq_pipe_t *)calloc(conf->recv_thd_num, sizeof(rtmq_pipe_t));
+    ctx->recv_cmd_fd = (pipe_t *)calloc(conf->recv_thd_num, sizeof(pipe_t));
     if (NULL == ctx->recv_cmd_fd) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_OK;
     }
 
     for (idx=0; idx<conf->recv_thd_num; idx+=1) {
-        pipe(ctx->recv_cmd_fd[idx].fd);
-
-        fd_set_nonblocking(ctx->recv_cmd_fd[idx].fd[0]);
-        fd_set_nonblocking(ctx->recv_cmd_fd[idx].fd[1]);
+        pipe_creat(&ctx->recv_cmd_fd[idx]);
     }
 
     return RTMQ_OK;
@@ -635,17 +629,14 @@ static int rtmq_creat_work_cmd_fd(rtmq_cntx_t *ctx)
     int idx;
     rtmq_conf_t *conf = &ctx->conf;
 
-    ctx->work_cmd_fd = (rtmq_pipe_t *)calloc(conf->work_thd_num, sizeof(rtmq_pipe_t));
+    ctx->work_cmd_fd = (pipe_t *)calloc(conf->work_thd_num, sizeof(pipe_t));
     if (NULL == ctx->work_cmd_fd) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_OK;
     }
 
     for (idx=0; idx<conf->work_thd_num; idx+=1) {
-        pipe(ctx->work_cmd_fd[idx].fd);
-
-        fd_set_nonblocking(ctx->work_cmd_fd[idx].fd[0]);
-        fd_set_nonblocking(ctx->work_cmd_fd[idx].fd[1]);
+        pipe_creat(&ctx->work_cmd_fd[idx]);
     }
 
     return RTMQ_OK;
@@ -769,7 +760,7 @@ static int rtmq_cmd_send_dist_req(rtmq_cntx_t *ctx)
 
     cmd.type = RTMQ_CMD_DIST_REQ;
 
-    if (write(ctx->dist_cmd_fd[0].fd[1], &cmd, sizeof(cmd)) < 0) {
+    if (pipe_write(&ctx->dist_cmd_fd[0], &cmd, sizeof(cmd)) < 0) {
         log_error(ctx->log, "Send dist command failed! errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }

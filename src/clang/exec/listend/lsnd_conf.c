@@ -114,16 +114,6 @@ static int lsnd_conf_load_comm(xml_tree_t *xml, lsnd_conf_t *conf, log_cycle_t *
 
     conf->nid = str_to_num(node->value.str);
 
-    /* > 加载工作路径 */
-    node = xml_query(xml, ".LISTEND.WORKDIR");
-    if (NULL == node
-        || 0 == node->value.len) {
-        log_error(log, "Get work directory failed!");
-        return -1;
-    }
-
-    snprintf(conf->wdir, sizeof(conf->wdir), "%s/%d", node->value.str, conf->nid);  /* 工作路径 */
-
     /* > 运营商配置 */
     fix = xml_query(xml, ".LISTEND.OPERATOR");
     if (NULL == fix) {
@@ -298,8 +288,6 @@ static int lsnd_conf_load_access(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t 
     xml_node_t *node, *fix;
     acc_conf_t *conf = &lcf->access;
 
-    snprintf(conf->path, sizeof(conf->path), "%s/access/", lcf->wdir); /* 工作路径 */
-
     /* > 加载结点ID */
     conf->nid = lcf->nid;
 
@@ -389,7 +377,6 @@ static int lsnd_conf_load_frwder(xml_tree_t *xml, lsnd_conf_t *lcf, log_cycle_t 
     /* > 设置结点ID */
     conf->nid = lcf->nid;
     conf->gid = lcf->gid;
-    snprintf(conf->path, sizeof(conf->path), "%s", lcf->wdir);
 
     /* > 服务端IP */
     node = xml_search(xml, parent, "SERVER.ADDR");

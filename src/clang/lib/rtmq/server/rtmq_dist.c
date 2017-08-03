@@ -117,7 +117,7 @@ static int rtmq_dsvr_cmd_dist_req(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr, int idx)
 
     cmd.type = RTMQ_CMD_DIST_REQ;
 
-    return (write(ctx->recv_cmd_fd[idx].fd[1], &cmd, sizeof(cmd)) > 0)? 0 : -1;
+    return (pipe_write(&ctx->recv_cmd_fd[idx], &cmd, sizeof(cmd)) > 0)? 0 : -1;
 }
 
 /******************************************************************************

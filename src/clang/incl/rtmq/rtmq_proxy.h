@@ -1,6 +1,7 @@
 #if !defined(__RTMQ_PROXY_H__)
 #define __RTMQ_PROXY_H__
 
+#include "pipe.h"
 #include "rtmq_comm.h"
 #include "rtmq_proxy_ssvr.h"
 
@@ -11,7 +12,6 @@ typedef struct
 {
     int nid;                            /* 结点ID: 唯一值 */
     int gid;                            /* 分组ID */
-    char path[FILE_LINE_MAX_LEN];       /* 工作路径 */
 
     struct {
         char usr[RTMQ_USR_MAX_LEN];     /* 用户名 */
@@ -45,17 +45,17 @@ typedef struct
 
     avl_tree_t *reg;                    /* 回调注册对象(注: 存储rtmq_reg_t数据) */
 
-    rtmq_pipe_t *work_cmd_fd;           /* 工作线程通信FD */
+    pipe_t *work_cmd_fd;                /* 工作线程通信FD */
     queue_t **recvq;                    /* 接收队列(数组长度与conf->send_thd_num一致) */
 
-    rtmq_pipe_t *send_cmd_fd;           /* 发送线程通信FD */
+    pipe_t *send_cmd_fd;                /* 发送线程通信FD */
     queue_t **sendq;                    /* 发送缓存(数组长度与conf->send_thd_num一致) */
 } rtmq_proxy_t;
 
 /* 内部接口 */
 int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy,
         rtmq_proxy_ssvr_t *ssvr, int tidx,
-        const char *ipaddr, int port, queue_t *sendq, rtmq_pipe_t *pipe);
+        const char *ipaddr, int port, queue_t *sendq, pipe_t *pipe);
 void *rtmq_proxy_ssvr_routine(void *_ctx);
 
 int rtmq_proxy_worker_init(rtmq_proxy_t *pxy, rtmq_worker_t *worker, int tidx);

@@ -8,7 +8,6 @@
 #include "acc_rsvr.h"
 #include "hash_alg.h"
 
-static int acc_comm_init(acc_cntx_t *ctx);
 static int acc_creat_rsvr(acc_cntx_t *ctx);
 static int acc_rsvr_pool_destroy(acc_cntx_t *ctx);
 static int acc_creat_lsvr(acc_cntx_t *ctx);
@@ -88,12 +87,6 @@ acc_cntx_t *acc_init(acc_protocol_t *protocol, acc_conf_t *conf, log_cycle_t *lo
             break;
         }
 
-        /* > 初始化其他信息 */
-        if (acc_comm_init(ctx)) {
-            log_error(log, "Initialize client failed!");
-            break;
-        }
-
         return ctx;
     } while (0);
 
@@ -165,10 +158,21 @@ static int acc_creat_rsvr(acc_cntx_t *ctx)
     const acc_conf_t *conf = ctx->conf;
 
     /* > 新建Agent对象 */
-    agent = (acc_rsvr_t *)calloc(1, conf->rsvr_num*sizeof(acc_rsvr_t));
+    agent = (acc_rsvr_t *)calloc(conf->rsvr_num, sizeof(acc_rsvr_t));
     if (NULL == agent) {
         log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return ACC_ERR;
+    }
+
+    /* > 新建通信管道 */
+    ctx->rsvr_cmd_fd = (pipe_t *)calloc(conf->rsvr_num, sizeof(pipe_t));
+    if (NULL == ctx->rsvr_cmd_fd) {
+        log_error(ctx->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        return ACC_ERR;
+    }
+
+    for (idx=0; idx<conf->rsvr_num; idx+=1) {
+        pipe_creat(&ctx->rsvr_cmd_fd[idx]);
     }
 
     /* > 创建Worker线程池 */
@@ -242,12 +246,7 @@ static int acc_creat_lsvr(acc_cntx_t *ctx)
     for (idx=0; idx<conf->lsvr_num; ++idx) {
         lsvr = ctx->listen.lsvr + idx;
         lsvr->log = ctx->log;
-        if (acc_lsvr_init(ctx, lsvr, idx)) {
-            CLOSE(ctx->listen.lsn_sck_id);
-            FREE(ctx->listen.lsvr);
-            log_error(ctx->log, "Initialize listen-server failed!");
-            return ACC_ERR;
-        }
+        lsvr->id = idx;
     }
 
     ctx->lsvr_pool = thread_pool_init(conf->lsvr_num, NULL, ctx->listen.lsvr);
@@ -377,31 +376,6 @@ static int acc_creat_queue(acc_cntx_t *ctx)
             log_error(ctx->log, "Create kick queue failed!");
             return ACC_ERR;
         }
-    }
-
-    return ACC_OK;
-}
-
-/******************************************************************************
- **函数名称: acc_comm_init
- **功    能: 初始化通用信息
- **输入参数: 
- **     ctx: 全局信息
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项: 
- **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
- ******************************************************************************/
-static int acc_comm_init(acc_cntx_t *ctx)
-{
-    char path[FILE_PATH_MAX_LEN];
-
-    snprintf(path, sizeof(path), "%s/"ACC_CLI_CMD_PATH, ctx->conf->path);
-
-    ctx->cmd_sck_id = unix_udp_creat(path);
-    if (ctx->cmd_sck_id < 0) {
-        return ACC_ERR;
     }
 
     return ACC_OK;

@@ -55,6 +55,7 @@ SRC_LIST = log.c \
 			hash_alg.c \
 			str.c \
 			uri.c \
+			pipe.c \
 			iovec.c \
 			vector.c \
 			quick_sort.c
