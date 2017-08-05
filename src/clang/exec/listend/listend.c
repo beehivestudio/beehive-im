@@ -20,7 +20,8 @@
 #include "hash_alg.h"
 #include "lsnd_mesg.h"
 
-#define LSND_MOD_NAME "listend"
+#define LSND_MOD_NAME       "listend"
+#define LSND_TIMER_5SEC     (5)
 
 static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log);
 static int lsnd_launch(lsnd_cntx_t *ctx);
@@ -272,7 +273,7 @@ static void lsnd_set_timer(lsnd_cntx_t *ctx)
 {
     timer_task_t *task;
 
-    task = timer_task_init(5, 5); /* 定时器(间隔:5秒) */
+    task = timer_task_init(LSND_TIMER_5SEC, LSND_TIMER_5SEC);
     if (NULL == task) {
         log_error(ctx->log, "Initialize timer task failed!");
         return;
