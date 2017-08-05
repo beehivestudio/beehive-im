@@ -17,7 +17,7 @@ import (
 	"beehive-im/src/golang/lib/mesg"
 	"beehive-im/src/golang/lib/mesg/seqsvr"
 
-	"beehive-im/src/golang/exec/chatroom/controllers/room"
+	"beehive-im/src/golang/exec/chatroom/models"
 )
 
 // 聊天室
@@ -190,7 +190,7 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 
 	/* 获取会话属性 */
-	attr, err := room.RoomGetSidAttr(ctx.redis, req.GetSid())
+	attr, err := models.RoomGetSidAttr(ctx.redis, req.GetSid())
 	if nil != err {
 		ctx.send_kick(req.GetSid(), head.GetCid(), head.GetNid(), comm.ERR_SYS_SYSTEM, err.Error())
 		return
@@ -200,23 +200,23 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
 			attr.GetUid(), req.GetSid(), attr.GetNid(), head.GetNid(), head.GetCid())
 		/* 清理会话数据 */
-		room.RoomCleanSessionData(ctx.redis, head.GetSid(), attr.GetCid(), attr.GetNid())
+		models.RoomCleanSessionData(ctx.redis, head.GetSid(), attr.GetCid(), attr.GetNid())
 		/* 将老连接踢下线 */
 		ctx.send_kick(req.GetSid(), attr.GetCid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
 
 	/* 记录SID集合 */
-	pl.Send("ZADD", room.CR_KEY_SID_ZSET, ttl, req.GetSid())
+	pl.Send("ZADD", models.ROOM_KEY_SID_ZSET, ttl, req.GetSid())
 
 	/* 记录UID集合 */
-	pl.Send("ZADD", room.CR_KEY_UID_ZSET, ttl, req.GetUid())
+	pl.Send("ZADD", models.ROOM_KEY_UID_ZSET, ttl, req.GetUid())
 
 	/* 记录SID->UID/NID */
-	key = fmt.Sprintf(room.CR_KEY_SID_ATTR, req.GetSid())
+	key = fmt.Sprintf(models.ROOM_KEY_SID_ATTR, req.GetSid())
 	pl.Send("HMSET", key, "CID", head.GetCid(), "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
-	key = fmt.Sprintf(room.CR_KEY_UID_TO_SID_SET, req.GetUid())
+	key = fmt.Sprintf(models.ROOM_KEY_UID_TO_SID_SET, req.GetUid())
 	pl.Send("SADD", key, req.GetSid())
 
 	return seq, err
@@ -310,7 +310,7 @@ func (ctx *ChatRoomCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2017.01.11 23:23:50 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) offline_handler(head *comm.MesgHeader) error {
-	return room.RoomCleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
+	return models.RoomCleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
 }
 
 /******************************************************************************
@@ -394,9 +394,9 @@ func (ctx *ChatRoomCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) ping_handler(head *comm.MesgHeader) {
-	code, err := room.RoomUpdateSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
+	code, err := models.RoomUpdateSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
 	if nil != err {
-		room.RoomCleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid()) // 清理会话数据
+		models.RoomCleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid()) // 清理会话数据
 		ctx.send_kick(head.GetSid(), head.GetCid(), head.GetNid(), code, err.Error())
 	}
 }
@@ -714,7 +714,7 @@ func (ctx *ChatRoomCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
 	defer stmt.Close()
 
 	/* > 执行SQL语句 */
-	_, err = stmt.Exec(rid, req.GetName(), room.ROOM_STAT_OPEN,
+	_, err = stmt.Exec(rid, req.GetName(), models.ROOM_STAT_OPEN,
 		req.GetDesc(), time.Now().Unix(), time.Now().Unix(), req.GetUid())
 	if nil != err {
 		ctx.log.Error("Add rid failed! errmsg:%s", err.Error())
@@ -771,9 +771,9 @@ func (ctx *ChatRoomCntx) room_creat_handler(
 	}
 
 	/* > 设置聊天室所有者 */
-	key := fmt.Sprintf(room.CR_KEY_ROOM_ROLE_TAB, rid)
+	key := fmt.Sprintf(models.ROOM_KEY_ROOM_ROLE_TAB, rid)
 
-	ok, err := redis.Bool(rds.Do("HSETNX", key, req.GetUid(), room.ROOM_ROLE_OWNER))
+	ok, err := redis.Bool(rds.Do("HSETNX", key, req.GetUid(), models.ROOM_ROLE_OWNER))
 	if nil != err {
 		ctx.log.Error("Set room owner failed! uid:%d rid:%d errmsg:%s",
 			req.GetUid(), rid, err.Error())
@@ -784,7 +784,7 @@ func (ctx *ChatRoomCntx) room_creat_handler(
 	}
 
 	/* > 设置聊天室信息 */
-	key = fmt.Sprintf(room.CR_KEY_ROOM_INFO_TAB, rid)
+	key = fmt.Sprintf(models.ROOM_KEY_ROOM_INFO_TAB, rid)
 
 	pl.Send("HMSET", key, "NAME", req.GetName(), "DESC", req.GetDesc())
 
@@ -1082,7 +1082,7 @@ func (ctx *ChatRoomCntx) alloc_room_gid(rid uint64) (gid uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
 
-	key := fmt.Sprintf(room.CR_KEY_RID_GID_TO_NUM_ZSET, rid)
+	key := fmt.Sprintf(models.ROOM_KEY_RID_GID_TO_NUM_ZSET, rid)
 
 	/* > 优先加入到gid为0的分组 */
 	num, err = redis.Int(rds.Do("ZSCORE", key, "0"))
@@ -1135,7 +1135,7 @@ func (ctx *ChatRoomCntx) room_join_handler(
 	}()
 
 	/* > 判断UID是否在黑名单中 */
-	key := fmt.Sprintf(room.CR_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
+	key := fmt.Sprintf(models.ROOM_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
 	ok, err := redis.Bool(rds.Do("SISMEMBER", key, req.GetUid()))
 	if nil != err {
 		ctx.log.Error("Exec command [SISMEMBER] failed! rid:%d uid:%d err:",
@@ -1154,18 +1154,18 @@ func (ctx *ChatRoomCntx) room_join_handler(
 	}
 
 	/* > 更新数据库统计 */
-	key = fmt.Sprintf(room.CR_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
+	key = fmt.Sprintf(models.ROOM_KEY_RID_GID_TO_NUM_ZSET, req.GetRid())
 	pl.Send("ZINCRBY", key, 1, gid)
 
-	key = fmt.Sprintf(room.CR_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
+	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
 	member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 	pl.Send("ZADD", key, ttl, member) // 加入RID -> UID集合"${uid}:${sid}"
 
-	key = fmt.Sprintf(room.CR_KEY_RID_TO_SID_ZSET, req.GetRid())
+	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_SID_ZSET, req.GetRid())
 	pl.Send("ZADD", key, ttl, head.GetSid()) // 加入RID -> SID集合
 
-	key = fmt.Sprintf(room.CR_KEY_RID_TO_NID_ZSET, req.GetRid())
+	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_NID_ZSET, req.GetRid())
 	pl.Send("ZADD", key, ttl, head.GetNid()) // 加入RID -> NID集合
 
 	return gid, nil
@@ -1480,10 +1480,10 @@ func (ctx *ChatRoomCntx) room_quit_handler(
 		pl.Close()
 	}()
 
-	key := fmt.Sprintf(room.CR_KEY_RID_TO_SID_ZSET, req.GetRid())
+	key := fmt.Sprintf(models.ROOM_KEY_RID_TO_SID_ZSET, req.GetRid())
 	pl.Send("ZREM", key, head.GetSid()) // 清理RID -> SID集合
 
-	key = fmt.Sprintf(room.CR_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
+	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_UID_SID_ZSET, req.GetRid())
 	member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, req.GetUid(), head.GetSid())
 	pl.Send("ZREM", key, member) // 清理RID -> UID集合"${uid}:${sid}"
 
@@ -1666,7 +1666,7 @@ func (ctx *ChatRoomCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, 
 	defer rds.Close()
 
 	/* > 获取会话列表 */
-	key := fmt.Sprintf(room.CR_KEY_UID_TO_SID_SET, uid)
+	key := fmt.Sprintf(models.ROOM_KEY_UID_TO_SID_SET, uid)
 
 	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
@@ -1698,7 +1698,7 @@ func (ctx *ChatRoomCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, 
 		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
 
 		/* > 获取会话属性 */
-		attr, err := room.RoomGetSidAttr(ctx.redis, uint64(sid))
+		attr, err := models.RoomGetSidAttr(ctx.redis, uint64(sid))
 		if nil != err {
 			ctx.log.Error("Get sid attr failed! rid:%d uid:%d errmsg:%s",
 				rid, uid, err.Error())
@@ -1861,28 +1861,28 @@ func (ctx *ChatRoomCntx) room_kick_handler(
 	}()
 
 	/* > 获取会话属性 */
-	attr, err := room.RoomGetSidAttr(ctx.redis, head.GetSid())
+	attr, err := models.RoomGetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get sid attr failed! rid:%d uid:%d errmsg:%s",
 			req.GetRid(), req.GetUid(), err.Error())
 		return comm.ERR_SYS_SYSTEM, err
-	} else if !room.IsRoomManager(ctx.redis, req.GetRid(), attr.GetUid()) {
+	} else if !models.IsRoomManager(ctx.redis, req.GetRid(), attr.GetUid()) {
 		ctx.log.Error("You're not owner! rid:%d kicked-uid:%d attr.uid:%d",
 			req.GetRid(), req.GetUid(), attr.GetUid())
 		return comm.ERR_SYS_PERM_DENIED, errors.New("You're not room owner!")
 	}
 
 	/* > 用户加入黑名单 */
-	key := fmt.Sprintf(room.CR_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
+	key := fmt.Sprintf(models.ROOM_KEY_ROOM_USR_BLACKLIST_SET, req.GetRid())
 
 	pl.Send("SADD", key, req.GetUid())
 
 	/* > 提交MONGO存储 */
-	data := &room.RoomBlacklistTabRow{
-		Rid:    req.GetRid(),             // 聊天室ID
-		Uid:    req.GetUid(),             // 用户ID
-		Status: room.ROOM_USER_STAT_KICK, // 状态(被踢)
-		Ctm:    time.Now().Unix(),        // 设置时间
+	data := &models.RoomBlacklistTabRow{
+		Rid:    req.GetRid(),               // 聊天室ID
+		Uid:    req.GetUid(),               // 用户ID
+		Status: models.ROOM_USER_STAT_KICK, // 状态(被踢)
+		Ctm:    time.Now().Unix(),          // 设置时间
 	}
 
 	cb := func(c *mgo.Collection) (err error) {
@@ -1890,7 +1890,7 @@ func (ctx *ChatRoomCntx) room_kick_handler(
 		return err
 	}
 
-	ctx.mongo.Exec(ctx.conf.Mongo.DbName, room.ROOM_TAB_BLACKLIST, cb)
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, models.ROOM_TAB_BLACKLIST, cb)
 
 	/* > 遍历下发踢除指令 */
 	ctx.room_kick_by_uid(req.GetRid(), req.GetUid())
@@ -2017,13 +2017,13 @@ func (ctx *ChatRoomCntx) room_lsn_stat_handler(
 		pl.Close()
 	}()
 
-	ttl := time.Now().Unix() + room.ROOM_TTL_SEC
+	ttl := time.Now().Unix() + models.ROOM_TTL_SEC
 
 	/* > 更新统计数据 */
-	key := fmt.Sprintf(room.CR_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
+	key := fmt.Sprintf(models.ROOM_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
 	pl.Send("ZADD", key, req.GetNum(), req.GetNid())
 
-	pl.Send("ZADD", room.CR_KEY_RID_ZSET, ttl, req.GetRid())
+	pl.Send("ZADD", models.ROOM_KEY_RID_ZSET, ttl, req.GetRid())
 
 	return 0, nil
 }
@@ -2438,11 +2438,11 @@ func (item *MesgRoomItem) storage(ctx *ChatRoomCntx) {
 	}
 
 	/* > 提交REDIS缓存 */
-	key := fmt.Sprintf(room.CR_KEY_ROOM_MESG_QUEUE, item.req.GetRid())
+	key := fmt.Sprintf(models.ROOM_KEY_ROOM_MESG_QUEUE, item.req.GetRid())
 	pl.Send("LPUSH", key, item.raw[comm.MESG_HEAD_SIZE:])
 
 	/* > 提交MONGO存储 */
-	data := &room.RoomChatTabRow{
+	data := &models.RoomChatTabRow{
 		Rid:  msg.GetRid(),
 		Uid:  msg.GetUid(),
 		Ctm:  time.Now().Unix(),
@@ -2454,7 +2454,7 @@ func (item *MesgRoomItem) storage(ctx *ChatRoomCntx) {
 		return err
 	}
 
-	ctx.mongo.Exec(ctx.conf.Mongo.DbName, room.ROOM_TAB_MESG, cb)
+	ctx.mongo.Exec(ctx.conf.Mongo.DbName, models.ROOM_TAB_MESG, cb)
 }
 
 /******************************************************************************
@@ -2492,7 +2492,7 @@ func (ctx *ChatRoomCntx) room_mesg_queue_clean() {
 	off := 0
 	for {
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			room.CR_KEY_RID_ZSET, 0, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+			models.ROOM_KEY_RID_ZSET, 0, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
 			ctx.log.Error("Get rid list failed! errmsg:%s", err.Error())
 			break
@@ -2502,7 +2502,7 @@ func (ctx *ChatRoomCntx) room_mesg_queue_clean() {
 		for idx := 0; idx < num; idx += 1 {
 			/* 保持聊天室缓存消息为最新的100条 */
 			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
-			key := fmt.Sprintf(room.CR_KEY_ROOM_MESG_QUEUE, uint64(rid))
+			key := fmt.Sprintf(models.ROOM_KEY_ROOM_MESG_QUEUE, uint64(rid))
 
 			rds.Do("LTRIM", key, 0, 99)
 		}

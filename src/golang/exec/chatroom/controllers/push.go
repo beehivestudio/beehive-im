@@ -11,7 +11,7 @@ import (
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/mesg"
 
-	"beehive-im/src/golang/exec/chatroom/controllers/room"
+	"beehive-im/src/golang/exec/chatroom/models"
 )
 
 /* 推送接口 */
@@ -151,7 +151,7 @@ func (req *RoomPushReq) push_handler(
 	data := this.Ctx.Input.RequestBody
 
 	/* > 申请聊天室消息序列号  */
-	key := fmt.Sprintf(room.CR_KEY_ROOM_MSGID_INCR, param.rid)
+	key := fmt.Sprintf(models.ROOM_KEY_ROOM_MSGID_INCR, param.rid)
 
 	msgid, err := redis.Uint64(rds.Do("INCRBY", key, 1))
 	if nil != err {
@@ -176,10 +176,10 @@ func (req *RoomPushReq) push_handler(
 	}
 
 	/* > 放入聊天室广播集合 */
-	key = fmt.Sprintf(room.CR_KEY_ROOM_BC_HASH, param.rid)
+	key = fmt.Sprintf(models.ROOM_KEY_ROOM_BC_HASH, param.rid)
 	pl.Send("HSETNX", key, msgid, body)
 
-	key = fmt.Sprintf(room.CR_KEY_ROOM_BC_ZSET, param.rid)
+	key = fmt.Sprintf(models.ROOM_KEY_ROOM_BC_ZSET, param.rid)
 	pl.Send("ZADD", key, ttl, msgid)
 
 	/* > 申请内存空间 */

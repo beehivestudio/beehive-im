@@ -10,7 +10,7 @@ import (
 
 	"beehive-im/src/golang/lib/comm"
 
-	"beehive-im/src/golang/exec/chatroom/controllers/room"
+	"beehive-im/src/golang/exec/chatroom/models"
 )
 
 /******************************************************************************
@@ -30,9 +30,9 @@ func (ctx *ChatRoomCntx) task() {
 	/* 每1秒执行一次任务 */
 	go func() {
 		for {
-			ctx.listend_dict_update()                           // 更新侦听层字典
-			ctx.listend_list_update()                           // 更新侦听层列表
-			room.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
+			ctx.listend_dict_update()                             // 更新侦听层字典
+			ctx.listend_list_update()                             // 更新侦听层列表
+			models.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
 
 			time.Sleep(time.Second)
 		}
@@ -248,7 +248,7 @@ func (ctx *ChatRoomCntx) update() {
  **作    者: # Qifeng.zou # 2016.11.05 00:21:54 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
-	m, err := room.RoomGetRidToNidMap(ctx.redis)
+	m, err := models.RoomGetRidToNidMap(ctx.redis)
 	if nil != err {
 		ctx.log.Error("Get rid to nid map failed! errmsg:%s", err.Error())
 		return
@@ -277,24 +277,24 @@ func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
 		pl.Close()
 	}()
 
-	key := fmt.Sprintf(room.CR_KEY_RID_GID_TO_NUM_ZSET, rid)
+	key := fmt.Sprintf(models.ROOM_KEY_RID_GID_TO_NUM_ZSET, rid)
 	pl.Send("DEL", key)
 
-	key = fmt.Sprintf(room.CR_KEY_RID_NID_TO_NUM_ZSET, rid)
+	key = fmt.Sprintf(models.ROOM_KEY_RID_NID_TO_NUM_ZSET, rid)
 	pl.Send("DEL", key)
 
-	key = fmt.Sprintf(room.CR_KEY_RID_TO_NID_ZSET, rid)
+	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_NID_ZSET, rid)
 	pl.Send("DEL", key)
 
-	key = fmt.Sprintf(room.CR_KEY_RID_TO_UID_SID_ZSET, rid)
+	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_UID_SID_ZSET, rid)
 	ctx.clean_uid_by_rid(rid)
 	pl.Send("DEL", key)
 
-	key = fmt.Sprintf(room.CR_KEY_RID_TO_SID_ZSET, rid)
+	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_SID_ZSET, rid)
 	ctx.clean_sid_by_rid(rid)
 	pl.Send("DEL", key)
 
-	pl.Send("ZREM", room.CR_KEY_RID_ZSET, rid)
+	pl.Send("ZREM", models.ROOM_KEY_RID_ZSET, rid)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +324,7 @@ func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
 	/* > 获取RID->SID集合 */
 	off := 0
 	for {
-		key := fmt.Sprintf(room.CR_KEY_RID_TO_SID_ZSET, rid)
+		key := fmt.Sprintf(models.ROOM_KEY_RID_TO_SID_ZSET, rid)
 		sid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
 			key, "-inf", "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
@@ -336,7 +336,7 @@ func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
 		for idx := 0; idx < sid_len; idx += 1 {
 			/* > 逐一清理SID->RID记录 */
 			sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
-			key = fmt.Sprintf(room.CR_KEY_SID_TO_RID_ZSET, sid)
+			key = fmt.Sprintf(models.ROOM_KEY_SID_TO_RID_ZSET, sid)
 			pl.Send("ZREM", key, rid)
 		}
 
@@ -372,7 +372,7 @@ func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
 	/* > 获取RID->UID集合 */
 	off := 0
 	for {
-		key := fmt.Sprintf(room.CR_KEY_RID_TO_UID_SID_ZSET, rid)
+		key := fmt.Sprintf(models.ROOM_KEY_RID_TO_UID_SID_ZSET, rid)
 		uid_sid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
 			key, "-inf", "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
@@ -419,7 +419,7 @@ func (ctx *ChatRoomCntx) clean_rid_zset(ctm int64) {
 	off := 0
 	for {
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			room.CR_KEY_RID_ZSET, "-inf", ctm,
+			models.ROOM_KEY_RID_ZSET, "-inf", ctm,
 			"LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
 			ctx.log.Error("Get sid list failed! errmsg:%s", err.Error())

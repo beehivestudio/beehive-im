@@ -1,4 +1,4 @@
-package room
+package models
 
 import (
 	"errors"
@@ -18,51 +18,6 @@ import (
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-/* 聊天室角色 */
-const (
-	ROOM_ROLE_OWNER   = 1 // 聊天室-所有者
-	ROOM_ROLE_MANAGER = 2 // 聊天室-管理员
-)
-
-/* 聊天室状态 */
-const (
-	ROOM_STAT_OPEN  = 1 // 聊天室-开启
-	ROOM_STAT_CLOSE = 0 // 聊天室-关闭
-)
-
-/* 聊天室用户状态 */
-const (
-	ROOM_USER_STAT_NORMAL = 0 // 正常
-	ROOM_USER_STAT_KICK   = 1 // 被踢
-)
-
-/* 聊天室数据表 */
-const (
-	ROOM_TAB_MESG      = "ChatRoomMesg"      // 聊天消息表
-	ROOM_TAB_BLACKLIST = "ChatRoomBlacklist" // 黑名单表
-)
-
-const (
-	ROOM_TTL_SEC = 30 // 聊天室TTL(单位:秒)
-)
-
-/* 聊天室数据 */
-type RoomChatTabRow struct {
-	Rid  uint64 "rid"  // 聊天室ID
-	Uid  uint64 "uid"  // 用户UID
-	Ctm  int64  "ctm"  // 发送时间
-	Data []byte "data" // 原始数据包
-}
-
-/* 聊天室黑名单 */
-type RoomBlacklistTabRow struct {
-	Rid    uint64 "rid"    // 聊天室ID
-	Uid    uint64 "uid"    // 用户UID
-	Role   uint64 "role"   // 角色
-	Status uint8  "status" // 状态(0:正常 1:被踢)
-	Ctm    int64  "ctm"    // 设置时间
-}
-
 /******************************************************************************
  **函数名称: RoomGetRidToNidSet
  **功    能: 通过聊天室RID获取对应的帧听层NID列表
@@ -81,7 +36,7 @@ func RoomGetRidToNidSet(pool *redis.Pool, rid uint64) (list []uint32, err error)
 
 	ctm := time.Now().Unix()
 
-	key := fmt.Sprintf(CR_KEY_RID_TO_NID_ZSET, rid)
+	key := fmt.Sprintf(ROOM_KEY_RID_TO_NID_ZSET, rid)
 	nid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, ctm, "+inf"))
 	if nil != err {
 		return nil, err
@@ -118,7 +73,7 @@ func RoomGetRidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
 	off := 0
 	for {
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			CR_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+			ROOM_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
 			return nil, err
 		}
@@ -167,7 +122,7 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error 
 	}()
 
 	/* > 获取SID -> RID列表 */
-	key := fmt.Sprintf(CR_KEY_SID_TO_RID_ZSET, sid)
+	key := fmt.Sprintf(ROOM_KEY_SID_TO_RID_ZSET, sid)
 
 	rid_gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
 	if nil != err {
@@ -180,20 +135,20 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error 
 		gid, _ := strconv.ParseInt(rid_gid_list[idx+1], 10, 64)
 
 		/* 清理各种数据 */
-		key = fmt.Sprintf(CR_KEY_RID_TO_SID_ZSET, rid)
+		key = fmt.Sprintf(ROOM_KEY_RID_TO_SID_ZSET, rid)
 		pl.Send("ZREM", key, sid)
 
-		key = fmt.Sprintf(CR_KEY_RID_TO_UID_SID_ZSET, rid)
+		key = fmt.Sprintf(ROOM_KEY_RID_TO_UID_SID_ZSET, rid)
 		member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, uid, sid)
 		pl.Send("ZREM", key, member)
 
 		/* 更新统计计数 */
-		key = fmt.Sprintf(CR_KEY_RID_GID_TO_NUM_ZSET, rid)
+		key = fmt.Sprintf(ROOM_KEY_RID_GID_TO_NUM_ZSET, rid)
 		pl.Send("ZINCRBY", key, -1, gid)
 	}
 
 	/* 清理各种数据 */
-	key = fmt.Sprintf(CR_KEY_SID_TO_RID_ZSET, sid)
+	key = fmt.Sprintf(ROOM_KEY_SID_TO_RID_ZSET, sid)
 	pl.Send("DEL", key)
 
 	return nil
@@ -224,7 +179,7 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error
 	}()
 
 	/* > 获取SID -> RID列表 */
-	key := fmt.Sprintf(CR_KEY_SID_TO_RID_ZSET, sid)
+	key := fmt.Sprintf(ROOM_KEY_SID_TO_RID_ZSET, sid)
 
 	rid_gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
 	if nil != err {
@@ -239,10 +194,10 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error
 		//gid, _ := strconv.ParseInt(rid_gid_list[idx+1], 10, 64)
 
 		/* 清理各种数据 */
-		key = fmt.Sprintf(CR_KEY_RID_TO_SID_ZSET, rid)
+		key = fmt.Sprintf(ROOM_KEY_RID_TO_SID_ZSET, rid)
 		pl.Send("ZADD", key, ttl, sid)
 
-		key = fmt.Sprintf(CR_KEY_RID_TO_UID_SID_ZSET, rid)
+		key = fmt.Sprintf(ROOM_KEY_RID_TO_UID_SID_ZSET, rid)
 		member := fmt.Sprintf(comm.CHAT_FMT_UID_SID_STR, uid, sid)
 		pl.Send("ZADD", key, ttl, member)
 	}
@@ -267,7 +222,7 @@ func IsRoomOwner(pool *redis.Pool, rid uint64, uid uint64) bool {
 	rds := pool.Get()
 	defer rds.Close()
 
-	key := fmt.Sprintf(CR_KEY_ROOM_ROLE_TAB, rid)
+	key := fmt.Sprintf(ROOM_KEY_ROOM_ROLE_TAB, rid)
 
 	role, err := redis.Int(rds.Do("HGET", key, uid))
 	if nil != err {
@@ -296,7 +251,7 @@ func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
 	rds := pool.Get()
 	defer rds.Close()
 
-	key := fmt.Sprintf(CR_KEY_ROOM_ROLE_TAB, rid)
+	key := fmt.Sprintf(ROOM_KEY_ROOM_ROLE_TAB, rid)
 
 	role, err := redis.Int(rds.Do("HGET", key, uid))
 	if nil != err {
@@ -339,7 +294,7 @@ func RoomSendUsrNum(log *logs.BeeLogger, frwder *rtmq.Proxy, pool *redis.Pool) e
 	for {
 		/* 获取聊天室列表 */
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			CR_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+			ROOM_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
 			log.Error("Get room list failed! errmsg:%s", err.Error())
 			return err
@@ -352,7 +307,7 @@ func RoomSendUsrNum(log *logs.BeeLogger, frwder *rtmq.Proxy, pool *redis.Pool) e
 			rid, _ := strconv.ParseInt(rid_list[m], 10, 64)
 
 			/* 获取聊天室人数 */
-			key := fmt.Sprintf(CR_KEY_RID_TO_UID_SID_ZSET, uint64(rid))
+			key := fmt.Sprintf(ROOM_KEY_RID_TO_UID_SID_ZSET, uint64(rid))
 			usr_num, err := redis.Int(rds.Do("ZCARD", key))
 			if nil != err {
 				log.Error("Get user num of room failed! errmsg:%s", err.Error())
@@ -463,7 +418,7 @@ func RoomGetSidAttr(pool *redis.Pool, sid uint64) (attr *RoomSidAttr, err error)
 	defer rds.Close()
 
 	/* 获取会话属性 */
-	key := fmt.Sprintf(CR_KEY_SID_ATTR, sid)
+	key := fmt.Sprintf(ROOM_KEY_SID_ATTR, sid)
 
 	vals, err := redis.Strings(rds.Do("HMGET", key, "CID", "UID", "NID"))
 	if nil != err {
@@ -516,20 +471,20 @@ func RoomCleanSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) 
 	}
 
 	/* > 删除SID对应的数据 */
-	key := fmt.Sprintf(CR_KEY_SID_ATTR, sid)
+	key := fmt.Sprintf(ROOM_KEY_SID_ATTR, sid)
 
 	num, err := redis.Int(rds.Do("DEL", key))
 	if nil != err {
 		return err
 	} else if 0 == num {
-		pl.Send("ZREM", CR_KEY_SID_ZSET, sid)
+		pl.Send("ZREM", ROOM_KEY_SID_ZSET, sid)
 		return nil
 	}
 
 	/* > 清理相关资源 */
 	RoomCleanBySid(pool, attr.uid, attr.nid, sid)
 
-	pl.Send("ZREM", CR_KEY_SID_ZSET, sid)
+	pl.Send("ZREM", ROOM_KEY_SID_ZSET, sid)
 
 	return nil
 }
@@ -563,20 +518,20 @@ func RoomCleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
 	}
 
 	/* > 删除SID对应的数据 */
-	key := fmt.Sprintf(CR_KEY_SID_ATTR, sid)
+	key := fmt.Sprintf(ROOM_KEY_SID_ATTR, sid)
 
 	num, err := redis.Int(rds.Do("DEL", key))
 	if nil != err {
 		return err
 	} else if 0 == num {
-		pl.Send("ZREM", CR_KEY_SID_ZSET, sid)
+		pl.Send("ZREM", ROOM_KEY_SID_ZSET, sid)
 		return nil
 	}
 
 	/* > 清理相关资源 */
 	RoomCleanBySid(pool, attr.uid, attr.nid, sid)
 
-	pl.Send("ZREM", CR_KEY_SID_ZSET, sid)
+	pl.Send("ZREM", ROOM_KEY_SID_ZSET, sid)
 
 	return nil
 }
@@ -618,8 +573,8 @@ func RoomUpdateSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32)
 
 	/* 更新会话属性 */
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
-	pl.Send("ZADD", CR_KEY_SID_ZSET, ttl, sid)
-	pl.Send("ZADD", CR_KEY_UID_ZSET, ttl, attr.uid)
+	pl.Send("ZADD", ROOM_KEY_SID_ZSET, ttl, sid)
+	pl.Send("ZADD", ROOM_KEY_UID_ZSET, ttl, attr.uid)
 
 	/* > 更新聊天室信息 */
 	RoomUpdateBySid(pool, attr.uid, attr.nid, sid)
