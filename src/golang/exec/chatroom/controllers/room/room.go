@@ -42,6 +42,10 @@ const (
 	ROOM_TAB_BLACKLIST = "ChatRoomBlacklist" // 黑名单表
 )
 
+const (
+	ROOM_TTL_SEC = 30 // 聊天室TTL(单位:秒)
+)
+
 /* 聊天室数据 */
 type RoomChatTabRow struct {
 	Rid  uint64 "rid"  // 聊天室ID
@@ -112,10 +116,9 @@ func RoomGetRidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
 	m = make(map[uint64][]uint32)
 
 	off := 0
-	key := fmt.Sprintf(CR_KEY_RID_ZSET)
 	for {
 		rid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE",
-			key, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
+			CR_KEY_RID_ZSET, ctm, "+inf", "LIMIT", off, comm.CHAT_BAT_NUM))
 		if nil != err {
 			return nil, err
 		}

@@ -220,13 +220,13 @@ func LsndUploadRoomLsnStatCb(item *chat_tab.ChatRoomItem, param interface{}) int
  ******************************************************************************/
 func (ctx *LsndCntx) task_timer_clean_timeout() {
 	for {
-		ctx.chat.TravSession(LsndCleanTimeoutHandler, ctx)
+		ctx.chat.TravSession(LsndSessionTimeoutCleanHandler, ctx)
 		time.Sleep(30 * time.Second)
 	}
 }
 
 /******************************************************************************
- **函数名称: LsndCleanTimeoutHandler
+ **函数名称: LsndSessionTimeoutCleanHandler
  **功    能: 判断会话是否超时, 并踢除超时连接.
  **输入参数:
  **     sid: 会话SID
@@ -238,7 +238,7 @@ func (ctx *LsndCntx) task_timer_clean_timeout() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.05.10 19:58:58 #
  ******************************************************************************/
-func LsndCleanTimeoutHandler(sid uint64, cid uint64, extra interface{}, param interface{}) int {
+func LsndSessionTimeoutCleanHandler(sid uint64, cid uint64, extra interface{}, param interface{}) int {
 	ctx, ok := param.(*LsndCntx)
 	if !ok {
 		return -1

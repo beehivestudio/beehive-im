@@ -206,17 +206,17 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
 	}
 
 	/* 记录SID集合 */
-	pl.Send("ZADD", comm.IM_KEY_SID_ZSET, ttl, req.GetSid())
+	pl.Send("ZADD", room.CR_KEY_SID_ZSET, ttl, req.GetSid())
 
 	/* 记录UID集合 */
-	pl.Send("ZADD", comm.IM_KEY_UID_ZSET, ttl, req.GetUid())
+	pl.Send("ZADD", room.CR_KEY_UID_ZSET, ttl, req.GetUid())
 
 	/* 记录SID->UID/NID */
-	key = fmt.Sprintf(comm.IM_KEY_SID_ATTR, req.GetSid())
+	key = fmt.Sprintf(room.CR_KEY_SID_ATTR, req.GetSid())
 	pl.Send("HMSET", key, "CID", head.GetCid(), "UID", req.GetUid(), "NID", head.GetNid())
 
 	/* 记录UID->SID集合 */
-	key = fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, req.GetUid())
+	key = fmt.Sprintf(room.CR_KEY_UID_TO_SID_SET, req.GetUid())
 	pl.Send("SADD", key, req.GetSid())
 
 	return seq, err
@@ -1666,7 +1666,7 @@ func (ctx *ChatRoomCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, 
 	defer rds.Close()
 
 	/* > 获取会话列表 */
-	key := fmt.Sprintf(comm.IM_KEY_UID_TO_SID_SET, uid)
+	key := fmt.Sprintf(room.CR_KEY_UID_TO_SID_SET, uid)
 
 	sid_list, err := redis.Strings(rds.Do("SMEMBERS", key))
 	if nil != err {
@@ -1978,6 +1978,9 @@ func (ctx *ChatRoomCntx) room_lsn_stat_parse(data []byte) (
 		return nil, nil, comm.ERR_SVR_HEAD_INVALID, errors.New(errmsg)
 	}
 
+	ctx.log.Debug("Recv room-lsn-stat data! cmd:0x%04X nid:%d",
+		head.GetCmd(), head.GetNid())
+
 	/* > 解析PB协议 */
 	req = &mesg.MesgRoomLsnStat{}
 
@@ -1986,6 +1989,8 @@ func (ctx *ChatRoomCntx) room_lsn_stat_parse(data []byte) (
 		ctx.log.Error("Unmarshal room-lsn-stat request failed! errmsg:%s", err.Error())
 		return head, nil, comm.ERR_SVR_BODY_INVALID, err
 	}
+
+	ctx.log.Debug("nid:%d rid:%d num:%d", head.GetNid(), req.GetRid(), req.GetNum())
 
 	return head, req, 0, nil
 }
@@ -2012,7 +2017,7 @@ func (ctx *ChatRoomCntx) room_lsn_stat_handler(
 		pl.Close()
 	}()
 
-	ttl := time.Now().Unix() + 30
+	ttl := time.Now().Unix() + room.ROOM_TTL_SEC
 
 	/* > 更新统计数据 */
 	key := fmt.Sprintf(room.CR_KEY_RID_NID_TO_NUM_ZSET, req.GetRid())
@@ -2050,7 +2055,7 @@ func ChatRoomLsnStatHandler(cmd uint32, nid uint32, data []byte, length uint32, 
 		return -1
 	}
 
-	ctx.log.Debug("Recv room-lsn-stat request! cmd:0x%04X nid:%d length:%d", cmd, nid, length)
+	ctx.log.Debug("Recv room-lsn-stat request!")
 
 	/* > 解析ROOM-LSN-STAT请求 */
 	head, req, code, err := ctx.room_lsn_stat_parse(data)

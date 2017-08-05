@@ -50,7 +50,6 @@ func (ctx *SeqSvrCntx) alloc_rid() (rid uint64, err error) {
 AGAIN:
 	rows, err := tx.Query("SELECT rid from IM_RID_GEN_TAB WHERE id=0 FOR UPDATE")
 	if nil != err {
-		rows.Close()
 		return 0, err
 	} else if rows.Next() {
 		err = rows.Scan(&rid)
