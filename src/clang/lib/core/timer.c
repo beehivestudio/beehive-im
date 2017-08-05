@@ -42,40 +42,76 @@ timer_cntx_t *timer_cntx_init(void)
 
 /******************************************************************************
  **函数名称: timer_task_init
- **功    能: 初始化定时任务
+ **功    能: 初始化定时器
  **输入参数: 
  **     task: 定时任务
- **     proc: 处理回调
  **     start: 开始时间
  **     interval: 间隔时间
- **     param: 附加参数
  **输出参数: NONE
- **返    回: 上下文对象
+ **返    回: 定时任务
  **实现描述:
  **注意事项:
  **     1. 完成定时任务的初始化之后, 还需要调用timer_task_add()将定时任务加入执行流程.
  **     2. 间隔时间不能为0.
  **作    者: # Qifeng.zou # 2016.12.28 16:04:41 #
  ******************************************************************************/
-int timer_task_init(timer_task_t *task,
-        void (*proc)(void *param), int start, int interval, void *param)
+timer_task_t *timer_task_init(int start, int interval)
 {
+    timer_task_t *task;
     time_t ctm = time(NULL);
 
-    task->proc = proc;          /* 定时回调 */
+    task = (timer_task_t *)calloc(1, sizeof(timer_task_t));
+    if (NULL == task) {
+        return NULL;
+    }
+
     task->start = start;        /* 开始时间 */
     task->interval = interval? interval : 1;  /* 间隔时间 */
-    task->param = param;        /* 附加参数 */
+    task->list = list_creat(NULL);
+    if (NULL == task->list) {
+        free(task);
+        return NULL;
+    }
 
     task->times = 0;            /* 已执行次数 */
     task->ttl = ctm + start;    /* 下次执行时间 */
+
+    return task;
+}
+
+/******************************************************************************
+ **函数名称: timer_task_add
+ **功    能: 添加处理任务
+ **输入参数: 
+ **     task: 定时任务
+ **     proc: 处理回调
+ **     param: 附加参数
+ **输出参数: NONE
+ **返    回: 上下文对象
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2016.12.28 16:04:41 #
+ ******************************************************************************/
+int timer_task_add(timer_task_t *task, void (*proc)(void *param), void *param)
+{
+    timer_task_item_t *item;
+
+    item = (timer_task_item_t *)calloc(1, sizeof(timer_task_item_t));
+    if (NULL == item) {
+        return -1;
+    }
+
+    item->proc = proc;
+    item->param = param;
+
+    list_rpush(task->list, item);
 
     return 0;
 }
 
 /******************************************************************************
- **函数名称: timer_task_add
- **功    能: 将数据放入堆
+ **函数名称: timer_task_start
+ **功    能: 执行定时任务
  **输入参数:
  **     ctx: 堆对象
  **     data: 数据
@@ -85,7 +121,7 @@ int timer_task_init(timer_task_t *task,
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.28 17:00:42 #
  ******************************************************************************/
-int timer_task_add(timer_cntx_t *ctx, timer_task_t *task)
+int timer_task_start(timer_cntx_t *ctx, timer_task_t *task)
 {
     void **e;
     int parent, idx;
@@ -192,8 +228,8 @@ timer_task_t *timer_task_pop(timer_cntx_t *ctx)
 }
 
 /******************************************************************************
- **函数名称: timer_task_del
- **功    能: 删除某个定时任务
+ **函数名称: timer_task_stop
+ **功    能: 停止指定定时任务
  **输入参数:
  **     ctx: 上下文对象
  **     task: 被删的对象
@@ -203,7 +239,7 @@ timer_task_t *timer_task_pop(timer_cntx_t *ctx)
  **注意事项: 外部需要主动释放内存空间, 否则存在内存泄露的可能性
  **作    者: # Qifeng.zou # 2016.12.28 16:04:41 #
  ******************************************************************************/
-int timer_task_del(timer_cntx_t *ctx, timer_task_t *task)
+int timer_task_stop(timer_cntx_t *ctx, timer_task_t *task)
 {
     timer_task_t *item;
     int idx, left, right, min;
@@ -262,38 +298,6 @@ int timer_task_del(timer_cntx_t *ctx, timer_task_t *task)
 }
 
 /******************************************************************************
- **函数名称: timer_task_update
- **功    能: 更新定时任务
- **输入参数: 
- **     task: 定时任务
- **     proc: 处理回调
- **     start: 开始时间
- **     interval: 间隔时间
- **     param: 附加参数
- **输出参数: NONE
- **返    回: 上下文对象
- **实现描述: 先将该任务从堆中踢除, 然后重新设置其相关数据, 最后将其重新放入堆中.
- **注意事项: 
- **作    者: # Qifeng.zou # 2016.12.28 19:34:41 #
- ******************************************************************************/
-int timer_task_update(timer_task_t *task,
-        void (*proc)(void *param), int start, int interval, void *param)
-{
-    timer_cntx_t *ctx = task->ctx;
-
-    /* > 先将该任务从堆中踢除 */
-    timer_task_del(ctx, task);
-
-    /* > 然后重新设置其相关数据 */
-    timer_task_init(task, proc, start, interval, param);
-
-    /* > 最后将其重新放入堆中 */
-    timer_task_add(ctx, task);
-
-    return 0;
-}
-
-/******************************************************************************
  **函数名称: timer_task_is_timeout
  **功    能: 是否存在超时任务
  **输入参数:
@@ -328,6 +332,14 @@ static bool timer_task_is_timeout(timer_cntx_t *ctx)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+/* 处理回调 */
+static int timer_task_proc_cb(timer_task_item_t *item, void *param)
+{
+    item->proc(item->param);
+
+    return 0;
+}
+
 /******************************************************************************
  **函数名称: timer_task_routine
  **功    能: 定时任务处理
@@ -352,12 +364,12 @@ void *timer_task_routine(void *_ctx)
                 break;
             }
 
-            task->proc(task->param);
+            list_trav(task->list, (trav_cb_t)timer_task_proc_cb, NULL);
 
             ++task->times;
             task->ttl = time(NULL) + task->interval;
 
-            timer_task_add(ctx, task);
+            timer_task_start(ctx, task);
         }
         Sleep(1);
     }
