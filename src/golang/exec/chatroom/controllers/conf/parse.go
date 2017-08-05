@@ -11,53 +11,46 @@ import (
 
 /* 日志配置 */
 type ChatRoomLogConf struct {
-	Name  xml.Name `xml:"LOG"`        // 结点名
-	Level string   `xml:"LEVEL,attr"` // 日志级别
-	Path  string   `xml:"PATH,attr"`  // 日志路径
+	Level string `xml:"LEVEL,attr"` // 日志级别
+	Path  string `xml:"PATH,attr"`  // 日志路径
 }
 
 /* Seqsvr配置 */
 type ChatRoomSeqsvrConf struct {
-	Name xml.Name `xml:"SEQSVR"`    // 结点名
-	Addr string   `xml:"ADDR,attr"` // 地址(IP+端口)
+	Addr string `xml:"ADDR,attr"` // 地址(IP+端口)
 }
 
 /* REDIS配置 */
 type ChatRoomRedisConf struct {
-	Name   xml.Name `xml:"REDIS"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* USERDB配置 */
 type ChatRoomMysqlConf struct {
-	Name   xml.Name `xml:"USERDB"`      // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
-	Dbname string   `xml:"DBNAME,attr"` // 数据库名
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
+	Dbname string `xml:"DBNAME,attr"` // 数据库名
 }
 
 /* MONGO配置 */
 type ChatRoomMongoConf struct {
-	Name   xml.Name `xml:"MONGO"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	DbName string   `xml:"DBNAME,attr"` // 数据库名
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	DbName string `xml:"DBNAME,attr"` // 数据库名
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* 鉴权配置 */
 type ChatRoomRtmqAuthConf struct {
-	Name   xml.Name `xml:"AUTH"`        // 结点名
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
 type ChatRoomRtmqProxyConf struct {
-	Name        xml.Name             `xml:"FRWDER"`        // 结点名
 	Auth        ChatRoomRtmqAuthConf `xml:"AUTH"`          // 鉴权信息
 	RemoteAddr  string               `xml:"ADDR,attr"`     // 对端IP(IP+PROT)
 	WorkerNum   uint32               `xml:"WORKER-NUM"`    // 协程数
@@ -67,7 +60,6 @@ type ChatRoomRtmqProxyConf struct {
 
 /* 在线中心XML配置 */
 type ChatRoomConfXmlData struct {
-	Name   xml.Name              `xml:"USRSVR"`    // 根结点名
 	Id     uint32                `xml:"ID,attr"`   // 结点ID
 	Gid    uint32                `xml:"GID,attr"`  // 分组ID
 	Port   int16                 `xml:"PORT,attr"` // HTTP侦听端口

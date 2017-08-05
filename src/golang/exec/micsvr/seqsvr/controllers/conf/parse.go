@@ -11,39 +11,34 @@ import (
 
 /* 日志配置 */
 type SeqSvrConfLogXmlData struct {
-	Name  xml.Name `xml:"LOG"`        // 结点名
-	Level string   `xml:"LEVEL,attr"` // 日志级别
-	Path  string   `xml:"PATH,attr"`  // 日志路径
+	Level string `xml:"LEVEL,attr"` // 日志级别
+	Path  string `xml:"PATH,attr"`  // 日志路径
 }
 
 /* REDIS配置 */
 type SeqSvrRedisConf struct {
-	Name   xml.Name `xml:"REDIS"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* MYSQL配置 */
 type SeqSvrMysqlConf struct {
-	Name   xml.Name `xml:"MYSQL"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
-	Dbname string   `xml:"DBNAME,attr"` // 数据库名
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
+	Dbname string `xml:"DBNAME,attr"` // 数据库名
 }
 
 /* MONGO配置 */
 type SeqSvrMongoConf struct {
-	Name   xml.Name `xml:"MONGO"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* 在线中心XML配置 */
 type SeqSvrConfXmlData struct {
-	Name   xml.Name             `xml:"SEQSVR"`    // 根结点名
 	Addr   string               `xml:"ADDR,attr"` // 侦听地址(如:127.0.0.1:8000)
 	Redis  SeqSvrRedisConf      `xml:"REDIS"`     // REDIS配置
 	Mysql  SeqSvrMysqlConf      `xml:"MYSQL"`     // MYSQL配置

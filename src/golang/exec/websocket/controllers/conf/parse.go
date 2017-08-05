@@ -11,50 +11,43 @@ import (
 
 /* 运营商配置 */
 type LsndConfOperatorXmlData struct {
-	Name   xml.Name `xml:"OPERATOR"`    // 结点名
-	Id     uint32   `xml:"ID,attr"`     // 运营商ID
-	Nation string   `xml:"NATION,attr"` // 所属国家
+	Id     uint32 `xml:"ID,attr"`     // 运营商ID
+	Nation string `xml:"NATION,attr"` // 所属国家
 }
 
 /* 分发队列配置 */
 type LsndConfDistqXmlData struct {
-	Name xml.Name `xml:"OPERATOR"`  // 结点名
-	Num  uint32   `xml:"NUM,attr"`  // 队列个数
-	Max  uint32   `xml:"MAX,attr"`  // 队列长度
-	Size uint32   `xml:"SIZE,attr"` // 队列SIZE
+	Num  uint32 `xml:"NUM,attr"`  // 队列个数
+	Max  uint32 `xml:"MAX,attr"`  // 队列长度
+	Size uint32 `xml:"SIZE,attr"` // 队列SIZE
 }
 
 /* 日志配置 */
 type LsndConfLogXmlData struct {
-	Name  xml.Name `xml:"LOG"`        // 结点名
-	Level string   `xml:"LEVEL,attr"` // 日志级别
-	Path  string   `xml:"PATH,attr"`  // 日志目录
+	Level string `xml:"LEVEL,attr"` // 日志级别
+	Path  string `xml:"PATH,attr"`  // 日志目录
 }
 
 /* 鉴权配置 */
 type LsndConfRtmqAuthXmlData struct {
-	Name   xml.Name `xml:"AUTH"`        // 结点名
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* WEBSOCKET-CONNECTIONS配置 */
 type LsndConfWsConncetionsXmlData struct {
-	Name    xml.Name `xml:"CONNECTIONS"` // 结点名
-	Max     uint32   `xml:"MAX"`         // 最大连接数
-	Timeout uint32   `xml:"TIMEOUT"`     // 连接超时时间
+	Max     uint32 `xml:"MAX"`     // 最大连接数
+	Timeout uint32 `xml:"TIMEOUT"` // 连接超时时间
 }
 
 /* WEBSOCKET-SENDQ配置 */
 type LsndConfWsSendqXmlData struct {
-	Name xml.Name `xml:"SENDQ"` // 结点名
-	Max  uint32   `xml:"MAX"`   // 队列长度
-	Size uint32   `xml:"SIZE"`  // 队列SIZE
+	Max  uint32 `xml:"MAX"`  // 队列长度
+	Size uint32 `xml:"SIZE"` // 队列SIZE
 }
 
 /* WEBSOCKET代理配置 */
 type LsndConfWebsocketXmlData struct {
-	Name        xml.Name                     `xml:"WEBSOCKET"`   // 结点名
 	Ip          string                       `xml:"IP,attr"`     // 对端IP
 	Port        uint32                       `xml:"PORT,attr"`   // 对端PORT
 	Connections LsndConfWsConncetionsXmlData `xml:"CONNECTIONS"` // 连接配置
@@ -63,7 +56,6 @@ type LsndConfWebsocketXmlData struct {
 
 /* FRWDER代理配置 */
 type LsndConfRtmqProxyXmlData struct {
-	Name        xml.Name                `xml:"FRWDER"`        // 结点名
 	RemoteAddr  string                  `xml:"ADDR,attr"`     // 对端IP(IP+PROT)
 	Auth        LsndConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
 	WorkerNum   uint32                  `xml:"WORKER-NUM"`    // 协程数
@@ -73,7 +65,6 @@ type LsndConfRtmqProxyXmlData struct {
 
 /* 侦听层XML配置 */
 type LsndConfXmlData struct {
-	Name      xml.Name                 `xml:"LISTEND"`   // 根结点名
 	Id        uint32                   `xml:"ID,attr"`   // 结点ID
 	Gid       uint32                   `xml:"GID,attr"`  // 分组ID
 	Log       LsndConfLogXmlData       `xml:"LOG"`       // 日志配置

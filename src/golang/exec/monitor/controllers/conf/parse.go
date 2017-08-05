@@ -11,45 +11,39 @@ import (
 
 /* 日志配置 */
 type MonConfLogXmlData struct {
-	Name  xml.Name `xml:"LOG"`        // 结点名
-	Level string   `xml:"LEVEL,attr"` // 日志级别
-	Path  string   `xml:"PATH,attr"`  // 日志路径
+	Level string `xml:"LEVEL,attr"` // 日志级别
+	Path  string `xml:"PATH,attr"`  // 日志路径
 }
 
 /* REDIS配置 */
 type MonRedisConf struct {
-	Name   xml.Name `xml:"REDIS"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* MYSQL配置 */
 type MonMysqlConf struct {
-	Name   xml.Name `xml:"MYSQL"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* MONGO配置 */
 type MonMongoConf struct {
-	Name   xml.Name `xml:"MONGO"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* 鉴权配置 */
 type MonConfRtmqAuthXmlData struct {
-	Name   xml.Name `xml:"AUTH"`        // 结点名
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
 type MonConfRtmqProxyXmlData struct {
-	Name        xml.Name               `xml:"FRWDER"`        // 结点名
 	RemoteAddr  string                 `xml:"ADDR,attr"`     // 对端IP(IP+PROT)
 	Auth        MonConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
 	WorkerNum   uint32                 `xml:"WORKER-NUM"`    // 协程数
@@ -59,7 +53,6 @@ type MonConfRtmqProxyXmlData struct {
 
 /* 在线中心XML配置 */
 type MonConfXmlData struct {
-	Name   xml.Name                `xml:"MONITOR"`  // 根结点名
 	Id     uint32                  `xml:"ID,attr"`  // 结点ID
 	Gid    uint32                  `xml:"GID,attr"` // 分组ID
 	Redis  MonRedisConf            `xml:"REDIS"`    // Redis地址(IP+PORT)

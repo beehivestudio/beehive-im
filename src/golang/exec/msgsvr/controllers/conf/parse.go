@@ -11,46 +11,40 @@ import (
 
 /* 日志配置 */
 type MsgSvrConfLogXmlData struct {
-	Name  xml.Name `xml:"LOG"`        // 结点名
-	Level string   `xml:"LEVEL,attr"` // 日志级别
-	Path  string   `xml:"PATH,attr"`  // 日志目录
+	Level string `xml:"LEVEL,attr"` // 日志级别
+	Path  string `xml:"PATH,attr"`  // 日志目录
 }
 
 /* REDIS配置 */
 type MsgSvrRedisConf struct {
-	Name   xml.Name `xml:"REDIS"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* MYSQL配置 */
 type MsgSvrMysqlConf struct {
-	Name   xml.Name `xml:"MYSQL"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* MONGO配置 */
 type MsgSvrMongoConf struct {
-	Name   xml.Name `xml:"MONGO"`       // 结点名
-	Addr   string   `xml:"ADDR,attr"`   // 地址(IP+端口)
-	DbName string   `xml:"DBNAME,attr"` // 数据库名
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Addr   string `xml:"ADDR,attr"`   // 地址(IP+端口)
+	DbName string `xml:"DBNAME,attr"` // 数据库名
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* 鉴权配置 */
 type MsgSvrConfRtmqAuthXmlData struct {
-	Name   xml.Name `xml:"AUTH"`        // 结点名
-	Usr    string   `xml:"USR,attr"`    // 用户名
-	Passwd string   `xml:"PASSWD,attr"` // 登录密码
+	Usr    string `xml:"USR,attr"`    // 用户名
+	Passwd string `xml:"PASSWD,attr"` // 登录密码
 }
 
 /* RTMQ代理配置 */
 type MsgSvrConfRtmqProxyXmlData struct {
-	Name        xml.Name                  `xml:"FRWDER"`        // 结点名
 	RemoteAddr  string                    `xml:"ADDR,attr"`     // 对端IP(IP+PROT)
 	Auth        MsgSvrConfRtmqAuthXmlData `xml:"AUTH"`          // 鉴权信息
 	WorkerNum   uint32                    `xml:"WORKER-NUM"`    // 协程数
@@ -60,7 +54,6 @@ type MsgSvrConfRtmqProxyXmlData struct {
 
 /* 在线中心XML配置 */
 type MsgSvrConfXmlData struct {
-	Name   xml.Name                   `xml:"MSGSVR"`   // 根结点名
 	Id     uint32                     `xml:"ID,attr"`  // 结点ID
 	Gid    uint32                     `xml:"GID,attr"` // 分组ID
 	Redis  MsgSvrRedisConf            `xml:"REDIS"`    // REDIS配置
