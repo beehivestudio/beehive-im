@@ -646,7 +646,7 @@ static bool _chat_has_sub(chat_session_t *session, uint16_t cmd)
 }
 
 /******************************************************************************
- **函数名称: chat_room_get_clean_list
+ **函数名称: chat_room_clean_list_cb
  **功    能: 获取超时的聊天室ID
  **输入参数:
  **     chat: CHAT对象
@@ -658,7 +658,7 @@ static bool _chat_has_sub(chat_session_t *session, uint16_t cmd)
  **     原因: 加入链表后, 其他线程可能释放room空间.
  **作    者: # Qifeng.zou # 2016.09.20 15:48:28 #
  ******************************************************************************/
-static int chat_room_get_clean_list(chat_room_t *room, void *args)
+static int chat_room_clean_list_cb(chat_room_t *room, void *args)
 {
     list_t *clean_list = (list_t *)args;
 
@@ -670,7 +670,7 @@ static int chat_room_get_clean_list(chat_room_t *room, void *args)
 }
 
 /******************************************************************************
- **函数名称: chat_clean_hdl
+ **函数名称: chat_room_clean_hdl
  **功    能: 清理数据
  **输入参数:
  **     chat: CHAT对象
@@ -680,7 +680,7 @@ static int chat_room_get_clean_list(chat_room_t *room, void *args)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.20 15:48:28 #
  ******************************************************************************/
-int chat_clean_hdl(chat_tab_t *chat)
+int chat_room_clean_hdl(chat_tab_t *chat)
 {
     uint64_t *rid;
     list_t *clean_list;
@@ -690,7 +690,7 @@ int chat_clean_hdl(chat_tab_t *chat)
         return 0;
     }
 
-    hash_tab_trav(chat->rooms, (trav_cb_t)chat_room_get_clean_list, clean_list, RDLOCK);
+    hash_tab_trav(chat->rooms, (trav_cb_t)chat_room_clean_list_cb, clean_list, RDLOCK);
 
     while (1) {
         rid = list_lpop(clean_list);
@@ -698,7 +698,11 @@ int chat_clean_hdl(chat_tab_t *chat)
             break;
         }
         chat_del_room(chat, (uint64_t)rid);
+
+        log_debug(chat->log, "Clean room! rid:%lu", (uint64_t)rid);
     }
+
+    list_destroy(clean_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
 
     return 0;
 }

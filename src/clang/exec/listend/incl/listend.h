@@ -135,10 +135,6 @@ typedef struct _lsnd_cntx_t
     chat_tab_t *chat_tab;           /* 聊天室组织表 */
     hash_tab_t *uid_sid_tab;        /* 用户ID管理表(以UID为主键, 数据:lsnd_uid_item_t) */
 
-    /* 定时任务 */
-    timer_task_t timer_kick;        /* 定时清理被踢列表 */
-    timer_task_t timer_info;        /* 定时上报帧听层信息 */
-    timer_task_t timer_room_stat;   /* 定时上报聊天室统计 */
     /* 注意: 以下三个表互斥, 共同个管理类为lsnd_conn_extra_t的数据  */
     hash_tab_t *conn_list;          /* 连接管理表(以(SID+CID)为主键, 数据:lsnd_conn_extra_t) */
     hash_tab_t *kick_list;          /* 被踢管理表(以SCK为主键, 数据:lsnd_kick_item_t) */
@@ -156,6 +152,7 @@ int lsnd_kick_add(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn);
 void lsnd_timer_kick_handler(void *_ctx);
 void lsnd_timer_info_handler(void *_ctx);
 void lsnd_timer_room_stat_handler(void *_ctx);
+void lsnd_timer_room_clean_handler(void *_ctx);
 
 void lsnd_conn_update_seq(lsnd_conn_extra_t *extra, uint64_t seq);
 void lsnd_offline_notify(lsnd_cntx_t *ctx, uint64_t sid, uint64_t cid, uint32_t nid);

@@ -270,13 +270,20 @@ static lsnd_cntx_t *lsnd_init(lsnd_conf_t *conf, log_cycle_t *log)
  ******************************************************************************/
 static void lsnd_set_timer(lsnd_cntx_t *ctx)
 {
-    timer_task_init(&ctx->timer_kick, lsnd_timer_kick_handler, 5, 5, (void *)ctx);
-    timer_task_init(&ctx->timer_info, lsnd_timer_info_handler, 5, 5, (void *)ctx);
-    timer_task_init(&ctx->timer_room_stat, lsnd_timer_room_stat_handler, 5, 5, (void *)ctx);
+    timer_task_t *task;
 
-    timer_task_add(ctx->timer, &ctx->timer_kick);
-    timer_task_add(ctx->timer, &ctx->timer_info);
-    timer_task_add(ctx->timer, &ctx->timer_room_stat);
+    task = timer_task_init(5, 5); /* 定时器(间隔:5秒) */
+    if (NULL == task) {
+        log_error(ctx->log, "Initialize timer task failed!");
+        return;
+    }
+
+    timer_task_add(task, lsnd_timer_kick_handler, (void *)ctx);
+    timer_task_add(task, lsnd_timer_info_handler, (void *)ctx);
+    timer_task_add(task, lsnd_timer_room_stat_handler, (void *)ctx);
+    timer_task_add(task, lsnd_timer_room_clean_handler, (void *)ctx);
+
+    timer_task_start(ctx->timer, task);
 }
 
 /******************************************************************************

@@ -94,6 +94,6 @@ bool chat_has_sub(chat_tab_t *chat, uint64_t sid, uint16_t cmd); // OK
 
 int chat_room_trav_session(chat_tab_t *chat, uint64_t rid, uint16_t gid, trav_cb_t proc, void *args); // OK
 int chat_room_trav(chat_tab_t *chat, trav_cb_t proc, void *args);
-int chat_clean_hdl(chat_tab_t *chat);
+int chat_room_clean_hdl(chat_tab_t *chat);
 
 #endif /*__CHAT_H__*/

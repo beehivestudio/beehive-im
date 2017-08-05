@@ -90,9 +90,9 @@ int chat_del_room(chat_tab_t *chat, uint64_t rid)
     room = hash_tab_query(chat->rooms, (void *)&key, WRLOCK);
     if (NULL == room) {
         return 0;
-    } else if ((0 != room->sid_num) || (0 != room->grp_num)) {
+    } else if (0 != room->sid_num) {
         hash_tab_unlock(chat->rooms, (void *)&key, WRLOCK);
-        log_error(chat->log, "Delete room failed! rid:%lu sid num:%d gid num:",
+        log_error(chat->log, "Delete room failed! rid:%lu sid num:%d gid num:%d",
                 room->rid, room->sid_num, room->grp_num);
         return 0; /* 聊天室还有人, 不能删除 */
     }

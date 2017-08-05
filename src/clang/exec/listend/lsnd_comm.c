@@ -5,7 +5,6 @@
 
 #include "mesg.pb-c.h"
 
-static void lsnd_timer_send_user_num(lsnd_cntx_t *ctx);
 static void lsnd_upload_room_stat_handler(chat_room_t *room, void *_ctx);
 
 /******************************************************************************
@@ -248,12 +247,12 @@ int lsnd_kick_add(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
  **返    回: VOID
  **实现描述: 使用PB协议组装接入层上报数据
  **     {
- **         required uint32 network = 1;    // M|网络类型(0:UNKNOWN 1:TCP 2:WS)|数字|<br>
- **         required uint32 nid = 2;        // M|结点ID|数字|<br>
- **         required uint32 opid = 3;       // M|运营商ID|数字|<br>
- **         required string nation = 4;     // M|所属国家|字串|<br>
- **         required string ip = 5;     // M|IP地址|字串|<br>
- **         required uint32 port = 6;       // M|端口号|数字|<br>
+ **         required uint32 network = 1;    // M|网络类型(0:UNKNOWN 1:TCP 2:WS)|数字|
+ **         required uint32 nid = 2;        // M|结点ID|数字|
+ **         required uint32 opid = 3;       // M|运营商ID|数字|
+ **         required string nation = 4;     // M|所属国家|字串|
+ **         required string ip = 5;     // M|IP地址|字串|
+ **         required uint32 port = 6;       // M|端口号|数字|
  **     }
  **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 23:23:51 #
@@ -337,9 +336,9 @@ void lsnd_timer_room_stat_handler(void *_ctx)
  **返    回: VOID
  **实现描述: 使用PB协议组装接入层上报数据
  **     {
- **         required uint64 rid = 1;     // M|聊天室ID|数字|<br>
- **         required uint32 nid = 2;     // M|结点ID|数字|<br>
- **         required uint32 num = 3;     // M|人数|数字|<br>
+ **         required uint64 rid = 1;     // M|聊天室ID|数字|
+ **         required uint32 nid = 2;     // M|结点ID|数字|
+ **         required uint32 num = 3;     // M|人数|数字|
  **     }
  **注意事项: 
  **作    者: # Qifeng.zou # 2017.05.13 11:10:48 #
@@ -384,6 +383,30 @@ static void lsnd_upload_room_stat_handler(chat_room_t *room, void *_ctx)
     rtmq_proxy_async_send(ctx->frwder, CMD_ROOM_LSN_STAT, addr, sizeof(mesg_header_t) + len);
 
     free(addr);
+    return;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: lsnd_timer_room_clean_handler
+ **功    能: 清理人数为空的聊天室信息
+ **输入参数:
+ **     _ctx: 全局信息
+ **输出参数: NONE
+ **返    回: VOID
+ **实现描述: 调用chat_room_trav()遍历所有聊天室.
+ **注意事项: 
+ **作    者: # Qifeng.zou # 2017.08.05 14:35:19 #
+ ******************************************************************************/
+void lsnd_timer_room_clean_handler(void *_ctx)
+{
+    lsnd_cntx_t *ctx = (lsnd_cntx_t *)_ctx;
+
+    log_debug(ctx->log, "Clean room data!");
+
+    chat_room_clean_hdl(ctx->chat_tab);
+
     return;
 }
 
