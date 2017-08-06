@@ -166,10 +166,6 @@ func LsndUploadRoomLsnStatCb(item *chat_tab.ChatRoomItem, param interface{}) int
 		return -1
 	}
 
-	if 0 == item.GetNum() {
-		return 0
-	}
-
 	req := &mesg.MesgRoomLsnStat{
 		Rid: proto.Uint64(item.GetRid()),         // 聊天室ID
 		Nid: proto.Uint32(ctx.conf.GetNid()),     // 聊天室ID
