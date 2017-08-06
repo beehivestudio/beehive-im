@@ -1,9 +1,9 @@
 use chat;
 
-db.ChatRoomMesg.ensureIndex({rid:1});
-db.ChatRoomMesg.ensureIndex({uid:1});
-db.ChatRoomMesg.ensureIndex({rid:1, uid:1});
+db.RoomMesg.ensureIndex({rid:1});
+db.RoomMesg.ensureIndex({uid:1});
+db.RoomMesg.ensureIndex({rid:1, uid:1});
 
-db.ChatRoomBlacklist.ensureIndex({rid:1});
-db.ChatRoomBlacklist.ensureIndex({uid:1});
-db.ChatRoomBlacklist.ensureIndex({rid:1, uid:1}, {unique:true});
+db.RoomBlacklist.ensureIndex({rid:1});
+db.RoomBlacklist.ensureIndex({uid:1});
+db.RoomBlacklist.ensureIndex({rid:1, uid:1}, {unique:true});
