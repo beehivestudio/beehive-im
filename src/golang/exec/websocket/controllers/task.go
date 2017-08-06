@@ -216,6 +216,7 @@ func LsndUploadRoomLsnStatCb(item *chat_tab.ChatRoomItem, param interface{}) int
  ******************************************************************************/
 func (ctx *LsndCntx) task_timer_clean_timeout() {
 	for {
+		ctx.chat.Clean() /* 清理人数为0的聊天室 */
 		ctx.chat.TravSession(LsndSessionTimeoutCleanHandler, ctx)
 		time.Sleep(30 * time.Second)
 	}
