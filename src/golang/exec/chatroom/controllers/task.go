@@ -30,11 +30,19 @@ func (ctx *ChatRoomCntx) task() {
 	/* 每1秒执行一次任务 */
 	go func() {
 		for {
-			ctx.listend_dict_update()                             // 更新侦听层字典
-			ctx.listend_list_update()                             // 更新侦听层列表
-			models.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
+			ctx.listend_dict_update() // 更新侦听层字典
+			ctx.listend_list_update() // 更新侦听层列表
 
 			time.Sleep(time.Second)
+		}
+	}()
+
+	/* 每5秒执行一次任务 */
+	go func() {
+		for {
+			models.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
+
+			time.Sleep(5 * time.Second)
 		}
 	}()
 
@@ -391,7 +399,7 @@ func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
 			uid_str := vals[0] // 用户ID
 			sid_str := vals[1] // 会话ID
 
-			ctx.log.Debug("uid:%d sid:%d", uid_str, sid_str)
+			ctx.log.Debug("uid:%s sid:%s", uid_str, sid_str)
 		}
 
 		if uid_sid_num < comm.CHAT_BAT_NUM {

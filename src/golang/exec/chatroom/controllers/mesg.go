@@ -2230,6 +2230,7 @@ func (ctx *ChatRoomCntx) room_chat_handler(
 	/* 2. 下发聊天室消息 */
 	ctx.room.node.RLock()
 	defer ctx.room.node.RUnlock()
+
 	nid_list, ok := ctx.room.node.m[req.GetRid()]
 	if !ok {
 		ctx.log.Error("Get node list failed! rid:%d", req.GetRid())
