@@ -121,7 +121,7 @@
 | 18 | 0x0413 | 聊天室各侦听层统计应答 | ROOM-LSN-STAT-ACK | Ø | Ø |  |
 | 19 | 0x0450 | 加入聊天室通知 | ROOM-JOIN-NTF | √ | √ |  |
 | 20 | 0x0451 | 加入聊天室通知应答 | ROOM-JOIN-NTF-ACK | Ø | Ø |  |
-| 21 | 0x0452 | 退出聊天室通知 | ROOM-QUIT-NTF | 已实现 | 已实现 |  |
+| 21 | 0x0452 | 退出聊天室通知 | ROOM-QUIT-NTF | √ | √ |  |
 | 22 | 0x0453 | 退出聊天室通知应答 | ROOM-QUIT-NTF-ACK | Ø | Ø |  |
 | 23 | 0x0454 | 踢出聊天室通知 | ROOM-KICK-NTF | √ | √ |  |
 | 24 | 0x0455 | 踢出聊天室通知应答 | ROOM-KICK-NTF-ACK | Ø | Ø |  |
