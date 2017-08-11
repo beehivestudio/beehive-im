@@ -77,16 +77,16 @@ type ChatRoomCntx struct {
 	room_mesg_chan chan *MesgRoomItem /* 聊天室消息存储队列 */
 }
 
-var g_usrsvr_cntx *ChatRoomCntx /* 全局对象 */
+var g_chatroom_cntx *ChatRoomCntx /* 全局对象 */
 
 /* 获取全局对象 */
-func GetUsrSvrCtx() *ChatRoomCntx {
-	return g_usrsvr_cntx
+func GetRoomSvrCntx() *ChatRoomCntx {
+	return g_chatroom_cntx
 }
 
 /* 设置全局对象 */
-func SetUsrSvrCtx(ctx *ChatRoomCntx) {
-	g_usrsvr_cntx = ctx
+func SetRoomSvrCntx(ctx *ChatRoomCntx) {
+	g_chatroom_cntx = ctx
 }
 
 /******************************************************************************
@@ -163,7 +163,7 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
 	/* > 消息队列 */
 	ctx.room_mesg_chan = make(chan *MesgRoomItem, 100000)
 
-	SetUsrSvrCtx(ctx)
+	SetRoomSvrCntx(ctx)
 
 	return ctx, nil
 }

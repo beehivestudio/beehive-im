@@ -20,7 +20,7 @@ type ChatRoomPushCtrl struct {
 }
 
 func (this *ChatRoomPushCtrl) Push() {
-	ctx := GetUsrSvrCtx()
+	ctx := GetRoomSvrCntx()
 
 	dim := this.GetString("dim")
 	switch dim {

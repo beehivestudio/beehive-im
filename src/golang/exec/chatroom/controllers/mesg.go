@@ -305,12 +305,35 @@ func (ctx *ChatRoomCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
  **     head: 协议头
  **输出参数: NONE
  **返    回: 异常信息
- **实现描述:
+ **实现描述: 下发下线通知后, 再清理会话数据.
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 23:23:50 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) offline_handler(head *comm.MesgHeader) error {
-	return models.RoomCleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
+	/* > 下发下线通知 */
+	rlist, err := models.RoomListBySid(ctx.redis, head.GetSid())
+	if nil != err {
+		ctx.log.Error("Get room list by sid failed! errmsg:%s", err.Error())
+		return err
+	}
+
+	attr, err := models.RoomGetSidAttr(ctx.redis, head.GetSid())
+	if nil != err {
+		ctx.log.Error("Get sid attr failed! errmsg:%s", err.Error())
+		return err
+	}
+
+	for idx, rid_str := range rlist {
+		ctx.log.Debug("idx:%d rid:%s sid:%d", idx, rid_str, head.GetSid())
+
+		rid, _ := strconv.ParseInt(rid_str, 10, 64)
+
+		ctx.room_quit_notify(head.GetSid(), attr.GetUid(), uint64(rid))
+	}
+
+	/* > 清理会话数据 */
+	return models.RoomCleanSessionData(ctx.redis,
+		head.GetSid(), head.GetCid(), head.GetNid())
 }
 
 /******************************************************************************
@@ -394,7 +417,8 @@ func (ctx *ChatRoomCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) ping_handler(head *comm.MesgHeader) {
-	code, err := models.RoomUpdateSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
+	code, err := models.RoomUpdateSessionData(
+		ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
 	if nil != err {
 		models.RoomCleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid()) // 清理会话数据
 		ctx.send_kick(head.GetSid(), head.GetCid(), head.GetNid(), code, err.Error())
@@ -1168,6 +1192,9 @@ func (ctx *ChatRoomCntx) room_join_handler(
 	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_NID_ZSET, req.GetRid())
 	pl.Send("ZADD", key, ttl, head.GetNid()) // 加入RID -> NID集合
 
+	key = fmt.Sprintf(models.ROOM_KEY_SID_TO_RID_ZSET, head.GetSid())
+	pl.Send("ZADD", key, ttl, req.GetRid()) /* 记录SID->RID集合 */
+
 	return gid, nil
 }
 
@@ -1417,11 +1444,11 @@ func (ctx *ChatRoomCntx) room_quit_ack(head *comm.MesgHeader, req *mesg.MesgRoom
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 10:51:09 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgRoomQuit) int {
+func (ctx *ChatRoomCntx) room_quit_notify(sid uint64, uid uint64, rid uint64) int {
 	/* > 设置协议体 */
 	ntf := &mesg.MesgRoomQuitNtf{
-		Uid: proto.Uint64(req.GetUid()),
-		Rid: proto.Uint64(req.GetRid()),
+		Uid: proto.Uint64(uid),
+		Rid: proto.Uint64(rid),
 	}
 
 	/* > 生成PB数据 */
@@ -1440,13 +1467,15 @@ func (ctx *ChatRoomCntx) room_quit_notify(head *comm.MesgHeader, req *mesg.MesgR
 	num := len(ctx.listend.list.nodes)
 
 	for idx := 0; idx < num; idx += 1 {
+		head := &comm.MesgHeader{
+			Cmd:    comm.CMD_ROOM_QUIT_NTF,
+			Length: uint32(length),
+			Nid:    ctx.listend.list.nodes[idx],
+		}
+
 		/* > 拼接协议包 */
 		p := &comm.MesgPacket{}
 		p.Buff = make([]byte, comm.MESG_HEAD_SIZE+length)
-
-		head.Cmd = comm.CMD_ROOM_QUIT_NTF
-		head.Length = uint32(length)
-		head.Nid = ctx.listend.list.nodes[idx]
 
 		comm.MesgHeadHton(head, p)
 		copy(p.Buff[comm.MESG_HEAD_SIZE:], body)
@@ -1536,7 +1565,7 @@ func ChatRoomQuitHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 
 	/* 3. > 发送ROOM-QUIT应答 */
 	ctx.room_quit_ack(head, req)
-	ctx.room_quit_notify(head, req)
+	ctx.room_quit_notify(head.GetSid(), req.GetUid(), req.GetRid())
 
 	return 0
 }

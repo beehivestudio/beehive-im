@@ -124,7 +124,8 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error 
 	/* > 获取SID -> RID列表 */
 	key := fmt.Sprintf(ROOM_KEY_SID_TO_RID_ZSET, sid)
 
-	rid_gid_list, err := redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
+	rid_gid_list, err := redis.Strings(rds.Do(
+		"ZRANGEBYSCORE", key, "-inf", "+inf", "WITHSCORES"))
 	if nil != err {
 		return err
 	}
@@ -552,7 +553,8 @@ func RoomCleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 23:34:31 #
  ******************************************************************************/
-func RoomUpdateSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) (code uint32, err error) {
+func RoomUpdateSessionData(pool *redis.Pool,
+	sid uint64, cid uint64, nid uint32) (code uint32, err error) {
 	pl := pool.Get()
 	defer func() {
 		pl.Do("")
@@ -580,4 +582,26 @@ func RoomUpdateSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32)
 	RoomUpdateBySid(pool, attr.uid, attr.nid, sid)
 
 	return 0, nil
+}
+
+/******************************************************************************
+ **函数名称: RoomListBySid
+ **功    能: 根据会话sid获取其当前加入的聊天室列表
+ **输入参数:
+ **     pool: REDIS连接池
+ **     sid: 会话SID
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.08.11 20:28:04 #
+ ******************************************************************************/
+func RoomListBySid(pool *redis.Pool, sid uint64) ([]string, error) {
+	rds := pool.Get()
+	defer rds.Close()
+
+	/* > 获取SID -> RID列表 */
+	key := fmt.Sprintf(ROOM_KEY_SID_TO_RID_ZSET, sid)
+
+	return redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf"))
 }

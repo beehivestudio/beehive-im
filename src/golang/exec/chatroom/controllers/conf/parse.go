@@ -58,7 +58,7 @@ type ChatRoomRtmqProxyConf struct {
 	RecvChanLen uint32               `xml:"RECV-CHAN-LEN"` // 接收队列长度
 }
 
-/* 在线中心XML配置 */
+/* 聊天室XML配置 */
 type ChatRoomConfXmlData struct {
 	Id     uint32                `xml:"ID,attr"`   // 结点ID
 	Gid    uint32                `xml:"GID,attr"`  // 分组ID

@@ -19,7 +19,7 @@ type ChatRoomQueryCtrl struct {
 }
 
 func (this *ChatRoomQueryCtrl) Query() {
-	ctx := GetUsrSvrCtx()
+	ctx := GetRoomSvrCntx()
 
 	option := this.GetString("option")
 	switch option {

@@ -19,7 +19,7 @@ type ChatRoomConfigCtrl struct {
 }
 
 func (this *ChatRoomConfigCtrl) Config() {
-	ctx := GetUsrSvrCtx()
+	ctx := GetRoomSvrCntx()
 
 	option := this.GetString("option")
 	switch option {
