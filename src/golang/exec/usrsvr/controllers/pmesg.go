@@ -545,7 +545,7 @@ func (ctx *UsrSvrCntx) blacklist_add_parse(data []byte) (
  **返    回:
  **     code: 错误码
  **     err: 错误描述
- **实现描述:
+ **实现描述: 将信息同步到数据库和缓存中...
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 10:30:04 #
  ******************************************************************************/
@@ -556,12 +556,18 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
 
 	ctm := time.Now().Unix()
 
-	/* > 加入用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetSuid())
+	/* > 加入用户黑名单(缓存) */
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_TAB, req.GetSuid())
 
-	_, err = rds.Do("ZADD", key, ctm, req.GetDuid())
+	_, err = rds.Do("HSET", key, req.GetDuid(), ctm)
 	if nil != err {
 		ctx.log.Error("Add into blacklist failed! errmsg:%s", err.Error())
+		return comm.ERR_SYS_SYSTEM, err
+	}
+
+	/* > 加入用户黑名单(数据库MONGODB) */
+	err = models.DbBlacklistAdd(ctx.mongo, ctx.conf.Mongo.DbName)
+	if nil != err {
 		return comm.ERR_SYS_SYSTEM, err
 	}
 
@@ -791,9 +797,9 @@ func (ctx *UsrSvrCntx) blacklist_del_handler(
 	defer rds.Close()
 
 	/* > 移除用户黑名单 */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_ZSET, req.GetSuid())
+	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_TAB, req.GetSuid())
 
-	_, err = rds.Do("ZREM", key, req.GetDuid())
+	_, err = rds.Do("HDEL", key, req.GetDuid())
 	if nil != err {
 		ctx.log.Error("Remove blacklist failed! errmsg:%s", err.Error())
 		return comm.ERR_SYS_SYSTEM, err
