@@ -12,6 +12,8 @@ import (
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/im"
 	"beehive-im/src/golang/lib/mesg"
+
+	"beehive-im/src/golang/exec/usrsvr/models"
 )
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -551,18 +553,11 @@ func (ctx *UsrSvrCntx) blacklist_add_parse(data []byte) (
  ******************************************************************************/
 func (ctx *UsrSvrCntx) blacklist_add_handler(
 	head *comm.MesgHeader, req *mesg.MesgBlacklistAdd) (code uint32, err error) {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	ctm := time.Now().Unix()
-
 	/* > 加入用户黑名单(缓存) */
-	key := fmt.Sprintf(comm.CHAT_KEY_USR_BLACKLIST_TAB, req.GetSuid())
-
-	_, err = rds.Do("HSET", key, req.GetDuid(), ctm)
+	code, err = models.RdsBlacklistAdd(ctx.redis, req.GetSuid(), req.GetDuid())
 	if nil != err {
 		ctx.log.Error("Add into blacklist failed! errmsg:%s", err.Error())
-		return comm.ERR_SYS_SYSTEM, err
+		return code, err
 	}
 
 	/* > 加入用户黑名单(数据库MONGODB) */
