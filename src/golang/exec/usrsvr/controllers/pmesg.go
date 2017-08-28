@@ -561,7 +561,8 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
 	}
 
 	/* > 加入用户黑名单(数据库MONGODB) */
-	err = models.DbBlacklistAdd(ctx.mongo, ctx.conf.Mongo.DbName)
+	err = models.DbBlacklistAdd(ctx.mongo,
+		ctx.conf.Mongo.DbName, req.GetSuid(), req.GetDuid())
 	if nil != err {
 		return comm.ERR_SYS_SYSTEM, err
 	}
