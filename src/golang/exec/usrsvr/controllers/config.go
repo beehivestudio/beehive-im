@@ -32,7 +32,9 @@ func (this *UsrSvrConfigCtrl) Config() {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", option))
+	errmsg := fmt.Sprintf("Unsupport this option:%s.", option)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 }
 
 // 转发层操作
@@ -56,7 +58,9 @@ func (this *UsrSvrConfigCtrl) Frwder(ctx *UsrSvrCntx) {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	errmsg := fmt.Sprintf("Unsupport this action:%s.", action)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 }
 
 /* 应答结果 */
@@ -177,7 +181,9 @@ func (this *UsrSvrConfigCtrl) Listend(ctx *UsrSvrCntx) {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	errmsg := fmt.Sprintf("Unsupport this action:%s.", action)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 }
 
 /* 应答结果 */
@@ -310,7 +316,9 @@ func (this *UsrSvrConfigCtrl) UserStatis(ctx *UsrSvrCntx) {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	errmsg := fmt.Sprintf("Unsupport this action:%s.", action)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 	return
 }
 

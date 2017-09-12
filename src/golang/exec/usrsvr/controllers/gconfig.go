@@ -36,7 +36,9 @@ func (this *UsrSvrGroupConfigCtrl) Config() {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s.", option))
+	errmsg := fmt.Sprintf("Unsupport this option:%s.", option)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,7 +69,9 @@ func (this *UsrSvrGroupConfigCtrl) Blacklist(ctx *UsrSvrCntx) {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	errmsg := fmt.Sprintf("Unsupport this action:%s.", action)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 	return
 }
 
@@ -384,7 +388,9 @@ func (this *UsrSvrGroupConfigCtrl) Gag(ctx *UsrSvrCntx) {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	errmsg := fmt.Sprintf("Unsupport this action:%s.", action)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 	return
 }
 
@@ -698,7 +704,9 @@ func (this *UsrSvrGroupConfigCtrl) Switch(ctx *UsrSvrCntx) {
 		return
 	}
 
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this action:%s.", action))
+	errmsg := fmt.Sprintf("Unsupport this action:%s.", action)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 	return
 }
 

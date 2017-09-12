@@ -16,5 +16,8 @@ func (this *UsrSvrGroupQueryCtrl) Query() {
 	option := this.GetString("option")
 	switch option {
 	}
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s", option))
+
+	errmsg := fmt.Sprintf("Unsupport this option:%s", option)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 }
