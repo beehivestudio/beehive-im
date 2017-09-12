@@ -30,7 +30,10 @@ func (this *ChatRoomQueryCtrl) Query() {
 		this.GroupList(ctx)
 		return
 	}
-	this.Error(comm.ERR_SVR_INVALID_PARAM, fmt.Sprintf("Unsupport this option:%s", option))
+
+	errmsg := fmt.Sprintf("Unsupport this option:%s", option)
+
+	this.Error(comm.ERR_SVR_INVALID_PARAM, errmsg)
 }
 
 /* 应答结果 */

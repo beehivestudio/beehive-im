@@ -727,7 +727,12 @@ func (ctx *ChatRoomCntx) alloc_rid() (rid uint64, err error) {
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
 	/* > 准备SQL语句 */
-	sql := fmt.Sprintf("INSERT INTO CHAT_ROOM_INFO_%d(rid, name, status, description, create_time, update_time, owner) VALUES(?, ?, ?, ?, ?, ?, ?)", rid%256)
+	sql := fmt.Sprintf(`
+    INSERT INTO
+        CHAT_ROOM_INFO_TAB(
+            rid, name, status, description,
+            create_time, update_time, owner)
+    VALUES(?, ?, ?, ?, ?, ?, ?)`)
 
 	stmt, err := ctx.userdb.Prepare(sql)
 	if nil != err {
@@ -1907,7 +1912,7 @@ func (ctx *ChatRoomCntx) room_kick_handler(
 	pl.Send("SADD", key, req.GetUid())
 
 	/* > 提交MONGO存储 */
-	data := &models.RoomBlacklistTabRow{
+	blacklist := &models.RoomBlacklistTabRow{
 		Rid:    req.GetRid(),               // 聊天室ID
 		Uid:    req.GetUid(),               // 用户ID
 		Status: models.ROOM_USER_STAT_KICK, // 状态(被踢)
@@ -1915,7 +1920,7 @@ func (ctx *ChatRoomCntx) room_kick_handler(
 	}
 
 	cb := func(c *mgo.Collection) (err error) {
-		c.Insert(data)
+		c.Insert(blacklist)
 		return err
 	}
 
