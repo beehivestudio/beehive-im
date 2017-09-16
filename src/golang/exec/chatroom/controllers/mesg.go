@@ -178,10 +178,10 @@ func (ctx *ChatRoomCntx) online_parse(data []byte) (
 func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) (seq uint64, err error) {
 	var key string
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -190,7 +190,7 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
 	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
 
 	/* 获取会话属性 */
-	attr, err := models.RoomGetSidAttr(ctx.redis, req.GetSid())
+	attr, err := ctx.cache.RoomGetSidAttr(req.GetSid())
 	if nil != err {
 		ctx.send_kick(req.GetSid(), head.GetCid(), head.GetNid(), comm.ERR_SYS_SYSTEM, err.Error())
 		return
@@ -200,7 +200,7 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
 		ctx.log.Error("Session's nid is conflict! uid:%d sid:%d nid:[%d/%d] cid:%d",
 			attr.GetUid(), req.GetSid(), attr.GetNid(), head.GetNid(), head.GetCid())
 		/* 清理会话数据 */
-		models.RoomCleanSessionData(ctx.redis, head.GetSid(), attr.GetCid(), attr.GetNid())
+		ctx.cache.RoomCleanSessionData(head.GetSid(), attr.GetCid(), attr.GetNid())
 		/* 将老连接踢下线 */
 		ctx.send_kick(req.GetSid(), attr.GetCid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
@@ -311,13 +311,13 @@ func (ctx *ChatRoomCntx) offline_parse(data []byte) (head *comm.MesgHeader) {
  ******************************************************************************/
 func (ctx *ChatRoomCntx) offline_handler(head *comm.MesgHeader) error {
 	/* > 下发下线通知 */
-	rlist, err := models.RoomListBySid(ctx.redis, head.GetSid())
+	rlist, err := ctx.cache.RoomListBySid(head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get room list by sid failed! errmsg:%s", err.Error())
 		return err
 	}
 
-	attr, err := models.RoomGetSidAttr(ctx.redis, head.GetSid())
+	attr, err := ctx.cache.RoomGetSidAttr(head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get sid attr failed! errmsg:%s", err.Error())
 		return err
@@ -332,7 +332,7 @@ func (ctx *ChatRoomCntx) offline_handler(head *comm.MesgHeader) error {
 	}
 
 	/* > 清理会话数据 */
-	return models.RoomCleanSessionData(ctx.redis,
+	return ctx.cache.RoomCleanSessionData(
 		head.GetSid(), head.GetCid(), head.GetNid())
 }
 
@@ -417,10 +417,11 @@ func (ctx *ChatRoomCntx) ping_parse(data []byte) (head *comm.MesgHeader) {
  **作    者: # Qifeng.zou # 2016.11.03 21:53:38 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) ping_handler(head *comm.MesgHeader) {
-	code, err := models.RoomUpdateSessionData(
-		ctx.redis, head.GetSid(), head.GetCid(), head.GetNid())
+	code, err := ctx.cache.RoomUpdateSessionData(
+		head.GetSid(), head.GetCid(), head.GetNid())
 	if nil != err {
-		models.RoomCleanSessionData(ctx.redis, head.GetSid(), head.GetCid(), head.GetNid()) // 清理会话数据
+		// 清理会话数据
+		ctx.cache.RoomCleanSessionData(head.GetSid(), head.GetCid(), head.GetNid())
 		ctx.send_kick(head.GetSid(), head.GetCid(), head.GetNid(), code, err.Error())
 	}
 }
@@ -714,48 +715,6 @@ func (ctx *ChatRoomCntx) alloc_rid() (rid uint64, err error) {
 }
 
 /******************************************************************************
- **函数名称: room_add
- **功    能: 添加聊天室
- **输入参数:
- **     rid: 聊天室ID
- **     req: 创建请求
- **输出参数: NONE
- **返    回: 错误描述
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2017.05.29 20:37:40 #
- ******************************************************************************/
-func (ctx *ChatRoomCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
-	/* > 准备SQL语句 */
-	sql := fmt.Sprintf(`
-    INSERT INTO
-        CHAT_ROOM_INFO_TAB(
-            rid, name, status, description,
-            create_time, update_time, owner)
-    VALUES(?, ?, ?, ?, ?, ?, ?)`)
-
-	stmt, err := ctx.userdb.Prepare(sql)
-	if nil != err {
-		ctx.log.Error("Prepare sql failed! sql:%s errmsg:%s", sql, err.Error())
-		return err
-	}
-
-	defer stmt.Close()
-
-	/* > 执行SQL语句 */
-	_, err = stmt.Exec(rid, req.GetName(), models.ROOM_STAT_OPEN,
-		req.GetDesc(), time.Now().Unix(), time.Now().Unix(), req.GetUid())
-	if nil != err {
-		ctx.log.Error("Add rid failed! errmsg:%s", err.Error())
-		return err
-	}
-
-	ctx.log.Debug("Add rid success!")
-
-	return nil
-}
-
-/******************************************************************************
  **函数名称: room_creat_handler
  **功    能: ROOM-CREAT处理
  **输入参数:
@@ -771,15 +730,6 @@ func (ctx *ChatRoomCntx) room_add(rid uint64, req *mesg.MesgRoomCreat) error {
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_creat_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomCreat) (rid uint64, err error) {
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
-	pl := ctx.redis.Get()
-	defer func() {
-		pl.Do("")
-		pl.Close()
-	}()
-
 	defer func() {
 		if err := recover(); nil != err {
 			ctx.log.Error("Routine crashed! errmsg:%s", err)
@@ -793,29 +743,19 @@ func (ctx *ChatRoomCntx) room_creat_handler(
 		return 0, err
 	}
 
-	err = ctx.room_add(rid, req)
+	/* > 更新数据到MYSQL */
+	err = models.RoomAdd(ctx.userdb, rid, req)
 	if nil != err {
-		ctx.log.Error("Room add failed! errmsg:%s", err.Error())
+		ctx.log.Error("Room add into mysql failed! errmsg:%s", err.Error())
 		return 0, err
 	}
 
-	/* > 设置聊天室所有者 */
-	key := fmt.Sprintf(models.ROOM_KEY_ROOM_ROLE_TAB, rid)
-
-	ok, err := redis.Bool(rds.Do("HSETNX", key, req.GetUid(), models.ROOM_ROLE_OWNER))
+	/* > 更新数据到REDIS */
+	err = ctx.cache.RoomAdd(rid, req)
 	if nil != err {
-		ctx.log.Error("Set room owner failed! uid:%d rid:%d errmsg:%s",
-			req.GetUid(), rid, err.Error())
+		ctx.log.Error("Room add into redis failed! errmsg:%s", err.Error())
 		return 0, err
-	} else if !ok {
-		ctx.log.Debug("Set room owner failed! uid:%d rid:%d", req.GetUid(), rid)
-		return 0, errors.New("Set room owner failed!")
 	}
-
-	/* > 设置聊天室信息 */
-	key = fmt.Sprintf(models.ROOM_KEY_ROOM_INFO_TAB, rid)
-
-	pl.Send("HMSET", key, "NAME", req.GetName(), "DESC", req.GetDesc())
 
 	return rid, nil
 }
@@ -1108,7 +1048,7 @@ func (ctx *ChatRoomCntx) room_join_notify(head *comm.MesgHeader, req *mesg.MesgR
 func (ctx *ChatRoomCntx) alloc_room_gid(rid uint64) (gid uint32, err error) {
 	var num int
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	key := fmt.Sprintf(models.ROOM_KEY_RID_GID_TO_NUM_ZSET, rid)
@@ -1154,10 +1094,10 @@ func (ctx *ChatRoomCntx) alloc_room_gid(rid uint64) (gid uint32, err error) {
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_join_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomJoin) (gid uint32, err error) {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -1508,7 +1448,7 @@ func (ctx *ChatRoomCntx) room_quit_notify(sid uint64, uid uint64, rid uint64) in
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_quit_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomQuit) (code uint32, err error) {
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -1696,7 +1636,7 @@ func (ctx *ChatRoomCntx) room_kick_failed(head *comm.MesgHeader,
  **作    者: # Qifeng.zou # 2017.05.19 23:06:38 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, err error) {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	/* > 获取会话列表 */
@@ -1732,7 +1672,7 @@ func (ctx *ChatRoomCntx) room_kick_by_uid(rid uint64, uid uint64) (code uint32, 
 		sid, _ := strconv.ParseInt(sid_list[idx], 10, 64)
 
 		/* > 获取会话属性 */
-		attr, err := models.RoomGetSidAttr(ctx.redis, uint64(sid))
+		attr, err := ctx.cache.RoomGetSidAttr(uint64(sid))
 		if nil != err {
 			ctx.log.Error("Get sid attr failed! rid:%d uid:%d errmsg:%s",
 				rid, uid, err.Error())
@@ -1888,19 +1828,19 @@ func (ctx *ChatRoomCntx) room_kick_notify(head *comm.MesgHeader, req *mesg.MesgR
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_kick_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomKick) (code uint32, err error) {
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
 	}()
 
 	/* > 获取会话属性 */
-	attr, err := models.RoomGetSidAttr(ctx.redis, head.GetSid())
+	attr, err := ctx.cache.RoomGetSidAttr(head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get sid attr failed! rid:%d uid:%d errmsg:%s",
 			req.GetRid(), req.GetUid(), err.Error())
 		return comm.ERR_SYS_SYSTEM, err
-	} else if !models.IsRoomManager(ctx.redis, req.GetRid(), attr.GetUid()) {
+	} else if !ctx.cache.IsRoomManager(req.GetRid(), attr.GetUid()) {
 		ctx.log.Error("You're not owner! rid:%d kicked-uid:%d attr.uid:%d",
 			req.GetRid(), req.GetUid(), attr.GetUid())
 		return comm.ERR_SYS_PERM_DENIED, errors.New("You're not room owner!")
@@ -2045,7 +1985,7 @@ func (ctx *ChatRoomCntx) room_lsn_stat_parse(data []byte) (
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_lsn_stat_handler(
 	head *comm.MesgHeader, req *mesg.MesgRoomLsnStat) (code uint32, err error) {
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -2457,7 +2397,7 @@ func (ctx *ChatRoomCntx) task_room_mesg_chan_pop() {
  **作    者: # Qifeng.zou # 2016.12.28 22:05:51 #
  ******************************************************************************/
 func (item *MesgRoomItem) storage(ctx *ChatRoomCntx) {
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -2521,7 +2461,7 @@ func (ctx *ChatRoomCntx) task_room_mesg_queue_clean() {
  **作    者: # Qifeng.zou # 2016.12.28 22:34:18 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) room_mesg_queue_clean() {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	off := 0

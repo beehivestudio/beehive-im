@@ -140,7 +140,7 @@ func (this *ChatRoomConfigCtrl) blacklist_add(ctx *ChatRoomCntx) {
 		return
 	}
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -222,7 +222,7 @@ func (this *ChatRoomConfigCtrl) blacklist_del(ctx *ChatRoomCntx) {
 		return
 	}
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -335,7 +335,7 @@ func (this *ChatRoomConfigCtrl) gag_add(ctx *ChatRoomCntx) {
 		return
 	}
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -417,7 +417,7 @@ func (this *ChatRoomConfigCtrl) gag_del(ctx *ChatRoomCntx) {
 		return
 	}
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -521,7 +521,7 @@ func (this *ChatRoomConfigCtrl) room_open(ctx *ChatRoomCntx) {
 		return
 	}
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	/* > 用户加入禁言 */
@@ -597,7 +597,7 @@ func (this *ChatRoomConfigCtrl) room_close(ctx *ChatRoomCntx) {
 		return
 	}
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	/* > 修改聊天室属性 */
@@ -706,7 +706,7 @@ func (this *ChatRoomConfigCtrl) capacity_set(ctx *ChatRoomCntx) {
 		return
 	}
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -796,7 +796,7 @@ func (this *ChatRoomConfigCtrl) capacity_get(ctx *ChatRoomCntx) {
 		return
 	}
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	/* > 存储聊天室分组容量 */

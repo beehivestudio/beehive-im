@@ -137,10 +137,10 @@ func (req *RoomPushReq) push_handler(
 	ctx *ChatRoomCntx, param *RoomPushParam) (code int, err error) {
 	this := req.ctrl
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()

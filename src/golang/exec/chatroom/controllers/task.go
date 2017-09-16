@@ -40,7 +40,7 @@ func (ctx *ChatRoomCntx) task() {
 	/* 每5秒执行一次任务 */
 	go func() {
 		for {
-			models.RoomSendUsrNum(ctx.log, ctx.frwder, ctx.redis) // 下发聊天室人数
+			ctx.cache.RoomSendUsrNum(ctx.log, ctx.frwder) // 下发聊天室人数
 
 			time.Sleep(5 * time.Second)
 		}
@@ -73,7 +73,7 @@ func (ctx *ChatRoomCntx) task() {
  **作    者: # Qifeng.zou # 2016.11.28 00:11:08 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) listend_dict_update() {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
@@ -123,7 +123,7 @@ func (ctx *ChatRoomCntx) listend_dict_update() {
  **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) listend_dict_fetch(typ int) *ChatRoomLsndDictItem {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
@@ -197,7 +197,7 @@ func (ctx *ChatRoomCntx) listend_dict_fetch(typ int) *ChatRoomLsndDictItem {
 func (ctx *ChatRoomCntx) listend_list_update() {
 	var list []uint32
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
@@ -256,7 +256,7 @@ func (ctx *ChatRoomCntx) update() {
  **作    者: # Qifeng.zou # 2016.11.05 00:21:54 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
-	m, err := models.RoomGetRidToNidMap(ctx.redis)
+	m, err := ctx.cache.GetRidToNidMapFromRds()
 	if nil != err {
 		ctx.log.Error("Get rid to nid map failed! errmsg:%s", err.Error())
 		return
@@ -279,7 +279,7 @@ func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
  **作    者: # Qifeng.zou # 2016.11.04 12:08:43 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -320,10 +320,10 @@ func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
  **作    者: # Qifeng.zou # 2016.11.04 17:16:38 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -368,10 +368,10 @@ func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
  **作    者: # Qifeng.zou # 2016.11.04 17:16:38 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
-	pl := ctx.redis.Get()
+	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -421,7 +421,7 @@ func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
  **作    者: # Qifeng.zou # 2016.11.04 12:08:43 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) clean_rid_zset(ctm int64) {
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	off := 0

@@ -12,14 +12,57 @@ import (
 
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/mesg"
+	"beehive-im/src/golang/lib/rdb"
 	"beehive-im/src/golang/lib/rtmq"
 )
+
+type RoomCacheObj struct {
+	redis *redis.Pool
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: RoomGetRidToNidSet
+ **函数名称: Init
+ **功    能: 初始化
+ **输入参数:
+ **     addr: 地址
+ **     pwd: 密码
+ **输出参数: NONE
+ **返    回: 错误描述
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.09.16 09:55:43 #
+ ******************************************************************************/
+func (c *RoomCacheObj) Init(addr string, pwd string) error {
+	/* > REDIS连接池 */
+	c.redis = rdb.CreatePool(addr, pwd, 2048)
+	if nil == c.redis {
+		return errors.New("Create redis pool failed!")
+	}
+	return nil
+}
+
+/******************************************************************************
+ **函数名称: Get
+ **功    能: 获取连接对象
+ **输入参数: NONE
+ **输出参数: NONE
+ **返    回: 连接对象(Redis)
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.09.16 09:56:28 #
+ ******************************************************************************/
+func (c *RoomCacheObj) Get() redis.Conn {
+	return c.redis.Get()
+}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/******************************************************************************
+ **函数名称: getRidToNidSetFromRds
  **功    能: 通过聊天室RID获取对应的帧听层NID列表
  **输入参数:
  **     pool: REDIS连接池
@@ -30,8 +73,8 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.07 23:03:03 #
  ******************************************************************************/
-func RoomGetRidToNidSet(pool *redis.Pool, rid uint64) (list []uint32, err error) {
-	rds := pool.Get()
+func (c *RoomCacheObj) getRidToNidSetFromRds(rid uint64) (list []uint32, err error) {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
@@ -53,7 +96,7 @@ func RoomGetRidToNidSet(pool *redis.Pool, rid uint64) (list []uint32, err error)
 }
 
 /******************************************************************************
- **函数名称: RoomGetRidToNidMap
+ **函数名称: GetRidToNidMapFromRds
  **功    能: 通过聊天室RID获取对应的帧听层NID映射表
  **输入参数:
  **     pool: REDIS连接池
@@ -63,8 +106,8 @@ func RoomGetRidToNidSet(pool *redis.Pool, rid uint64) (list []uint32, err error)
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.07 23:03:03 #
  ******************************************************************************/
-func RoomGetRidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
-	rds := pool.Get()
+func (c *RoomCacheObj) GetRidToNidMapFromRds() (m map[uint64][]uint32, err error) {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
@@ -82,7 +125,7 @@ func RoomGetRidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
 		for idx := 0; idx < num; idx += 1 {
 			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
 
-			m[uint64(rid)], err = RoomGetRidToNidSet(pool, uint64(rid))
+			m[uint64(rid)], err = c.getRidToNidSetFromRds(uint64(rid))
 			if nil != err {
 				return nil, err
 			}
@@ -111,11 +154,11 @@ func RoomGetRidToNidMap(pool *redis.Pool) (m map[uint64][]uint32, err error) {
  **注意事项: 不进行各组&各侦听层的人数统计, 而以侦听层的上报数据为准进行统计.
  **作    者: # Qifeng.zou # 2017.01.10 23:00:26 #
  ******************************************************************************/
-func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error {
-	rds := pool.Get()
+func (c *RoomCacheObj) RoomCleanBySid(uid uint64, nid uint32, sid uint64) error {
+	rds := c.redis.Get()
 	defer rds.Close()
 
-	pl := pool.Get()
+	pl := c.redis.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -159,7 +202,6 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error 
  **函数名称: RoomUpdateBySid
  **功    能: 更新指定会话的聊天室数据
  **输入参数:
- **     pool: REDIS连接池
  **     uid: 用户UID
  **     nid: 侦听层ID
  **     sid: 会话SID
@@ -169,11 +211,11 @@ func RoomCleanBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 08:50:23 #
  ******************************************************************************/
-func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error {
-	rds := pool.Get()
+func (c *RoomCacheObj) RoomUpdateBySid(uid uint64, nid uint32, sid uint64) error {
+	rds := c.redis.Get()
 	defer rds.Close()
 
-	pl := pool.Get()
+	pl := c.redis.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
@@ -210,7 +252,6 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error
  **函数名称: IsRoomOwner
  **功    能: 用户是否是聊天室的所有者
  **输入参数:
- **     pool: REDIS连接池
  **     rid: 聊天室ID
  **     uid: 用户UID
  **输出参数: NONE
@@ -219,8 +260,8 @@ func RoomUpdateBySid(pool *redis.Pool, uid uint64, nid uint32, sid uint64) error
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 07:35:22 #
  ******************************************************************************/
-func IsRoomOwner(pool *redis.Pool, rid uint64, uid uint64) bool {
-	rds := pool.Get()
+func (c *RoomCacheObj) IsRoomOwner(rid uint64, uid uint64) bool {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	key := fmt.Sprintf(ROOM_KEY_ROOM_ROLE_TAB, rid)
@@ -239,7 +280,6 @@ func IsRoomOwner(pool *redis.Pool, rid uint64, uid uint64) bool {
  **函数名称: IsRoomManager
  **功    能: 用户是否是聊天室的管理员
  **输入参数:
- **     pool: REDIS连接池
  **     rid: 聊天室ID
  **     uid: 用户UID
  **输出参数: NONE
@@ -248,8 +288,8 @@ func IsRoomOwner(pool *redis.Pool, rid uint64, uid uint64) bool {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 08:15:03 #
  ******************************************************************************/
-func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
-	rds := pool.Get()
+func (c *RoomCacheObj) IsRoomManager(rid uint64, uid uint64) bool {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	key := fmt.Sprintf(ROOM_KEY_ROOM_ROLE_TAB, rid)
@@ -268,15 +308,16 @@ func IsRoomManager(pool *redis.Pool, rid uint64, uid uint64) bool {
  **函数名称: RoomSendUsrNum
  **功    能: 下发聊天室人数
  **输入参数:
- **     pool: REDIS连接池
+ **     frwder: 转发层代理
  **输出参数: NONE
  **返    回: 错误码+错误描述
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 11:02:22 #
  ******************************************************************************/
-func RoomSendUsrNum(log *logs.BeeLogger, frwder *rtmq.Proxy, pool *redis.Pool) error {
-	rds := pool.Get()
+func (c *RoomCacheObj) RoomSendUsrNum(
+	log *logs.BeeLogger, frwder *rtmq.Proxy) error {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	ctm := time.Now().Unix()
@@ -317,7 +358,7 @@ func RoomSendUsrNum(log *logs.BeeLogger, frwder *rtmq.Proxy, pool *redis.Pool) e
 
 			/* 下发聊天室人数 */
 			for n := 0; n < lsn_num; n += 1 {
-				room_send_usr_num(frwder, pool,
+				c.room_send_usr_num(frwder,
 					uint64(rid), uint32(lsn_nid_list[n]), uint32(usr_num))
 			}
 		}
@@ -348,9 +389,9 @@ func RoomSendUsrNum(log *logs.BeeLogger, frwder *rtmq.Proxy, pool *redis.Pool) e
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.13 11:15:03 #
  ******************************************************************************/
-func room_send_usr_num(frwder *rtmq.Proxy,
-	pool *redis.Pool, rid uint64, nid uint32, num uint32) int {
-	rds := pool.Get()
+func (c *RoomCacheObj) room_send_usr_num(
+	frwder *rtmq.Proxy, rid uint64, nid uint32, num uint32) int {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	/* > 设置协议体 */
@@ -414,8 +455,8 @@ func (attr *RoomSidAttr) GetNid() uint32 { return attr.nid }
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
  ******************************************************************************/
-func RoomGetSidAttr(pool *redis.Pool, sid uint64) (attr *RoomSidAttr, err error) {
-	rds := pool.Get()
+func (c *RoomCacheObj) RoomGetSidAttr(sid uint64) (attr *RoomSidAttr, err error) {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	/* 获取会话属性 */
@@ -453,18 +494,18 @@ func RoomGetSidAttr(pool *redis.Pool, sid uint64) (attr *RoomSidAttr, err error)
  **注意事项: 当会话属性中的cid和nid与参数不一致时, 不进行清理操作.
  **作    者: # Qifeng.zou # 2017.05.10 06:32:05 #
  ******************************************************************************/
-func RoomCleanSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) error {
-	rds := pool.Get()
+func (c *RoomCacheObj) RoomCleanSessionData(sid uint64, cid uint64, nid uint32) error {
+	rds := c.redis.Get()
 	defer rds.Close()
 
-	pl := pool.Get()
+	pl := c.redis.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
 	}()
 
 	/* > 获取SID对应的数据 */
-	attr, err := RoomGetSidAttr(pool, sid)
+	attr, err := c.RoomGetSidAttr(sid)
 	if nil != err {
 		return err
 	} else if attr.GetCid() != cid || attr.GetNid() != nid {
@@ -483,7 +524,7 @@ func RoomCleanSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) 
 	}
 
 	/* > 清理相关资源 */
-	RoomCleanBySid(pool, attr.uid, attr.nid, sid)
+	c.RoomCleanBySid(attr.uid, attr.nid, sid)
 
 	pl.Send("ZREM", ROOM_KEY_SID_ZSET, sid)
 
@@ -502,18 +543,18 @@ func RoomCleanSessionData(pool *redis.Pool, sid uint64, cid uint64, nid uint32) 
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.09 08:35:54 #
  ******************************************************************************/
-func RoomCleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
-	rds := pool.Get()
+func (c *RoomCacheObj) RoomCleanSessionDataBySid(sid uint64) error {
+	rds := c.redis.Get()
 	defer rds.Close()
 
-	pl := pool.Get()
+	pl := c.redis.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
 	}()
 
 	/* > 获取SID对应的数据 */
-	attr, err := RoomGetSidAttr(pool, sid)
+	attr, err := c.RoomGetSidAttr(sid)
 	if nil != err {
 		return err
 	}
@@ -530,7 +571,7 @@ func RoomCleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
 	}
 
 	/* > 清理相关资源 */
-	RoomCleanBySid(pool, attr.uid, attr.nid, sid)
+	c.RoomCleanBySid(attr.uid, attr.nid, sid)
 
 	pl.Send("ZREM", ROOM_KEY_SID_ZSET, sid)
 
@@ -553,16 +594,16 @@ func RoomCleanSessionDataBySid(pool *redis.Pool, sid uint64) error {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.11 23:34:31 #
  ******************************************************************************/
-func RoomUpdateSessionData(pool *redis.Pool,
+func (c *RoomCacheObj) RoomUpdateSessionData(
 	sid uint64, cid uint64, nid uint32) (code uint32, err error) {
-	pl := pool.Get()
+	pl := c.redis.Get()
 	defer func() {
 		pl.Do("")
 		pl.Close()
 	}()
 
 	/* 获取会话属性 */
-	attr, err := RoomGetSidAttr(pool, sid)
+	attr, err := c.RoomGetSidAttr(sid)
 	if nil != err {
 		return comm.ERR_SYS_SYSTEM, err
 	} else if 0 == attr.uid {
@@ -579,7 +620,7 @@ func RoomUpdateSessionData(pool *redis.Pool,
 	pl.Send("ZADD", ROOM_KEY_UID_ZSET, ttl, attr.uid)
 
 	/* > 更新聊天室信息 */
-	RoomUpdateBySid(pool, attr.uid, attr.nid, sid)
+	c.RoomUpdateBySid(attr.uid, attr.nid, sid)
 
 	return 0, nil
 }
@@ -596,12 +637,55 @@ func RoomUpdateSessionData(pool *redis.Pool,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.08.11 20:28:04 #
  ******************************************************************************/
-func RoomListBySid(pool *redis.Pool, sid uint64) ([]string, error) {
-	rds := pool.Get()
+func (c *RoomCacheObj) RoomListBySid(sid uint64) ([]string, error) {
+	rds := c.redis.Get()
 	defer rds.Close()
 
 	/* > 获取SID -> RID列表 */
 	key := fmt.Sprintf(ROOM_KEY_SID_TO_RID_ZSET, sid)
 
 	return redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf"))
+}
+
+/******************************************************************************
+ **函数名称: RoomAdd
+ **功    能: 添加聊天室
+ **输入参数:
+ **     pool: REDIS连接池
+ **     rid: 聊天室ID
+ **     uid: 用户UID
+ **     name: 聊天室名称
+ **     desc: 聊天室描述
+ **输出参数: NONE
+ **返    回: 错误信息
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.09.16 00:41:59 #
+ ******************************************************************************/
+func (c *RoomCacheObj) RoomAdd(rid uint64, req *mesg.MesgRoomCreat) error {
+	pl := c.redis.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	rds := c.redis.Get()
+	defer rds.Close()
+
+	/* > 设置聊天室所有者 */
+	key := fmt.Sprintf(ROOM_KEY_ROOM_ROLE_TAB, rid)
+
+	ok, err := redis.Bool(rds.Do("HSETNX", key, req.GetUid(), ROOM_ROLE_OWNER))
+	if nil != err {
+		return err
+	} else if !ok {
+		return errors.New("Set room owner failed!")
+	}
+
+	/* > 设置聊天室信息 */
+	key = fmt.Sprintf(ROOM_KEY_ROOM_INFO_TAB, rid)
+
+	pl.Send("HMSET", key, "NAME", req.GetName(), "DESC", req.GetDesc())
+
+	return nil
 }

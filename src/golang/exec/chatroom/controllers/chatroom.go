@@ -7,7 +7,6 @@ import (
 
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"github.com/astaxie/beego/logs"
-	"github.com/garyburd/redigo/redis"
 	_ "github.com/go-sql-driver/mysql"
 
 	"beehive-im/src/golang/lib/comm"
@@ -16,11 +15,11 @@ import (
 	"beehive-im/src/golang/lib/mesg"
 	"beehive-im/src/golang/lib/mesg/seqsvr"
 	"beehive-im/src/golang/lib/mongo"
-	"beehive-im/src/golang/lib/rdb"
 	"beehive-im/src/golang/lib/rtmq"
 	"beehive-im/src/golang/lib/thrift_pool"
 
 	"beehive-im/src/golang/exec/chatroom/controllers/conf"
+	"beehive-im/src/golang/exec/chatroom/models"
 )
 
 /* 侦听层字典 */
@@ -64,17 +63,17 @@ type MesgRoomItem struct {
 
 /* 用户中心上下文 */
 type ChatRoomCntx struct {
-	conf           *conf.ChatRoomConf /* 配置信息 */
-	log            *logs.BeeLogger    /* 日志对象 */
-	ipdict         *comm.IpDict       /* IP字典 */
-	frwder         *rtmq.Proxy        /* 代理对象 */
-	redis          *redis.Pool        /* REDIS连接池 */
-	mongo          *mongo.Pool        /* MONGO连接池 */
-	userdb         *sql.DB            /* USERDB数据库 */
-	seqsvr_pool    *thrift_pool.Pool  /* SEQSVR连接池 */
-	listend        ChatRoomLsndData   /* 侦听层数据 */
-	room           RoomMap            /* 聊天室映射 */
-	room_mesg_chan chan *MesgRoomItem /* 聊天室消息存储队列 */
+	conf           *conf.ChatRoomConf  /* 配置信息 */
+	log            *logs.BeeLogger     /* 日志对象 */
+	ipdict         *comm.IpDict        /* IP字典 */
+	frwder         *rtmq.Proxy         /* 代理对象 */
+	cache          models.RoomCacheObj /* 缓存对象 */
+	mongo          *mongo.Pool         /* MONGO连接池 */
+	userdb         *sql.DB             /* USERDB数据库 */
+	seqsvr_pool    *thrift_pool.Pool   /* SEQSVR连接池 */
+	listend        ChatRoomLsndData    /* 侦听层数据 */
+	room           RoomMap             /* 聊天室映射 */
+	room_mesg_chan chan *MesgRoomItem  /* 聊天室消息存储队列 */
 }
 
 var g_chatroom_cntx *ChatRoomCntx /* 全局对象 */
@@ -122,11 +121,11 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
 	/* > 创建侦听层列表 */
 	ctx.listend.dict.types = make(map[int]*ChatRoomLsndDictItem)
 
-	/* > REDIS连接池 */
-	ctx.redis = rdb.CreatePool(conf.Redis.Addr, conf.Redis.Passwd, 2048)
-	if nil == ctx.redis {
+	/* > 初始化缓存 */
+	err = ctx.cache.Init(conf.Redis.Addr, conf.Redis.Passwd)
+	if nil != err {
 		ctx.log.Error("Create redis pool failed! addr:%s", conf.Redis.Addr)
-		return nil, errors.New("Create redis pool failed!")
+		return nil, err
 	}
 
 	/* > MONGO连接池 */

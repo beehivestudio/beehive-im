@@ -71,7 +71,7 @@ func (list RoomTopList) Swap(i, j int)      { list[i], list[j] = list[j], list[i
 func (this *ChatRoomQueryCtrl) TopList(ctx *ChatRoomCntx) {
 	rsp := &RoomTopListRsp{}
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	num, err := this.GetInt("num")
@@ -174,7 +174,7 @@ func (list RoomGroupList) Swap(i, j int)      { list[i], list[j] = list[j], list
 func (this *ChatRoomQueryCtrl) GroupList(ctx *ChatRoomCntx) {
 	rsp := &RoomGroupListRsp{}
 
-	rds := ctx.redis.Get()
+	rds := ctx.cache.Get()
 	defer rds.Close()
 
 	rid_str := this.GetString("rid")
