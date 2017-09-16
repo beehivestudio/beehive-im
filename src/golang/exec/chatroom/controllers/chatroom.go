@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
 	"errors"
 	"sync"
 
@@ -10,7 +9,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"beehive-im/src/golang/lib/comm"
-	"beehive-im/src/golang/lib/dbase"
 	"beehive-im/src/golang/lib/log"
 	"beehive-im/src/golang/lib/mesg"
 	"beehive-im/src/golang/lib/mesg/seqsvr"
@@ -69,7 +67,7 @@ type ChatRoomCntx struct {
 	frwder         *rtmq.Proxy         /* 代理对象 */
 	cache          models.RoomCacheObj /* 缓存对象 */
 	mongo          *mongo.Pool         /* MONGO连接池 */
-	userdb         *sql.DB             /* USERDB数据库 */
+	userdb         models.RoomDbObj    /* USERDB数据库 */
 	seqsvr_pool    *thrift_pool.Pool   /* SEQSVR连接池 */
 	listend        ChatRoomLsndData    /* 侦听层数据 */
 	room           RoomMap             /* 聊天室映射 */
@@ -137,11 +135,11 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
 	}
 
 	/* > MYSQL连接池 */
-	auth := dbase.MySqlAuthStr(conf.UserDb.Usr, conf.UserDb.Passwd, conf.UserDb.Addr, conf.UserDb.Dbname)
-
-	ctx.userdb, err = sql.Open("mysql", auth)
+	err = ctx.userdb.Init(conf.UserDb.Usr,
+		conf.UserDb.Passwd, conf.UserDb.Addr, conf.UserDb.Dbname)
 	if nil != err {
-		ctx.log.Error("Connect mysql [%s] failed! errmsg:%s!", auth, err.Error())
+		ctx.log.Error("Connect to mysql failed! addr:%s errmsg:%s",
+			conf.UserDb.Addr, err.Error())
 		return nil, err
 	}
 

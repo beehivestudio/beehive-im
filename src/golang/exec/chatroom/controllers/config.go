@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
-
 	"beehive-im/src/golang/lib/comm"
 
 	"beehive-im/src/golang/exec/chatroom/models"
@@ -796,13 +794,8 @@ func (this *ChatRoomConfigCtrl) capacity_get(ctx *ChatRoomCntx) {
 		return
 	}
 
-	rds := ctx.cache.Get()
-	defer rds.Close()
-
 	/* > 存储聊天室分组容量 */
-	key := fmt.Sprintf(models.ROOM_KEY_ROOM_GROUP_CAP_ZSET)
-
-	capacity, err := redis.Int(rds.Do("ZSCORE", key, param.rid))
+	capacity, err := ctx.cache.RoomCapacity(param.rid)
 	if nil != err {
 		ctx.log.Error("Get room capacity failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SYS_SYSTEM, err.Error())

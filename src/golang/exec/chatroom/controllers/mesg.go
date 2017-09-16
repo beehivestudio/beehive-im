@@ -744,7 +744,7 @@ func (ctx *ChatRoomCntx) room_creat_handler(
 	}
 
 	/* > 更新数据到MYSQL */
-	err = models.RoomAdd(ctx.userdb, rid, req)
+	err = ctx.userdb.RoomAdd(rid, req)
 	if nil != err {
 		ctx.log.Error("Room add into mysql failed! errmsg:%s", err.Error())
 		return 0, err

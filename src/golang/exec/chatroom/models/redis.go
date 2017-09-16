@@ -647,6 +647,9 @@ func (c *RoomCacheObj) RoomListBySid(sid uint64) ([]string, error) {
 	return redis.Strings(rds.Do("ZRANGEBYSCORE", key, "-inf", "+inf"))
 }
 
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /******************************************************************************
  **函数名称: RoomAdd
  **功    能: 添加聊天室
@@ -688,4 +691,29 @@ func (c *RoomCacheObj) RoomAdd(rid uint64, req *mesg.MesgRoomCreat) error {
 	pl.Send("HMSET", key, "NAME", req.GetName(), "DESC", req.GetDesc())
 
 	return nil
+}
+
+/******************************************************************************
+ **函数名称: RoomCapacity
+ **功    能: 添加聊天室
+ **输入参数:
+ **     rid: 聊天室ID
+ **输出参数: NONE
+ **返    回: 错误信息
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.09.16 00:41:59 #
+ ******************************************************************************/
+func (c *RoomCacheObj) RoomCapacity(rid uint64) (capacity int, err error) {
+	rds := c.redis.Get()
+	defer rds.Close()
+
+	key := fmt.Sprintf(ROOM_KEY_ROOM_GROUP_CAP_ZSET)
+
+	capacity, err = redis.Int(rds.Do("ZSCORE", key, rid))
+	if nil != err {
+		return 0, err
+	}
+
+	return capacity, nil
 }

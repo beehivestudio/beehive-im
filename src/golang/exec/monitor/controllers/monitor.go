@@ -14,7 +14,7 @@ import (
 	"beehive-im/src/golang/exec/monitor/controllers/conf"
 )
 
-/* OLS上下文 */
+/* MONITOR上下文 */
 type MonSvrCntx struct {
 	conf   *conf.MonConf   /* 配置信息 */
 	log    *logs.BeeLogger /* 日志对象 */
