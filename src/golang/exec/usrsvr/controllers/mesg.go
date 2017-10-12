@@ -304,9 +304,6 @@ func (ctx *UsrSvrCntx) online_ack(head *comm.MesgHeader, req *mesg.MesgOnline, s
 func (ctx *UsrSvrCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) (seq uint64, err error) {
 	var key string
 
-	rds := ctx.redis.Get()
-	defer rds.Close()
-
 	pl := ctx.redis.Get()
 	defer func() {
 		pl.Do("")
