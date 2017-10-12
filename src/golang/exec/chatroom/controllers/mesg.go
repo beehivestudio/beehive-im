@@ -176,19 +176,6 @@ func (ctx *ChatRoomCntx) online_parse(data []byte) (
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) (seq uint64, err error) {
-	var key string
-
-	rds := ctx.cache.Get()
-	defer rds.Close()
-
-	pl := ctx.cache.Get()
-	defer func() {
-		pl.Do("")
-		pl.Close()
-	}()
-
-	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
-
 	/* 获取会话属性 */
 	attr, err := ctx.cache.RoomGetSidAttr(req.GetSid())
 	if nil != err {
@@ -205,19 +192,8 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
 		ctx.send_kick(req.GetSid(), attr.GetCid(), attr.GetNid(), comm.ERR_SVR_DATA_COLLISION, "Session's nid is collision!")
 	}
 
-	/* 记录SID集合 */
-	pl.Send("ZADD", models.ROOM_KEY_SID_ZSET, ttl, req.GetSid())
-
-	/* 记录UID集合 */
-	pl.Send("ZADD", models.ROOM_KEY_UID_ZSET, ttl, req.GetUid())
-
-	/* 记录SID->UID/NID */
-	key = fmt.Sprintf(models.ROOM_KEY_SID_ATTR, req.GetSid())
-	pl.Send("HMSET", key, "CID", head.GetCid(), "UID", req.GetUid(), "NID", head.GetNid())
-
-	/* 记录UID->SID集合 */
-	key = fmt.Sprintf(models.ROOM_KEY_UID_TO_SID_SET, req.GetUid())
-	pl.Send("SADD", key, req.GetSid())
+	/* 更新在线数据 */
+	ctx.cache.UpdateOnlineData(req.GetUid(), req.GetSid(), head.GetNid(), head.GetCid())
 
 	return seq, err
 }

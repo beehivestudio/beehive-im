@@ -717,3 +717,45 @@ func (c *RoomCacheObj) RoomCapacity(rid uint64) (capacity int, err error) {
 
 	return capacity, nil
 }
+
+/******************************************************************************
+ **函数名称: UpdateOnlineData
+ **功    能: 更新在线数据
+ **输入参数:
+ **     uid: 用户UID
+ **     sid: 会话SID
+ **     nid: 结点ID
+ **     cid: 连接ID
+ **输出参数: NONE
+ **返    回: 错误码
+ **实现描述: 更新缓存中的在线数据
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.10.12 19:07:46 #
+ ******************************************************************************/
+func (c *RoomCacheObj) UpdateOnlineData(uid uint64, sid uint64, nid uint32, cid uint64) int {
+	var key string
+
+	pl := c.Get()
+	defer func() {
+		pl.Do("")
+		pl.Close()
+	}()
+
+	ttl := time.Now().Unix() + comm.CHAT_SID_TTL
+
+	/* 记录SID集合 */
+	pl.Send("ZADD", ROOM_KEY_SID_ZSET, ttl, sid)
+
+	/* 记录UID集合 */
+	pl.Send("ZADD", ROOM_KEY_UID_ZSET, ttl, uid)
+
+	/* 记录SID->UID/NID */
+	key = fmt.Sprintf(ROOM_KEY_SID_ATTR, sid)
+	pl.Send("HMSET", key, "CID", cid, "UID", uid, "NID", nid)
+
+	/* 记录UID->SID集合 */
+	key = fmt.Sprintf(ROOM_KEY_UID_TO_SID_SET, uid)
+	pl.Send("SADD", key, sid)
+
+	return 0
+}
