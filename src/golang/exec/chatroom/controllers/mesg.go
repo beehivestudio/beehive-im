@@ -175,7 +175,7 @@ func (ctx *ChatRoomCntx) online_parse(data []byte) (
  **     2. 在上线请求中, req中的sid此时为会话sid
  **作    者: # Qifeng.zou # 2016.11.01 21:12:36 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) (seq uint64, err error) {
+func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnline) {
 	/* 获取会话属性 */
 	attr, err := ctx.cache.RoomGetSidAttr(req.GetSid())
 	if nil != err {
@@ -194,8 +194,6 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
 
 	/* 更新在线数据 */
 	ctx.cache.UpdateOnlineData(req.GetUid(), req.GetSid(), head.GetNid(), head.GetCid())
-
-	return seq, err
 }
 
 /******************************************************************************
@@ -223,6 +221,7 @@ func (ctx *ChatRoomCntx) online_handler(head *comm.MesgHeader, req *mesg.MesgOnl
  **     1. 首先需要调用MesgHeadNtoh()对头部数据进行直接序转换.
  **     2. 在上线请求中, head中的sid此时为侦听层cid
  **     3. 在上线请求中, req中的sid此时为会话sid
+ **     4. 由于ONLINE请求由USRSVR模块处理, 此处只存储该状态, 无需发送应答.
  **作    者: # Qifeng.zou # 2016.10.30 22:32:23 #
  ******************************************************************************/
 func ChatRoomOnlineHandler(cmd uint32, nid uint32, data []byte, length uint32, param interface{}) int {
