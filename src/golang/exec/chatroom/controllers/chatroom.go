@@ -63,7 +63,6 @@ type MesgRoomItem struct {
 type ChatRoomCntx struct {
 	conf           *conf.ChatRoomConf  /* 配置信息 */
 	log            *logs.BeeLogger     /* 日志对象 */
-	ipdict         *comm.IpDict        /* IP字典 */
 	frwder         *rtmq.Proxy         /* 代理对象 */
 	cache          models.RoomCacheObj /* 缓存对象 */
 	mongo          *mongo.Pool         /* MONGO连接池 */
@@ -108,12 +107,6 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
 	ctx.log = log.Init(conf.Log.Level, conf.Log.Path, "chatroom.log")
 	if nil == ctx.log {
 		return nil, errors.New("Initialize log failed!")
-	}
-
-	/* > 加载IP字典 */
-	ctx.ipdict, err = comm.LoadIpDict("../conf/ipdict.txt")
-	if nil != err {
-		return nil, err
 	}
 
 	/* > 创建侦听层列表 */
