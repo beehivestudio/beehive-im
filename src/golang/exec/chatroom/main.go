@@ -37,6 +37,7 @@ func beego_config(conf *conf.ChatRoomConf) {
 	beego.BConfig.Listen.HTTPPort = int(conf.Port)
 	beego.BConfig.RouterCaseSensitive = true
 	beego.BConfig.Log.FileLineNum = true
+	beego.BConfig.CopyRequestBody = true
 }
 
 /* 初始化 */
