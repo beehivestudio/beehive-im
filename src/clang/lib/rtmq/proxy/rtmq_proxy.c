@@ -9,6 +9,7 @@ static int rtmq_proxy_creat_send_cmd_fd(rtmq_proxy_t *pxy);
 static int rtmq_proxy_creat_work_cmd_fd(rtmq_proxy_t *pxy);
 
 static int rtmq_proxy_cmd_work_chan_init(rtmq_proxy_t *pxy);
+static bool rtmq_proxy_conf_isvalid(const rtmq_proxy_conf_t *conf);
 
 /******************************************************************************
  **函数名称: rtmq_proxy_creat_workers
@@ -248,6 +249,12 @@ rtmq_proxy_t *rtmq_proxy_init(const rtmq_proxy_conf_t *conf, log_cycle_t *log)
 {
     rtmq_proxy_t *pxy;
 
+    /* > 判断配置合法性 */
+    if (!rtmq_proxy_conf_isvalid(conf)) {
+        log_error(log, "Rtmq proxy configuration is invalid!");
+        return NULL;
+    }
+
     /* > 创建对象 */
     pxy = (rtmq_proxy_t *)calloc(1, sizeof(rtmq_proxy_t));
     if (NULL == pxy) {
@@ -475,4 +482,30 @@ int rtmq_proxy_async_send(rtmq_proxy_t *pxy, int type, const void *data, size_t 
     rtmq_proxy_cmd_send_req(pxy, idx);
 
     return RTMQ_OK;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_proxy_conf_isvalid
+ **功    能: 校验配置合法性
+ **输入参数:
+ **     conf: 配置数据
+ **输出参数: NONE
+ **返    回: true:合法 false:非法
+ **实现描述: 逐一检查配置字段的合法性
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.11.28 10:39:35 #
+ ******************************************************************************/
+static bool rtmq_proxy_conf_isvalid(const rtmq_proxy_conf_t *conf)
+{
+    if ((0 == conf->nid)
+        || (0 == conf->gid)
+        || (0 == strlen(conf->ipaddr))
+        || (0 == conf->send_thd_num)
+        || (0 == conf->work_thd_num)
+        || (0 == conf->recv_buff_size)
+        || ((0 == conf->sendq.max) || (0 == conf->sendq.size))
+        || ((0 == conf->recvq.max) || (0 == conf->recvq.size))) {
+        return false;
+    }
+    return true;
 }
