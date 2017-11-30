@@ -1167,3 +1167,49 @@ static int rtmq_proxy_tsvr_del_conn(
 
     return RTMQ_OK;
 }
+
+/******************************************************************************
+ **函数名称: rtmq_proxy_tsvr_reconn
+ **功    能: 重连服务端
+ **输入参数:
+ **     pxy: 全局对象
+ **     tsvr: 接收服务
+ **     sck: 连接对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.11.30 03:24:12 #
+ ******************************************************************************/
+static int rtmq_proxy_tsvr_reconn(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck)
+{
+    struct epoll_event ev;
+
+    /* 1. 重连SERVER端 */
+    sck->fd = tcp_connect(AF_INET, tsvr->ipaddr, tsvr->port);
+    if (sck->fd < 0) {
+        log_error(tsvr->log, "Conncet [%s:%d] failed! errmsg:[%d] %s!",
+                tsvr->ipaddr, tsvr->port, errno, strerror(errno));
+        return RTMQ_ERR;
+    }
+
+    sck->recv_cb = (rtmq_proxy_socket_recv_cb_t)rtmq_proxy_tsvr_recv_proc;
+    sck->send_cb = (rtmq_proxy_socket_send_cb_t)rtmq_proxy_tsvr_send_data;
+
+    rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_UNKNOWN);  /* 设置保活状态 */
+
+    /* 2. 发起鉴权&订阅 */
+    rtmq_link_auth_req(pxy, tsvr);                          /* 发起鉴权请求 */
+    rtmq_sub_req(pxy, tsvr);                                /* 发起订阅请求 */
+
+    /* 3. 加入侦听事件 */
+    memset(&ev, 0, sizeof(ev));
+
+    ev.data.ptr = sck;
+    ev.events = EPOLLIN | EPOLLOUT | EPOLLET; /* 边缘触发 */
+
+    epoll_ctl(tsvr->epid, EPOLL_CTL_ADD, sck->fd, &ev);
+
+    return RTMQ_OK;
+}
