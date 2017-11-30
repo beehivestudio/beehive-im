@@ -59,10 +59,10 @@ func (this *ChatRoomConfigCtrl) Blacklist(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "add": // 添加聊天室黑名单
-		this.blacklist_add(ctx)
+		this.addBlacklist(ctx)
 		return
 	case "del": // 移除聊天室黑名单
-		this.blacklist_del(ctx)
+		this.delBlacklist(ctx)
 		return
 	}
 
@@ -85,7 +85,7 @@ type RoomBlacklistAddReq struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -94,7 +94,7 @@ type RoomBlacklistAddReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomBlacklistAddReq) parse_param() (*RoomBlacklistAddParam, error) {
+func (req *RoomBlacklistAddReq) parseParam() (*RoomBlacklistAddParam, error) {
 	this := req.ctrl
 	param := &RoomBlacklistAddParam{}
 
@@ -118,7 +118,7 @@ func (req *RoomBlacklistAddReq) parse_param() (*RoomBlacklistAddParam, error) {
 }
 
 /******************************************************************************
- **函数名称: blacklist_add
+ **函数名称: addBlacklist
  **功    能: 加入黑名单
  **输入参数:
  **     ctx: 全局对象
@@ -128,10 +128,10 @@ func (req *RoomBlacklistAddReq) parse_param() (*RoomBlacklistAddParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:49:16 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) blacklist_add(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) addBlacklist(ctx *ChatRoomCntx) {
 	req := &RoomBlacklistAddReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Add blacklist failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
@@ -167,7 +167,7 @@ type RoomBlackListDelReq struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -176,7 +176,7 @@ type RoomBlackListDelReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomBlackListDelReq) parse_param() (*RoomBlackListDelParam, error) {
+func (req *RoomBlackListDelReq) parseParam() (*RoomBlackListDelParam, error) {
 	this := req.ctrl
 	param := &RoomBlackListDelParam{}
 
@@ -200,7 +200,7 @@ func (req *RoomBlackListDelReq) parse_param() (*RoomBlackListDelParam, error) {
 }
 
 /******************************************************************************
- **函数名称: blacklist_del
+ **函数名称: delBlacklist
  **功    能: 移除黑名单
  **输入参数:
  **     ctx: 全局对象
@@ -210,10 +210,10 @@ func (req *RoomBlackListDelReq) parse_param() (*RoomBlackListDelParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 10:11:20 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) blacklist_del(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) delBlacklist(ctx *ChatRoomCntx) {
 	req := &RoomBlackListDelReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Del blacklist failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
@@ -255,10 +255,10 @@ func (this *ChatRoomConfigCtrl) Gag(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "add": // 添加禁言
-		this.gag_add(ctx)
+		this.addGag(ctx)
 		return
 	case "del": // 移除禁言
-		this.gag_del(ctx)
+		this.delGag(ctx)
 		return
 	}
 
@@ -280,7 +280,7 @@ type RoomGagAddReq struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -289,7 +289,7 @@ type RoomGagAddReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomGagAddReq) parse_param() (*RoomGagAddParam, error) {
+func (req *RoomGagAddReq) parseParam() (*RoomGagAddParam, error) {
 	this := req.ctrl
 	param := &RoomGagAddParam{}
 
@@ -313,7 +313,7 @@ func (req *RoomGagAddReq) parse_param() (*RoomGagAddParam, error) {
 }
 
 /******************************************************************************
- **函数名称: gag_add
+ **函数名称: addGag
  **功    能: 添加禁言
  **输入参数:
  **     ctx: 全局对象
@@ -323,10 +323,10 @@ func (req *RoomGagAddReq) parse_param() (*RoomGagAddParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 11:27:21 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) gag_add(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) addGag(ctx *ChatRoomCntx) {
 	req := &RoomGagAddReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Add gag failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
@@ -362,7 +362,7 @@ type RoomGagDelReq struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -371,7 +371,7 @@ type RoomGagDelReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 09:47:44 #
  ******************************************************************************/
-func (req *RoomGagDelReq) parse_param() (*RoomGagDelParam, error) {
+func (req *RoomGagDelReq) parseParam() (*RoomGagDelParam, error) {
 	this := req.ctrl
 	param := &RoomGagDelParam{}
 
@@ -395,7 +395,7 @@ func (req *RoomGagDelReq) parse_param() (*RoomGagDelParam, error) {
 }
 
 /******************************************************************************
- **函数名称: gag_del
+ **函数名称: delGag
  **功    能: 移除禁言
  **输入参数:
  **     ctx: 全局对象
@@ -405,10 +405,10 @@ func (req *RoomGagDelReq) parse_param() (*RoomGagDelParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 11:29:04 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) gag_del(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) delGag(ctx *ChatRoomCntx) {
 	req := &RoomGagDelReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Del gag failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
@@ -449,10 +449,10 @@ func (this *ChatRoomConfigCtrl) Room(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "open": // 打开聊天室
-		this.room_open(ctx)
+		this.openRoom(ctx)
 		return
 	case "close": // 关闭聊天室
-		this.room_close(ctx)
+		this.closeRoom(ctx)
 		return
 	}
 
@@ -473,7 +473,7 @@ type RoomOpenReq struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -482,7 +482,7 @@ type RoomOpenReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.19 08:06:28 #
  ******************************************************************************/
-func (req *RoomOpenReq) parse_param() (*RoomOpenParam, error) {
+func (req *RoomOpenReq) parseParam() (*RoomOpenParam, error) {
 	this := req.ctrl
 	param := &RoomOpenParam{}
 
@@ -499,7 +499,7 @@ func (req *RoomOpenReq) parse_param() (*RoomOpenParam, error) {
 }
 
 /******************************************************************************
- **函数名称: room_open
+ **函数名称: openRoom
  **功    能: 开启聊天室
  **输入参数:
  **     ctx: 全局对象
@@ -509,10 +509,10 @@ func (req *RoomOpenReq) parse_param() (*RoomOpenParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.19 08:07:31 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) room_open(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) openRoom(ctx *ChatRoomCntx) {
 	req := &RoomOpenReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Open room failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
@@ -549,7 +549,7 @@ type RoomCloseReq struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -558,7 +558,7 @@ type RoomCloseReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.19 08:06:28 #
  ******************************************************************************/
-func (req *RoomCloseReq) parse_param() (*RoomCloseParam, error) {
+func (req *RoomCloseReq) parseParam() (*RoomCloseParam, error) {
 	this := req.ctrl
 	param := &RoomCloseParam{}
 
@@ -575,7 +575,7 @@ func (req *RoomCloseReq) parse_param() (*RoomCloseParam, error) {
 }
 
 /******************************************************************************
- **函数名称: room_close
+ **函数名称: closeRoom
  **功    能: 关闭聊天室
  **输入参数:
  **     ctx: 全局对象
@@ -585,10 +585,10 @@ func (req *RoomCloseReq) parse_param() (*RoomCloseParam, error) {
  **注意事项: TODO: 关闭聊天室后, 需要给所有侦听层广播解散聊天室的指令.
  **作    者: # Qifeng.zou # 2017.03.19 08:07:31 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) room_close(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) closeRoom(ctx *ChatRoomCntx) {
 	req := &RoomCloseReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Close room failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
@@ -631,10 +631,10 @@ func (this *ChatRoomConfigCtrl) Capacity(ctx *ChatRoomCntx) {
 	action := this.GetString("action")
 	switch action {
 	case "set": // 设置聊天室分组容量
-		this.capacity_set(ctx)
+		this.setCapacity(ctx)
 		return
 	case "get": // 获取聊天室分组容量
-		this.capacity_get(ctx)
+		this.getCapacity(ctx)
 		return
 	}
 }
@@ -651,7 +651,7 @@ type RoomCapSetReq struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -660,7 +660,7 @@ type RoomCapSetReq struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
  ******************************************************************************/
-func (req *RoomCapSetReq) parse_param() (*RoomCapSetParam, error) {
+func (req *RoomCapSetReq) parseParam() (*RoomCapSetParam, error) {
 	this := req.ctrl
 	param := &RoomCapSetParam{}
 
@@ -684,7 +684,7 @@ func (req *RoomCapSetReq) parse_param() (*RoomCapSetParam, error) {
 }
 
 /******************************************************************************
- **函数名称: capacity_set
+ **函数名称: setCapacity
  **功    能: 设置聊天室分组人数
  **输入参数:
  **     ctx: 全局对象
@@ -694,10 +694,10 @@ func (req *RoomCapSetReq) parse_param() (*RoomCapSetParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) capacity_set(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) setCapacity(ctx *ChatRoomCntx) {
 	req := &RoomCapSetReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Set room capacity failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())
@@ -741,7 +741,7 @@ type RoomCapGetRsp struct {
 }
 
 /******************************************************************************
- **函数名称: parse_param
+ **函数名称: parseParam
  **功    能: 参数解析
  **输入参数: NONE
  **输出参数: NONE
@@ -750,7 +750,7 @@ type RoomCapGetRsp struct {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 23:51:55 #
  ******************************************************************************/
-func (req *RoomCapGetReq) parse_param() (*RoomCapGetParam, error) {
+func (req *RoomCapGetReq) parseParam() (*RoomCapGetParam, error) {
 	this := req.ctrl
 	param := &RoomCapGetParam{}
 
@@ -774,7 +774,7 @@ func (req *RoomCapGetReq) parse_param() (*RoomCapGetParam, error) {
 }
 
 /******************************************************************************
- **函数名称: capacity_get
+ **函数名称: getCapacity
  **功    能: 获取聊天室分组人数
  **输入参数:
  **     ctx: 全局对象
@@ -784,10 +784,10 @@ func (req *RoomCapGetReq) parse_param() (*RoomCapGetParam, error) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.03.18 00:00:39 #
  ******************************************************************************/
-func (this *ChatRoomConfigCtrl) capacity_get(ctx *ChatRoomCntx) {
+func (this *ChatRoomConfigCtrl) getCapacity(ctx *ChatRoomCntx) {
 	req := &RoomCapGetReq{ctrl: this}
 
-	param, err := req.parse_param()
+	param, err := req.parseParam()
 	if nil != err {
 		ctx.log.Error("Get room capacity failed! errmsg:%s", err.Error())
 		this.Error(comm.ERR_SVR_INVALID_PARAM, err.Error())

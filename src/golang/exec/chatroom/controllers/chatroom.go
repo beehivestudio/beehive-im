@@ -144,7 +144,7 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
 	}
 
 	/* > SEQSVR连接池 */
-	ctx.seqsvr_pool = ctx.seqsvr_pool_init(ctx.conf.Seqsvr.Addr)
+	ctx.seqsvr_pool = ctx.initSeqSvrPool(ctx.conf.Seqsvr.Addr)
 	if nil == ctx.seqsvr_pool {
 		ctx.log.Error("Connect seqsvr failed! errmsg:%s!", err.Error())
 		return nil, err
@@ -211,7 +211,7 @@ func (ctx *ChatRoomCntx) Launch() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: seqsvr_pool_init
+ **函数名称: initSeqSvrPool
  **功    能: 创建SEQSVR连接池
  **输入参数:
  **     ctx: 全局对象
@@ -222,7 +222,7 @@ func (ctx *ChatRoomCntx) Launch() {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.04.08 23:15:35 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) seqsvr_pool_init(addr string) *thrift_pool.Pool {
+func (ctx *ChatRoomCntx) initSeqSvrPool(addr string) *thrift_pool.Pool {
 	pool := &thrift_pool.Pool{
 		Dial: func() (interface{}, error) {
 			socket, err := thrift.NewTSocket(addr)

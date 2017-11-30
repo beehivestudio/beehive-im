@@ -59,7 +59,7 @@ func (this *ChatRoomPushCtrl) RoomPush(ctx *ChatRoomCntx) {
 	req := &RoomPushReq{ctrl: this}
 
 	/* > 提取参数 */
-	param, err := req.prase_param(ctx)
+	param, err := req.parseParam(ctx)
 	if nil != err {
 		ctx.log.Error("Parse room push param failed! rid:%d", param.rid)
 		this.Error(comm.ERR_SVR_PARSE_PARAM, err.Error())
@@ -67,19 +67,19 @@ func (this *ChatRoomPushCtrl) RoomPush(ctx *ChatRoomCntx) {
 	}
 
 	/* > ROOM推送处理 */
-	code, err := req.push_handler(ctx, param)
+	code, err := req.pushHandler(ctx, param)
 	if nil != err {
 		this.Error(code, err.Error())
 		return
 	}
 
-	req.push_success(param)
+	req.pushSuccess(param)
 
 	return
 }
 
 /******************************************************************************
- **函数名称: prase_param
+ **函数名称: parseParam
  **功    能: 解析参数
  **输入参数:
  **     ctx: 上下文
@@ -91,7 +91,7 @@ func (this *ChatRoomPushCtrl) RoomPush(ctx *ChatRoomCntx) {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 11:10:59 #
  ******************************************************************************/
-func (req *RoomPushReq) prase_param(
+func (req *RoomPushReq) parseParam(
 	ctx *ChatRoomCntx) (param *RoomPushParam, err error) {
 	this := req.ctrl
 	param = &RoomPushParam{}
@@ -113,7 +113,7 @@ func (req *RoomPushReq) prase_param(
 }
 
 /******************************************************************************
- **函数名称: push_handler
+ **函数名称: pushHandler
  **功    能: ROOM推送请求的处理
  **输入参数:
  **     ctx: 上下文
@@ -133,7 +133,7 @@ func (req *RoomPushReq) prase_param(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 12:27:53 #
  ******************************************************************************/
-func (req *RoomPushReq) push_handler(
+func (req *RoomPushReq) pushHandler(
 	ctx *ChatRoomCntx, param *RoomPushParam) (code int, err error) {
 	this := req.ctrl
 
@@ -216,7 +216,7 @@ func (req *RoomPushReq) push_handler(
 }
 
 /******************************************************************************
- **函数名称: push_success
+ **函数名称: pushSuccess
  **功    能: 聊天室推送成功
  **输入参数:
  **     param: 请求参数
@@ -226,7 +226,7 @@ func (req *RoomPushReq) push_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.14 16:00:42 #
  ******************************************************************************/
-func (req *RoomPushReq) push_success(param *RoomPushParam) {
+func (req *RoomPushReq) pushSuccess(param *RoomPushParam) {
 	this := req.ctrl
 	rsp := &RoomPushRsp{
 		Rid:    param.rid,

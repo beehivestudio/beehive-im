@@ -24,14 +24,14 @@ import (
  **作    者: # Qifeng.zou # 2016.11.28 08:20:07 #
  ******************************************************************************/
 func (ctx *ChatRoomCntx) task() {
-	go ctx.task_room_mesg_chan_pop()
-	go ctx.task_room_mesg_queue_clean()
+	go ctx.taskRoomMesgChanPop()
+	go ctx.taskRoomMesgQueueClean()
 
 	/* 每1秒执行一次任务 */
 	go func() {
 		for {
-			ctx.listend_dict_update() // 更新侦听层字典
-			ctx.listend_list_update() // 更新侦听层列表
+			ctx.updateListendDict() // 更新侦听层字典
+			ctx.updateListendList() // 更新侦听层列表
 
 			time.Sleep(time.Second)
 		}
@@ -50,7 +50,7 @@ func (ctx *ChatRoomCntx) task() {
 	go func() {
 		for {
 			ctm := time.Now().Unix()
-			ctx.clean_rid_zset(ctm) // 定时清理超时聊天室
+			ctx.cleanRidSet(ctm) // 定时清理超时聊天室
 
 			time.Sleep(30 * time.Second)
 		}
@@ -61,7 +61,7 @@ func (ctx *ChatRoomCntx) task() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: listend_dict_update
+ **函数名称: updateListendDict
  **功    能: 更新侦听层字典
  **输入参数: NONE
  **输出参数: NONE
@@ -72,7 +72,7 @@ func (ctx *ChatRoomCntx) task() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:11:08 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) listend_dict_update() {
+func (ctx *ChatRoomCntx) updateListendDict() {
 	rds := ctx.cache.Get()
 	defer rds.Close()
 
@@ -100,7 +100,7 @@ func (ctx *ChatRoomCntx) listend_dict_update() {
 	for idx := 0; idx < num; idx += 1 {
 		typ := types[idx]
 
-		list := ctx.listend_dict_fetch(typ)
+		list := ctx.getListendList(typ)
 		if nil == list {
 			ctx.log.Error("Get listen list failed! type:%d", typ)
 			delete(ctx.listend.dict.types, typ)
@@ -112,7 +112,7 @@ func (ctx *ChatRoomCntx) listend_dict_update() {
 }
 
 /******************************************************************************
- **函数名称: listend_dict_fetch
+ **函数名称: getListendList
  **功    能: 获取侦听层字典
  **输入参数:
  **     typ: 网络类型(0:Unkonwn 1:TCP 2:WS)
@@ -122,7 +122,7 @@ func (ctx *ChatRoomCntx) listend_dict_update() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.28 00:09:55 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) listend_dict_fetch(typ int) *ChatRoomLsndDictItem {
+func (ctx *ChatRoomCntx) getListendList(typ int) *ChatRoomLsndDictItem {
 	rds := ctx.cache.Get()
 	defer rds.Close()
 
@@ -185,7 +185,7 @@ func (ctx *ChatRoomCntx) listend_dict_fetch(typ int) *ChatRoomLsndDictItem {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: get_lsn_id_list
+ **函数名称: updateListendList
  **功    能: 更新侦听层ID列表
  **输入参数: NONE
  **输出参数: NONE
@@ -194,7 +194,7 @@ func (ctx *ChatRoomCntx) listend_dict_fetch(typ int) *ChatRoomLsndDictItem {
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.04 10:48:23 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) listend_list_update() {
+func (ctx *ChatRoomCntx) updateListendList() {
 	var list []uint32
 
 	rds := ctx.cache.Get()
@@ -239,14 +239,14 @@ func (ctx *ChatRoomCntx) listend_list_update() {
  ******************************************************************************/
 func (ctx *ChatRoomCntx) update() {
 	for {
-		ctx.update_rid_to_nid_map()
+		ctx.updateRidToNidMap()
 
 		time.Sleep(5 * time.Second)
 	}
 }
 
 /******************************************************************************
- **函数名称: update_rid_to_nid_map
+ **函数名称: updateRidToNidMap
  **功    能: 更新聊天室RID->NID映射表
  **输入参数: NONE
  **输出参数: NONE
@@ -255,7 +255,7 @@ func (ctx *ChatRoomCntx) update() {
  **注意事项: 为减小锁的粒度, 获取rid->nid的映射时, 无需加锁.
  **作    者: # Qifeng.zou # 2016.11.05 00:21:54 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
+func (ctx *ChatRoomCntx) updateRidToNidMap() {
 	m, err := ctx.cache.GetRidToNidMapFromRds()
 	if nil != err {
 		ctx.log.Error("Get rid to nid map failed! errmsg:%s", err.Error())
@@ -268,7 +268,7 @@ func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
 }
 
 /******************************************************************************
- **函数名称: clean_by_rid
+ **函数名称: cleanByRid
  **功    能: 通过RID清理资源
  **输入参数:
  **     rid: 聊天室ID
@@ -278,7 +278,7 @@ func (ctx *ChatRoomCntx) update_rid_to_nid_map() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 12:08:43 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
+func (ctx *ChatRoomCntx) cleanByRid(rid uint64) {
 	pl := ctx.cache.Get()
 	defer func() {
 		pl.Do("")
@@ -295,11 +295,11 @@ func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
 	pl.Send("DEL", key)
 
 	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_UID_SID_ZSET, rid)
-	ctx.clean_uid_by_rid(rid)
+	ctx.cleanUidByRid(rid)
 	pl.Send("DEL", key)
 
 	key = fmt.Sprintf(models.ROOM_KEY_RID_TO_SID_ZSET, rid)
-	ctx.clean_sid_by_rid(rid)
+	ctx.cleanSidByRid(rid)
 	pl.Send("DEL", key)
 
 	pl.Send("ZREM", models.ROOM_KEY_RID_ZSET, rid)
@@ -309,7 +309,7 @@ func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
 ////////////////////////////////////////////////////////////////////////////////
 
 /******************************************************************************
- **函数名称: clean_sid_by_rid
+ **函数名称: cleanSidByRid
  **功    能: 通过RID清理SID数据
  **输入参数:
  **     rid: 聊天室ID
@@ -319,7 +319,7 @@ func (ctx *ChatRoomCntx) clean_by_rid(rid uint64) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 17:16:38 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
+func (ctx *ChatRoomCntx) cleanSidByRid(rid uint64) {
 	rds := ctx.cache.Get()
 	defer rds.Close()
 
@@ -357,7 +357,7 @@ func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
 }
 
 /******************************************************************************
- **函数名称: clean_uid_by_rid
+ **函数名称: cleanUidByRid
  **功    能: 通过RID清理UID数据
  **输入参数:
  **     rid: 聊天室ID
@@ -367,7 +367,7 @@ func (ctx *ChatRoomCntx) clean_sid_by_rid(rid uint64) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 17:16:38 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
+func (ctx *ChatRoomCntx) cleanUidByRid(rid uint64) {
 	rds := ctx.cache.Get()
 	defer rds.Close()
 
@@ -411,7 +411,7 @@ func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
 }
 
 /******************************************************************************
- **函数名称: clean_rid_zset
+ **函数名称: cleanRidSet
  **功    能: 清理聊天室RID资源
  **输入参数:
  **输出参数: NONE
@@ -420,7 +420,7 @@ func (ctx *ChatRoomCntx) clean_uid_by_rid(rid uint64) {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 12:08:43 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) clean_rid_zset(ctm int64) {
+func (ctx *ChatRoomCntx) cleanRidSet(ctm int64) {
 	rds := ctx.cache.Get()
 	defer rds.Close()
 
@@ -437,7 +437,7 @@ func (ctx *ChatRoomCntx) clean_rid_zset(ctm int64) {
 		rid_num := len(rid_list)
 		for idx := 0; idx < rid_num; idx += 1 {
 			rid, _ := strconv.ParseInt(rid_list[idx], 10, 64)
-			ctx.clean_by_rid(uint64(rid))
+			ctx.cleanByRid(uint64(rid))
 		}
 
 		if rid_num < comm.CHAT_BAT_NUM {

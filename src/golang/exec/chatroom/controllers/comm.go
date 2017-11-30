@@ -45,7 +45,7 @@ func (c *MainController) Get() {
 }
 
 /******************************************************************************
- **函数名称: send_data
+ **函数名称: sendData
  **功    能: 下发消息
  **输入参数:
  **     cmd: 命令类型
@@ -62,7 +62,7 @@ func (c *MainController) Get() {
  **注意事项:
  **作    者: # Qifeng.zou # 2016.12.22 09:24:00 #
  ******************************************************************************/
-func (ctx *ChatRoomCntx) send_data(cmd uint32, sid uint64, cid uint64, nid uint32, seq uint64, data []byte, length uint32) int {
+func (ctx *ChatRoomCntx) sendData(cmd uint32, sid uint64, cid uint64, nid uint32, seq uint64, data []byte, length uint32) int {
 	var head comm.MesgHeader
 
 	/* > 拼接协议包 */
