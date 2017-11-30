@@ -3,9 +3,10 @@
 
 #include "pipe.h"
 #include "rtmq_comm.h"
-#include "rtmq_proxy_ssvr.h"
+#include "rtmq_proxy_tsvr.h"
 
 #define RTMQ_IPADD_MAX_NUM  (30)
+#define RTMQ_PROXY_EVENT_MAX_NUM (1024)
 
 /* 配置信息 */
 typedef struct
@@ -53,10 +54,10 @@ typedef struct
 } rtmq_proxy_t;
 
 /* 内部接口 */
-int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy,
-        rtmq_proxy_ssvr_t *ssvr, int tidx,
+int rtmq_proxy_tsvr_init(rtmq_proxy_t *pxy,
+        rtmq_proxy_tsvr_t *tsvr, int tidx,
         const char *ipaddr, int port, queue_t *sendq, pipe_t *pipe);
-void *rtmq_proxy_ssvr_routine(void *_ctx);
+void *rtmq_proxy_tsvr_routine(void *_ctx);
 
 int rtmq_proxy_worker_init(rtmq_proxy_t *pxy, rtmq_worker_t *worker, int tidx);
 void *rtmq_proxy_worker_routine(void *_ctx);

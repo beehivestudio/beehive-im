@@ -72,7 +72,7 @@ static int rtmq_proxy_creat_work_cmd_fd(rtmq_proxy_t *pxy)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_init_cb
+ **函数名称: rtmq_proxy_tsvr_init_cb
  **功    能: 初始化线程对象
  **输入参数:
  **     pxy: 全局对象
@@ -82,15 +82,15 @@ static int rtmq_proxy_creat_work_cmd_fd(rtmq_proxy_t *pxy)
  **注意事项:
  **作    者: # Qifeng.zou # 2017.07.20 11:28:40 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_init_cb(iplist_item_t *item, rtmq_proxy_t *pxy)
+static int rtmq_proxy_tsvr_init_cb(iplist_item_t *item, rtmq_proxy_t *pxy)
 {
     int m, idx;
     rtmq_proxy_conf_t *conf = &pxy->conf;
-    rtmq_proxy_ssvr_t *ssvr = thread_pool_get_args(pxy->sendtp);
+    rtmq_proxy_tsvr_t *ssvr = thread_pool_get_args(pxy->sendtp);
 
     for (m=0; m<conf->send_thd_num; ++m) {
         idx = item->idx * conf->send_thd_num + m;
-        if (rtmq_proxy_ssvr_init(pxy, ssvr+idx,
+        if (rtmq_proxy_tsvr_init(pxy, ssvr+idx,
                     idx, item->ipaddr, item->port,
                     pxy->sendq[idx % conf->send_thd_num],
                     &pxy->send_cmd_fd[idx % conf->send_thd_num])) {
@@ -136,14 +136,14 @@ static int rtmq_proxy_creat_send_cmd_fd(rtmq_proxy_t *pxy)
 static int rtmq_proxy_creat_senders(rtmq_proxy_t *pxy)
 {
     int num, total;
-    rtmq_proxy_ssvr_t *ssvr;
+    rtmq_proxy_tsvr_t *ssvr;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     num = list_length(pxy->iplist); /* IP数目 */
     total = num * conf->send_thd_num;
 
     /* > 创建对象 */
-    ssvr = (rtmq_proxy_ssvr_t *)calloc(total, sizeof(rtmq_proxy_ssvr_t));
+    ssvr = (rtmq_proxy_tsvr_t *)calloc(total, sizeof(rtmq_proxy_tsvr_t));
     if (NULL == ssvr) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
@@ -158,7 +158,7 @@ static int rtmq_proxy_creat_senders(rtmq_proxy_t *pxy)
     }
 
     /* > 初始化线程 */
-    list_trav(pxy->iplist, (trav_cb_t)rtmq_proxy_ssvr_init_cb, pxy);
+    list_trav(pxy->iplist, (trav_cb_t)rtmq_proxy_tsvr_init_cb, pxy);
 
     return RTMQ_OK;
 }
@@ -353,7 +353,7 @@ int rtmq_proxy_launch(rtmq_proxy_t *pxy)
     for (n=0; n<num; ++n) {
         for (m=0; m<conf->send_thd_num; ++m) {
             idx = n*conf->send_thd_num + m;
-            thread_pool_add_worker(pxy->sendtp, rtmq_proxy_ssvr_routine, pxy);
+            thread_pool_add_worker(pxy->sendtp, rtmq_proxy_tsvr_routine, pxy);
         }
     }
 

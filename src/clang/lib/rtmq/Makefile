@@ -26,7 +26,7 @@ SRC_LIST = ./server/rtmq_recv.c \
 		   ./server/rtmq_worker.c \
 		   ./server/rtmq_dist.c \
 		   ./proxy/rtmq_proxy.c \
-		   ./proxy/rtmq_proxy_ssvr.c \
+		   ./proxy/rtmq_proxy_tsvr.c \
 		   ./proxy/rtmq_proxy_worker.c
 
 OBJS = $(subst .c,.o, $(SRC_LIST))

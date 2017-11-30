@@ -5,38 +5,41 @@
 #include "rtmq_proxy.h"
 
 /* 静态函数 */
-static rtmq_proxy_ssvr_t *rtmq_proxy_ssvr_get_curr(rtmq_proxy_t *pxy);
+static rtmq_proxy_tsvr_t *rtmq_proxy_tsvr_get_curr(rtmq_proxy_t *pxy);
 
-static int rtmq_proxy_ssvr_creat_sendq(rtmq_proxy_ssvr_t *ssvr, const rtmq_proxy_conf_t *conf);
+static int rtmq_proxy_tsvr_creat_sendq(rtmq_proxy_tsvr_t *tsvr, const rtmq_proxy_conf_t *conf);
 
-static int rtmq_proxy_ssvr_recv_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
-static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
+static int rtmq_proxy_tsvr_recv_cmd(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck);
+static int rtmq_proxy_tsvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck);
 
-static int rtmq_proxy_ssvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck);
-static int rtmq_proxy_ssvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, void *addr);
-static int rtmq_proxy_ssvr_exp_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, void *addr);
+static int rtmq_proxy_tsvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck);
+static int rtmq_proxy_tsvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck, void *addr);
+static int rtmq_proxy_tsvr_exp_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck, void *addr);
 
-static int rtmq_proxy_ssvr_timeout_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
-static int rtmq_proxy_ssvr_proc_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, const rtmq_cmd_t *cmd);
-static int rtmq_proxy_ssvr_send_data(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
+static int rtmq_proxy_tsvr_timeout_hdl(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr);
+static int rtmq_proxy_tsvr_proc_cmd(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, const rtmq_cmd_t *cmd);
+static int rtmq_proxy_tsvr_send_data(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck);
 
-static int rtmq_proxy_ssvr_clear_mesg(rtmq_proxy_ssvr_t *ssvr);
+static int rtmq_proxy_tsvr_clear_mesg(rtmq_proxy_tsvr_t *tsvr);
 
-static int rtmq_proxy_ssvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
+static int rtmq_proxy_tsvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr);
 
-static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
-static int rtmq_link_auth_ack_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, rtmq_link_auth_ack_t *rsp);
-static int rtmq_sub_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
+static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr);
+static int rtmq_link_auth_ack_hdl(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck, rtmq_link_auth_ack_t *rsp);
+static int rtmq_sub_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr);
 
-static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int rqid);
-static int rtmq_proxy_ssvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr);
+static int rtmq_proxy_tsvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, int rqid);
+static int rtmq_proxy_tsvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr);
+static int rtmq_proxy_rsvr_event_handler(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, int num);
+
+static int rtmq_proxy_tsvr_del_conn(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck);
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_init
+ **函数名称: rtmq_proxy_tsvr_init
  **功    能: 初始化发送线程
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务对象
+ **     tsvr: 发送服务对象
  **     idx: 对象序列号
  **     ipaddr: 服务端IP地址
  **     port: 服务端侦听端口
@@ -48,63 +51,87 @@ static int rtmq_proxy_ssvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t
  **注意事项: 存在多个线程侦听同一个发送队列、同一个通信管道的情况.
  **作    者: # Qifeng.zou # 2015.01.14, 2017-07-20 15:31:33 #
  ******************************************************************************/
-int rtmq_proxy_ssvr_init(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
+int rtmq_proxy_tsvr_init(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr,
         int idx, const char *ipaddr, int port, queue_t *sendq, pipe_t *pipe)
 {
     void *addr;
+    struct epoll_event ev;
     rtmq_proxy_conf_t *conf = &pxy->conf;
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
+    rtmq_proxy_sck_t *sck = &tsvr->sck;
     rtmq_snap_t *recv = &sck->recv;
 
-    ssvr->id = idx;
-    ssvr->log = pxy->log;
-    ssvr->ctx = (void *)pxy;
-    ssvr->sck.fd = INVALID_FD;
+    tsvr->id = idx;
+    tsvr->log = pxy->log;
+    tsvr->ctx = (void *)pxy;
+    tsvr->sck.fd = INVALID_FD;
 
-    ssvr->sendq = sendq; /* 发送队列 */
-    ssvr->port = port;   /* 服务端端口 */
-    snprintf(ssvr->ipaddr, sizeof(ssvr->ipaddr), "%s", ipaddr); /* 服务端IP地址 */
-
-    ssvr->cmd_fd = pipe->fd[0]; /* 通信管道描述符 */
+    tsvr->sendq = sendq; /* 发送队列 */
+    tsvr->port = port;   /* 服务端端口 */
+    snprintf(tsvr->ipaddr, sizeof(tsvr->ipaddr), "%s", ipaddr); /* 服务端IP地址 */
 
     /* > 创建发送链表 */
     sck->mesg_list = list_creat(NULL);
     if (NULL == sck->mesg_list) {
-        log_error(ssvr->log, "Create list failed!");
+        log_error(tsvr->log, "Create list failed!");
         return RTMQ_ERR;
     }
 
     /* > 初始化发送缓存(注: 程序退出时才可释放此空间，其他任何情况下均不释放) */
     if (wiov_init(&sck->send, 2 * conf->sendq.max)) {
-        log_error(ssvr->log, "Initialize send iov failed!");
+        log_error(tsvr->log, "Initialize send iov failed!");
         return RTMQ_ERR;
     }
 
     /* 5. 初始化接收缓存(注: 程序退出时才可释放此空间，其他任何情况下均不释放) */
     addr = calloc(1, conf->recv_buff_size);
     if (NULL == addr) {
-        log_error(ssvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        log_error(tsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }
 
     rtmq_snap_setup(recv, addr, conf->recv_buff_size);
 
+    /* 6. 创建epoll对象 */
+    tsvr->epid = epoll_create(RTMQ_PROXY_EVENT_MAX_NUM);
+    if (tsvr->epid < 0) {
+        log_error(tsvr->log, "Create epoll failed! errmsg:[%d] %s!", errno, strerror(errno));
+        return RTMQ_ERR;
+    }
+
+    tsvr->events = (struct epoll_event *)calloc(
+            RTMQ_PROXY_EVENT_MAX_NUM, sizeof(struct epoll_event));
+    if (NULL == tsvr->events) {
+        log_error(tsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        return RTMQ_ERR;
+    }
+
+    /* 7. 命令接收处理 */
+    tsvr->cmd_sck.fd = pipe->fd[0]; /* 通信管道描述符 */
+    tsvr->cmd_sck.recv_cb = (rtmq_proxy_socket_recv_cb_t)rtmq_proxy_tsvr_recv_cmd;
+
+    memset(&ev, 0, sizeof(ev));
+
+    ev.data.ptr = &tsvr->cmd_sck;
+    ev.events = EPOLLIN | EPOLLET;  /* 边缘触发 */
+
+    epoll_ctl(tsvr->epid, EPOLL_CTL_ADD, tsvr->cmd_sck.fd, &ev);
+
     return RTMQ_OK;
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_bind_cpu
+ **函数名称: rtmq_proxy_tsvr_bind_cpu
  **功    能: 绑定CPU
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 线程对象
+ **     tsvr: 线程对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.16 #
  ******************************************************************************/
-static void rtmq_proxy_ssvr_bind_cpu(rtmq_proxy_t *pxy, int id)
+static void rtmq_proxy_tsvr_bind_cpu(rtmq_proxy_t *pxy, int id)
 {
     int idx, mod;
     cpu_set_t cpuset;
@@ -124,36 +151,36 @@ static void rtmq_proxy_ssvr_bind_cpu(rtmq_proxy_t *pxy, int id)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_set_rwset
+ **函数名称: rtmq_proxy_tsvr_set_rwset
  **功    能: 设置读写集
  **输入参数:
- **     ssvr: 发送服务对象
+ **     tsvr: 发送服务对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.16 #
  ******************************************************************************/
-void rtmq_proxy_ssvr_set_rwset(rtmq_proxy_ssvr_t *ssvr)
+void rtmq_proxy_tsvr_set_rwset(rtmq_proxy_tsvr_t *tsvr)
 {
-    FD_ZERO(&ssvr->rset);
-    FD_ZERO(&ssvr->wset);
+    FD_ZERO(&tsvr->rset);
+    FD_ZERO(&tsvr->wset);
 
-    FD_SET(ssvr->cmd_fd, &ssvr->rset);
+    FD_SET(tsvr->cmd_fd, &tsvr->rset);
 
-    ssvr->max = MAX(ssvr->cmd_fd, ssvr->sck.fd);
+    tsvr->max = MAX(tsvr->cmd_fd, tsvr->sck.fd);
 
     /* 1 设置读集合 */
-    FD_SET(ssvr->sck.fd, &ssvr->rset);
+    FD_SET(tsvr->sck.fd, &tsvr->rset);
 
     /* 2 设置写集合: 发送至接收端 */
-    if (!list_empty(ssvr->sck.mesg_list)
-        || !queue_empty(ssvr->sendq))
+    if (!list_empty(tsvr->sck.mesg_list)
+        || !queue_empty(tsvr->sendq))
     {
-        FD_SET(ssvr->sck.fd, &ssvr->wset);
+        FD_SET(tsvr->sck.fd, &tsvr->wset);
         return;
-    } else if (!wiov_isempty(&ssvr->sck.send)) {
-        FD_SET(ssvr->sck.fd, &ssvr->wset);
+    } else if (!wiov_isempty(&tsvr->sck.send)) {
+        FD_SET(tsvr->sck.fd, &tsvr->wset);
         return;
     }
 
@@ -161,7 +188,7 @@ void rtmq_proxy_ssvr_set_rwset(rtmq_proxy_ssvr_t *ssvr)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_routine
+ **函数名称: rtmq_proxy_tsvr_routine
  **功    能: 发送线程入口函数
  **输入参数:
  **     _ctx: 全局信息
@@ -171,79 +198,75 @@ void rtmq_proxy_ssvr_set_rwset(rtmq_proxy_ssvr_t *ssvr)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.16 #
  ******************************************************************************/
-void *rtmq_proxy_ssvr_routine(void *_ctx)
+void *rtmq_proxy_tsvr_routine(void *_ctx)
 {
-    int ret;
-    rtmq_proxy_sct_t *sck;
-    rtmq_proxy_ssvr_t *ssvr;
-    struct timeval timeout;
+    int num;
+    struct epoll_event ev;
+    rtmq_proxy_sck_t *sck;
+    rtmq_proxy_tsvr_t *tsvr;
     rtmq_proxy_t *pxy = (rtmq_proxy_t *)_ctx;
 
     nice(-20);
 
     /* 1. 获取发送线程 */
-    ssvr = rtmq_proxy_ssvr_get_curr(pxy);
-    if (NULL == ssvr) {
-        log_fatal(ssvr->log, "Get current thread failed!");
+    tsvr = rtmq_proxy_tsvr_get_curr(pxy);
+    if (NULL == tsvr) {
+        log_fatal(tsvr->log, "Get current thread failed!");
         abort();
         return (void *)-1;
     }
 
-    sck = &ssvr->sck;
+    sck = &tsvr->sck;
 
     /* 2. 绑定指定CPU */
-    rtmq_proxy_ssvr_bind_cpu(pxy, ssvr->id);
+    rtmq_proxy_tsvr_bind_cpu(pxy, tsvr->id);
 
     /* 3. 进行事件处理 */
     for (;;) {
         /* 3.1 连接合法性判断 */
         if (sck->fd < 0) {
-            rtmq_proxy_ssvr_clear_mesg(ssvr);
+            rtmq_proxy_tsvr_clear_mesg(tsvr);
 
             Sleep(RTMQ_RECONN_INTV);
 
             /* 重连Recv端 */
-            if ((sck->fd = tcp_connect(AF_INET, ssvr->ipaddr, ssvr->port)) < 0) {
-                log_error(ssvr->log, "Conncet [%s:%d] failed! errmsg:[%d] %s!",
-                        ssvr->ipaddr, ssvr->port, errno, strerror(errno));
+            if ((sck->fd = tcp_connect(AF_INET, tsvr->ipaddr, tsvr->port)) < 0) {
+                log_error(tsvr->log, "Conncet [%s:%d] failed! errmsg:[%d] %s!",
+                        tsvr->ipaddr, tsvr->port, errno, strerror(errno));
                 continue;
             }
 
-            rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_UNKNOWN);
-            rtmq_link_auth_req(pxy, ssvr); /* 发起鉴权请求 */
-            rtmq_sub_req(pxy, ssvr); /* 发起订阅请求 */
+            sck->recv_cb = (rtmq_proxy_socket_recv_cb_t)rtmq_proxy_tsvr_recv_proc;
+            sck->send_cb = (rtmq_proxy_socket_send_cb_t)rtmq_proxy_tsvr_send_data;
+
+            rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_UNKNOWN);  /* 设置保活状态 */
+            rtmq_link_auth_req(pxy, tsvr);                          /* 发起鉴权请求 */
+            rtmq_sub_req(pxy, tsvr);                                /* 发起订阅请求 */
+
+            /* 加入侦听事件 */
+            memset(&ev, 0, sizeof(ev));
+
+            ev.data.ptr = sck;
+            ev.events = EPOLLIN | EPOLLOUT | EPOLLET; /* 边缘触发 */
+
+            epoll_ctl(tsvr->epid, EPOLL_CTL_ADD, sck->fd, &ev);
         }
 
         /* 3.2 等待事件通知 */
-        rtmq_proxy_ssvr_set_rwset(ssvr);
-
-        timeout.tv_sec = RTMQ_SSVR_TMOUT_SEC;
-        timeout.tv_usec = RTMQ_SSVR_TMOUT_USEC;
-        ret = select(ssvr->max+1, &ssvr->rset, &ssvr->wset, NULL, &timeout);
-        if (ret < 0) {
+        num = epoll_wait(tsvr->epid, tsvr->events,
+                RTMQ_PROXY_EVENT_MAX_NUM, RTMQ_SSVR_TMOUT_SEC);
+        if (num < 0) {
             if (EINTR == errno) { continue; }
-            log_fatal(ssvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
+            log_fatal(tsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
             abort();
             return (void *)-1;
-        } else if (0 == ret) {
-            rtmq_proxy_ssvr_timeout_hdl(pxy, ssvr);
+        } else if (0 == num) {
+            rtmq_proxy_tsvr_timeout_hdl(pxy, tsvr);
             continue;
         }
 
-        /* 发送数据: 发送优先 */
-        if (FD_ISSET(sck->fd, &ssvr->wset)) {
-            rtmq_proxy_ssvr_send_data(pxy, ssvr);
-        }
-
-        /* 接收命令 */
-        if (FD_ISSET(ssvr->cmd_fd, &ssvr->rset)) {
-            rtmq_proxy_ssvr_recv_cmd(pxy, ssvr);
-        }
-
-        /* 接收Recv服务的数据 */
-        if (FD_ISSET(sck->fd, &ssvr->rset)) {
-            rtmq_proxy_ssvr_recv_proc(pxy, ssvr);
-        }
+        /* 3.3 处理事件通知 */
+        rtmq_proxy_rsvr_event_handler(pxy, tsvr, num);
     }
 
     abort();
@@ -251,11 +274,11 @@ void *rtmq_proxy_ssvr_routine(void *_ctx)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_kpalive_req
+ **函数名称: rtmq_proxy_tsvr_kpalive_req
  **功    能: 发送保活命令
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: Snd线程对象
+ **     tsvr: Snd线程对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -264,13 +287,16 @@ void *rtmq_proxy_ssvr_routine(void *_ctx)
  **     因此发送数据时，不用判断EAGAIN的情况是否存在。
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_proxy_tsvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr)
 {
     void *addr;
     rtmq_header_t *head;
+    struct epoll_event ev;
     int size = sizeof(rtmq_header_t);
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
-    wiov_t *send = &ssvr->sck.send;
+    rtmq_proxy_sck_t *sck = &tsvr->sck;
+    wiov_t *send = &tsvr->sck.send;
+
+    memset(&ev, 0, sizeof(ev));
 
     /* 1. 上次发送保活请求之后 仍未收到应答 */
     if ((sck->fd < 0)
@@ -278,13 +304,13 @@ static int rtmq_proxy_ssvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssv
     {
         CLOSE(sck->fd);
         wiov_clean(send);
-        log_error(ssvr->log, "Didn't get keepalive respond for a long time!");
+        log_error(tsvr->log, "Didn't get keepalive respond for a long time!");
         return RTMQ_OK;
     }
 
     addr = (void *)calloc(1, size);
     if (NULL == addr) {
-        log_error(ssvr->log, "Alloc memory failed!");
+        log_error(tsvr->log, "Alloc memory failed!");
         return RTMQ_ERR;
     }
 
@@ -300,21 +326,21 @@ static int rtmq_proxy_ssvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssv
     /* 3. 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
         free(addr);
-        log_error(ssvr->log, "Insert list failed!");
+        log_error(tsvr->log, "Insert list failed!");
         return RTMQ_ERR;
     }
 
-    log_debug(ssvr->log, "Add keepalive request success! fd:[%d]", sck->fd);
+    log_debug(tsvr->log, "Add keepalive request success! fd:[%d]", sck->fd);
 
     rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_SENT);
     return RTMQ_OK;
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_get_curr
+ **函数名称: rtmq_proxy_tsvr_get_curr
  **功    能: 获取当前发送线程的上下文
  **输入参数:
- **     ssvr: 发送服务对象
+ **     tsvr: 发送服务对象
  **     conf: 配置信息
  **输出参数: NONE
  **返    回: Address of sndsvr
@@ -322,7 +348,7 @@ static int rtmq_proxy_ssvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssv
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static rtmq_proxy_ssvr_t *rtmq_proxy_ssvr_get_curr(rtmq_proxy_t *pxy)
+static rtmq_proxy_tsvr_t *rtmq_proxy_tsvr_get_curr(rtmq_proxy_t *pxy)
 {
     int id;
 
@@ -334,15 +360,15 @@ static rtmq_proxy_ssvr_t *rtmq_proxy_ssvr_get_curr(rtmq_proxy_t *pxy)
     }
 
     /* 2. 返回线程对象 */
-    return (rtmq_proxy_ssvr_t *)(pxy->sendtp->data + id * sizeof(rtmq_proxy_ssvr_t));
+    return (rtmq_proxy_tsvr_t *)(pxy->sendtp->data + id * sizeof(rtmq_proxy_tsvr_t));
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_timeout_hdl
+ **函数名称: rtmq_proxy_tsvr_timeout_hdl
  **功    能: 超时处理
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务全局信息
+ **     tsvr: 发送服务全局信息
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -351,10 +377,10 @@ static rtmq_proxy_ssvr_t *rtmq_proxy_ssvr_get_curr(rtmq_proxy_t *pxy)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_timeout_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_proxy_tsvr_timeout_hdl(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr)
 {
     time_t curr_tm = time(NULL);
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
+    rtmq_proxy_sck_t *sck = &tsvr->sck;
 
     /* 1. 判断是否长时无数据 */
     if ((curr_tm - sck->wrtm) < RTMQ_KPALIVE_INTV) {
@@ -362,8 +388,8 @@ static int rtmq_proxy_ssvr_timeout_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssv
     }
 
     /* 2. 发送保活请求 */
-    if (rtmq_proxy_ssvr_kpalive_req(pxy, ssvr)) {
-        log_error(ssvr->log, "Connection keepalive failed!");
+    if (rtmq_proxy_tsvr_kpalive_req(pxy, tsvr)) {
+        log_error(tsvr->log, "Connection keepalive failed!");
         return RTMQ_ERR;
     }
 
@@ -373,11 +399,11 @@ static int rtmq_proxy_ssvr_timeout_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssv
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_recv_proc
+ **函数名称: rtmq_proxy_tsvr_recv_proc
  **功    能: 接收网络数据
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -396,10 +422,10 @@ static int rtmq_proxy_ssvr_timeout_hdl(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssv
  **     addr     optr             iptr                   end
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_proxy_tsvr_recv_proc(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck)
 {
     int n, left;
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
     rtmq_snap_t *recv = &sck->recv;
 
     sck->rdtm = time(NULL);
@@ -413,29 +439,20 @@ static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
             recv->iptr += n;
 
             /* 2. 进行数据处理 */
-            if (rtmq_proxy_ssvr_data_proc(pxy, ssvr, sck)) {
-                log_error(ssvr->log, "Proc data failed! fd:%d", sck->fd);
-
-                CLOSE(sck->fd);
-                rtmq_snap_reset(recv);
+            if (rtmq_proxy_tsvr_data_proc(pxy, tsvr, sck)) {
+                log_error(tsvr->log, "Proc data failed! fd:%d", sck->fd);
                 return RTMQ_ERR;
             }
             continue;
         } else if (0 == n) {
-            log_error(ssvr->log, "Server disconnected. fd:%d n:%d/%d", sck->fd, n, left);
-            CLOSE(sck->fd);
-            rtmq_snap_reset(recv);
+            log_error(tsvr->log, "Server disconnected. fd:%d n:%d/%d", sck->fd, n, left);
             return RTMQ_SCK_DISCONN;
         } else if ((n < 0) && (EAGAIN == errno)) {
-            return RTMQ_OK; /* Again */
+            return RTMQ_AGAIN; /* Again */
         } else if (EINTR == errno) {
             continue;
         }
-
-        log_error(ssvr->log, "errmsg:[%d] %s. fd:%d", errno, strerror(errno), sck->fd);
-
-        CLOSE(sck->fd);
-        rtmq_snap_reset(recv);
+        log_error(tsvr->log, "errmsg:[%d] %s. fd:%d", errno, strerror(errno), sck->fd);
         return RTMQ_ERR;
     }
 
@@ -443,11 +460,11 @@ static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_data_proc
+ **函数名称: rtmq_proxy_tsvr_data_proc
  **功    能: 进行数据处理
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **     sck: 连接对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
@@ -468,7 +485,7 @@ static int rtmq_proxy_ssvr_recv_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
  **     addr     optr             iptr                   end
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck)
+static int rtmq_proxy_tsvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck)
 {
     rtmq_header_t *head;
     uint32_t len, mesg_len;
@@ -488,7 +505,7 @@ static int rtmq_proxy_ssvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
             if (recv->iptr == recv->end) {
                 /* 防止OverWrite的情况发生 */
                 if ((recv->optr - recv->base) < (recv->end - recv->iptr)) {
-                    log_fatal(ssvr->log, "Data length is invalid!");
+                    log_fatal(tsvr->log, "Data length is invalid!");
                     return RTMQ_ERR;
                 }
 
@@ -504,22 +521,22 @@ static int rtmq_proxy_ssvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
         /* 2.1 转化字节序 */
         RTMQ_HEAD_NTOH(head, head);
 
-        log_trace(ssvr->log, "type:0x%04X len:%d flag:%d CheckSum:%u/%u",
+        log_trace(tsvr->log, "type:0x%04X len:%d flag:%d CheckSum:%u/%u",
                 head->type, head->length, head->flag, head->chksum, RTMQ_CHKSUM_VAL);
 
         /* 2.2 校验合法性 */
         if (!RTMQ_HEAD_ISVALID(head)) {
-            ++ssvr->err_total;
-            log_error(ssvr->log, "Header is invalid! CheckSum:%u/%u type:0x%04X len:%d flag:%d",
+            ++tsvr->err_total;
+            log_error(tsvr->log, "Header is invalid! CheckSum:%u/%u type:0x%04X len:%d flag:%d",
                     head->chksum, RTMQ_CHKSUM_VAL, head->type, head->length, head->flag);
             return RTMQ_ERR;
         }
 
         /* 2.3 进行数据处理 */
         if (RTMQ_SYS_MESG == head->flag) {
-            rtmq_proxy_ssvr_sys_mesg_proc(pxy, ssvr, sck, recv->optr);
+            rtmq_proxy_tsvr_sys_mesg_proc(pxy, tsvr, sck, recv->optr);
         } else {
-            rtmq_proxy_ssvr_exp_mesg_proc(pxy, ssvr, sck, recv->optr);
+            rtmq_proxy_tsvr_exp_mesg_proc(pxy, tsvr, sck, recv->optr);
         }
 
         recv->optr += mesg_len;
@@ -529,40 +546,50 @@ static int rtmq_proxy_ssvr_data_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr,
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_recv_cmd
+ **函数名称: rtmq_proxy_tsvr_recv_cmd
  **功    能: 接收命令数据
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务对象
+ **     tsvr: 发送服务对象
+ **     sck: 套接字对象
  **输出参数:
  **返    回: 0:成功 !0:失败
  **实现描述:
  **     1. 接收命令
  **     2. 处理命令
  **注意事项:
- **作    者: # Qifeng.zou # 2015.01.14 #
+ **作    者: # Qifeng.zou # 2015.01.14 # 2017-11-30 11:46:22 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_recv_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_proxy_tsvr_recv_cmd(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck)
 {
     rtmq_cmd_t cmd;
 
-    memset(&cmd, 0, sizeof(cmd));
+    do {
+        memset(&cmd, 0, sizeof(cmd));
 
-    /* 1. 接收命令 */
-    if (read(ssvr->cmd_fd, &cmd, sizeof(cmd)) < 0) {
-        log_error(ssvr->log, "Recv command failed! errmsg:[%d] %s!", errno, strerror(errno));
-        return RTMQ_ERR;
-    }
+        /* 1. 接收命令 */
+        if (read(sck->fd, &cmd, sizeof(cmd)) < 0) {
+            if (EAGAIN == errno) {
+                return RTMQ_AGAIN;
+            }
+            log_error(tsvr->log, "Recv command failed! errmsg:[%d] %s!",
+                    errno, strerror(errno));
+            return RTMQ_ERR;
+        }
 
-    /* 2. 处理命令 */
-    return rtmq_proxy_ssvr_proc_cmd(pxy, ssvr, &cmd);
+        /* 2. 处理命令 */
+        rtmq_proxy_tsvr_proc_cmd(pxy, tsvr, &cmd);
+    } while(1);
+
+    return RTMQ_OK;
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_proc_cmd
+ **函数名称: rtmq_proxy_tsvr_proc_cmd
  **功    能: 命令处理
  **输入参数:
- **     ssvr: 发送服务对象
+ **     tsvr: 发送服务对象
  **     cmd: 接收到的命令信息
  **输出参数:
  **返    回: 0:成功 !0:失败
@@ -570,33 +597,35 @@ static int rtmq_proxy_ssvr_recv_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_proc_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, const rtmq_cmd_t *cmd)
+static int rtmq_proxy_tsvr_proc_cmd(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, const rtmq_cmd_t *cmd)
 {
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
+    struct epoll_event ev;
+    rtmq_proxy_sck_t *sck = &tsvr->sck;
 
     switch (cmd->type) {
         case RTMQ_CMD_SEND:
         case RTMQ_CMD_SEND_ALL:
-            log_debug(ssvr->log, "Recv command! type:[0x%04X]", cmd->type);
-            if (fd_is_writable(sck->fd)) {
-                return rtmq_proxy_ssvr_send_data(pxy, ssvr);
-            }
-            return RTMQ_OK;
         default:
-            log_error(ssvr->log, "Unknown command! type:[%d]", cmd->type);
-            if (fd_is_writable(sck->fd)) {
-                return rtmq_proxy_ssvr_send_data(pxy, ssvr);
-            }
+            log_debug(tsvr->log, "Recv command! type:[0x%04X]", cmd->type);
+
+            memset(&ev, 0, sizeof(ev));
+
+            ev.data.ptr = sck;
+            ev.events = EPOLLIN | EPOLLOUT | EPOLLET; /* 边缘触发 */
+
+            epoll_ctl(tsvr->epid, EPOLL_CTL_MOD, sck->fd, &ev);
+
             return RTMQ_OK;
     }
     return RTMQ_OK;
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_wiov_add
+ **函数名称: rtmq_proxy_tsvr_wiov_add
  **功    能: 添加发送数据(零拷贝)
  **输入参数:
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **     sck: 连接对象
  **输出参数:
  **返    回: 需要发送的数据长度
@@ -608,7 +637,7 @@ static int rtmq_proxy_ssvr_proc_cmd(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, 
  **                享变量的值可能被其他进程或线程修改, 导致出现严重错误!
  **作    者: # Qifeng.zou # 2015.12.26 08:23:22 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_wiov_add(rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck)
+static int rtmq_proxy_tsvr_wiov_add(rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck)
 {
 #define RTSD_POP_NUM    (1024)
     size_t len;
@@ -640,18 +669,18 @@ static int rtmq_proxy_ssvr_wiov_add(rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *s
     for (;;) {
         /* > 判断剩余空间(WARNNING: 勿将共享变量参与三目运算, 否则可能出现严重错误!!!) */
         num = MIN(wiov_left_space(send), RTSD_POP_NUM);
-        num = MIN(num, queue_used(ssvr->sendq));
+        num = MIN(num, queue_used(tsvr->sendq));
         if (0 == num) {
             break; /* 空间不足 */
         }
 
         /* > 弹出发送数据 */
-        num = queue_mpop(ssvr->sendq, data, num);
+        num = queue_mpop(tsvr->sendq, data, num);
         if (0 == num) {
             continue;
         }
 
-        log_trace(ssvr->log, "Multi-pop num:%d!", num);
+        log_trace(tsvr->log, "Multi-pop num:%d!", num);
 
         for (idx=0; idx<num; ++idx) {
             /* > 是否有数据 */
@@ -666,7 +695,7 @@ static int rtmq_proxy_ssvr_wiov_add(rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *s
             RTMQ_HEAD_HTON(head, head);
 
             /* > 设置发送数据 */
-            wiov_item_add(send, head, len, ssvr->sendq, queue_dealloc, queue_dealloc);
+            wiov_item_add(send, head, len, tsvr->sendq, queue_dealloc, queue_dealloc);
         }
     }
 
@@ -674,11 +703,11 @@ static int rtmq_proxy_ssvr_wiov_add(rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *s
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_send_data
+ **函数名称: rtmq_proxy_tsvr_send_data
  **功    能: 发送系统消息
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **输出参数:
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -698,10 +727,10 @@ static int rtmq_proxy_ssvr_wiov_add(rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *s
  **     addr     optr             iptr                   end
  **作    者: # Qifeng.zou # 2015.01.14 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_send_data(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_proxy_tsvr_send_data(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck)
 {
     ssize_t n;
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
     wiov_t *send = &sck->send;
 
     sck->wrtm = time(NULL);
@@ -709,7 +738,7 @@ static int rtmq_proxy_ssvr_send_data(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
     for (;;) {
         /* 1. 填充发送缓存 */
         if (!wiov_isfull(send)) {
-            rtmq_proxy_ssvr_wiov_add(ssvr, sck);
+            rtmq_proxy_tsvr_wiov_add(tsvr, sck);
         }
 
         if (wiov_isempty(send)) {
@@ -719,14 +748,11 @@ static int rtmq_proxy_ssvr_send_data(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
         /* 2. 发送缓存数据 */
         n = writev(sck->fd, wiov_item_begin(send), wiov_item_num(send));
         if (n < 0) {
-            log_error(ssvr->log, "errmsg:[%d] %s! fd:%u",
+            log_error(tsvr->log, "errmsg:[%d] %s! fd:%u",
                     errno, strerror(errno), sck->fd);
-            CLOSE(sck->fd);
-            wiov_clean(send);
             return RTMQ_ERR;
         }
-        /* 只发送了部分数据 */
-        else {
+        else { /* 只发送了部分数据 */
             wiov_item_adjust(send, n);
             return RTMQ_OK;
         }
@@ -736,22 +762,22 @@ static int rtmq_proxy_ssvr_send_data(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_clear_mesg
+ **函数名称: rtmq_proxy_tsvr_clear_mesg
  **功    能: 清空发送消息
  **输入参数:
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 依次取出每条消息, 并释放所占有的空间
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.16 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_clear_mesg(rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_proxy_tsvr_clear_mesg(rtmq_proxy_tsvr_t *tsvr)
 {
     void *data;
 
     while (1) {
-        data = list_lpop(ssvr->sck.mesg_list);
+        data = list_lpop(tsvr->sck.mesg_list);
         if (NULL == data) {
             return RTMQ_OK;
         }
@@ -762,11 +788,11 @@ static int rtmq_proxy_ssvr_clear_mesg(rtmq_proxy_ssvr_t *ssvr)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_sys_mesg_proc
+ **函数名称: rtmq_proxy_tsvr_sys_mesg_proc
  **功    能: 系统消息的处理
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **     sck: 连接对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
@@ -774,29 +800,29 @@ static int rtmq_proxy_ssvr_clear_mesg(rtmq_proxy_ssvr_t *ssvr)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.01.16 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, void *addr)
+static int rtmq_proxy_tsvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck, void *addr)
 {
     rtmq_header_t *head = (rtmq_header_t *)addr;
 
     switch (head->type) {
         case RTMQ_CMD_KPALIVE_ACK:      /* 保活应答 */
-            log_debug(ssvr->log, "Received keepalive ack!");
+            log_debug(tsvr->log, "Received keepalive ack!");
             rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_SUCC);
             return RTMQ_OK;
         case RTMQ_CMD_AUTH_ACK:         /* 链路鉴权应答 */
-            return rtmq_link_auth_ack_hdl(pxy, ssvr, sck, addr + sizeof(rtmq_header_t));
+            return rtmq_link_auth_ack_hdl(pxy, tsvr, sck, addr + sizeof(rtmq_header_t));
     }
 
-    log_error(ssvr->log, "Unknown type [0x%04X]!", head->type);
+    log_error(tsvr->log, "Unknown type [0x%04X]!", head->type);
     return RTMQ_ERR;
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_exp_mesg_proc
+ **函数名称: rtmq_proxy_tsvr_exp_mesg_proc
  **功    能: 自定义消息的处理
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **     sck: 连接对象
  **     addr: 数据地址
  **输出参数: NONE
@@ -805,21 +831,21 @@ static int rtmq_proxy_ssvr_sys_mesg_proc(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *s
  **注意事项:
  **作    者: # Qifeng.zou # 2015.05.19 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_exp_mesg_proc(
-        rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, void *addr)
+static int rtmq_proxy_tsvr_exp_mesg_proc(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck, void *addr)
 {
     void *data;
     int idx, len;
     rtmq_header_t *head = (rtmq_header_t *)addr;
 
-    ++ssvr->recv_total;
+    ++tsvr->recv_total;
 
     /* > 验证长度 */
     len = RTMQ_DATA_TOTAL_LEN(head);
     if ((int)len > queue_size(pxy->recvq[0])) {
-        ++ssvr->drop_total;
+        ++tsvr->drop_total;
         log_error(pxy->log, "Data is too long! len:%d drop:%lu total:%lu",
-                len, ssvr->drop_total, ssvr->recv_total);
+                len, tsvr->drop_total, tsvr->recv_total);
         return RTMQ_ERR_TOO_LONG;
     }
 
@@ -828,9 +854,9 @@ static int rtmq_proxy_ssvr_exp_mesg_proc(
 
     data = queue_malloc(pxy->recvq[idx], len);
     if (NULL == data) {
-        ++ssvr->drop_total;
+        ++tsvr->drop_total;
         log_error(pxy->log, "Alloc from queue failed! drop:%lu recv:%lu size:%d/%d",
-                ssvr->drop_total, ssvr->recv_total, len, queue_size(pxy->recvq[idx]));
+                tsvr->drop_total, tsvr->recv_total, len, queue_size(pxy->recvq[idx]));
         return RTMQ_ERR;
     }
 
@@ -838,14 +864,14 @@ static int rtmq_proxy_ssvr_exp_mesg_proc(
     memcpy(data, addr, len);
 
     if (queue_push(pxy->recvq[idx], data)) {
-        ++ssvr->drop_total;
+        ++tsvr->drop_total;
         log_error(pxy->log, "Push into queue failed! len:%d drop:%lu total:%lu",
-                len, ssvr->drop_total, ssvr->recv_total);
+                len, tsvr->drop_total, tsvr->recv_total);
         queue_dealloc(pxy->recvq[idx], data);
         return RTMQ_ERR;
     }
 
-    rtmq_proxy_ssvr_cmd_proc_req(pxy, ssvr, idx);    /* 发送处理请求 */
+    rtmq_proxy_tsvr_cmd_proc_req(pxy, tsvr, idx);    /* 发送处理请求 */
 
     return RTMQ_OK;
 }
@@ -855,20 +881,20 @@ static int rtmq_proxy_ssvr_exp_mesg_proc(
  **功    能: 发起链路鉴权请求
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 将鉴权请求放入发送队列中
  **注意事项:
  **作    者: # Qifeng.zou # 2015.05.22 #
  ******************************************************************************/
-static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr)
 {
     int size;
     void *addr;
     rtmq_header_t *head;
     rtmq_link_auth_req_t *auth;
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
+    rtmq_proxy_sck_t *sck = &tsvr->sck;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 申请内存空间 */
@@ -876,7 +902,7 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
 
     addr = (void *)calloc(1, size);
     if (NULL == addr) {
-        log_error(ssvr->log, "Alloc memory failed!");
+        log_error(tsvr->log, "Alloc memory failed!");
         return RTMQ_ERR;
     }
 
@@ -899,11 +925,11 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
     /* > 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
         free(addr);
-        log_error(ssvr->log, "Insert mesg list failed!");
+        log_error(tsvr->log, "Insert mesg list failed!");
         return RTMQ_ERR;
     }
 
-    log_debug(ssvr->log, "Add link auth request success! fd:[%d]", sck->fd);
+    log_debug(tsvr->log, "Add link auth request success! fd:[%d]", sck->fd);
 
     return RTMQ_OK;
 }
@@ -913,7 +939,7 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
  **功    能: 链路鉴权请求应答的处理
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **     sck: 连接对象
  **     addr: 数据地址
  **输出参数: NONE
@@ -923,7 +949,7 @@ static int rtmq_link_auth_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
  **作    者: # Qifeng.zou # 2015.05.22 #
  ******************************************************************************/
 static int rtmq_link_auth_ack_hdl(rtmq_proxy_t *pxy,
-        rtmq_proxy_ssvr_t *ssvr, rtmq_proxy_sct_t *sck, rtmq_link_auth_ack_t *rsp)
+        rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck, rtmq_link_auth_ack_t *rsp)
 {
     return ntohl(rsp->is_succ)? RTMQ_OK : RTMQ_ERR;
 }
@@ -933,21 +959,21 @@ static int rtmq_link_auth_ack_hdl(rtmq_proxy_t *pxy,
  **功    能: 添加订阅请求
  **输入参数:
  **     item: 消息类型
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 将订阅请求放入发送队列中
  **注意事项:
  **作    者: # Qifeng.zou # 2016.04.13 00:11:04 #
  ******************************************************************************/
-static int rtmq_add_sub_req(rtmq_reg_t *item, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_add_sub_req(rtmq_reg_t *item, rtmq_proxy_tsvr_t *tsvr)
 {
     int size;
     void *addr;
     rtmq_header_t *head;
     rtmq_sub_req_t *sub;
-    rtmq_proxy_sct_t *sck = &ssvr->sck;
-    rtmq_proxy_t *pxy = (rtmq_proxy_t *)ssvr->ctx;
+    rtmq_proxy_sck_t *sck = &tsvr->sck;
+    rtmq_proxy_t *pxy = (rtmq_proxy_t *)tsvr->ctx;
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 申请内存空间 */
@@ -955,7 +981,7 @@ static int rtmq_add_sub_req(rtmq_reg_t *item, rtmq_proxy_ssvr_t *ssvr)
 
     addr = (void *)calloc(1, size);
     if (NULL == addr) {
-        log_error(ssvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
+        log_error(tsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
     }
 
@@ -976,11 +1002,11 @@ static int rtmq_add_sub_req(rtmq_reg_t *item, rtmq_proxy_ssvr_t *ssvr)
     /* > 加入发送列表 */
     if (list_rpush(sck->mesg_list, addr)) {
         free(addr);
-        log_error(ssvr->log, "Insert sub request failed!");
+        log_error(tsvr->log, "Insert sub request failed!");
         return RTMQ_ERR;
     }
 
-    log_debug(ssvr->log, "Add sub request. type:0x%04X", item->type);
+    log_debug(tsvr->log, "Add sub request. type:0x%04X", item->type);
 
     return RTMQ_OK;
 }
@@ -990,24 +1016,24 @@ static int rtmq_add_sub_req(rtmq_reg_t *item, rtmq_proxy_ssvr_t *ssvr)
  **功    能: 发起订阅请求
  **输入参数:
  **     pxy: 全局信息
- **     ssvr: 发送服务
+ **     tsvr: 发送服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 将订阅请求放入发送队列中
  **注意事项:
  **作    者: # Qifeng.zou # 2016.04.13 00:11:04 #
  ******************************************************************************/
-static int rtmq_sub_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_sub_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr)
 {
-    return avl_trav(pxy->reg, (trav_cb_t)rtmq_add_sub_req, (void *)ssvr);
+    return avl_trav(pxy->reg, (trav_cb_t)rtmq_add_sub_req, (void *)tsvr);
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_cmd_proc_req
+ **函数名称: rtmq_proxy_tsvr_cmd_proc_req
  **功    能: 发送处理请求
  **输入参数:
  **     pxy: 全局对象
- **     ssvr: 接收服务
+ **     tsvr: 接收服务
  **     rqid: 队列ID(与工作队列ID一致)
  **输出参数: NONE
  **返    回: >0:成功 <=0:失败
@@ -1015,7 +1041,7 @@ static int rtmq_sub_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.06.08 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr, int rqid)
+static int rtmq_proxy_tsvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, int rqid)
 {
     rtmq_cmd_t cmd;
     rtmq_cmd_proc_req_t *req = (rtmq_cmd_proc_req_t *)&cmd.param;
@@ -1023,7 +1049,7 @@ static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ss
     memset(&cmd, 0, sizeof(cmd));
 
     cmd.type = RTMQ_CMD_PROC_REQ;
-    req->ori_svr_id = ssvr->id;
+    req->ori_svr_id = tsvr->id;
     req->num = -1;
     req->rqidx = rqid;
 
@@ -1032,24 +1058,112 @@ static int rtmq_proxy_ssvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ss
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_ssvr_cmd_proc_all_req
+ **函数名称: rtmq_proxy_tsvr_cmd_proc_all_req
  **功    能: 发送处理请求
  **输入参数:
  **     pxy: 全局对象
- **     ssvr: 接收服务
+ **     tsvr: 接收服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 遍历所有接收队列, 并发送处理请求
  **注意事项:
  **作    者: # Qifeng.zou # 2015.06.08 #
  ******************************************************************************/
-static int rtmq_proxy_ssvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_ssvr_t *ssvr)
+static int rtmq_proxy_tsvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr)
 {
     int idx;
 
     for (idx=0; idx<pxy->conf.send_thd_num; ++idx) {
-        rtmq_proxy_ssvr_cmd_proc_req(pxy, ssvr, idx);
+        rtmq_proxy_tsvr_cmd_proc_req(pxy, tsvr, idx);
     }
+
+    return RTMQ_OK;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_proxy_rsvr_event_handler
+ **功    能: 事件处理函数
+ **输入参数:
+ **     pxy: 全局对象
+ **     tsvr: 接收服务
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.11.30 11:09:14 #
+ ******************************************************************************/
+static int rtmq_proxy_rsvr_event_handler(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, int num)
+{
+    int idx, ret;
+    rtmq_proxy_sck_t *sck;
+
+    for (idx=0; idx<num; idx++) {
+        sck = (rtmq_proxy_sck_t *)tsvr->events[idx].data.ptr;
+
+        /* 可读处理 */
+        if (tsvr->events[idx].events & EPOLLIN) {
+            /* 接收网络数据 */
+            ret = sck->recv_cb(pxy, tsvr, sck);
+            if (RTMQ_AGAIN != ret) {
+                log_info(tsvr->log, "Delete connection! fd:%d", sck->fd);
+                rtmq_proxy_tsvr_del_conn(pxy, tsvr, sck);
+                continue; /* 异常-关闭SCK: 不必判断是否可写 */
+            }
+        }
+
+        /* 可写处理 */
+        if (tsvr->events[idx].events & EPOLLOUT) {
+            /* 发送网络数据 */
+            ret = sck->send_cb(pxy, tsvr, sck);
+            if (RTMQ_ERR == ret) {
+                log_info(tsvr->log, "Delete connection! fd:%d", sck->fd);
+                rtmq_proxy_tsvr_del_conn(pxy, tsvr, sck);
+                continue; /* 异常: 套接字已关闭 */
+            }
+        }
+    }
+
+#if 0
+    /* 发送数据: 发送优先 */
+    if (FD_ISSET(sck->fd, &tsvr->wset)) {
+        rtmq_proxy_tsvr_send_data(pxy, tsvr);
+    }
+
+    /* 接收Recv服务的数据 */
+    if (FD_ISSET(sck->fd, &tsvr->rset)) {
+        rtmq_proxy_tsvr_recv_proc(pxy, tsvr);
+    }
+#endif
+
+    return 0;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_proxy_tsvr_del_conn
+ **功    能: 删除连接信息
+ **输入参数:
+ **     pxy: 全局对象
+ **     tsvr: 接收服务
+ **     sck: 套接字对象
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述: 
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.11.30 15:03:53 #
+ ******************************************************************************/
+static int rtmq_proxy_tsvr_del_conn(
+        rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck)
+{
+    struct epoll_event ev;
+    wiov_t *send = &tsvr->sck.send;
+    rtmq_snap_t *recv = &sck->recv;
+
+    epoll_ctl(tsvr->epid, EPOLL_CTL_DEL, sck->fd, &ev);
+    
+    CLOSE(sck->fd);
+    wiov_clean(send);
+    rtmq_snap_reset(recv);
 
     return RTMQ_OK;
 }
