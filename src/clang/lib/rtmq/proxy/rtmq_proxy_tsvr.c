@@ -32,6 +32,7 @@ static int rtmq_proxy_tsvr_cmd_proc_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *ts
 static int rtmq_proxy_tsvr_cmd_proc_all_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr);
 static int rtmq_proxy_rsvr_event_handler(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, int num);
 
+static int rtmq_proxy_tsvr_reconn(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck);
 static int rtmq_proxy_tsvr_del_conn(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *sck);
 
 /******************************************************************************
@@ -151,43 +152,6 @@ static void rtmq_proxy_tsvr_bind_cpu(rtmq_proxy_t *pxy, int id)
 }
 
 /******************************************************************************
- **函数名称: rtmq_proxy_tsvr_set_rwset
- **功    能: 设置读写集
- **输入参数:
- **     tsvr: 发送服务对象
- **输出参数: NONE
- **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2015.01.16 #
- ******************************************************************************/
-void rtmq_proxy_tsvr_set_rwset(rtmq_proxy_tsvr_t *tsvr)
-{
-    FD_ZERO(&tsvr->rset);
-    FD_ZERO(&tsvr->wset);
-
-    FD_SET(tsvr->cmd_fd, &tsvr->rset);
-
-    tsvr->max = MAX(tsvr->cmd_fd, tsvr->sck.fd);
-
-    /* 1 设置读集合 */
-    FD_SET(tsvr->sck.fd, &tsvr->rset);
-
-    /* 2 设置写集合: 发送至接收端 */
-    if (!list_empty(tsvr->sck.mesg_list)
-        || !queue_empty(tsvr->sendq))
-    {
-        FD_SET(tsvr->sck.fd, &tsvr->wset);
-        return;
-    } else if (!wiov_isempty(&tsvr->sck.send)) {
-        FD_SET(tsvr->sck.fd, &tsvr->wset);
-        return;
-    }
-
-    return;
-}
-
-/******************************************************************************
  **函数名称: rtmq_proxy_tsvr_routine
  **功    能: 发送线程入口函数
  **输入参数:
@@ -201,7 +165,6 @@ void rtmq_proxy_tsvr_set_rwset(rtmq_proxy_tsvr_t *tsvr)
 void *rtmq_proxy_tsvr_routine(void *_ctx)
 {
     int num;
-    struct epoll_event ev;
     rtmq_proxy_sck_t *sck;
     rtmq_proxy_tsvr_t *tsvr;
     rtmq_proxy_t *pxy = (rtmq_proxy_t *)_ctx;
@@ -229,27 +192,9 @@ void *rtmq_proxy_tsvr_routine(void *_ctx)
 
             Sleep(RTMQ_RECONN_INTV);
 
-            /* 重连Recv端 */
-            if ((sck->fd = tcp_connect(AF_INET, tsvr->ipaddr, tsvr->port)) < 0) {
-                log_error(tsvr->log, "Conncet [%s:%d] failed! errmsg:[%d] %s!",
-                        tsvr->ipaddr, tsvr->port, errno, strerror(errno));
+            if (rtmq_proxy_tsvr_reconn(pxy, tsvr, sck)) {
                 continue;
             }
-
-            sck->recv_cb = (rtmq_proxy_socket_recv_cb_t)rtmq_proxy_tsvr_recv_proc;
-            sck->send_cb = (rtmq_proxy_socket_send_cb_t)rtmq_proxy_tsvr_send_data;
-
-            rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_UNKNOWN);  /* 设置保活状态 */
-            rtmq_link_auth_req(pxy, tsvr);                          /* 发起鉴权请求 */
-            rtmq_sub_req(pxy, tsvr);                                /* 发起订阅请求 */
-
-            /* 加入侦听事件 */
-            memset(&ev, 0, sizeof(ev));
-
-            ev.data.ptr = sck;
-            ev.events = EPOLLIN | EPOLLOUT | EPOLLET; /* 边缘触发 */
-
-            epoll_ctl(tsvr->epid, EPOLL_CTL_ADD, sck->fd, &ev);
         }
 
         /* 3.2 等待事件通知 */
@@ -294,16 +239,12 @@ static int rtmq_proxy_tsvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsv
     struct epoll_event ev;
     int size = sizeof(rtmq_header_t);
     rtmq_proxy_sck_t *sck = &tsvr->sck;
-    wiov_t *send = &tsvr->sck.send;
 
     memset(&ev, 0, sizeof(ev));
 
     /* 1. 上次发送保活请求之后 仍未收到应答 */
-    if ((sck->fd < 0)
-        || (RTMQ_KPALIVE_STAT_SENT == sck->kpalive))
-    {
-        CLOSE(sck->fd);
-        wiov_clean(send);
+    if ((sck->fd < 0) || (RTMQ_KPALIVE_STAT_SENT == sck->kpalive)) {
+        rtmq_proxy_tsvr_del_conn(pxy, tsvr, sck);
         log_error(tsvr->log, "Didn't get keepalive respond for a long time!");
         return RTMQ_OK;
     }
@@ -333,6 +274,13 @@ static int rtmq_proxy_tsvr_kpalive_req(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsv
     log_debug(tsvr->log, "Add keepalive request success! fd:[%d]", sck->fd);
 
     rtmq_set_kpalive_stat(sck, RTMQ_KPALIVE_STAT_SENT);
+
+    /* 4. 触发可写事件 */
+    ev.data.ptr = sck;
+    ev.events = EPOLLIN | EPOLLOUT | EPOLLET; /* 边缘触发 */
+
+    epoll_ctl(tsvr->epid, EPOLL_CTL_MOD, sck->fd, &ev);
+
     return RTMQ_OK;
 }
 
@@ -751,8 +699,7 @@ static int rtmq_proxy_tsvr_send_data(
             log_error(tsvr->log, "errmsg:[%d] %s! fd:%u",
                     errno, strerror(errno), sck->fd);
             return RTMQ_ERR;
-        }
-        else { /* 只发送了部分数据 */
+        } else { /* 只发送了部分数据 */
             wiov_item_adjust(send, n);
             return RTMQ_OK;
         }
@@ -1123,18 +1070,6 @@ static int rtmq_proxy_rsvr_event_handler(
             }
         }
     }
-
-#if 0
-    /* 发送数据: 发送优先 */
-    if (FD_ISSET(sck->fd, &tsvr->wset)) {
-        rtmq_proxy_tsvr_send_data(pxy, tsvr);
-    }
-
-    /* 接收Recv服务的数据 */
-    if (FD_ISSET(sck->fd, &tsvr->rset)) {
-        rtmq_proxy_tsvr_recv_proc(pxy, tsvr);
-    }
-#endif
 
     return 0;
 }
