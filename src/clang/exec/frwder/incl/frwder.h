@@ -6,7 +6,7 @@
 #include "shm_queue.h"
 #include "frwd_conf.h"
 #include "rtmq_proxy.h"
-#include "rtmq_proxy_ssvr.h"
+#include "rtmq_proxy_tsvr.h"
 
 typedef enum
 {
