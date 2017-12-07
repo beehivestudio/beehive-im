@@ -20,7 +20,7 @@ import (
 /* 添加好友 */
 
 /******************************************************************************
- **函数名称: friend_add_parse
+ **函数名称: friendAddParse
  **功    能: 解析FRIEND-ADD消息
  **输入参数:
  **     data: 接收的数据
@@ -34,7 +34,7 @@ import (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.07 21:57:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_add_parse(data []byte) (
+func (ctx *UsrSvrCntx) friendAddParse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgFriendAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -60,7 +60,7 @@ func (ctx *UsrSvrCntx) friend_add_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: friend_add_failed
+ **函数名称: friendAddFailed
  **功    能: 发送FRIEND-ADD应答(异常)
  **输入参数:
  **     head: 协议头
@@ -78,7 +78,7 @@ func (ctx *UsrSvrCntx) friend_add_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.04 22:52:14 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_add_failed(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) friendAddFailed(head *comm.MesgHeader,
 	req *mesg.MesgFriendAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -103,7 +103,7 @@ func (ctx *UsrSvrCntx) friend_add_failed(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: friend_add_ack
+ **函数名称: friendAddAck
  **功    能: 发送FRIEND-ADD应答
  **输入参数:
  **     head: 协议头
@@ -119,7 +119,7 @@ func (ctx *UsrSvrCntx) friend_add_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.07 22:14:27 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_add_ack(head *comm.MesgHeader, req *mesg.MesgFriendAdd) int {
+func (ctx *UsrSvrCntx) friendAddAck(head *comm.MesgHeader, req *mesg.MesgFriendAdd) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgFriendAddAck{
 		Code:   proto.Uint32(0),
@@ -139,7 +139,7 @@ func (ctx *UsrSvrCntx) friend_add_ack(head *comm.MesgHeader, req *mesg.MesgFrien
 }
 
 /******************************************************************************
- **函数名称: friend_add_handler
+ **函数名称: friendAddHandler
  **功    能: FRIEND-ADD处理
  **输入参数:
  **     head: 协议头
@@ -155,7 +155,7 @@ func (ctx *UsrSvrCntx) friend_add_ack(head *comm.MesgHeader, req *mesg.MesgFrien
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.07 22:07:00 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_add_handler(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) friendAddHandler(head *comm.MesgHeader,
 	req *mesg.MesgFriendAdd, data []byte) (code uint32, err error) {
 	var key string
 
@@ -232,27 +232,27 @@ func UsrSvrFriendAddHandler(cmd uint32, orig uint32,
 	ctx.log.Debug("Recv friend add request!")
 
 	/* > 解析FRIEND-ADD协议 */
-	head, req, code, err := ctx.friend_add_parse(data)
+	head, req, code, err := ctx.friendAddParse(data)
 	if nil == head {
 		ctx.log.Error("Parse friend add failed! errmsg:%s", err.Error())
 		return -1
 	} else if nil == req {
 		ctx.log.Error("Parse friend add failed! errmsg:%s", err.Error())
-		ctx.friend_add_failed(head, req, code, err.Error())
+		ctx.friendAddFailed(head, req, code, err.Error())
 		return -1
 	}
 
 	ctx.log.Debug("Uid [%d] send friend-add to uid [%d]!", req.GetSuid(), req.GetDuid())
 
 	/* > 进行业务处理 */
-	code, err = ctx.friend_add_handler(head, req, data)
+	code, err = ctx.friendAddHandler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Handle friend add failed! errmsg:%s", err.Error())
-		ctx.friend_add_failed(head, req, code, err.Error())
+		ctx.friendAddFailed(head, req, code, err.Error())
 		return -1
 	}
 
-	ctx.friend_add_ack(head, req)
+	ctx.friendAddAck(head, req)
 
 	return 0
 }
@@ -261,7 +261,7 @@ func UsrSvrFriendAddHandler(cmd uint32, orig uint32,
 /* 删除好友 */
 
 /******************************************************************************
- **函数名称: friend_del_parse
+ **函数名称: friendDelParse
  **功    能: 解析FRIEND-DEL消息
  **输入参数:
  **     data: 接收的数据
@@ -275,7 +275,7 @@ func UsrSvrFriendAddHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.07 21:57:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_del_parse(data []byte) (
+func (ctx *UsrSvrCntx) friendDelParse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgFriendDel, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -301,7 +301,7 @@ func (ctx *UsrSvrCntx) friend_del_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: friend_del_failed
+ **函数名称: friendDelFailed
  **功    能: 发送FRIEND-DEL应答(异常)
  **输入参数:
  **     head: 协议头
@@ -319,7 +319,7 @@ func (ctx *UsrSvrCntx) friend_del_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.07 22:19:11 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_del_failed(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) friendDelFailed(head *comm.MesgHeader,
 	req *mesg.MesgFriendDel, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -344,7 +344,7 @@ func (ctx *UsrSvrCntx) friend_del_failed(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: friend_del_ack
+ **函数名称: friendDelAck
  **功    能: 发送FRIEND-DEL应答
  **输入参数:
  **     head: 协议头
@@ -360,7 +360,7 @@ func (ctx *UsrSvrCntx) friend_del_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.07 22:14:27 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_del_ack(head *comm.MesgHeader, req *mesg.MesgFriendDel) int {
+func (ctx *UsrSvrCntx) friendDelAck(head *comm.MesgHeader, req *mesg.MesgFriendDel) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgFriendDelAck{
 		Code:   proto.Uint32(0),
@@ -380,7 +380,7 @@ func (ctx *UsrSvrCntx) friend_del_ack(head *comm.MesgHeader, req *mesg.MesgFrien
 }
 
 /******************************************************************************
- **函数名称: friend_del_handler
+ **函数名称: friendDelHandler
  **功    能: FRIEND-DEL处理
  **输入参数:
  **     head: 协议头
@@ -396,7 +396,7 @@ func (ctx *UsrSvrCntx) friend_del_ack(head *comm.MesgHeader, req *mesg.MesgFrien
  **注意事项:
  **作    者: # Qifeng.zou # 2017.06.07 22:07:00 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) friend_del_handler(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) friendDelHandler(head *comm.MesgHeader,
 	req *mesg.MesgFriendDel, data []byte) (code uint32, err error) {
 	var key string
 
@@ -473,27 +473,27 @@ func UsrSvrFriendDelHandler(cmd uint32, orig uint32,
 	ctx.log.Debug("Recv friend del request!")
 
 	/* > 解析FRIEND-DEL协议 */
-	head, req, code, err := ctx.friend_del_parse(data)
+	head, req, code, err := ctx.friendDelParse(data)
 	if nil == head {
 		ctx.log.Error("Parse friend del failed! errmsg:%s", err.Error())
 		return -1
 	} else if nil == req {
 		ctx.log.Error("Parse friend del failed! errmsg:%s", err.Error())
-		ctx.friend_del_failed(head, req, code, err.Error())
+		ctx.friendDelFailed(head, req, code, err.Error())
 		return -1
 	}
 
 	ctx.log.Debug("Uid [%d] send friend-del to uid [%d]!", req.GetSuid(), req.GetDuid())
 
 	/* > 进行业务处理 */
-	code, err = ctx.friend_del_handler(head, req, data)
+	code, err = ctx.friendDelHandler(head, req, data)
 	if nil != err {
 		ctx.log.Error("Handle friend del failed! errmsg:%s", err.Error())
-		ctx.friend_del_failed(head, req, code, err.Error())
+		ctx.friendDelFailed(head, req, code, err.Error())
 		return -1
 	}
 
-	ctx.friend_del_ack(head, req)
+	ctx.friendDelAck(head, req)
 
 	return 0
 }
@@ -502,7 +502,7 @@ func UsrSvrFriendDelHandler(cmd uint32, orig uint32,
 /* 加入黑名单 */
 
 /******************************************************************************
- **函数名称: blacklist_add_parse
+ **函数名称: blacklistAddParse
  **功    能: 解析BLACKLIST-ADD请求
  **输入参数:
  **     data: 原始数据
@@ -516,7 +516,7 @@ func UsrSvrFriendDelHandler(cmd uint32, orig uint32,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 10:06:14 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) blacklist_add_parse(data []byte) (
+func (ctx *UsrSvrCntx) blacklistAddParse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgBlacklistAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -538,7 +538,7 @@ func (ctx *UsrSvrCntx) blacklist_add_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: blacklist_add_handler
+ **函数名称: blacklistAddHandler
  **功    能: 进行BLACKLIST-ADD处理
  **输入参数:
  **     head: 协议头
@@ -551,7 +551,7 @@ func (ctx *UsrSvrCntx) blacklist_add_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 10:30:04 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) blacklist_add_handler(
+func (ctx *UsrSvrCntx) blacklistAddHandler(
 	head *comm.MesgHeader, req *mesg.MesgBlacklistAdd) (code uint32, err error) {
 	/* > 加入用户黑名单(缓存) */
 	code, err = models.RdsBlacklistAdd(ctx.redis, req.GetSuid(), req.GetDuid())
@@ -571,7 +571,7 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
 }
 
 /******************************************************************************
- **函数名称: blacklist_add_failed
+ **函数名称: blacklistAddFailed
  **功    能: 发送BLACKLIST-ADD应答
  **输入参数:
  **     head: 协议头
@@ -589,7 +589,7 @@ func (ctx *UsrSvrCntx) blacklist_add_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 18:37:59 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) blacklist_add_failed(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) blacklistAddFailed(head *comm.MesgHeader,
 	req *mesg.MesgBlacklistAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -627,7 +627,7 @@ func (ctx *UsrSvrCntx) blacklist_add_failed(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: blacklist_add_ack
+ **函数名称: blacklistAddAck
  **功    能: 发送BLACKLIST-ADD应答
  **输入参数:
  **     head: 协议头
@@ -645,7 +645,7 @@ func (ctx *UsrSvrCntx) blacklist_add_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 10:40:03 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) blacklist_add_ack(
+func (ctx *UsrSvrCntx) blacklistAddAck(
 	head *comm.MesgHeader, req *mesg.MesgBlacklistAdd) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgBlacklistAddAck{
@@ -700,10 +700,10 @@ func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint3
 	}
 
 	/* > 解析BLACKLIST-ADD请求 */
-	head, req, code, err := ctx.blacklist_add_parse(data)
+	head, req, code, err := ctx.blacklistAddParse(data)
 	if nil != err {
 		ctx.log.Error("Parse blacklist-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.blacklist_add_failed(head, req, code, err.Error())
+		ctx.blacklistAddFailed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -711,25 +711,25 @@ func UsrSvrBlacklistAddHandler(cmd uint32, nid uint32, data []byte, length uint3
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.blacklist_add_failed(head, req, code, err.Error())
+		ctx.blacklistAddFailed(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetSuid() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.blacklist_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.blacklistAddFailed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
 	/* > 进行BLACKLIST-ADD处理 */
-	code, err = ctx.blacklist_add_handler(head, req)
+	code, err = ctx.blacklistAddHandler(head, req)
 	if nil != err {
 		ctx.log.Error("Handle blacklist-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.blacklist_add_failed(head, req, code, err.Error())
+		ctx.blacklistAddFailed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 发送BLACKLIST-ADD应答 */
-	ctx.blacklist_add_ack(head, req)
+	ctx.blacklistAddAck(head, req)
 
 	return 0
 }
@@ -972,7 +972,7 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
 /* 设置禁言 */
 
 /******************************************************************************
- **函数名称: gag_add_parse
+ **函数名称: gagAddParse
  **功    能: 解析GAG-ADD请求
  **输入参数:
  **     data: 原始数据
@@ -986,7 +986,7 @@ func UsrSvrBlacklistDelHandler(cmd uint32, nid uint32, data []byte, length uint3
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:03:54 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) gag_add_parse(data []byte) (
+func (ctx *UsrSvrCntx) gagAddParse(data []byte) (
 	head *comm.MesgHeader, req *mesg.MesgGagAdd, code uint32, err error) {
 	/* > 字节序转换 */
 	head = comm.MesgHeadNtoh(data)
@@ -1008,7 +1008,7 @@ func (ctx *UsrSvrCntx) gag_add_parse(data []byte) (
 }
 
 /******************************************************************************
- **函数名称: gag_add_handler
+ **函数名称: gagAddHandler
  **功    能: 进行GAG-ADD处理
  **输入参数:
  **     head: 协议头
@@ -1021,7 +1021,7 @@ func (ctx *UsrSvrCntx) gag_add_parse(data []byte) (
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:04:31 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) gag_add_handler(
+func (ctx *UsrSvrCntx) gagAddHandler(
 	head *comm.MesgHeader, req *mesg.MesgGagAdd) (code uint32, err error) {
 	rds := ctx.redis.Get()
 	defer rds.Close()
@@ -1041,7 +1041,7 @@ func (ctx *UsrSvrCntx) gag_add_handler(
 }
 
 /******************************************************************************
- **函数名称: gag_add_failed
+ **函数名称: gagAddFailed
  **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
@@ -1059,7 +1059,7 @@ func (ctx *UsrSvrCntx) gag_add_handler(
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.01 11:05:32 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) gag_add_failed(head *comm.MesgHeader,
+func (ctx *UsrSvrCntx) gagAddFailed(head *comm.MesgHeader,
 	req *mesg.MesgGagAdd, code uint32, errmsg string) int {
 	if nil == head {
 		return -1
@@ -1097,7 +1097,7 @@ func (ctx *UsrSvrCntx) gag_add_failed(head *comm.MesgHeader,
 }
 
 /******************************************************************************
- **函数名称: gag_add_ack
+ **函数名称: gagAddAck
  **功    能: 发送GAG-ADD应答
  **输入参数:
  **     head: 协议头
@@ -1115,7 +1115,7 @@ func (ctx *UsrSvrCntx) gag_add_failed(head *comm.MesgHeader,
  **注意事项:
  **作    者: # Qifeng.zou # 2017.01.19 11:07:08 #
  ******************************************************************************/
-func (ctx *UsrSvrCntx) gag_add_ack(
+func (ctx *UsrSvrCntx) gagAddAck(
 	head *comm.MesgHeader, req *mesg.MesgGagAdd) int {
 	/* > 设置协议体 */
 	ack := &mesg.MesgGagDelAck{
@@ -1170,10 +1170,10 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	}
 
 	/* > 解析GAG-ADD请求 */
-	head, req, code, err := ctx.gag_add_parse(data)
+	head, req, code, err := ctx.gagAddParse(data)
 	if nil != err {
 		ctx.log.Error("Parse gag-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.gag_add_failed(head, req, code, err.Error())
+		ctx.gagAddFailed(head, req, code, err.Error())
 		return -1
 	}
 
@@ -1181,25 +1181,25 @@ func UsrSvrGagAddHandler(cmd uint32, nid uint32, data []byte, length uint32, par
 	attr, err := im.GetSidAttr(ctx.redis, head.GetSid())
 	if nil != err {
 		ctx.log.Error("Get attr by sid failed! errmsg:%s", err.Error())
-		ctx.gag_add_failed(head, req, code, err.Error())
+		ctx.gagAddFailed(head, req, code, err.Error())
 		return -1
 	} else if 0 != attr.GetUid() && attr.GetUid() != req.GetSuid() {
 		errmsg := "Uid is collision!"
 		ctx.log.Error("errmsg:%s", errmsg)
-		ctx.gag_add_failed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
+		ctx.gagAddFailed(head, req, comm.ERR_SYS_SYSTEM, errmsg)
 		return -1
 	}
 
 	/* > 进行GAG-ADD处理 */
-	code, err = ctx.gag_add_handler(head, req)
+	code, err = ctx.gagAddHandler(head, req)
 	if nil != err {
 		ctx.log.Error("Handle gag-add failed! code:%d errmsg:%s", code, err.Error())
-		ctx.gag_add_failed(head, req, code, err.Error())
+		ctx.gagAddFailed(head, req, code, err.Error())
 		return -1
 	}
 
 	/* > 发送GAG-ADD应答 */
-	ctx.gag_add_ack(head, req)
+	ctx.gagAddAck(head, req)
 
 	return 0
 }
