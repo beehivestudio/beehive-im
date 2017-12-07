@@ -49,11 +49,7 @@ int acc_async_send(acc_cntx_t *ctx, int type, uint64_t cid, void *data, int len)
     acc_send_item_t *item;
 
     /* > 通过cid获取服务ID */
-    rid = acc_get_rid_by_cid(ctx, cid);
-    if (-1 == rid) {
-        log_error(ctx->log, "Get rid by cid failed! cid:%lu", cid);
-        return ACC_ERR;
-    }
+    rid = ACC_GET_RID_BY_CID(ctx, cid);
 
     /* > 准备存储空间 */
     sendq = ctx->sendq[rid];
@@ -126,11 +122,7 @@ int acc_async_kick(acc_cntx_t *ctx, uint64_t cid)
     acc_kick_req_t *kick;
 
     /* > 通过cid获取服务ID */
-    rid = acc_get_rid_by_cid(ctx, cid);
-    if (-1 == rid) {
-        log_error(ctx->log, "Get rid by cid failed! cid:%lu", cid);
-        return ACC_ERR;
-    }
+    rid = ACC_GET_RID_BY_CID(ctx, cid);
 
     /* > 放入指定发送队列 */
     kickq = ctx->kickq[rid];

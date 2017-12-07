@@ -27,7 +27,8 @@ typedef struct
 
     queue_t *connq;                 /* 连接队列 */
     ring_t *sendq;                  /* 发送队列 */
-    queue_t *kickq;                 /* 踢人队列 */
+    queue_t *kickq;                 /* 踢人队列(踢人任务队列) */
+    rbt_tree_t *kick_list;          /* 被踢查询列表(踢人查询列表) */
 
     time_t ctm;                     /* 当前时间 */
     time_t scan_tm;                 /* 前一次超时扫描的时间 */
@@ -57,6 +58,6 @@ int acc_rsvr_destroy(acc_rsvr_t *agent);
 /* 内部接口 */
 int acc_conn_cid_tab_add(acc_cntx_t *ctx, acc_socket_extra_t *extra);
 acc_socket_extra_t *acc_conn_cid_tab_del(acc_cntx_t *ctx, uint64_t cid);
-int acc_get_rid_by_cid(acc_cntx_t *ctx, uint64_t cid);
+#define ACC_GET_RID_BY_CID(ctx, cid) (cid % ((ctx)->conf->rsvr_num))
 
 #endif /*__ACC_RSVR_H__*/

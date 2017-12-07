@@ -386,6 +386,7 @@ static int acc_creat_queue(acc_cntx_t *ctx)
  **功    能: 新增CID列表
  **输入参数: 
  **     ctx: 全局信息
+ **     extra: 附加信息
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述:
@@ -415,34 +416,4 @@ acc_socket_extra_t *acc_conn_cid_tab_del(acc_cntx_t *ctx, uint64_t cid)
     key.cid = cid;
 
     return hash_tab_delete(ctx->conn_cid_tab, &key, WRLOCK);
-}
-
-/******************************************************************************
- **函数名称: acc_get_rid_by_cid
- **功    能: 通过cid查找rsvr的序列号
- **输入参数: 
- **     ctx: 全局信息
- **输出参数: NONE
- **返    回: RSVR的序列号
- **实现描述:
- **注意事项: 
- **作    者: # Qifeng.zou # 2015-06-24 23:58:46 #
- ******************************************************************************/
-int acc_get_rid_by_cid(acc_cntx_t *ctx, uint64_t cid)
-{
-    int rid;
-    acc_socket_extra_t *extra, key;
-
-    key.cid = cid;
-
-    extra = hash_tab_query(ctx->conn_cid_tab, &key, RDLOCK);
-    if (NULL == extra) {
-        return -1;
-    }
-
-    rid = extra->rid;
-
-    hash_tab_unlock(ctx->conn_cid_tab, &key, RDLOCK);
-
-    return rid;
 }

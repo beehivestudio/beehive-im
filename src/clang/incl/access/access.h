@@ -20,8 +20,9 @@
 /* 配置信息 */
 typedef struct {
     int nid;                        /* 结点ID */
-
+    char path[FILE_NAME_MAX_LEN];   /* 工作路径 */
     char ipaddr[IP_ADDR_MAX_LEN];   /* 外网IP */
+
     int port;                       /* 侦听端口 */
 
     struct {
@@ -37,6 +38,7 @@ typedef struct {
     queue_conf_t sendq;             /* 发送队列 */
 } acc_conf_t;
 
+struct _acc_cntx_t;
 typedef struct _acc_cntx_t acc_cntx_t;
 typedef int (*acc_callback_t)(acc_cntx_t *ctx, socket_t *asi, int reason, void *user, void *in, int len, void *args);
 typedef size_t (*acc_get_packet_body_size_cb_t)(void *head);
@@ -60,7 +62,7 @@ typedef struct
 } acc_send_item_t;
 
 /* 代理对象 */
-typedef struct _acc_cntx_t {
+struct _acc_cntx_t {
     acc_conf_t *conf;               /* 配置信息 */
     log_cycle_t *log;               /* 日志对象 */
     avl_tree_t *reg;                /* 函数注册表 */
@@ -83,7 +85,7 @@ typedef struct _acc_cntx_t {
     queue_t **connq;                /* 连接队列(注:数组长度与Agent相等) */
     ring_t **sendq;                 /* 发送队列(注:数组长度与Agent相等) */
     queue_t **kickq;                /* 踢人队列(注:数组长度与Agent相等) */
-} acc_cntx_t;
+};
 
 #define ACC_GET_NODE_ID(ctx) ((ctx)->conf->nid)
 

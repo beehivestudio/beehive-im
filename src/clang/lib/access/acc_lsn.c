@@ -157,7 +157,7 @@ static int acc_lsvr_accept(acc_cntx_t *ctx, acc_lsvr_t *lsvr)
     spin_unlock(&ctx->listen.accept_lock); /* 解锁 */
 
     /* > 将通信套接字放入队列 */
-    idx = cid % ctx->conf->rsvr_num;
+    idx = ACC_GET_RID_BY_CID(ctx, cid);
 
     add = queue_malloc(ctx->connq[idx], sizeof(acc_add_sck_t));
     if (NULL == add) {

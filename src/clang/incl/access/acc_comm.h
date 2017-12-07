@@ -48,6 +48,13 @@ typedef struct
     uint64_t cid;           /* 踢人请求 */
 } acc_kick_req_t;
 
+/* KICK连接信息 */
+typedef struct 
+{
+    uint64_t cid;           /* 被踢连接ID */
+    void *addr;             /* 附加信息 */
+} acc_kick_item_t;
+
 /* 超时连接链表 */
 typedef struct
 {
