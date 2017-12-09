@@ -22,7 +22,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck);
 static int acc_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck);
 
 static int acc_rsvr_dist_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr);
-static socket_t *acc_push_into_send_list(acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t cid, void *addr);
+static socket_t *acc_push_into_send_list(acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t cid, acc_send_item_t *item);
 
 static int acc_rsvr_kick_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr);
 
@@ -44,8 +44,8 @@ static void acc_rsvr_kick_clean(acc_cntx_t *ctx, acc_rsvr_t *rsvr);
  **     _ctx: 全局对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.11.18 #
  ******************************************************************************/
 void *acc_rsvr_routine(void *_ctx)
@@ -137,8 +137,8 @@ static int agt_rsvr_recv_cmd_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sc
  **     idx: 线程索引
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.11.28 #
  ******************************************************************************/
 int acc_rsvr_init(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int idx)
@@ -205,6 +205,14 @@ int acc_rsvr_init(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int idx)
     return ACC_ERR;
 }
 
+/* 释放发送项内存 */
+static int acc_send_item_dealloc(void *pool, acc_send_item_t *item)
+{
+    FREE(item->data);
+    FREE(item);
+    return 0;
+}
+
 /******************************************************************************
  **函数名称: acc_rsvr_sck_dealloc
  **功    能: 释放SCK对象的空间
@@ -214,7 +222,7 @@ int acc_rsvr_init(acc_cntx_t *ctx, acc_rsvr_t *rsvr, int idx)
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 依次释放所有内存空间
- **注意事项:
+ **注意事项: 
  **作    者: # Qifeng.zou # 2015.07.22 21:39:05 #
  ******************************************************************************/
 static int acc_rsvr_sck_dealloc(void *pool, socket_t *sck)
@@ -222,7 +230,7 @@ static int acc_rsvr_sck_dealloc(void *pool, socket_t *sck)
     acc_socket_extra_t *extra = sck->extra;
 
     FREE(sck);
-    list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+    list_destroy(extra->send_list, (mem_dealloc_cb_t)acc_send_item_dealloc, NULL);
     FREE(extra);
 
     return 0;
@@ -236,7 +244,7 @@ static int acc_rsvr_sck_dealloc(void *pool, socket_t *sck)
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 依次释放所有内存空间
- **注意事项:
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.11.18 #
  ******************************************************************************/
 int acc_rsvr_destroy(acc_rsvr_t *rsvr)
@@ -251,12 +259,12 @@ int acc_rsvr_destroy(acc_rsvr_t *rsvr)
 /******************************************************************************
  **函数名称: acc_rsvr_self
  **功    能: 获取代理对象
- **输入参数:
+ **输入参数: 
  **     ctx: 全局信息
  **输出参数: NONE
  **返    回: 代理对象
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.11.26 #
  ******************************************************************************/
 static acc_rsvr_t *acc_rsvr_self(acc_cntx_t *ctx)
@@ -277,13 +285,13 @@ static acc_rsvr_t *acc_rsvr_self(acc_cntx_t *ctx)
 /******************************************************************************
  **函数名称: acc_rsvr_event_hdl
  **功    能: 事件通知处理
- **输入参数:
+ **输入参数: 
  **     ctx: 全局对象
  **     rsvr: 接收服务
  **输出参数: NONE
  **返    回: 代理对象
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.11.28 #
  ******************************************************************************/
 static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
@@ -345,13 +353,13 @@ static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 /******************************************************************************
  **函数名称: acc_rsvr_get_timeout_conn_list
  **功    能: 将超时连接加入链表
- **输入参数:
+ **输入参数: 
  **     node: 平衡二叉树结点
  **     timeout: 超时链表
  **输出参数: NONE
  **返    回: 代理对象
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.24 #
  ******************************************************************************/
 static int acc_rsvr_get_timeout_conn_list(
@@ -373,13 +381,13 @@ static int acc_rsvr_get_timeout_conn_list(
 /******************************************************************************
  **函数名称: acc_rsvr_conn_timeout
  **功    能: 删除超时连接
- **输入参数:
+ **输入参数: 
  **     ctx: 全局信息
  **     rsvr: 接收服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2015.06.11 15:02:33 #
  ******************************************************************************/
 static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
@@ -427,12 +435,12 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 /******************************************************************************
  **函数名称: acc_rsvr_timeout_hdl
  **功    能: 事件超时处理
- **输入参数:
+ **输入参数: 
  **     rsvr: 接收服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **     不必依次释放超时链表各结点的空间，只需一次性释放内存池便可释放所有空间.
  **作    者: # Qifeng.zou # 2016.11.28 #
  ******************************************************************************/
@@ -445,13 +453,13 @@ static int acc_rsvr_timeout_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 /******************************************************************************
  **函数名称: acc_rsvr_add_conn
  **功    能: 添加新的连接
- **输入参数:
+ **输入参数: 
  **     ctx: 全局信息
  **     rsvr: 接收服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
 static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
@@ -542,7 +550,7 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
                 log_error(rsvr->log, "Insert into avl failed! fd:%d cid:%lu",
                           sck->fd, extra->cid);
                 CLOSE(sck->fd);
-                list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+                list_destroy(extra->send_list, (mem_dealloc_cb_t)acc_send_item_dealloc, NULL);
                 FREE(extra->user);
                 FREE(sck->extra);
                 FREE(sck);
@@ -578,12 +586,13 @@ static int acc_rsvr_add_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
  **实现描述: 依次释放套接字对象各成员的空间
- **注意事项:
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.06 #
  ******************************************************************************/
 static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
 {
     struct epoll_event ev;
+    socket_snap_t *send = &sck->send;
     acc_socket_extra_t *extra = sck->extra;
 
     log_trace(rsvr->log, "fd:%d cid:%ld", sck->fd, extra->cid);
@@ -604,12 +613,14 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     CLOSE(sck->fd);
 
     /* > 回收内存空间 */
-    list_destroy(extra->send_list, (mem_dealloc_cb_t)mem_dealloc, NULL);
+    list_destroy(extra->send_list, (mem_dealloc_cb_t)acc_send_item_dealloc, NULL);
     if (sck->recv.addr) {
         mem_ref_decr(sck->recv.addr);
     }
     FREE(extra->user);
     FREE(extra);
+
+    FREE(send->addr);
     FREE(sck);
 
     --rsvr->conn_total;
@@ -626,8 +637,8 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **     per_packet_head_size: 报头的大小
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.01 #
  ******************************************************************************/
 static int acc_recv_head(acc_cntx_t *ctx,
@@ -658,7 +669,7 @@ static int acc_recv_head(acc_cntx_t *ctx,
         } else if ((n < 0) && (EAGAIN == errno)) {
             return ACC_SCK_AGAIN; /* 等待下次事件通知 */
         } else if (EINTR == errno) {
-            continue;
+            continue; 
         }
         log_error(rsvr->log, "errmsg:[%d] %s. fd:[%d]", errno, strerror(errno), sck->fd);
         return ACC_ERR;
@@ -674,8 +685,8 @@ static int acc_recv_head(acc_cntx_t *ctx,
  **     sck: SCK对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.12.02 #
  ******************************************************************************/
 static int acc_recv_body(acc_rsvr_t *rsvr, socket_t *sck)
@@ -721,7 +732,7 @@ static int acc_recv_body(acc_rsvr_t *rsvr, socket_t *sck)
  **     sck: SCK对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 
  **注意事项:
  **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
@@ -745,7 +756,7 @@ static int acc_recv_post_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **     sck: SCK对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 
  **注意事项: TODO: 此处理流程可进一步进行优化
  **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
@@ -847,8 +858,8 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **     sck: SCK对象
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016.09.17 #
  ******************************************************************************/
 static int acc_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
@@ -920,7 +931,7 @@ static int acc_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
  **     rsvr: 接收服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 
  **注意事项: 千万勿将共享变量参与MIN()三目运算, 否则可能出现严重错误!!!!且很难找出原因!
  **作    者: # Qifeng.zou # 2015-06-05 17:35:02 #
  ******************************************************************************/
@@ -954,10 +965,11 @@ static int acc_rsvr_dist_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             log_debug(ctx->log, "Pop data. addr:%p cid:%d", item->data, item->cid);
 
             /* > 发入发送列表 */
-            sck = acc_push_into_send_list(ctx, rsvr, item->cid, addr[idx]);
+            sck = acc_push_into_send_list(ctx, rsvr, item->cid, item); 
             if (NULL == sck) {
                 log_error(ctx->log, "Query socket failed! cid:%lu", item->cid);
-                FREE(addr[idx]);
+                FREE(item->data);
+                FREE(item);
                 continue;
             }
 
@@ -981,15 +993,15 @@ static int acc_rsvr_dist_send_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
  **     ctx: 全局对象
  **     rsvr: 接收服务
  **     cid: 会话ID
- **     addr: 需要发送的数据
+ **     item: 需要发送的数据信息
  **输出参数: NONE
  **返    回: 连接对象
- **实现描述:
- **注意事项:
+ **实现描述: 
+ **注意事项: 
  **作    者: # Qifeng.zou # 2016-07-24 22:49:02 #
  ******************************************************************************/
 static socket_t *acc_push_into_send_list(
-        acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t cid, void *addr)
+        acc_cntx_t *ctx, acc_rsvr_t *rsvr, uint64_t cid, acc_send_item_t *item)
 {
     socket_t *sck;
     acc_socket_extra_t *extra, key;
@@ -997,7 +1009,7 @@ static socket_t *acc_push_into_send_list(
     /* > 查询会话对象 */
     key.cid = cid;
 
-    extra = hash_tab_query(ctx->conn_cid_tab, &key, WRLOCK);
+    extra = hash_tab_query(ctx->conn_cid_tab, &key, RDLOCK);
     if (NULL == extra) {
         log_error(ctx->log, "Query connection by cid failed! cid:%lu", cid);
         return NULL;
@@ -1006,13 +1018,13 @@ static socket_t *acc_push_into_send_list(
     sck = extra->sck;
 
     /* > 放入发送列表 */
-    if (list_rpush(extra->send_list, addr)) {
-        hash_tab_unlock(ctx->conn_cid_tab, &key, WRLOCK);
+    if (list_rpush(extra->send_list, (void *)item)) {
+        hash_tab_unlock(ctx->conn_cid_tab, &key, RDLOCK);
         log_error(ctx->log, "Push data into send list failed! cid:%lu", cid);
         return NULL;
     }
 
-    hash_tab_unlock(ctx->conn_cid_tab, &key, WRLOCK);
+    hash_tab_unlock(ctx->conn_cid_tab, &key, RDLOCK);
 
     return sck;
 }
@@ -1025,7 +1037,7 @@ static socket_t *acc_push_into_send_list(
  **     rsvr: 接收服务
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 
  **注意事项: 千万勿将共享变量参与MIN()三目运算, 否则可能出现严重错误!!!!且很难找出原因!
  **作    者: # Qifeng.zou # 2016-10-01 19:08:57 #
  ******************************************************************************/
@@ -1090,7 +1102,7 @@ static int acc_rsvr_kick_cmp_cb(acc_kick_item_t *item1, acc_kick_item_t *item2)
  **     cid: 被踢连接ID
  **输出参数: NONE
  **返    回: true:被踢 false:未被踢
- **实现描述:
+ **实现描述: 
  **注意事项:
  **作    者: # Qifeng.zou # 2017-12-07 11:23:02 #
  ******************************************************************************/
@@ -1111,7 +1123,7 @@ static bool acc_rsvr_is_kicked(acc_rsvr_t *rsvr, uint64_t cid)
  **     cid: 被踢连接ID
  **输出参数: NONE
  **返    回: 0:成功 !0:失败
- **实现描述:
+ **实现描述: 
  **注意事项:
  **作    者: # Qifeng.zou # 2017-12-07 11:23:02 #
  ******************************************************************************/
@@ -1143,7 +1155,7 @@ static int acc_rsvr_kick_add(acc_rsvr_t *rsvr, uint64_t cid)
  **     cid: 被踢连接ID
  **输出参数: NONE
  **返    回: true:被踢 false:未被踢
- **实现描述:
+ **实现描述: 
  **注意事项:
  **作    者: # Qifeng.zou # 2017-12-07 11:23:02 #
  ******************************************************************************/
@@ -1174,6 +1186,7 @@ static int acc_rsvr_kick_trav_cb(acc_kick_item_t *item, acc_rsvr_kick_trav_args_
     acc_rsvr_t *rsvr = args->rsvr;
     list_t *list = args->cid_list;
     acc_socket_extra_t key, *extra;
+    
 
     /* > 查询会话对象 */
     key.cid = item->cid;
@@ -1201,7 +1214,7 @@ static int acc_rsvr_kick_trav_cb(acc_kick_item_t *item, acc_rsvr_kick_trav_args_
  **     rsvr: 接收服务
  **输出参数: NONE
  **返    回: NONE
- **实现描述:
+ **实现描述: 
  **注意事项: 此操作必须放在事件检测之后, 否则将导致epoll访问被释放的空间.
  **作    者: # Qifeng.zou # 2017-12-07 11:45:01 #
  ******************************************************************************/
