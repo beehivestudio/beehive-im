@@ -42,7 +42,7 @@ typedef struct
 {
     int id;                             /* 对象ID */
     void *ctx;                          /* 存储rtmq_proxy_t对象 */
-    queue_t *sendq;                     /* 发送缓存 */
+    ring_t *sendq;                     /* 发送缓存 */
     log_cycle_t *log;                   /* 日志对象 */
     char ipaddr[IP_ADDR_MAX_LEN];       /* IP地址 */
     int port;                           /* 服务端端口 */

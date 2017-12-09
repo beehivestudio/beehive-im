@@ -53,7 +53,7 @@ static int rtmq_proxy_tsvr_del_conn(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr, 
  **作    者: # Qifeng.zou # 2015.01.14, 2017-07-20 15:31:33 #
  ******************************************************************************/
 int rtmq_proxy_tsvr_init(rtmq_proxy_t *pxy, rtmq_proxy_tsvr_t *tsvr,
-        int idx, const char *ipaddr, int port, queue_t *sendq, pipe_t *pipe)
+        int idx, const char *ipaddr, int port, ring_t *sendq, pipe_t *pipe)
 {
     void *addr;
     struct epoll_event ev;
@@ -393,7 +393,8 @@ static int rtmq_proxy_tsvr_recv_proc(
             }
             continue;
         } else if (0 == n) {
-            log_error(tsvr->log, "Server disconnected. fd:%d n:%d/%d", sck->fd, n, left);
+            log_error(tsvr->log, "Server disconnected. errmsg:[%d] %s! fd:%d n:%d/%d",
+                    errno, strerror(errno), sck->fd, n, left);
             return RTMQ_SCK_DISCONN;
         } else if ((n < 0) && (EAGAIN == errno)) {
             return RTMQ_AGAIN; /* Again */
@@ -617,13 +618,13 @@ static int rtmq_proxy_tsvr_wiov_add(rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *s
     for (;;) {
         /* > 判断剩余空间(WARNNING: 勿将共享变量参与三目运算, 否则可能出现严重错误!!!) */
         num = MIN(wiov_left_space(send), RTSD_POP_NUM);
-        num = MIN(num, queue_used(tsvr->sendq));
+        num = MIN(num, ring_used(tsvr->sendq));
         if (0 == num) {
             break; /* 空间不足 */
         }
 
         /* > 弹出发送数据 */
-        num = queue_mpop(tsvr->sendq, data, num);
+        num = ring_mpop(tsvr->sendq, data, num);
         if (0 == num) {
             continue;
         }
@@ -643,7 +644,7 @@ static int rtmq_proxy_tsvr_wiov_add(rtmq_proxy_tsvr_t *tsvr, rtmq_proxy_sck_t *s
             RTMQ_HEAD_HTON(head, head);
 
             /* > 设置发送数据 */
-            wiov_item_add(send, head, len, tsvr->sendq, queue_dealloc, queue_dealloc);
+            wiov_item_add(send, head, len, tsvr->sendq, mem_dealloc, mem_dealloc);
         }
     }
 
@@ -789,32 +790,26 @@ static int rtmq_proxy_tsvr_exp_mesg_proc(
 
     /* > 验证长度 */
     len = RTMQ_DATA_TOTAL_LEN(head);
-    if ((int)len > queue_size(pxy->recvq[0])) {
-        ++tsvr->drop_total;
-        log_error(pxy->log, "Data is too long! len:%d drop:%lu total:%lu",
-                len, tsvr->drop_total, tsvr->recv_total);
-        return RTMQ_ERR_TOO_LONG;
-    }
 
    /* > 申请空间 */
     idx = rand() % pxy->conf.work_thd_num;
 
-    data = queue_malloc(pxy->recvq[idx], len);
+    data = (void *)calloc(1, len);
     if (NULL == data) {
         ++tsvr->drop_total;
-        log_error(pxy->log, "Alloc from queue failed! drop:%lu recv:%lu size:%d/%d",
-                tsvr->drop_total, tsvr->recv_total, len, queue_size(pxy->recvq[idx]));
+        log_error(pxy->log, "Alloc memory failed! drop:%lu recv:%lu len:%d",
+                tsvr->drop_total, tsvr->recv_total, len);
         return RTMQ_ERR;
     }
 
     /* > 放入队列 */
     memcpy(data, addr, len);
 
-    if (queue_push(pxy->recvq[idx], data)) {
+    if (ring_push(pxy->recvq[idx], data)) {
         ++tsvr->drop_total;
         log_error(pxy->log, "Push into queue failed! len:%d drop:%lu total:%lu",
                 len, tsvr->drop_total, tsvr->recv_total);
-        queue_dealloc(pxy->recvq[idx], data);
+        free(data);
         return RTMQ_ERR;
     }
 

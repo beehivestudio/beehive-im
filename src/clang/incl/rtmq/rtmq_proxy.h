@@ -47,16 +47,16 @@ typedef struct
     avl_tree_t *reg;                    /* 回调注册对象(注: 存储rtmq_reg_t数据) */
 
     pipe_t *work_cmd_fd;                /* 工作线程通信FD */
-    queue_t **recvq;                    /* 接收队列(数组长度与conf->send_thd_num一致) */
+    ring_t **recvq;                     /* 接收队列(数组长度与conf->send_thd_num一致) */
 
     pipe_t *send_cmd_fd;                /* 发送线程通信FD */
-    queue_t **sendq;                    /* 发送缓存(数组长度与conf->send_thd_num一致) */
+    ring_t **sendq;                     /* 发送缓存(数组长度与conf->send_thd_num一致) */
 } rtmq_proxy_t;
 
 /* 内部接口 */
 int rtmq_proxy_tsvr_init(rtmq_proxy_t *pxy,
         rtmq_proxy_tsvr_t *tsvr, int tidx,
-        const char *ipaddr, int port, queue_t *sendq, pipe_t *pipe);
+        const char *ipaddr, int port, ring_t *sendq, pipe_t *pipe);
 void *rtmq_proxy_tsvr_routine(void *_ctx);
 
 int rtmq_proxy_worker_init(rtmq_proxy_t *pxy, rtmq_worker_t *worker, int tidx);

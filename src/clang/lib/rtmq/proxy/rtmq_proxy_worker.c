@@ -215,7 +215,7 @@ static int rtmq_proxy_worker_cmd_proc_req_hdl(rtmq_proxy_t *pxy, rtmq_worker_t *
 #define RTSD_WORK_POP_NUM   (1024)
     int idx, num;
     void *addr[RTSD_WORK_POP_NUM];
-    queue_t *rq;
+    ring_t *rq;
     rtmq_reg_t *reg, key;
     rtmq_header_t *head;
     const rtmq_cmd_proc_req_t *work_cmd = (const rtmq_cmd_proc_req_t *)&cmd->param;
@@ -225,12 +225,12 @@ static int rtmq_proxy_worker_cmd_proc_req_hdl(rtmq_proxy_t *pxy, rtmq_worker_t *
 
     while (1) {
         /* > 从接收队列获取数据 */
-        num = MIN(queue_used(rq), RTSD_WORK_POP_NUM);
+        num = MIN(ring_used(rq), RTSD_WORK_POP_NUM);
         if (0 == num) {
             return RTMQ_OK;
         }
 
-        num = queue_mpop(rq, addr, num);
+        num = ring_mpop(rq, addr, num);
         if (0 == num) {
             continue;
         }
@@ -251,7 +251,7 @@ static int rtmq_proxy_worker_cmd_proc_req_hdl(rtmq_proxy_t *pxy, rtmq_worker_t *
                     ++worker->drop_total;   /* 丢弃计数 */
                     log_trace(worker->log, "Drop message! type:0x%04X total:%d!",
                             head->type, worker->drop_total);
-                    queue_dealloc(rq, addr[idx]);
+                    free(addr[idx]);
                     continue;
                 }
             }
@@ -264,7 +264,7 @@ static int rtmq_proxy_worker_cmd_proc_req_hdl(rtmq_proxy_t *pxy, rtmq_worker_t *
             }
 
             /* > 释放内存空间 */
-            queue_dealloc(rq, addr[idx]);
+            free(addr[idx]);
         }
     }
 

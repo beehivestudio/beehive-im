@@ -180,7 +180,7 @@ static int rtmq_proxy_creat_recvq(rtmq_proxy_t *pxy)
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 创建队列对象 */
-    pxy->recvq = (queue_t **)calloc(conf->work_thd_num, sizeof(queue_t *));
+    pxy->recvq = (ring_t **)calloc(conf->work_thd_num, sizeof(ring_t *));
     if (NULL == pxy->recvq) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
@@ -188,7 +188,7 @@ static int rtmq_proxy_creat_recvq(rtmq_proxy_t *pxy)
 
     /* > 创建接收队列 */
     for (idx=0; idx<conf->work_thd_num; ++idx) {
-        pxy->recvq[idx] = queue_creat(conf->recvq.max, conf->recvq.size);
+        pxy->recvq[idx] = ring_creat(conf->recvq.max);
         if (NULL == pxy->recvq[idx]) {
             log_error(pxy->log, "Create recvq failed!");
             return RTMQ_ERR;
@@ -215,7 +215,7 @@ static int rtmq_proxy_creat_sendq(rtmq_proxy_t *pxy)
     rtmq_proxy_conf_t *conf = &pxy->conf;
 
     /* > 创建队列对象 */
-    pxy->sendq = (queue_t **)calloc(conf->send_thd_num, sizeof(queue_t *));
+    pxy->sendq = (ring_t **)calloc(conf->send_thd_num, sizeof(ring_t *));
     if (NULL == pxy->sendq) {
         log_error(pxy->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return RTMQ_ERR;
@@ -223,7 +223,7 @@ static int rtmq_proxy_creat_sendq(rtmq_proxy_t *pxy)
 
     /* > 创建发送队列 */
     for (idx=0; idx<conf->send_thd_num; ++idx) {
-        pxy->sendq[idx] = queue_creat(conf->sendq.max, conf->sendq.size);
+        pxy->sendq[idx] = ring_creat(conf->sendq.max);
         if (NULL == pxy->sendq[idx]) {
             log_error(pxy->log, "Create send queue failed!");
             return RTMQ_ERR;
@@ -450,10 +450,10 @@ int rtmq_proxy_async_send(rtmq_proxy_t *pxy, int type, const void *data, size_t 
     /* > 选择发送队列 */
     idx = (num++) % conf->send_thd_num;
 
-    addr = queue_malloc(pxy->sendq[idx], sizeof(rtmq_header_t)+size);
+    addr = malloc(sizeof(rtmq_header_t) + size);
     if (NULL == addr) {
-        log_error(pxy->log, "Alloc from queue failed! size:%d/%d",
-                size+sizeof(rtmq_header_t), queue_size(pxy->sendq[idx]));
+        log_error(pxy->log, "Alloc memory failed! errmsg:[%d] %s!",
+                errno, strerror(errno));
         return RTMQ_ERR;
     }
 
@@ -468,13 +468,13 @@ int rtmq_proxy_async_send(rtmq_proxy_t *pxy, int type, const void *data, size_t 
 
     memcpy(head+1, data, size);
 
-    log_debug(pxy->log, "rq:%p Head type:0x%04X nid:%d length:%d flag:%d chksum:%d!",
-            pxy->sendq[idx]->ring, head->type, head->nid, head->length, head->flag, head->chksum);
+    log_debug(pxy->log, "Head type:0x%04X nid:%d length:%d flag:%d chksum:%d!",
+            head->type, head->nid, head->length, head->flag, head->chksum);
 
     /* > 放入发送队列 */
-    if (queue_push(pxy->sendq[idx], addr)) {
+    if (ring_push(pxy->sendq[idx], addr)) {
         log_error(pxy->log, "Push into shmq failed!");
-        queue_dealloc(pxy->sendq[idx], addr);
+        free(addr);
         return RTMQ_ERR;
     }
 
