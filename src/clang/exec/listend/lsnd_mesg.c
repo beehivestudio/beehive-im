@@ -49,7 +49,6 @@ int lsnd_mesg_def_handler(lsnd_conn_extra_t *conn, unsigned int type, void *data
     head->cid = conn->cid;
     head->nid = conn->nid;
 
-
     log_debug(lsnd->log, "Call default handler! type:0x%04X sid:%lu cid:%d nid:%d seq:%lu len:%d!",
             head->type, head->sid, head->cid, head->nid, head->seq, len);
 
@@ -139,24 +138,26 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     key.sid = ack->sid;
     key.cid = cid;
 
-    extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK);
+    extra = hash_tab_query(lsnd->conn_list, &key, RDLOCK);
     if (NULL == extra) {
         log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu", ack->sid, cid);
         return -1;
     } else if (CHAT_CONN_STAT_ESTABLISH != extra->stat) {
         log_error(lsnd->log, "Connection status isn't establish! sid:%lu cid:%lu", ack->sid, cid);
         lsnd_kick_add(lsnd, extra);
-        hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
+        hash_tab_unlock(lsnd->conn_list, &key, RDLOCK);
         return -1;
     } else if (0 == ack->sid) { /* SID分配失败 */
         lsnd_kick_add(lsnd, extra);
-        hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
+        hash_tab_unlock(lsnd->conn_list, &key, RDLOCK);
         log_error(lsnd->log, "Alloc sid failed! kick this connection! sid:%lu cid:%lu errmsg:%s",
                 ack->sid, cid, ack->errmsg);
         return -1;
     }
 
     /* > 更新扩展数据 */
+    pthread_rwlock_wrlock(&extra->lock); /* 加锁 */
+
     extra->sid = ack->sid;
     extra->seq = ack->seq;
     extra->stat = CHAT_CONN_STAT_ONLINE;
@@ -165,17 +166,19 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
     extra->terminal = ack->terminal;
 
-    hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
+    pthread_rwlock_unlock(&extra->lock); /* 加锁 */
+
+    hash_tab_unlock(lsnd->conn_list, &key, RDLOCK);
 
     /* > 踢除老连接 */
     old_cid = chat_get_cid_by_sid(lsnd->chat_tab, key.sid);
     if ((0 != old_cid) && (old_cid != cid)) {
         key.sid = key.sid;
         key.cid = old_cid;
-        old_extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK);
+        old_extra = hash_tab_query(lsnd->conn_list, &key, RDLOCK);
         if (NULL != old_extra) {
             lsnd_kick_add(lsnd, old_extra);
-            hash_tab_unlock(lsnd->conn_list, &key, WRLOCK);
+            hash_tab_unlock(lsnd->conn_list, &key, RDLOCK);
         }
     }
 
