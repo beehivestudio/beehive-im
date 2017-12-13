@@ -224,11 +224,15 @@ int lsnd_kick_add(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
         return -1;
     }
 
+    pthread_rwlock_wrlock(&conn->lock); /* 加锁 */
+
     conn->stat = CHAT_CONN_STAT_KICK;
     conn->kick_ttl = time(NULL) + LSND_KICK_TTL;
 
     item->cid = conn->cid;
     item->ttl = conn->kick_ttl;
+
+    pthread_rwlock_unlock(&conn->lock); /* 解锁 */
 
     hash_tab_insert(ctx->kick_list, item, WRLOCK);
 

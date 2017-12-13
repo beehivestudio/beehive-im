@@ -308,6 +308,7 @@ static int lsnd_set_reg(lsnd_cntx_t *ctx)
     }
 
     LSND_ACC_REG_CB(ctx, CMD_UNKNOWN, lsnd_mesg_def_handler, ctx); /* 默认处理 */
+
     // 通用消息
     LSND_ACC_REG_CB(ctx, CMD_ONLINE, lsnd_mesg_online_handler, ctx);
     LSND_ACC_REG_CB(ctx, CMD_OFFLINE, lsnd_mesg_offline_handler, ctx);

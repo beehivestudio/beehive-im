@@ -166,7 +166,7 @@ static int lsnd_mesg_online_ack_logic(lsnd_cntx_t *lsnd, MesgOnlineAck *ack, uin
     snprintf(extra->app_vers, sizeof(extra->app_vers), "%s", ack->version);
     extra->terminal = ack->terminal;
 
-    pthread_rwlock_unlock(&extra->lock); /* 加锁 */
+    pthread_rwlock_unlock(&extra->lock); /* 解锁 */
 
     hash_tab_unlock(lsnd->conn_list, &key, RDLOCK);
 
@@ -286,15 +286,16 @@ int lsnd_mesg_offline_handler(lsnd_conn_extra_t *conn, int type, void *data, int
     key.sid = hhead.sid;
     key.cid = conn->cid;
 
-    extra = hash_tab_query(lsnd->conn_list, &key, WRLOCK); // 加写锁
+    extra = hash_tab_query(lsnd->conn_list, &key, RDLOCK); // 加锁
     if (NULL == extra) {
-        log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu", hhead.sid, conn->cid);
+        log_error(lsnd->log, "Didn't find connection! sid:%lu cid:%lu",
+                hhead.sid, conn->cid);
         return -1;
     }
 
-    extra->stat = CHAT_CONN_STAT_OFFLINE;
+    atomic32_set(&extra->stat, CHAT_CONN_STAT_OFFLINE);
 
-    hash_tab_unlock(lsnd->conn_list, &key, WRLOCK); // 解锁
+    hash_tab_unlock(lsnd->conn_list, &key, RDLOCK); // 解锁
 
     /* > 发送数据 */
     rtmq_proxy_async_send(lsnd->frwder, CMD_OFFLINE, data, len);
