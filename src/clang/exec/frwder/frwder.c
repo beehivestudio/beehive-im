@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
 
     umask(0);
     mem_ref_init();
+    signal(SIGPIPE, SIG_IGN);
 
     /* > 初始化日志 */
     log = frwd_init_log(FRWD_MOD_NAME, opt.log_level);
