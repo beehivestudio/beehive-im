@@ -65,6 +65,7 @@ int main(int argc, char *argv[])
 
     umask(0);
     mem_ref_init();
+    signal(SIGPIPE, SIG_IGN);
 
     do {
         /* > 初始化日志 */
