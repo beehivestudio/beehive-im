@@ -186,7 +186,6 @@ int mem_ref_incr(void *addr)
         hash_tab_unlock(tab, &key, RDLOCK);
         return cnt;
     }
-    hash_tab_unlock(tab, &key, RDLOCK);
 
     return -1; // 未创建结点
 }
