@@ -15,6 +15,7 @@
 
 /* 静态函数 */
 static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn);
+static int rtmq_add_sck_notify(rtmq_cntx_t *ctx, int idx);
 
 /******************************************************************************
  **函数名称: rtmq_lsn_routine
@@ -119,7 +120,6 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
 {
     int fd, idx;
     socklen_t len;
-    rtmq_cmd_t cmd;
     rtmq_conn_item_t *item;
     struct sockaddr_in cliaddr;
     rtmq_conf_t *conf = &ctx->conf;
@@ -149,8 +149,11 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
     item = queue_malloc(ctx->connq[idx], sizeof(rtmq_conn_item_t));
     if (NULL == item) {
         close(fd);
+        rtmq_add_sck_notify(ctx, idx);
+
         log_error(lsn->log, "Alloc from conn queue failed! idx:%d size:%d|%d",
                 idx, queue_space(ctx->connq[idx]), sizeof(rtmq_conn_item_t));
+
         return RTMQ_ERR;
     }
 
@@ -162,14 +165,38 @@ static int rtmq_lsn_accept(rtmq_cntx_t *ctx, rtmq_listen_t *lsn)
     queue_push(ctx->connq[idx], item);
 
     /* 3. 发送信号给接收服务 */
-    memset(&cmd, 0, sizeof(cmd));
-
-    cmd.type = RTMQ_CMD_ADD_SCK;
-
-    pipe_write(&ctx->recv_cmd_fd[idx], &cmd, sizeof(cmd));
+    rtmq_add_sck_notify(ctx, idx);
 
     log_trace(lsn->log, "Accept new connection! idx:%d sid:%lu fd:%d ip:%s",
             idx, lsn->sid, fd, item->ipaddr);
 
+    return RTMQ_OK;
+}
+
+/******************************************************************************
+ **函数名称: rtmq_add_sck_notify
+ **功    能: 发送添加连接的通知
+ **输入参数:
+ **     ctx: 全局对象
+ **     idx: 服务序列号
+ **输出参数: NONE
+ **返    回: 0:成功 !0:失败
+ **实现描述:
+ **注意事项:
+ **作    者: # Qifeng.zou # 2017.12.25 #
+ ******************************************************************************/
+static int rtmq_add_sck_notify(rtmq_cntx_t *ctx, int idx)
+{
+    rtmq_cmd_t cmd;
+
+    memset(&cmd, 0, sizeof(cmd));
+
+    cmd.type = RTMQ_CMD_ADD_SCK;
+
+    if (pipe_write(&ctx->recv_cmd_fd[idx], &cmd, sizeof(cmd)) < 0) {
+        log_error(ctx->log, "Send add-sck command failed! idx:%d errmsg:[%d] %s",
+                idx, errno, strerror(errno));
+        return RTMQ_ERR;
+    }
     return RTMQ_OK;
 }
