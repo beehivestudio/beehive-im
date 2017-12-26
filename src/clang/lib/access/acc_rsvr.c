@@ -308,7 +308,7 @@ static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 
         extra = (acc_socket_extra_t *)sck->extra;
         if (acc_rsvr_is_kicked(rsvr, extra->cid)) {
-            log_info(rsvr->log, "Connection was kicked! fd:%d cid:%lu", sck->fd, extra->cid);
+            log_error(rsvr->log, "Connection was kicked! fd:%d cid:%lu", sck->fd, extra->cid);
             acc_rsvr_kick_del(rsvr, extra->cid);
             acc_rsvr_del_conn(ctx, rsvr, sck);
             continue;
@@ -319,7 +319,7 @@ static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             /* 接收网络数据 */
             ret = sck->recv_cb(ctx, rsvr, sck);
             if (ACC_SCK_AGAIN != ret) {
-                log_info(rsvr->log, "Delete connection! fd:%d", sck->fd);
+                log_error(rsvr->log, "Recv data failed! fd:%d", sck->fd);
                 acc_rsvr_del_conn(ctx, rsvr, sck);
                 continue; /* 异常-关闭SCK: 不必判断是否可写 */
             }
@@ -330,7 +330,7 @@ static int acc_rsvr_event_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             /* 发送网络数据 */
             ret = sck->send_cb(ctx, rsvr, sck);
             if (ACC_ERR == ret) {
-                log_info(rsvr->log, "Delete connection! fd:%d", sck->fd);
+                log_error(rsvr->log, "Send data failed! fd:%d", sck->fd);
                 acc_rsvr_del_conn(ctx, rsvr, sck);
                 continue; /* 异常: 套接字已关闭 */
             }
@@ -394,6 +394,7 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 {
     socket_t *sck;
     acc_socket_extra_t key;
+    acc_socket_extra_t *extra;
     acc_conn_timeout_list_t timeout;
 
     memset(&timeout, 0, sizeof(timeout));
@@ -422,6 +423,10 @@ static int acc_rsvr_conn_timeout(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
             if (NULL == sck) {
                 break;
             }
+
+            extra = sck->extra;
+
+            acc_rsvr_kick_del(rsvr, extra->cid);
             acc_rsvr_del_conn(ctx, rsvr, sck);
         }
     } while(0);
@@ -663,7 +668,7 @@ static int acc_recv_head(acc_cntx_t *ctx,
             recv->off += n;
             continue;
         } else if (0 == n || ECONNRESET == errno) {
-            log_info(rsvr->log, "Client disconnected. errmsg:[%d] %s! fd:[%d] n:[%d/%d]",
+            log_error(rsvr->log, "Client disconnected. errmsg:[%d] %s! fd:[%d] n:[%d/%d]",
                     errno, strerror(errno), sck->fd, n, left);
             return ACC_SCK_CLOSE;
         } else if ((n < 0) && (EAGAIN == errno)) {
@@ -804,6 +809,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                     case ACC_SCK_AGAIN:
                         return ret; /* 下次继续处理 */
                     default:
+                        log_error(rsvr->log, "Recv head failed. cid:%lu", extra->cid);
                         mem_ref_decr(recv->addr);
                         recv->addr = NULL;
                         return ret; /* 异常情况 */
@@ -827,6 +833,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                     case ACC_SCK_AGAIN:
                         return ret; /* 下次继续处理 */
                     default:
+                        log_error(rsvr->log, "Recv body failed. cid:%lu", extra->cid);
                         mem_ref_decr(recv->addr);
                         recv->addr = NULL;
                         return ret; /* 异常情况 */
@@ -843,6 +850,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                     recv->addr = NULL;
                     continue; /* 接收下一条数据 */
                 }
+                log_error(rsvr->log, "Post data failed. cid:%lu", extra->cid);
                 return ACC_ERR;
         }
     }
@@ -1073,6 +1081,7 @@ static int acc_rsvr_kick_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 
             extra = hash_tab_query(ctx->conn_cid_tab, &key, RDLOCK);
             if (NULL == extra) {
+                log_error(rsvr->log, "Add cid[%lu] to kick list failed!", kick->cid);
                 continue;
             }
 
@@ -1131,8 +1140,9 @@ static int acc_rsvr_kick_add(acc_rsvr_t *rsvr, uint64_t cid)
 {
     acc_kick_item_t *key;
 
-    key = calloc(1, sizeof(acc_kick_item_t));
+    key = (acc_kick_item_t *)calloc(1, sizeof(acc_kick_item_t));
     if (NULL == key) {
+        log_error(rsvr->log, "errmsg:[%d] %s!", errno, strerror(errno));
         return -1;
     }
 
@@ -1141,11 +1151,11 @@ static int acc_rsvr_kick_add(acc_rsvr_t *rsvr, uint64_t cid)
 
     if (rbt_insert(rsvr->kick_list, key)) {
         free(key);
+        log_error(rsvr->log, "Add cid[%lu] to kick list failed!", cid);
         return -1;
     }
     return 0;
 }
-
 
 /******************************************************************************
  **函数名称: acc_rsvr_kick_del
