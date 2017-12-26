@@ -50,28 +50,26 @@ int main(int argc, char *argv[])
     lsnd_conf_t conf;
     log_cycle_t *log;
     lsnd_cntx_t *ctx = NULL;
-    char path[FILE_PATH_MAX_LEN];
+
+    signal(SIGPIPE, SIG_IGN);
 
     /* > 解析输入参数 */
     if (lsnd_getopt(argc, argv, &opt)) {
         return lsnd_usage(argv[0]);
     } else if (opt.isdaemon) {
         /* int daemon(int nochdir, int noclose);
-         *  1． daemon()函数主要用于希望脱离控制台,以守护进程形式在后台运行的程序.
-         *  2． 当nochdir为0时,daemon将更改进程的根目录为root(“/”).
-         *  3． 当noclose为0是,daemon将进程的STDIN, STDOUT, STDERR都重定向到/dev/null */
+         *  1. daemon()函数主要用于希望脱离控制台,以守护进程形式在后台运行的程序.
+         *  2. 当nochdir为0时,daemon将更改进程的根目录为root(“/”).
+         *  3. 当noclose为0是,daemon将进程的STDIN, STDOUT, STDERR都重定向到/dev/null */
         daemon(1, 1);
     }
 
     umask(0);
     mem_ref_init();
-    signal(SIGPIPE, SIG_IGN);
 
     do {
         /* > 初始化日志 */
-        log_get_path(path, sizeof(path), LSND_MOD_NAME);
-
-        log = log_init(opt.log_level, path);
+        log = log_init(opt.log_level, opt.log_path);
         if (NULL == log) {
             fprintf(stderr, "errmsg:[%d] %s!\n", errno, strerror(errno));
             goto LSND_INIT_ERR;
@@ -102,7 +100,7 @@ int main(int argc, char *argv[])
             goto LSND_INIT_ERR;
         }
 
-        while (1) { pause(); }
+        while (1) { Sleep(3600); }
     } while(0);
 
 LSND_INIT_ERR:

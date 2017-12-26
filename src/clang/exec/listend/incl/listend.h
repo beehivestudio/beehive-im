@@ -43,6 +43,7 @@ typedef struct
     int log_level;                          /* 日志级别 */
     bool isdaemon;                          /* 是否后台运行 */
     char *conf_path;                        /* 配置路径 */
+    char log_path[FILE_PATH_MAX_LEN];       /* 日志路径 */
 } lsnd_opt_t;
 
 typedef struct _lsnd_cntx_t lsnd_cntx_t;
