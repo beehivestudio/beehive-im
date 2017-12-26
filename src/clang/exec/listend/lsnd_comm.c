@@ -196,8 +196,10 @@ void lsnd_timer_kick_handler(void *_ctx)
 
         acc_async_kick(ctx->access, (uint64_t)cid);
 
-        log_debug(ctx->log, "Async kick cid:%d", cid);
+        log_error(ctx->log, "Async kick cid:%lu", cid);
     }
+
+    list_destroy(timeout_list, (mem_dealloc_cb_t)mem_dummy_dealloc, NULL);
 
     return;
 }
@@ -218,7 +220,7 @@ int lsnd_kick_add(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 {
     lsnd_kick_item_t *item;
 
-    item = calloc(1, sizeof(lsnd_kick_item_t));
+    item = (lsnd_kick_item_t *)calloc(1, sizeof(lsnd_kick_item_t));
     if (NULL == item) {
         log_error(ctx->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
         return -1;
@@ -234,7 +236,12 @@ int lsnd_kick_add(lsnd_cntx_t *ctx, lsnd_conn_extra_t *conn)
 
     pthread_rwlock_unlock(&conn->lock); /* 解锁 */
 
-    hash_tab_insert(ctx->kick_list, item, WRLOCK);
+    if (hash_tab_insert(ctx->kick_list, item, WRLOCK)) {
+        free(item);
+        log_error(ctx->log, "Connection in kick list! sid:%lu cid:%lu",
+                conn->sid, conn->cid);
+        return 0;
+    }
 
     return 0;
 }
