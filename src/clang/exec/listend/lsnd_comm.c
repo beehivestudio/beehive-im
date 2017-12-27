@@ -82,6 +82,7 @@ int lsnd_usage(const char *exec)
     printf("\t-c: Configuration path\n"
             "\t-l: Log level. range:[error|warn|info|debug|trace]\n"
             "\t-h: Show help\n"
+            "\t-o: Output file\n"
             "\t-d: Run as daemon\n\n");
     return 0;
 }
