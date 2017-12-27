@@ -20,16 +20,15 @@
  **输出参数:
  **返    回: 0:成功 !0:失败
  **实现描述:
- **注意事项: max必须为2的n次方
+ **注意事项: max必须为2^n值. 如果max不是2^n值, 则取比起max大的2^n作为值.
  **作    者: # Qifeng.zou # 2014.05.04 #
  ******************************************************************************/
 ring_t *ring_creat(int max)
 {
     ring_t *rq;
 
-    /* > max必须为2的n次方 */
-    if (!ISPOWEROF2(max)) { return NULL; }
-
+    max = power2(max); /* > max必须为2的n次方 */
+        
     /* > 申请内存空间 */
     rq = (ring_t *)calloc(1, sizeof(ring_t));
     if (NULL == rq) {

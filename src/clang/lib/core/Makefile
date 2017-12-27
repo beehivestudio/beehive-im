@@ -15,7 +15,8 @@ LIBS_PATH = -L$(PROJ)/lib
 LIBS = -lpthread
 LIBS += $(SHARED_LIB)
 
-SRC_LIST = log.c \
+SRC_LIST = comm.c \
+			log.c \
 			slot.c \
 			lock.c \
 			http.c \

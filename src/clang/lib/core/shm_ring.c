@@ -22,10 +22,7 @@
  ******************************************************************************/
 size_t shm_ring_total(int max)
 {
-    /* > max必须为2的n次方 */
-    if (!ISPOWEROF2(max)) {
-        return (size_t)-1;
-    }
+    max = power2(max); /* > max必须为2的n次方 */
 
     return sizeof(shm_ring_t) + max * sizeof(off_t);
 }

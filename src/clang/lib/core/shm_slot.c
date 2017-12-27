@@ -24,10 +24,7 @@
  ******************************************************************************/
 size_t shm_slot_total(int num, size_t size)
 {
-    /* > max必须为2的n次方 */
-    if (!ISPOWEROF2(num)) {
-        return (size_t)-1;
-    }
+    num = power2(num);
 
     return sizeof(shm_slot_t) + shm_ring_total(num) + num * size;
 }
