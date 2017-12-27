@@ -32,6 +32,7 @@ int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt)
         , {"daemon",                no_argument,        NULL, 'd'}
         , {"log-level",             required_argument,  NULL, 'l'}
         , {"configuration path",    required_argument,  NULL, 'c'}
+        , {"output path",           required_argument,  NULL, 'o'}
         , {NULL,                    0,                  NULL, 0}
     };
 
@@ -40,9 +41,10 @@ int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt)
     opt->isdaemon = false;
     opt->log_level = LOG_LEVEL_TRACE;
     opt->conf_path = "../conf/listend.xml";
+    snprintf(opt->log_path, sizeof(opt->log_path), "./listend.log");
 
     /* 1. 解析输入参数 */
-    while (-1 != (ch = getopt_long(argc, argv, "l:c:hd", opts, NULL))) {
+    while (-1 != (ch = getopt_long(argc, argv, "l:c:o:hd", opts, NULL))) {
         switch (ch) {
             case 'c':   /* 配置路径 */
                 opt->conf_path = optarg;
@@ -52,6 +54,9 @@ int lsnd_getopt(int argc, char **argv, lsnd_opt_t *opt)
                 break;
             case 'd':
                 opt->isdaemon = true;
+                break;
+            case 'o':
+                snprintf(opt->log_path, sizeof(opt->log_path), "%s", optarg);
                 break;
             case 'h':   /* 显示帮助信息 */
             default:
