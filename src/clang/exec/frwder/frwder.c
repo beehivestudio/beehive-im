@@ -14,8 +14,6 @@
 #include "mem_ref.h"
 #include "frwd_conf.h"
 
-#define FRWD_MOD_NAME "frwder"
-
 /* 主函数 */
 int main(int argc, char *argv[])
 {
@@ -38,7 +36,7 @@ int main(int argc, char *argv[])
     signal(SIGPIPE, SIG_IGN);
 
     /* > 初始化日志 */
-    log = frwd_init_log(FRWD_MOD_NAME, opt.log_level);
+    log = log_init(opt.log_level, opt.log_path);
     if (NULL == log) {
         fprintf(stderr, "Initialize log failed!\n");
         return -1;

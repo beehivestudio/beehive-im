@@ -38,6 +38,7 @@ int frwd_getopt(int argc, char **argv, frwd_opt_t *opt)
         , {"daemon",                no_argument,        NULL, 'd'}
         , {"log-level",             required_argument,  NULL, 'l'}
         , {"configuartion path",    required_argument,  NULL, 'c'}
+        , {"output file",           required_argument,  NULL, 'o'}
         , {NULL,                    0,                  NULL, 0}
     };
 
@@ -45,9 +46,10 @@ int frwd_getopt(int argc, char **argv, frwd_opt_t *opt)
 
     opt->isdaemon = false;
     opt->log_level = LOG_LEVEL_TRACE;
+    snprintf(opt->log_path, sizeof(opt->log_path), "./frwder.log");
 
     /* 1. 解析输入参数 */
-    while (-1 != (ch = getopt_long(argc, argv, "c:l:hd", opts, NULL))) {
+    while (-1 != (ch = getopt_long(argc, argv, "c:o:l:hd", opts, NULL))) {
         switch (ch) {
             case 'c':   /* 配置路径 */
                 opt->conf_path = optarg;
@@ -57,6 +59,9 @@ int frwd_getopt(int argc, char **argv, frwd_opt_t *opt)
                 break;
             case 'd':   /* 是否后台运行 */
                 opt->isdaemon = true;
+                break;
+            case 'o':   /* 日志级别 */
+                snprintf(opt->log_path, sizeof(opt->log_path), "%s", optarg);
                 break;
             case 'h':   /* 显示帮助信息 */
             default:
@@ -167,26 +172,4 @@ int frwd_launch(frwd_cntx_t *frwd)
     }
 
     return FRWD_OK;
-}
-
-
-/******************************************************************************
- **函数名称: frwd_init_log
- **功    能: 初始化日志模块
- **输入参数:
- **     pname: 进程名
- **     log_level: 日志级别
- **输出参数: NONE
- **返    回: 日志对象
- **实现描述:
- **注意事项:
- **作    者: # Qifeng.zou # 2015-06-10 #
- ******************************************************************************/
-log_cycle_t *frwd_init_log(const char *pname, int log_level)
-{
-    char path[FILE_PATH_MAX_LEN];
-
-    snprintf(path, sizeof(path), "../log/%s.log", pname);
-
-    return log_init(log_level, path);
 }

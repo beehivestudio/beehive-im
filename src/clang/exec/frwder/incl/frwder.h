@@ -22,6 +22,7 @@ typedef struct
     int log_level;                          /* 日志级别 */
     bool isdaemon;                          /* 是否后台运行 */
     char *conf_path;                        /* 配置路径 */
+    char log_path[FILE_LINE_MAX_LEN];       /* 日志路径 */
 } frwd_opt_t;
 
 /* 全局对象 */
@@ -35,7 +36,6 @@ typedef struct
 
 int frwd_getopt(int argc, char **argv, frwd_opt_t *opt);
 int frwd_usage(const char *exec);
-log_cycle_t *frwd_init_log(const char *pname, int log_level);
 frwd_cntx_t *frwd_init(const frwd_conf_t *conf, log_cycle_t *log);
 int frwd_launch(frwd_cntx_t *frwd);
 int frwd_set_reg(frwd_cntx_t *frwd);
