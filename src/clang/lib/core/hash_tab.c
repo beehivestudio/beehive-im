@@ -8,6 +8,7 @@
  **         2. 使用红黑树解决数据查找的性能问题
  ** 作  者: # Qifeng.zou # 2014.10.22 #
  ******************************************************************************/
+#include "atomic.h"
 #include "rb_tree.h"
 #include "hash_tab.h"
 
@@ -153,7 +154,7 @@ int hash_tab_insert(hash_tab_t *htab, void *data, lock_e lock)
     _hash_tab_lock(htab, idx, lock);
     ret = rbt_insert(htab->tree[idx], data);
     if (0 == ret) {
-        ++htab->total;
+        atomic64_inc(&htab->total);
     }
     _hash_tab_unlock(htab, idx, lock);
 
@@ -215,7 +216,7 @@ void *hash_tab_delete(hash_tab_t *htab, void *key, lock_e lock)
     _hash_tab_lock(htab, idx, lock);
     rbt_delete(htab->tree[idx], key, &data);
     if (NULL != data) {
-        --htab->total;
+        atomic64_dec(&htab->total);
     }
     _hash_tab_unlock(htab, idx, lock);
 
