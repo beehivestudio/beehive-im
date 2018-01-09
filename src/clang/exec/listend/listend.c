@@ -12,10 +12,10 @@
 #include "lock.h"
 #include "mesg.h"
 #include "redo.h"
+#include "mref.h"
 #include "timer.h"
 #include "access.h"
 #include "listend.h"
-#include "mem_ref.h"
 #include "cmd_list.h"
 #include "hash_alg.h"
 #include "lsnd_mesg.h"
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     }
 
     umask(0);
-    mem_ref_init();
+    mref_init();
 
     do {
         /* > 初始化日志 */

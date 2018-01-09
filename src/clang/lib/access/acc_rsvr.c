@@ -3,9 +3,9 @@
 #include "list.h"
 #include "mesg.h"
 #include "redo.h"
+#include "mref.h"
 #include "utils.h"
 #include "access.h"
-#include "mem_ref.h"
 #include "command.h"
 #include "xml_tree.h"
 #include "hash_alg.h"
@@ -620,7 +620,7 @@ static int acc_rsvr_del_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     /* > 回收内存空间 */
     list_destroy(extra->send_list, (mem_dealloc_cb_t)acc_send_item_dealloc, NULL);
     if (sck->recv.addr) {
-        mem_ref_decr(sck->recv.addr);
+        mref_dec(sck->recv.addr);
     }
     FREE(extra->user);
     FREE(extra);
@@ -776,7 +776,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
     for (;;) {
         switch (recv->phase) {
             case SOCK_PHASE_RECV_INIT: /* 1. 分配空间 */
-                recv->addr = mem_ref_alloc(conf->size,
+                recv->addr = mref_alloc(conf->size,
                         NULL, (mem_alloc_cb_t)mem_alloc, (mem_dealloc_cb_t)mem_dealloc);
                 if (NULL == recv->addr) {
                     log_error(rsvr->log, "Alloc from queue failed!");
@@ -810,7 +810,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                         return ret; /* 下次继续处理 */
                     default:
                         log_error(rsvr->log, "Recv head failed. cid:%lu", extra->cid);
-                        mem_ref_decr(recv->addr);
+                        mref_dec(recv->addr);
                         recv->addr = NULL;
                         return ret; /* 异常情况 */
                 }
@@ -834,7 +834,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
                         return ret; /* 下次继续处理 */
                     default:
                         log_error(rsvr->log, "Recv body failed. cid:%lu", extra->cid);
-                        mem_ref_decr(recv->addr);
+                        mref_dec(recv->addr);
                         recv->addr = NULL;
                         return ret; /* 异常情况 */
                 }
@@ -843,7 +843,7 @@ static int acc_recv_data(acc_cntx_t *ctx, acc_rsvr_t *rsvr, socket_t *sck)
             RECV_POST:
                 /* 对接收到的数据进行处理 */
                 ret = acc_recv_post_hdl(ctx, rsvr, sck);
-                mem_ref_decr(recv->addr);
+                mref_dec(recv->addr);
                 recv->addr = NULL;
                 if (ACC_OK == ret) {
                     recv->phase = SOCK_PHASE_RECV_INIT;

@@ -31,7 +31,7 @@ SRC_LIST = comm.c \
 			redo.c \
 			shm_slab.c \
 			shm_opt.c \
-			mem_ref.c \
+			mref.c \
 			mem_seg_ref.c \
 			mem_pool.c \
 			shm_ring.c \

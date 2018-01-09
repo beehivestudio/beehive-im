@@ -1,6 +1,6 @@
 #include "comm.h"
 #include "mesg.h"
-#include "mem_ref.h"
+#include "mref.h"
 #include "rtmq_comm.h"
 #include "rtmq_recv.h"
 
@@ -164,14 +164,14 @@ static int rtmq_dsvr_dist_data_hdl(rtmq_cntx_t *ctx, rtmq_dsvr_t *dsvr)
             idx = rtmq_node_to_svr_map_rand(ctx, head->nid);
             if (idx < 0) {
                 log_error(ctx->log, "Didn't find dev to svr map! nodeid:%d", head->nid);
-                mem_ref_decr(data[k]);
+                mref_dec(data[k]);
                 continue;
             }
 
             /* > 放入发送队列 */
             if (ring_push(ctx->sendq[idx], data[k])) {
                 log_error(ctx->log, "Push into sendq failed! nodeid:%d", head->nid);
-                mem_ref_decr(data[k]);
+                mref_dec(data[k]);
                 continue;
             }
 

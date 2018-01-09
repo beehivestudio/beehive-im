@@ -9,8 +9,8 @@
  ******************************************************************************/
 
 #include "redo.h"
+#include "mref.h"
 #include "queue.h"
-#include "mem_ref.h"
 #include "rtmq_mesg.h"
 #include "rtmq_comm.h"
 #include "rtmq_recv.h"
@@ -398,14 +398,14 @@ static int rtmq_rsvr_wiov_add(rtmq_rsvr_t *rsvr, rtmq_sck_t *sck)
             assert(0);
         }
 
-        mem_ref_check((void *)head);
+        mref_check((void *)head);
         len = sizeof(rtmq_header_t) + head->length; /* 当前消息总长度 */
 
         /* 3 设置头部数据 */
         RTMQ_HEAD_HTON(head, head);
 
         /* 4 设置发送信息 */
-        wiov_item_add(send, (char *)head, len, NULL, mem_ref_dealloc, mem_ref_dealloc);
+        wiov_item_add(send, (char *)head, len, NULL, mref_dealloc, mref_dealloc);
     }
 
     return RTMQ_OK;
@@ -737,7 +737,7 @@ static int rtmq_rsvr_exp_mesg_proc(rtmq_cntx_t *ctx,
         return RTMQ_ERR;
     }
 
-    mem_ref_incr(base); /* 引用计数+1 */
+    mref_inc(base); /* 引用计数+1 */
 
     item->base = base;
     item->data = data;
@@ -819,7 +819,7 @@ static int rtmq_rsvr_event_timeout_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
             log_trace(rsvr->log, "Didn't active for along time! fd:%d ip:%s",
                     curr->fd, curr->ipaddr);
             /* 释放数据 */
-            mem_ref_decr(curr->recv.base);
+            mref_dec(curr->recv.base);
             /* 删除连接 */
             if (node == tail) {
                 rtmq_rsvr_del_conn_hdl(ctx, rsvr, node);
@@ -865,7 +865,7 @@ static int rtmq_rsvr_keepalive_req_hdl(rtmq_cntx_t *ctx,
     }
 
     /* > 分配消息空间 */
-    rsp = (void *)mem_ref_alloc(sizeof(rtmq_header_t), NULL,
+    rsp = (void *)mref_alloc(sizeof(rtmq_header_t), NULL,
             (mem_alloc_cb_t)mem_alloc, (mem_dealloc_cb_t)mem_dealloc);
     if (NULL == rsp) {
         log_error(rsvr->log, "Alloc memory failed!");
@@ -883,7 +883,7 @@ static int rtmq_rsvr_keepalive_req_hdl(rtmq_cntx_t *ctx,
 
     /* > 加入发送列表 */
     if (list2_rpush(sck->mesg_list, rsp)) {
-        mem_ref_decr(rsp);
+        mref_dec(rsp);
         log_error(rsvr->log, "Insert into mesg list failed!");
         return RTMQ_ERR;
     }
@@ -916,7 +916,7 @@ static int rtmq_rsvr_link_auth_rsp(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck
     /* > 分配消息空间 */
     len = sizeof(rtmq_header_t) + sizeof(rtmq_link_auth_ack_t);
 
-    addr = (void *)mem_ref_alloc(len, NULL,
+    addr = (void *)mref_alloc(len, NULL,
             (mem_alloc_cb_t)mem_alloc, (mem_dealloc_cb_t)mem_dealloc);
     if (NULL == addr) {
         log_error(rsvr->log, "Alloc memory failed!");
@@ -937,7 +937,7 @@ static int rtmq_rsvr_link_auth_rsp(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck
 
     /* > 加入发送列表 */
     if (list2_rpush(sck->mesg_list, addr)) {
-        mem_ref_decr(addr);
+        mref_dec(addr);
         log_error(rsvr->log, "Insert into list failed!");
         return RTMQ_ERR;
     }
@@ -1231,14 +1231,14 @@ static void rtmq_rsvr_sck_free(rtmq_rsvr_t *rsvr, rtmq_sck_t *sck)
 {
     if (NULL == sck) { return; }
 
-    mem_ref_decr(sck->recv.base);
+    mref_dec(sck->recv.base);
 
     /* 释放订阅列表空间 */
     rtmq_rsvr_sck_sub_free(rsvr, sck);
 
     /* 释放发送链表空间 */
     if (sck->mesg_list) {
-        list2_destroy(sck->mesg_list, (mem_dealloc_cb_t)mem_ref_dealloc, NULL);
+        list2_destroy(sck->mesg_list, (mem_dealloc_cb_t)mref_dealloc, NULL);
     }
 
     /* 释放iov的空间 */
@@ -1510,20 +1510,20 @@ static int rtmq_rsvr_dist_data(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
         for (idx=0; idx<num; ++idx) {
             head = (rtmq_header_t *)data[idx];
 
-            mem_ref_check(data[idx]);
+            mref_check(data[idx]);
 
             /* > 查找发送连接 */
             cl.nid = head->nid;
             cl.list = list_creat(NULL);
             if (NULL == cl.list) {
-                mem_ref_decr(data[idx]);
+                mref_dec(data[idx]);
                 log_error(rsvr->log, "Create list failed!");
                 continue;
             }
 
             list2_trav(rsvr->conn_list, (trav_cb_t)rtmq_rsvr_get_conn_list_by_nodeid, &cl);
             if (0 == cl.list->num) {
-                mem_ref_decr(data[idx]);
+                mref_dec(data[idx]);
                 list_destroy(cl.list, mem_dummy_dealloc, NULL);
                 log_error(rsvr->log, "Didn't find connection by nid [%d]!", cl.nid);
                 continue;
@@ -1540,7 +1540,7 @@ static int rtmq_rsvr_dist_data(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr)
 
             /* > 放入发送链表 */
             if (list2_rpush(sck->mesg_list, data[idx])) {
-                mem_ref_decr(data[idx]);
+                mref_dec(data[idx]);
                 log_error(rsvr->log, "Push input mesg list failed!");
                 continue;
             }
@@ -1565,7 +1565,7 @@ static int rtmq_rsvr_alloc_recv_buff(rtmq_sck_t *sck)
 {
     void *addr;
 
-    addr = (void *)mem_ref_alloc(RTMQ_BUFF_SIZE, NULL,
+    addr = (void *)mref_alloc(RTMQ_BUFF_SIZE, NULL,
             (mem_alloc_cb_t)mem_alloc, (mem_dealloc_cb_t)mem_dealloc);
     if (NULL == addr) {
         return RTMQ_ERR;
@@ -1608,7 +1608,7 @@ static int rtmq_rsvr_switch_recv_buff(rtmq_sck_t *sck)
     curr->iptr += len;
 
     /* > 释放老数据(注: 引用计数减1) */
-    mem_ref_decr(old.base);
+    mref_dec(old.base);
 
     return RTMQ_OK;
 }

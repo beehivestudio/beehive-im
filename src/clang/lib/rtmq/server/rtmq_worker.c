@@ -8,7 +8,7 @@
  ** 作  者: # Qifeng.zou # 2015.01.06 #
  ******************************************************************************/
 
-#include "mem_ref.h"
+#include "mref.h"
 #include "rtmq_mesg.h"
 #include "rtmq_comm.h"
 #include "rtmq_recv.h"
@@ -229,7 +229,7 @@ static int rtmq_worker_cmd_proc_req_hdl(rtmq_cntx_t *ctx, rtmq_worker_t *worker,
                 reg = (rtmq_reg_t *)avl_query(ctx->reg, (void *)&key);
                 if (NULL == reg) {
                     ++worker->drop_total;   /* 丢弃计数 */
-                    mem_ref_decr(item[idx]->base);
+                    mref_dec(item[idx]->base);
                     queue_dealloc(rq, (void *)item[idx]);
                     log_trace(ctx->log, "Drop data! type:%u", head->type);
                     continue;
@@ -244,7 +244,7 @@ static int rtmq_worker_cmd_proc_req_hdl(rtmq_cntx_t *ctx, rtmq_worker_t *worker,
             }
 
             /* > 释放内存空间 */
-            mem_ref_decr(item[idx]->base);
+            mref_dec(item[idx]->base);
             queue_dealloc(rq, (void *)item[idx]);
         }
     }

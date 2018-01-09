@@ -10,8 +10,8 @@
 #include "comm.h"
 #include "mesg.h"
 #include "redo.h"
+#include "mref.h"
 #include "frwder.h"
-#include "mem_ref.h"
 #include "frwd_conf.h"
 
 /* 主函数 */
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     }
 
     umask(0);
-    mem_ref_init();
+    mref_init();
     signal(SIGPIPE, SIG_IGN);
 
     /* > 初始化日志 */

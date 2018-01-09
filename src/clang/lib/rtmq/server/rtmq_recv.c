@@ -11,7 +11,7 @@
 #include "log.h"
 #include "lock.h"
 #include "redo.h"
-#include "mem_ref.h"
+#include "mref.h"
 #include "shm_opt.h"
 #include "hash_alg.h"
 #include "rtmq_mesg.h"
@@ -280,7 +280,7 @@ int rtmq_async_send(rtmq_cntx_t *ctx, int type, int dest, void *data, size_t len
     idx = rand() % ctx->conf.distq_num;
 
     /* > 申请队列空间 */
-    addr = mem_ref_alloc(sizeof(rtmq_header_t) + len,
+    addr = mref_alloc(sizeof(rtmq_header_t) + len,
             NULL, (mem_alloc_cb_t)mem_alloc, (mem_dealloc_cb_t)mem_dealloc);
     if (NULL == addr) {
         log_error(ctx->log, "Alloc memory failed! errmsg:[%d] %s!", errno, strerror(errno));
@@ -299,7 +299,7 @@ int rtmq_async_send(rtmq_cntx_t *ctx, int type, int dest, void *data, size_t len
 
     /* > 压入队列空间 */
     if (ring_push(ctx->distq[idx], addr)) {
-        mem_ref_decr(addr);
+        mref_dec(addr);
         log_error(ctx->log, "Push into ring failed!");
         return RTMQ_ERR;
     }
