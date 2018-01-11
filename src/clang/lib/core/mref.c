@@ -1,7 +1,7 @@
 /******************************************************************************
  ** Coypright(C) 2016-2026 Qiware technology Co., Ltd
  **
- ** 文件名: mem_ref.c
+ ** 文件名: mref.c
  ** 版本号: 1.0
  ** 描  述: 内存引用计数管理
  ** 作  者: # Qifeng.zou # 2016年06月27日 星期一 21时19分37秒 #
@@ -10,6 +10,8 @@
 #include "mref.h"
 #include "atomic.h"
 #include "hash_tab.h"
+
+#define MREF_SLOT_LEN    (999)
 
 /* 内存引用项 */
 typedef struct
@@ -24,7 +26,10 @@ typedef struct
 } mref_item_t;
 
 /* 内存应用管理表 */
-hash_tab_t *g_mem_ref_tab;
+hash_tab_t *gMemRefTab;
+
+#define GetMemRef() (gMemRefTab)
+#define SetMemRef(tab) (gMemRefTab = (tab))
 
 static int mref_add(void *addr, void *pool, mem_dealloc_cb_t dealloc);
 
@@ -37,7 +42,7 @@ static uint64_t mref_hash_cb(const mref_item_t *item)
 /* 比较回调函数 */
 static int64_t mref_cmp_cb(const mref_item_t *item1, const mref_item_t *item2)
 {
-    return (int64_t)(item1->addr - item2->addr);
+    return (int64_t)((uint64_t)item1->addr - (uint64_t)item2->addr);
 }
 
 /******************************************************************************
@@ -54,11 +59,11 @@ int mref_init(void)
 {
     hash_tab_t *tab;
 
-    tab = hash_tab_creat(333,
+    tab = hash_tab_creat(MREF_SLOT_LEN,
             (hash_cb_t)mref_hash_cb,
             (cmp_cb_t)mref_cmp_cb, NULL);
 
-    g_mem_ref_tab = tab;
+    SetMemRef(tab);
 
     return (NULL == tab)? -1 : 0;
 }
@@ -112,7 +117,7 @@ static int mref_add(void *addr, void *pool, mem_dealloc_cb_t dealloc)
 {
     int cnt;
     mref_item_t *item, key;
-    hash_tab_t *tab = g_mem_ref_tab;
+    hash_tab_t *tab = GetMemRef();
 
 AGAIN:
     /* > 查询引用 */
@@ -128,6 +133,7 @@ AGAIN:
     /* > 新增引用 */
     item = (mref_item_t *)calloc(1, sizeof(mref_item_t));
     if (NULL == item) {
+        assert(0);
         return -1;
     }
 
@@ -176,7 +182,7 @@ int mref_inc(void *addr)
 {
     int cnt;
     mref_item_t *item, key;
-    hash_tab_t *tab = g_mem_ref_tab;
+    hash_tab_t *tab = GetMemRef();
 
     key.addr = addr;
 
@@ -187,6 +193,7 @@ int mref_inc(void *addr)
         return cnt;
     }
 
+    assert(0);
     return -1; // 未创建结点
 }
 
@@ -207,13 +214,14 @@ int mref_dec(void *addr)
 {
     int cnt;
     mref_item_t *item, key;
-    hash_tab_t *tab = g_mem_ref_tab;
+    hash_tab_t *tab = GetMemRef();
 
     /* > 修改统计计数 */
     key.addr = addr;
 
     item = hash_tab_query(tab, (void *)&key, RDLOCK);
     if (NULL == item) {
+        assert(0);
         return 0; // Didn't find
     }
 
@@ -255,7 +263,7 @@ int mref_check(void *addr)
 {
     int cnt;
     mref_item_t *item, key;
-    hash_tab_t *tab = g_mem_ref_tab;
+    hash_tab_t *tab = GetMemRef();
 
     /* > 查询引用 */
     key.addr = addr;
