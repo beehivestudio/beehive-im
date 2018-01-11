@@ -13,7 +13,7 @@ INCLUDE = -I. \
 			-I$(PROJ)/src/clang/incl/access
 INCLUDE += $(GLOBAL_INCLUDE)
 LIBS_PATH = -L$(PROJ)/lib
-LIBS = -lpthread -lcore -lutils
+LIBS = -lpthread -lcore
 LIBS += $(SHARED_LIB)
 
 SRC_LIST = access.c \
