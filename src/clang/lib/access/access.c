@@ -80,8 +80,9 @@ acc_cntx_t *acc_init(acc_protocol_t *protocol, acc_conf_t *conf, log_cycle_t *lo
         }
 
         /* > 创建连接管理 */
-        ctx->conn_cid_tab = (hash_tab_t *)hash_tab_creat(conf->rsvr_num,
-            (hash_cb_t)acc_conn_cid_hash_cb, (cmp_cb_t)acc_conn_cid_cmp_cb, NULL);
+        ctx->conn_cid_tab = hash_tab_creat(conf->rsvr_num,
+                (hash_cb_t)acc_conn_cid_hash_cb,
+                (cmp_cb_t)acc_conn_cid_cmp_cb, NULL);
         if (NULL == ctx->conn_cid_tab) {
             log_error(ctx->log, "Init sid list failed!");
             break;

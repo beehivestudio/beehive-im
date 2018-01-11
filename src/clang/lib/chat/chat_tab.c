@@ -40,6 +40,7 @@ static int64_t chat_group_cmp_cb(chat_group_t *g1, chat_group_t *g2)
  ******************************************************************************/
 static int chat_add_room(chat_tab_t *chat, uint64_t rid)
 {
+#define CHAT_GROUP_SLOT_LEN (99)
     chat_room_t *room;
 
     /* > 创建聊天室对象 */
@@ -52,8 +53,10 @@ static int chat_add_room(chat_tab_t *chat, uint64_t rid)
     room->create_tm = time(NULL);
 
     /* > 创建分组列表 */
-    room->groups = hash_tab_creat(99,
-            (hash_cb_t)chat_group_hash_cb, (cmp_cb_t)chat_group_cmp_cb, NULL);
+    room->groups = hash_tab_creat(
+            CHAT_GROUP_SLOT_LEN,
+            (hash_cb_t)chat_group_hash_cb,
+            (cmp_cb_t)chat_group_cmp_cb, NULL);
     if (NULL == room->groups) {
         free(room);
         return -1;
@@ -250,6 +253,7 @@ static int64_t chat_sid_cmp_cb(chat_sid2cid_item_t *item1, chat_sid2cid_item_t *
  ******************************************************************************/
 static int chat_group_add_by_gid(chat_tab_t *chat, chat_room_t *room, uint32_t gid)
 {
+#define CHAT_SID_SLOT_LEN (999)
     chat_group_t *grp;
 
     /* > 创建gid分组 */
@@ -258,7 +262,8 @@ static int chat_group_add_by_gid(chat_tab_t *chat, chat_room_t *room, uint32_t g
         return -1;
     }
 
-    grp->sid_set = hash_tab_creat(999,
+    grp->sid_set = hash_tab_creat(
+            CHAT_SID_SLOT_LEN,
             (hash_cb_t)chat_sid_hash_cb,
             (cmp_cb_t)chat_sid_cmp_cb, NULL);
     if (NULL == grp->sid_set) {
@@ -399,6 +404,8 @@ static int _chat_group_del_session(chat_tab_t *chat,
  ******************************************************************************/
 int chat_session_tab_add(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t sid, uint64_t cid)
 {
+#define CHAT_SUB_SLOT_LEN (5)
+#define CHAT_SESSION_SLOT_LEN (5)
     chat_session_t *session;
     chat_room_item_t *room;
 
@@ -422,7 +429,10 @@ int chat_session_tab_add(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t 
     room->gid = gid;
 
     /* > 新建ROOM对象 */
-    session->room = hash_tab_creat(5, (hash_cb_t)chat_room_hash_cb, (cmp_cb_t)chat_room_cmp_cb, NULL);
+    session->room = hash_tab_creat(
+            CHAT_SESSION_SLOT_LEN,
+            (hash_cb_t)chat_room_hash_cb,
+            (cmp_cb_t)chat_room_cmp_cb, NULL);
     if (NULL == session->room) {
         FREE(session);
         return -1;
@@ -433,7 +443,10 @@ int chat_session_tab_add(chat_tab_t *chat, uint64_t rid, uint32_t gid, uint64_t 
     }
 
     /* > 新建SUB对象 */
-    session->sub = hash_tab_creat(5, (hash_cb_t)chat_sub_hash_cb, (cmp_cb_t)chat_sub_cmp_cb, NULL);
+    session->sub = hash_tab_creat(
+            CHAT_SUB_SLOT_LEN,
+            (hash_cb_t)chat_sub_hash_cb,
+            (cmp_cb_t)chat_sub_cmp_cb, NULL);
     if (NULL == session->sub) {
         hash_tab_destroy(session->room, (mem_dealloc_cb_t)mem_dealloc, NULL);
         FREE(session);
