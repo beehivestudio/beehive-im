@@ -97,7 +97,7 @@ hash_tab_t *hash_tab_creat(int len, hash_cb_t hash, cmp_cb_t cmp, hash_tab_opt_t
     htab->alloc = (mem_alloc_cb_t)opt->alloc;
     htab->dealloc = (mem_dealloc_cb_t)opt->dealloc;
 
-    htab->tree = (void **)opt->alloc(opt->pool, len*sizeof(void *));
+    htab->tree = (rbt_tree_t **)opt->alloc(opt->pool, len*sizeof(rbt_tree_t *));
     if (NULL == htab->tree) {
         opt->dealloc(opt->pool, htab);
         return NULL;

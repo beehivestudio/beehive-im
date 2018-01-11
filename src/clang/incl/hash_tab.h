@@ -3,6 +3,7 @@
 
 #include "comm.h"
 #include "lock.h"
+#include "rb_tree.h"
 
 /* 选线 */
 typedef struct
@@ -18,7 +19,7 @@ typedef struct
     int len;                                        /* 数组长 */
     uint64_t total;                                 /* 数据总数 */
 
-    void **tree;                                    /* 树(长度: len) */
+    rbt_tree_t **tree;                              /* 树(长度: len) */
     pthread_rwlock_t *lock;                         /* 树锁(长度: len) */
 
     cmp_cb_t cmp;                                   /* 比较回调 */
