@@ -65,7 +65,8 @@ int quick_sort(void *array, int len, sort_cmp_cb_t cmp, sort_swap_cb_t swap)
  ******************************************************************************/
 static int _quick_sort_once(quick_sort_t *sort, int low, int high)
 {
-    int ret, i, j;
+    int i, j;
+    int64_t ret;
 
     i = low;
     j = high;

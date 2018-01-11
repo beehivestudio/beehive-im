@@ -326,9 +326,9 @@ bool sdk_queue_empty(sdk_queue_t *q)
 ////////////////////////////////////////////////////////////////////////////////
 
 /* 比较回调 */
-static int sdk_send_mgr_cmp_cb(sdk_send_item_t *item1, sdk_send_item_t *item2)
+static int64_t sdk_send_mgr_cmp_cb(sdk_send_item_t *item1, sdk_send_item_t *item2)
 {
-    return item1->seq - item2->seq;
+    return (int64_t)(item1->seq - item2->seq);
 }
 
 /******************************************************************************

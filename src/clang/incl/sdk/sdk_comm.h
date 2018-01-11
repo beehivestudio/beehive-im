@@ -124,9 +124,9 @@ typedef struct
  **注意事项:
  **作    者: # Qifeng.zou # 2016.08.09 17:19:24 #
  ******************************************************************************/
-static inline int sdk_reg_cmp_cb(const sdk_reg_t *reg1, const sdk_reg_t *reg2)
+static inline int64_t sdk_reg_cmp_cb(const sdk_reg_t *reg1, const sdk_reg_t *reg2)
 {
-    return (reg1->cmd - reg2->cmd);
+    return (int64_t)(reg1->cmd - reg2->cmd);
 }
 
 /* 命令项 */
@@ -148,9 +148,9 @@ typedef struct
  **注意事项:
  **作    者: # Qifeng.zou # 2016.11.10 16:37:13 #
  ******************************************************************************/
-static inline int sdk_ack_cmp_cb(const sdk_cmd_ack_t *cmd1, const sdk_cmd_ack_t *cmd2)
+static inline int64_t sdk_ack_cmp_cb(const sdk_cmd_ack_t *cmd1, const sdk_cmd_ack_t *cmd2)
 {
-    return (cmd1->ack - cmd2->ack);
+    return (int64_t)(cmd1->ack - cmd2->ack);
 }
 
 #endif /*__SDK_COMM_H__*/

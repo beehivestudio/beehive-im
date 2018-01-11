@@ -140,9 +140,9 @@ typedef struct
  **注意事项:
  **作    者: # Qifeng.zou # 2016.08.09 17:19:24 #
  ******************************************************************************/
-static inline int rtmq_reg_cmp_cb(const rtmq_reg_t *reg1, const rtmq_reg_t *reg2)
+static inline int64_t rtmq_reg_cmp_cb(const rtmq_reg_t *reg1, const rtmq_reg_t *reg2)
 {
-    return (reg1->type - reg2->type);
+    return (int64_t)(reg1->type - reg2->type);
 }
 
 #endif /*__RTMQ_COMM_H__*/

@@ -432,7 +432,7 @@ void *list_fetch(list_t *list, int idx)
  ******************************************************************************/
 int list_sort(list_t *list, void *data, cmp_cb_t cmp)
 {
-    int ret;
+    int64_t ret;
     list_node_t *curr, *prev;
 
     if (NULL == list->head) {

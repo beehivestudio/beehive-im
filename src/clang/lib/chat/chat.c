@@ -13,9 +13,9 @@ static uint64_t chat_room_hash_cb(chat_room_t *r)
 }
 
 /* 聊天室ID比较回调 */
-static int chat_room_cmp_cb(chat_room_t *r1, chat_room_t *r2)
+static int64_t chat_room_cmp_cb(chat_room_t *r1, chat_room_t *r2)
 {
-    return (int)(r1->rid - r2->rid);
+    return (int64_t)(r1->rid - r2->rid);
 }
 
 /* 会话ID哈希回调 */
@@ -25,13 +25,13 @@ static uint64_t chat_session_hash_cb(chat_session_t *s)
 }
 
 /* 会话SID+连接CID比较回调 */
-static int chat_session_cmp_cb(chat_session_t *s1, chat_session_t *s2)
+static int64_t chat_session_cmp_cb(chat_session_t *s1, chat_session_t *s2)
 {
-    int diff;
+    int64_t diff;
 
-    diff = (int)(s1->sid - s2->sid);
+    diff = (int64_t)(s1->sid - s2->sid);
     if (0 == diff) {
-        return (int)(s1->cid - s2->cid);
+        return (int64_t)(s1->cid - s2->cid);
     }
 
     return diff;
@@ -44,9 +44,9 @@ static uint64_t chat_sid2cid_hash_cb(chat_sid2cid_item_t *item)
 }
 
 /* SID->CID比较回调 */
-static int chat_sid2cid_cmp_cb(chat_sid2cid_item_t *item1, chat_sid2cid_item_t *item2)
+static int64_t chat_sid2cid_cmp_cb(chat_sid2cid_item_t *item1, chat_sid2cid_item_t *item2)
 {
-    return (int)(item1->sid - item2->sid);
+    return (int64_t)(item1->sid - item2->sid);
 }
 
 /******************************************************************************

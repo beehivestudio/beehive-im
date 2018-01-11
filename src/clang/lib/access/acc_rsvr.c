@@ -31,7 +31,7 @@ static int acc_rsvr_timeout_hdl(acc_cntx_t *ctx, acc_rsvr_t *rsvr);
 
 static int acc_rsvr_connection_cmp(const int *cid, const socket_t *sck);
 
-static int acc_rsvr_kick_cmp_cb(acc_kick_item_t *item1, acc_kick_item_t *item2);
+static int64_t acc_rsvr_kick_cmp_cb(acc_kick_item_t *item1, acc_kick_item_t *item2);
 static bool acc_rsvr_is_kicked(acc_rsvr_t *rsvr, uint64_t cid);
 static int acc_rsvr_kick_add(acc_rsvr_t *rsvr, uint64_t cid);
 static void acc_rsvr_kick_del(acc_rsvr_t *rsvr, uint64_t cid);
@@ -1098,9 +1098,9 @@ static int acc_rsvr_kick_conn(acc_cntx_t *ctx, acc_rsvr_t *rsvr)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static int acc_rsvr_kick_cmp_cb(acc_kick_item_t *item1, acc_kick_item_t *item2)
+static int64_t acc_rsvr_kick_cmp_cb(acc_kick_item_t *item1, acc_kick_item_t *item2)
 {
-    return (int)(item1->cid - item2->cid);
+    return (int64_t)(item1->cid - item2->cid);
 }
 
 /******************************************************************************

@@ -777,9 +777,9 @@ static int rtmq_auth_trav_add(rtmq_auth_t *auth, rtmq_cntx_t *ctx)
 }
 
 /* 鉴权比较 */
-static int rtmq_auth_cmp_cb(const rtmq_auth_t *auth1, const rtmq_auth_t *auth2)
+static int64_t rtmq_auth_cmp_cb(const rtmq_auth_t *auth1, const rtmq_auth_t *auth2)
 {
-    return strcmp(auth1->usr, auth2->usr);
+    return (int64_t)strcmp(auth1->usr, auth2->usr);
 }
 
 /******************************************************************************

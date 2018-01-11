@@ -2,9 +2,9 @@
 #include "redo.h"
 #include "timer.h"
 
-static int timer_item_cmp_cb(timer_task_t *item1, timer_task_t *item2)
+static int64_t timer_item_cmp_cb(timer_task_t *item1, timer_task_t *item2)
 {
-    return item1->ttl - item2->ttl;
+    return (int64_t)(item1->ttl - item2->ttl);
 }
 
 /******************************************************************************

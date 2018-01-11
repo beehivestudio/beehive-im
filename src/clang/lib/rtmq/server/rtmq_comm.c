@@ -59,10 +59,10 @@ int rtmq_link_auth_check(rtmq_cntx_t *ctx, rtmq_link_auth_req_t *auth)
  **注意事项:
  **作    者: # Qifeng.zou # 2015.05.30 20:29:26 #
  ******************************************************************************/
-static int rtmq_node_to_svr_map_cmp_cb(
+static int64_t rtmq_node_to_svr_map_cmp_cb(
         const rtmq_node_to_svr_map_t *map1, const rtmq_node_to_svr_map_t *map2)
 {
-    return (map1->nid - map2->nid);
+    return (int64_t)(map1->nid - map2->nid);
 }
 
 int rtmq_node_to_svr_map_init(rtmq_cntx_t *ctx)
@@ -230,9 +230,9 @@ static uint64_t rtmq_sub_tab_hash_cb(const rtmq_sub_list_t *list)
 }
 
 /* 订阅比较回调 */
-static int rtmq_sub_tab_cmp_cb(const rtmq_sub_list_t *list1, const rtmq_sub_list_t *list2)
+static int64_t rtmq_sub_tab_cmp_cb(const rtmq_sub_list_t *list1, const rtmq_sub_list_t *list2)
 {
-    return (list1->type - list2->type);
+    return (int64_t)(list1->type - list2->type);
 }
 
 /******************************************************************************
@@ -260,9 +260,9 @@ int rtmq_sub_init(rtmq_cntx_t *ctx)
 }
 
 /* 订阅分组比较 */
-static int rtmq_sub_group_cmp_cb(rtmq_sub_group_t *g1, rtmq_sub_group_t *g2)
+static int64_t rtmq_sub_group_cmp_cb(rtmq_sub_group_t *g1, rtmq_sub_group_t *g2)
 {
-    return (int)(g1->gid - g2->gid);
+    return (int64_t)(g1->gid - g2->gid);
 }
 
 /******************************************************************************

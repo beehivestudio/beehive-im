@@ -48,7 +48,7 @@ static int mem_seg_ref_add(void *addr, size_t size, void *pool, mem_alloc_cb_t a
  **注意事项:
  **作    者: # Qifeng.zou # 2016.07.26 22:51:17 #
  ******************************************************************************/
-static int mem_seg_ref_cmp(const mem_seg_ref_item_t *item1, const mem_seg_ref_item_t *item2)
+static int64_t mem_seg_ref_cmp(const mem_seg_ref_item_t *item1, const mem_seg_ref_item_t *item2)
 {
     if (item1->addr < item2->addr) {
         return -1; // 小于

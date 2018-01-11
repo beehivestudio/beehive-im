@@ -1089,9 +1089,9 @@ static int rtmq_rsvr_sub_req_hdl(rtmq_cntx_t *ctx, rtmq_rsvr_t *rsvr, rtmq_sck_t
  **注意事项: 套接字关闭时, 记得释放空间, 防止内存泄露!
  **作    者: # Qifeng.zou # 2015.06.11 #
  ******************************************************************************/
-static int rtmq_sub_list_cmp_cb(const rtmq_sub_req_t *req1, const rtmq_sub_req_t *req2)
+static int64_t rtmq_sub_list_cmp_cb(const rtmq_sub_req_t *req1, const rtmq_sub_req_t *req2)
 {
-    return (req1->type - req2->type);
+    return (int64_t)(req1->type - req2->type);
 }
 
 static rtmq_sck_t *rtmq_rsvr_sck_creat(rtmq_rsvr_t *rsvr, rtmq_conn_item_t *item)

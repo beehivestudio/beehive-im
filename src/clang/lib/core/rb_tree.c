@@ -256,7 +256,7 @@ static rbt_node_t *rbt_creat_node(rbt_tree_t *tree, int color, int type, rbt_nod
  ******************************************************************************/
 int rbt_insert(rbt_tree_t *tree, void *data)
 {
-    int ret;
+    int64_t ret;
     rbt_node_t *node = tree->root, *add;
 
     /* 1. 当根结点为空时，直接添加 */
@@ -418,7 +418,7 @@ static int rbt_insert_fixup(rbt_tree_t *tree, rbt_node_t *node)
  ******************************************************************************/
 int rbt_delete(rbt_tree_t *tree, void *key, void **data)
 {
-    int ret;
+    int64_t ret;
     rbt_node_t *node = tree->root;
 
     while (tree->sentinel != node) {
@@ -846,7 +846,7 @@ int rbt_print(rbt_tree_t *tree, print_cb_t print)
  ******************************************************************************/
 void *rbt_query(rbt_tree_t *tree, void *key)
 {
-    int ret;
+    int64_t ret;
     rbt_node_t *node = tree->root;
 
     while (tree->sentinel != node) {

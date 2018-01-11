@@ -30,9 +30,9 @@ static int _log_sync_proc(log_cycle_t *log, void *args);
  **注意事项: 无需比较文件路径
  **作    者: # Qifeng.zou # 2016.08.09 11:16:21 #
  ******************************************************************************/
-static int log_svr_cmp_cb(const log_cycle_t *log1, const log_cycle_t *log2)
+static int64_t log_svr_cmp_cb(const log_cycle_t *log1, const log_cycle_t *log2)
 {
-    return ((uint64_t)log1 - (uint64_t)log2);
+    return (int64_t)(log1 - log2);
 }
 
 /******************************************************************************

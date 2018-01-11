@@ -14,9 +14,9 @@ static int acc_creat_lsvr(acc_cntx_t *ctx);
 static int acc_creat_queue(acc_cntx_t *ctx);
 
 /* CID比较回调 */
-static int acc_conn_cid_cmp_cb(const acc_socket_extra_t *extra1, const acc_socket_extra_t *extra2)
+static int64_t acc_conn_cid_cmp_cb(const acc_socket_extra_t *extra1, const acc_socket_extra_t *extra2)
 {
-    return (int)(extra1->cid - extra2->cid);
+    return (int64_t)(extra1->cid - extra2->cid);
 }
 
 /* CID哈希回调 */

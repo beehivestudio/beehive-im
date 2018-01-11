@@ -109,9 +109,9 @@ LSND_INIT_ERR:
 }
 
 /* 注册比较回调 */
-static int lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
+static int64_t lsnd_acc_reg_cmp_cb(lsnd_reg_t *reg1, lsnd_reg_t *reg2)
 {
-    return reg1->type - reg2->type;
+    return (int64_t)(reg1->type - reg2->type);
 }
 
 /* CID哈希回调 */
@@ -133,13 +133,13 @@ static uint64_t lsnd_conn_list_hash_cb(lsnd_conn_extra_t *extra)
 }
 
 /* SID比较回调 */
-static int lsnd_conn_list_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
+static int64_t lsnd_conn_list_cmp_cb(lsnd_conn_extra_t *extra1, lsnd_conn_extra_t *extra2)
 {
-    int diff;
+    int64_t diff;
 
-    diff = (int)(extra1->sid - extra2->sid);
+    diff = (int64_t)(extra1->sid - extra2->sid);
     if (0 == diff) {
-        return (int)(extra1->cid - extra2->cid);
+        return (int64_t)(extra1->cid - extra2->cid);
     }
     return diff;
 }
@@ -151,9 +151,9 @@ static uint64_t lsnd_kick_list_hash_cb(lsnd_kick_item_t *item)
 }
 
 /* KICK比较回调 */
-static int lsnd_kick_list_cmp_cb(lsnd_kick_item_t *item1, lsnd_kick_item_t *item2)
+static int64_t lsnd_kick_list_cmp_cb(lsnd_kick_item_t *item1, lsnd_kick_item_t *item2)
 {
-    return (int)(item1->cid - item2->cid);
+    return (int64_t)(item1->cid - item2->cid);
 }
 
 /******************************************************************************

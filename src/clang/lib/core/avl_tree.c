@@ -173,7 +173,7 @@ int avl_insert(avl_tree_t *tree, void *data)
  ******************************************************************************/
 static int _avl_insert(avl_tree_t *tree, avl_node_t *node, bool *taller, void *data)
 {
-    int ret;
+    int64_t ret;
 
     ret = tree->cmp_cb(data, node->data);
     if (0 == ret) {
@@ -647,7 +647,7 @@ int avl_left_balance(avl_tree_t *tree, avl_node_t *node)
  ******************************************************************************/
 void *avl_query(avl_tree_t *tree, void *key)
 {
-    int ret;
+    int64_t ret;
     avl_node_t *node = tree->root;
 
     while (NULL != node) {
@@ -763,7 +763,7 @@ int avl_delete(avl_tree_t *tree, void *key, void **data)
 static int _avl_delete(avl_tree_t *tree,
         avl_node_t *node, void *key, bool *lower, void **data)
 {
-    int ret;
+    int64_t ret;
     avl_node_t *parent = node->parent;
 
     /* 1. 查找需要被删除的结点 */

@@ -35,9 +35,9 @@ static uint64_t mref_hash_cb(const mref_item_t *item)
 }
 
 /* 比较回调函数 */
-static int mref_cmp_cb(const mref_item_t *item1, const mref_item_t *item2)
+static int64_t mref_cmp_cb(const mref_item_t *item1, const mref_item_t *item2)
 {
-    return ((uint64_t)item1->addr - (uint64_t)item2->addr);
+    return (int64_t)(item1->addr - item2->addr);
 }
 
 /******************************************************************************
