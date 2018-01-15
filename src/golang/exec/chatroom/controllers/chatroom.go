@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"sync"
+	"time"
 
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"github.com/astaxie/beego/logs"
@@ -120,7 +122,10 @@ func ChatRoomInit(conf *conf.ChatRoomConf) (ctx *ChatRoomCntx, err error) {
 	}
 
 	/* > MONGO连接池 */
-	ctx.mongo, err = mongo.CreatePool(conf.Mongo.Addr, conf.Mongo.Passwd)
+	conn_str := fmt.Sprintf("mongodb://%s:%s@%s/%s?maxPoolSize=1000",
+		conf.Mongo.Usr, conf.Mongo.Passwd,
+		conf.Mongo.Addr, conf.Mongo.DbName)
+	ctx.mongo, err = mongo.CreatePool(conn_str, 30*time.Second)
 	if nil != err {
 		ctx.log.Error("Connect to mongo failed! addr:%s errmsg:%s",
 			conf.Mongo.Addr, err.Error())

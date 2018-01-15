@@ -1,8 +1,9 @@
 package mongo
 
 import (
+	"time"
+
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 )
 
 /* 连接池对象 */
@@ -19,11 +20,16 @@ type Pool struct {
  **输出参数: NONE
  **返    回: 连接池对象
  **实现描述:
- **注意事项:
+ **注意事项: 连接子串的格式如下:
+ **         "mongodb://${user}:${pwd}@${host:port},${host:port},.../${dbname}?${options}"
+ **         示例如下:
+ **         "mongodb://10.110.98.193:26408/admin?maxPoolSize=1000"
+ **         "mongodb://10.110.98.193:26408,10.110.98.196:26408/admin?maxPoolSize=1000"
+ **         "mongodb://admin:ZGY3ZWVkZDIxNTc@10.110.98.193:26408/admin?maxPoolSize=1000"
  **作    者: # Qifeng.zou # 2017.06.12 23:28:27 #
  ******************************************************************************/
-func CreatePool(addr string, passwd string) (*Pool, error) {
-	session, err := mgo.Dial(addr)
+func CreatePool(conn_str string, timeout time.Duration) (*Pool, error) {
+	session, err := mgo.DialWithTimeout(conn_str, timeout)
 	if nil != err {
 		return nil, err
 	}
