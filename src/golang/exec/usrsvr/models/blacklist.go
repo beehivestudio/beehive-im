@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"gopkg.in/mgo.v2"
+
 	"github.com/garyburd/redigo/redis"
-	"labix.org/v2/mgo"
 
 	"beehive-im/src/golang/lib/comm"
 	"beehive-im/src/golang/lib/mongo"

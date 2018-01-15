@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"labix.org/v2/mgo"
+	"gopkg.in/mgo.v2"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/golang/protobuf/proto"

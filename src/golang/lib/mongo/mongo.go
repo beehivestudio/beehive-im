@@ -1,7 +1,8 @@
 package mongo
 
 import (
-	"labix.org/v2/mgo"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 /* 连接池对象 */
