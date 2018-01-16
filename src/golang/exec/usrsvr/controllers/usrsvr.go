@@ -3,7 +3,6 @@ package controllers
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -111,10 +110,9 @@ func UsrSvrInit(conf *conf.UsrSvrConf) (ctx *UsrSvrCntx, err error) {
 	}
 
 	/* > MONGO连接池 */
-	conn_str := fmt.Sprintf("mongodb://%s:%s@%s/%s?maxPoolSize=1000",
+	ctx.mongo, err = mongo.CreatePool(conf.Mongo.Addr,
 		conf.Mongo.Usr, conf.Mongo.Passwd,
-		conf.Mongo.Addr, conf.Mongo.DbName)
-	ctx.mongo, err = mongo.CreatePool(conn_str, 30*time.Second)
+		conf.Mongo.DbName, "maxPoolSize=1000", 30*time.Second)
 	if nil != err {
 		ctx.log.Error("Connect to mongo failed! addr:%s errmsg:%s",
 			conf.Mongo.Addr, err.Error())
