@@ -1,0 +1,15 @@
+目前第三方库都保存在$(PROJ)/src/golang/vendor目录
+使用govendor进行版本的控制
+安装govendor程序: go get github.com/kardianos/govendor
+govendor init
+govendor fetch github.com/tabalt/gracehttp
+govendor fetch github.com/go-sql-driver/mysql
+govendor fetch github.com/bradfitz/gomemcache/memcache
+govendor fetch github.com/garyburd/redigo/redis
+
+init: 创建一个vendor目录并生成个空的
+add: 把$GOPATH中的包拷贝到vendor目录下
+update: 把$GOPATH中的包更新到vendor目录下
+remove: 从vendor目录下移除外部依赖包
+fetch: 从远程代码库拉取依赖包到vendor
+sync: 从远程代码拉取vendor.json里的版本
